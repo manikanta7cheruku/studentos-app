@@ -1,0 +1,9 @@
+# Replace the @names with the real GitHub usernames of each role (admin does this in the setup).
+/supabase/            @R2_GITHUB_NAME
+/src/contracts/       @R2_GITHUB_NAME
+/src/modules/         @R2_GITHUB_NAME
+/src/components/ui/   @R4_GITHUB_NAME
+/src/features/        @R3_GITHUB_NAME
+/e2e/                 @R5_GITHUB_NAME
+/.github/             @R5_GITHUB_NAME
+/docs/                @R1_GITHUB_NAME

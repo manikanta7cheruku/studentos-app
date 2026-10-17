@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: StudentOS API
+  version: 0.1.0-draft
+  description: >
+    DRAFT skeleton. Source of truth will become Zod schemas in src/contracts;
+    this file is generated from them. Paths mirror docs/03_ENGINEERING/14_API_CONTRACTS.md.
+servers:
+  - url: http://localhost:3000/api/v1
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            request_id: { type: string }
+    Meta:
+      type: object
+      properties:
+        request_id: { type: string }
+        next_cursor: { type: string, nullable: true }
+    TeamRoleInput:
+      type: object
+      required: [role_name, slots]
+      properties:
+        role_name: { type: string, minLength: 2, maxLength: 60 }
+        slots: { type: integer, minimum: 1, maximum: 20 }
+        skill_ids: { type: array, items: { type: string, format: uuid } }
+    TeamPostCreate:
+      type: object
+      required: [kind, title, description, roles]
+      properties:
+        kind: { type: string, enum: [project, startup, hackathon, competition] }
+        title: { type: string, minLength: 5, maxLength: 120 }
+        description: { type: string, maxLength: 3000 }
+        deadline: { type: string, format: date-time }
+        external_link: { type: string, format: uri, pattern: '^https://' }
+        roles:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items: { $ref: '#/components/schemas/TeamRoleInput' }
+paths:
+  /auth/otp/request:
+    post:
+      operationId: AUTH-01
+      summary: Send email one-time code (always returns sent=true)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email, maxLength: 254 }
+                college_slug: { type: string }
+      responses:
+        '200': { description: Accepted }
+        '400': { description: VALIDATION_FAILED, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { description: RATE_LIMITED }
+        '503': { description: UPSTREAM_UNAVAILABLE }
+  /c/{slug}/team-posts:
+    parameters:
+      - { name: slug, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: TMF-02
+      security: [{ session: [] }, { bearer: [] }]
+      parameters:
+        - { name: kind, in: query, schema: { type: string } }
+        - { name: skill_id, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string, enum: [open, closed, filled, expired] } }
+        - { name: q, in: query, schema: { type: string, maxLength: 80 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '403': { description: MEMBERSHIP_NOT_ACTIVE }
+    post:
+      operationId: TMF-01
+      security: [{ session: [] }, { bearer: [] }]
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeamPostCreate' }
+      responses:
+        '201': { description: Created }
+        '400': { description: VALIDATION_FAILED }
+        '403': { description: VERIFICATION_LEVEL_TOO_LOW }
+  # TODO (T-BE-02): remaining operations from doc 14 §3.
