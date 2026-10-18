@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build output
+.next
+out
+build
+dist
+*.tsbuildinfo
+next-env.d.ts
+
+# tests and reports
+coverage
+test-results
+playwright-report
+
+# environment files: never commit real values
+.env*
+!.env.example
+
+# local tooling
+.vercel
+supabase/.temp
+supabase/.branches
+.DS_Store
+*.pem
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
