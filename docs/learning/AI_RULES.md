@@ -19,7 +19,7 @@
 7. **Never trust AI-generated** secrets, crypto, auth logic, RLS policies, or migration SQL without a second human review by R2 or R5 and a negative test.
 8. No unnecessary dependencies; no over-engineering.
 9. Never paste secrets, real student data, or private documents into AI tools.
-10. Record learning in `BUILD_SESSIONS/` (what AI produced / what you verified).
+10. Record learning in `docs/learning/<role-folder>/build-sessions/` (what AI produced / what you verified).
 11. A build success or "looks right" is not completion; use the DoD.
 12. Check licences of generated code/snippets and assets (doc 34).
 

@@ -2,14 +2,28 @@
 
 Write the date, the link, and what the page says. Do not copy prices from blogs.
 
+Checked by R5 on 2026-10-18 using official provider pages only. "NOT VERIFIED" means the official page did not state it, so it must be checked before anyone relies on it.
+
 | Service | Official link | Date checked | Free limits | Paid price | Allowed for commercial use? | Backups | Sleeps or pauses? | Notes |
 |---|---|---|---|---|---|---|---|---|
-| Supabase | | | | | | | | |
-| Vercel | | | | | | | | |
-| GitHub (private repo rules, branch protection) | | | | | | | | |
-| Sentry | | | | | | | | |
-| PostHog | | | | | | | | |
-| Email sender for login codes | | | | | | | | |
-| Slack | | | | | | | | |
+| Supabase | https://supabase.com/pricing.md | 2026-10-18 | Free: 500 MB database, 2 active projects, 50,000 MAU, 1 GB storage, 5 GB egress, community support | Pro from $25/month: 8 GB disk per project, 100,000 MAU, 250 GB egress, 100 GB storage. Includes $10/month compute credit for one Micro project. The page example: 2 Micro projects on Pro cost $35/month. Point-in-time recovery add-on $100/month per 7 days | NOT VERIFIED on the pricing page. Check Supabase terms | Free: automatic backups not included. Pro: daily backups kept 7 days | Free projects are paused after 1 week of inactivity. Paid projects are not paused | Custom SMTP is included on Free (needed for login codes). Data region (India or Singapore) NOT VERIFIED. Spend cap is on by default on Pro |
+| Vercel | https://vercel.com/docs/limits/fair-use-guidelines (page shows last_updated 2026-02-27), https://vercel.com/docs/plans/pro-plan, https://vercel.com/docs/plans/hobby | 2026-10-18 | Hobby is free. Exact Hobby limits not itemized here | Pro: $20 monthly usage credit, 1 deploying seat included, 1 TB fast data transfer and 10M edge requests included. Per-seat price NOT VERIFIED on the current pricing page (a legacy Pro page says $20 per seat per month). Confirm at https://vercel.com/pricing | Hobby: NO, non-commercial personal use only. The current fair-use page says asking for donations counts as commercial. Commercial use needs Pro or Enterprise | Not a backup service | No sleeping stated. On Hobby, exceeding limits can block a feature for 30 days | Do not host the pilot on Hobby (ADR-011, D-11 stays open) |
+| GitHub (private repo rules, branch protection) | https://docs.github.com/en/billing/concepts/product-billing/github-actions , https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches | 2026-10-18 | Private repos on GitHub Free: 2,000 Actions minutes per month, 500 MB artifact storage, 10 GB cache. Standard runners are free on public repos. Larger runners are always charged | GitHub Pro, Team and Enterprise add protected branches on private repos. Prices NOT checked | NOT checked | Git history only. Keep clones | No | Confirmed on our repo: the branch protection API returned HTTP 403 "Upgrade to GitHub Pro or make this repository public to enable this feature". Our CI also runs on every push, which uses extra minutes (see D01_R5_scaffold-ci.md) |
+| Sentry | https://sentry.io/pricing/ | 2026-10-18 | Developer (free): 1 user, 5k errors, 5M spans, 50 replays, 30-day lookback | Team $26/month billed annually or $29 monthly (unlimited users, 50k errors). Business $80 annual or $89 monthly | NOT VERIFIED on the pricing page | Not applicable | Not stated. Usage is quota based | Data residency is listed as available on all plans. Whether a card is needed for Developer: NOT VERIFIED |
+| PostHog | https://posthog.com/pricing and https://posthog.com/docs/product-analytics/pricing | 2026-10-18 | 1,000,000 events per month free, no credit card, 1 year retention, 1 project, billing limits can be set | Pay as you go from $0.00005 per event, decreasing with volume | NOT VERIFIED on the pricing page | Not applicable | Not stated | Data region options NOT VERIFIED |
+| Email sender for login codes | https://www.resend.com/pricing.md (a candidate only, the docs have not chosen a provider) | 2026-10-18 | Resend Free: 3,000 emails/month, 100 emails/day, 1 domain, 30-day retention | Paid plans have no daily limit. The page lists Scale at $350/month for 500K emails. The Pro price row was NOT readable in the official text I used: NOT VERIFIED | NOT VERIFIED | Not applicable | Free plan stops at the daily cap | Brevo and Amazon SES not checked. India deliverability NOT VERIFIED. The 100 per day cap matters for login codes |
+| Slack | https://slack.com/help/articles/7050776459923 | 2026-10-18 | Free plan: access to the past 90 days of message and file history. Older messages are hidden until you upgrade | Pro price NOT VERIFIED on the official page I read | NOT VERIFIED | Not applicable | No | The truth of project progress lives in docs/progress in the repo, so the 90 day limit is acceptable. Do not keep decisions only in Slack |
 
-Known from the first research (unverified until you check): Vercel free plan is only for non commercial use. Supabase free projects pause after a week of no use and have no automatic backups.
+Known from the first research, now checked: Vercel free plan is only for non commercial use (confirmed on Vercel's own page). Supabase free projects pause after a week of no use and have no automatic backups (both confirmed on Supabase's own pricing page).
+
+## Cost for a real pilot (for the admin)
+
+Estimate from the official pages above, before usage charges, domain and tax: Supabase Pro from $25/month plus Vercel Pro $20/month per deploying seat is about $45/month. Sentry Developer and the PostHog free tier cost $0 at pilot volume. Email is $0 only while under the free caps. A second Supabase project in a Pro organization adds compute cost (the page example is $35/month for 2 Micro projects), so staging needs a decision. GitHub Pro, Team or Enterprise is needed for branch protection on a private repository (price NOT checked).
+
+## Open items for the admin
+
+1. Confirm the Vercel per-seat price at https://vercel.com/pricing.
+2. Check the Supabase data region options (India or Singapore) in the Supabase docs.
+3. Choose and verify an email provider, including free caps and deliverability in India.
+4. Decide D-11 (hosting). Vercel Hobby must not host the pilot.
+5. Decide how to enforce main protection: GitHub Pro (price to check), a public repository (not recommended while internal plans are in the repo), or the team rule only.

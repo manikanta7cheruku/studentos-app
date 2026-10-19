@@ -10,7 +10,7 @@
 8. After approval and green checks: Squash and merge, delete the branch, then `git checkout main` and `git pull`.
 9. Never commit secrets, `.env` files, or real student data.
 10. Every task needs a learning file and a progress update (see `docs/learning` and `docs/progress`).
-11. If you did not finish a task today, write it in `docs/progress/CARRYOVER.md` and tell Slack. You continue tomorrow.
+11. If you did not finish a task today, write it in `docs/progress/<role-folder>/CARRYOVER.md` and tell Slack. You continue tomorrow.
 12. Tests: never say a test passed unless you ran it and saw it pass.
 
 Reviewer map: R1 PRs are reviewed by R5. R2 by R5. R3 by R4. R4 by R3. R5 by R2. Anything about database, login, or permissions also needs R2 and R5 to look at it.

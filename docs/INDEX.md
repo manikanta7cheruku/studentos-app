@@ -29,9 +29,10 @@
 | DEFINITION_OF_DONE.md | When a task is really done |
 | RELEASE_CHECKLIST.md | Checks before beta |
 | DECISIONS.md and adrs/ | Decisions made |
-| learning/ | Learning notes (everyone writes) |
-| progress/ | Daily progress and carryover (everyone updates) |
+| learning/ | Learning notes, one folder per role (see learning/README.md) |
+| progress/ | Progress, carryover and daily reports, one folder per role (see progress/README.md) |
 | research/ | Interview plan and findings |
 | legal/ | Privacy and terms drafts |
+| DEV_SETUP.md | Install and first run for every developer |
 
 Some copied files mention "doc NN", "T-" task IDs or Figma. Ignore those. Use ROADMAP.md for tasks.
