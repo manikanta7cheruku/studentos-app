@@ -36,7 +36,7 @@ The person who started first merges first. The second person pulls main, fixes t
 Change `src/contracts` and `docs/API_CONTRACT.md` and sample data in the same PR. Tag R2 and everyone who uses it. After merge, users update in the same day.
 
 ## Unfinished work
-Hidden behind a feature flag. Listed in `docs/progress/CARRYOVER.md`.
+Hidden behind a feature flag. Listed in `docs/progress/<role-folder>/CARRYOVER.md`.
 
 ## Release
 Only through `docs/RELEASE_CHECKLIST.md`. Security, college isolation, data safety, and a tested restore cannot be skipped.
