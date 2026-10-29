@@ -37,13 +37,14 @@
   --radius-card: var(--radius-card);
   --radius-sheet: var(--radius-sheet);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-fraunces), Georgia, serif;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
+  font-family: var(--font-sans);
   font-size: 1rem; /* 16px minimum */
   line-height: 1.5;
 }
@@ -52,4 +53,13 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+  }
 }
