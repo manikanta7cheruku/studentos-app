@@ -6,3 +6,5 @@ If you did not finish a task today, add a row. Continue it first thing next day.
 
 | Date | Day | Role | Task ID | What is left | Why not finished | Needs help from | Done on |
 |---|---|---|---|---|---|---|---|
+| 2026-10-29 | 1 | R4 | R4-D1-1 | Finish checks (Tab key, 768px, 1280px), get R3 review, merge PR #4 | Draft PR only. Review not started | R3: review of PR #4 | |
+| 2026-10-29 | 1 | R4 | R4-D1-2 | Post the learning rule in Slack #learning. R1, R2, R3 need a first learning file | Other roles own their own files | R1, R2, R3: write first learning file | |
