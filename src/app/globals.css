@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 /* Design tokens: source of truth is docs/DESIGN_SYSTEM.md */
 :root {
@@ -17,9 +19,28 @@
   --radius-input: 4px;
   --radius-card: 8px;
   --radius-sheet: 12px;
+
+  /* shadcn color names mapped onto our tokens (components read these) */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: var(--surface);
+  --secondary: var(--accent-soft);
+  --secondary-foreground: var(--ink);
+  --muted: var(--border);
+  --muted-foreground: var(--ink-muted);
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --input: var(--border-strong);
+  --ring: var(--accent);
+  --radius: 0.5rem;
 }
 
-/* Makes the tokens usable as Tailwind classes: bg-bg, bg-surface, text-ink, border-border, ... */
+/* Tailwind classes: bg-bg, bg-surface, text-ink, bg-primary (brand blue), bg-accent (soft hover), ... */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -27,15 +48,39 @@
   --color-ink-muted: var(--ink-muted);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
-  --color-accent: var(--accent);
+  --color-accent: var(--accent-soft);
   --color-accent-soft: var(--accent-soft);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
 
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
   --radius-input: var(--radius-input);
   --radius-card: var(--radius-card);
   --radius-sheet: var(--radius-sheet);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 
   --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-fraunces), Georgia, serif;
@@ -56,6 +101,9 @@ body {
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   h1,
   h2,
   h3,
