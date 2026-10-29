@@ -1,69 +1,108 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-4 py-10 text-base text-foreground sm:px-6">
+      <section aria-labelledby="hero-title" className="flex flex-col gap-3">
+        <h1 id="hero-title" className="font-heading text-3xl font-semibold">
+          One place for your college.
+        </h1>
+        <p>
+          Find teammates for projects and hackathons, keep track of your internship applications,
+          and build a portfolio - in a space run by your own college.
+        </p>
+        <p>
+          <a href="#waitlist" className="font-medium underline underline-offset-4">
+            Join the waitlist
           </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        </p>
+        <p>Bringing StudentOS to a college? (link to the colleges page comes later)</p>
+        <p>Free for students. Currently in development.</p>
+      </section>
+
+      <section aria-labelledby="problem-title" className="flex flex-col gap-3">
+        <h2 id="problem-title" className="font-heading text-2xl font-semibold">
+          The problem, in student words
+        </h2>
+        <p>
+          Teams get formed in group chats. Applications live in spreadsheets. Projects disappear
+          when the semester ends.
+        </p>
+      </section>
+
+      <section aria-labelledby="features-title" className="flex flex-col gap-3">
+        <h2 id="features-title" className="font-heading text-2xl font-semibold">
+          What you can do
+        </h2>
+        <h3 className="font-heading text-xl font-semibold">Find your team</h3>
+        <p>Post the roles you need, see who requests to join, accept or decline.</p>
+        <h3 className="font-heading text-xl font-semibold">Track every application</h3>
+        <p>Statuses, deadlines and reminders. Private to you.</p>
+        <h3 className="font-heading text-xl font-semibold">Show what you have built</h3>
+        <p>A profile and portfolio with projects you can share.</p>
+        <p>Coming next: campus announcements, Lost and Found, events. Not available yet.</p>
+      </section>
+
+      <section aria-labelledby="trust-title" className="flex flex-col gap-3">
+        <h2 id="trust-title" className="font-heading text-2xl font-semibold">
+          Your college, your rules
+        </h2>
+        <p>
+          Each college has its own private space. Members are verified, using a college email,
+          invite codes, a roster or admin approval, depending on the college. Your application
+          tracker is never visible to anyone else, including admins. Reporting and moderation are
+          built in. (link to the safety page comes later)
+        </p>
+      </section>
+
+      <section aria-labelledby="start-title" className="flex flex-col gap-3">
+        <h2 id="start-title" className="font-heading text-2xl font-semibold">
+          How it starts
+        </h2>
+        <ol className="flex list-decimal flex-col gap-1 pl-6">
+          <li>Your college joins.</li>
+          <li>You verify that you belong.</li>
+          <li>You start.</li>
+        </ol>
+        <p>Verification methods differ by college.</p>
+      </section>
+
+      <section aria-labelledby="colleges-title" className="flex flex-col gap-3">
+        <h2 id="colleges-title" className="font-heading text-2xl font-semibold">
+          For colleges
+        </h2>
+        <p>
+          Control who joins, and post official notices and opportunities. (link to the colleges page
+          comes later)
+        </p>
+      </section>
+
+      <section aria-labelledby="faq-title" className="flex flex-col gap-3">
+        <h2 id="faq-title" className="font-heading text-2xl font-semibold">
+          Questions
+        </h2>
+        <p>Answers will be written from the privacy and product docs before launch.</p>
+        <ul className="flex list-disc flex-col gap-1 pl-6">
+          <li>Is it free?</li>
+          <li>Which colleges?</li>
+          <li>Who can see my profile?</li>
+          <li>How do I verify?</li>
+          <li>What data do you collect?</li>
+          <li>Can my college remove content?</li>
+          <li>How do I delete my account?</li>
+          <li>What if my college is not on StudentOS?</li>
+        </ul>
+      </section>
+
+      <section id="waitlist" aria-labelledby="waitlist-title" className="flex flex-col gap-3">
+        <h2 id="waitlist-title" className="font-heading text-2xl font-semibold">
+          Join the waitlist
+        </h2>
+        <p>The waitlist form is built on Day 4 using the form parts.</p>
+      </section>
+
+      <footer className="flex flex-col gap-2 border-t border-border pt-6">
+        <p>Working name: StudentOS.</p>
+        <p>Privacy, terms and contact links come later.</p>
+      </footer>
+    </main>
   );
 }
