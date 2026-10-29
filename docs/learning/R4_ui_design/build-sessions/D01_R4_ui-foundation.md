@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-10-29 / R4 UI design |
-| Linked task / ADR / PR | R4-D1-1 / none / PR not opened yet |
+| Linked task / ADR / PR | R4-D1-1 / none / https://github.com/manikanta7cheruku/studentos-app/pull/4 |
 | Related docs | docs/DESIGN_SYSTEM.md, docs/learning/AI_RULES.md |
 
 ## 1. What we are learning and why it is needed
@@ -97,7 +97,7 @@ We also checked that two tests can really fail. We added a text-sm class and the
 
 - No secrets and no real student data. The sandbox uses made-up text. One sample email in it is ajay@gmail.com. Better to change it to name@college.edu.
 - New packages in the app: radix-ui, class-variance-authority, lucide-react, sonner, tw-animate-css, shadcn, cn. New packages for tests only: jsdom, @testing-library/react, @testing-library/dom, axe-core. We added next-themes and then removed it.
-- We have not yet checked the cn package against its official page (AI_RULES rule 4).
+- Checked the cn package on 2026-10-29 with npm view: MIT licence, maintainer shadcn, repository shadcn-ui/cn, last modified 2026-10-16.
 - The fonts (Fraunces and Public Sans) are in our own files, with their OFL licence files.
 
 ## 14. Alternatives and trade-offs
@@ -126,7 +126,6 @@ Not done yet:
 - Trying the Tab key by hand on the sandbox page.
 - Checking screen widths 768px and 1280px.
 - Checking the open dialog with Lighthouse.
-- Checking the cn package against its official page.
 
 ## 17. What each teammate can now explain/implement independently
 

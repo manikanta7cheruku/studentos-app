@@ -150,7 +150,7 @@ export default function ComponentsSandbox() {
                 type="email"
                 aria-invalid="true"
                 aria-describedby="in-error-msg"
-                defaultValue="ajay@gmail.com"
+                defaultValue="name@gmail.com"
               />
               <p id="in-error-msg" className="text-base text-destructive">
                 Use your college email address. It ends with your college name.
