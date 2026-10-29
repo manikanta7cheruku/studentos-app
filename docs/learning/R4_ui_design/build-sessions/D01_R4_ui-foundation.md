@@ -137,7 +137,7 @@ The official docs for Tailwind CSS, shadcn/ui, Radix UI, Vitest, Testing Library
 
 ## 19. Docs updated because of this (per trigger table)
 
-To do in this PR: docs/progress/R4_ui_design/PROGRESS.md and docs/progress/R4_ui_design/daily/D01_R4.md. After the merge: one row in docs/learning/R4_ui_design/INDEX.md. We have not yet checked whether other docs need changes.
+Updated: docs/progress/R4_ui_design/PROGRESS.md, docs/progress/R4_ui_design/daily/D01_R4.md and one row in docs/learning/R4_ui_design/INDEX.md (merged in PR #5). We have not yet checked whether other docs need changes.
 
 ## 20. Walkthrough drill: passed by / date
 
