@@ -67,7 +67,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function StateCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-start gap-2">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-base text-muted-foreground">{label}</span>
       {children}
     </div>
   );
