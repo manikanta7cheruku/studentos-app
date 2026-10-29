@@ -95,7 +95,7 @@ We also checked that two tests can really fail. We added a text-sm class and the
 
 ## 13. Security considerations
 
-- No secrets and no real student data. The sandbox uses made-up text. One sample email in it is ajay@gmail.com. Better to change it to name@college.edu.
+- No secrets and no real student data. The sandbox uses made-up text. The only sample email in it is name@gmail.com.
 - New packages in the app: radix-ui, class-variance-authority, lucide-react, sonner, tw-animate-css, shadcn, cn. New packages for tests only: jsdom, @testing-library/react, @testing-library/dom, axe-core. We added next-themes and then removed it.
 - Checked the cn package on 2026-10-29 with npm view: MIT licence, maintainer shadcn, repository shadcn-ui/cn, last modified 2026-10-16.
 - The fonts (Fraunces and Public Sans) are in our own files, with their OFL licence files.
@@ -116,6 +116,8 @@ Done by me, with terminal output or screenshots as proof:
 
 - Ran every command and pasted the real output, including pnpm test and pnpm verify. All passed.
 - Looked at the sandbox page and the open dialog in Chrome.
+- Tried the Tab key by hand on the sandbox page: the focus ring was always visible, the dialog kept focus inside and closed with Esc.
+- Checked widths 360px, 768px and 1280px in Chrome: no layout problems.
 - Ran Lighthouse (Accessibility only, Chrome, mobile) on http://localhost:3000/dev/components. Score: 100. The Performance score (46) comes from the slow dev server and was ignored.
 - Made the two tests fail on purpose, then removed the mistakes.
 - Pushed the branch and checked that main had no new commits.
@@ -123,8 +125,6 @@ Done by me, with terminal output or screenshots as proof:
 Not done yet:
 
 - Reading every block file line by line (AI_RULES rule 3).
-- Trying the Tab key by hand on the sandbox page.
-- Checking screen widths 768px and 1280px.
 - Checking the open dialog with Lighthouse.
 
 ## 17. What each teammate can now explain/implement independently
