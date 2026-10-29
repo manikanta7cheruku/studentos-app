@@ -32,6 +32,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 
+import { FormPartsSections } from "./form-parts";
+
 type ButtonVariant = "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
 
 const buttonVariants: ButtonVariant[] = [
@@ -301,6 +303,8 @@ export default function ComponentsSandbox() {
           </Banner>
         </div>
       </Section>
+
+      <FormPartsSections />
     </main>
   );
 }
