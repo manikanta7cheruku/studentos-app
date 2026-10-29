@@ -4,3 +4,4 @@ Only R4 UI design learning files are listed here. Add one row at the end of the 
 
 | Day | Role | File | Topic | Walkthrough passed by |
 |---|---|---|---|---|
+| 1 | R4 | docs/learning/R4_ui_design/build-sessions/D01_R4_ui-foundation.md | UI foundation (tokens, fonts, base parts, sandbox page) | |
