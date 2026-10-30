@@ -14,7 +14,7 @@ import { WaitlistForm } from "@/features/waitlist/waitlist-form";
 export const metadata: Metadata = {
   title: "StudentOS - One place for your college",
   description:
-    "Find teammates for projects and hackathons, track internship applications, and build a verified portfolio in a private space run by your college.",
+    "Find teammates for projects and hackathons, track internship applications, and build a portfolio in a private space run by your college.",
 };
 
 const FAQ_ITEMS: FaqItem[] = [
@@ -161,10 +161,7 @@ export default function Home() {
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="font-heading text-lg font-semibold text-foreground">
-                Your College Space
-              </span>
-              <span className="rounded-input border border-border bg-secondary px-2 py-0.5 text-base font-medium text-secondary-foreground">
-                Verified
+                One college space, four areas
               </span>
             </div>
             <ul className="flex flex-col gap-2 pt-2 text-base text-muted-foreground">
@@ -191,165 +188,156 @@ export default function Home() {
         {/* S2: Problem Framing */}
         <section
           aria-labelledby="problem-title"
-          className="rounded-card border border-border bg-surface p-6 sm:p-8"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
         >
-          <div className="max-w-2xl flex flex-col gap-3">
-            <h2 id="problem-title" className="font-heading text-2xl font-semibold text-foreground">
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            01
+          </span>
+          <div className="flex flex-col gap-4">
+            <h2 id="problem-title" className="sr-only">
               The problem, in student words
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Teams get formed in group chats. Applications live in spreadsheets. Projects disappear
-              when the semester ends.
+            <p className="font-heading text-3xl leading-snug font-semibold text-foreground sm:text-4xl">
+              Teams get formed in group chats.
+              <br />
+              Applications live in spreadsheets.
+              <br />
+              <span className="text-primary">Projects disappear when the semester ends.</span>
             </p>
           </div>
         </section>
 
-        {/* S3: What You Can Do (Alternating Layout) */}
-        <section aria-labelledby="features-title" className="flex flex-col gap-8">
-          <div className="flex flex-col gap-2">
-            <h2
-              id="features-title"
-              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
-            >
-              What you can do
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Essential student workflows organised in one clean, private place.
-            </p>
-          </div>
+        {/* S3: What You Can Do */}
+        <section
+          aria-labelledby="features-title"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
+        >
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            02
+          </span>
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-2">
+              <h2
+                id="features-title"
+                className="font-heading text-3xl font-semibold text-foreground sm:text-4xl"
+              >
+                What you can do
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Essential student workflows organised in one clean, private place.
+              </p>
+            </div>
 
-          <div className="flex flex-col gap-6">
-            {/* Block 1 */}
-            <div className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 md:flex-row md:items-center md:justify-between sm:p-8">
-              <div className="flex max-w-xl flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <UsersIcon aria-hidden="true" className="size-6 text-primary" />
+            <ul className="flex flex-col">
+              <li className="grid gap-4 border-t border-border py-6 sm:grid-cols-[3rem_1fr]">
+                <UsersIcon aria-hidden="true" className="size-8 text-primary" />
+                <div className="flex max-w-xl flex-col gap-2">
                   <h3 className="font-heading text-xl font-semibold text-foreground">
                     Find your team
                   </h3>
+                  <p className="text-base text-muted-foreground">
+                    Post the roles you need for class projects, hackathons, or clubs. Review
+                    requests from interested classmates, view their profiles, and accept or decline.
+                  </p>
                 </div>
-                <p className="text-base text-muted-foreground">
-                  Post the roles you need for class projects, hackathons, or clubs. Review requests
-                  from interested classmates, view their profiles, and accept or decline.
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center justify-center rounded-card border border-border bg-background p-4 text-base font-medium text-muted-foreground">
-                <span>Roles &middot; Applications &middot; Teammates</span>
-              </div>
-            </div>
-
-            {/* Block 2 (Alternating orientation) */}
-            <div className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 md:flex-row-reverse md:items-center md:justify-between sm:p-8">
-              <div className="flex max-w-xl flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <BriefcaseIcon aria-hidden="true" className="size-6 text-primary" />
+              </li>
+              <li className="grid gap-4 border-t border-border py-6 sm:grid-cols-[3rem_1fr]">
+                <BriefcaseIcon aria-hidden="true" className="size-8 text-primary" />
+                <div className="flex max-w-xl flex-col gap-2">
                   <h3 className="font-heading text-xl font-semibold text-foreground">
                     Track every application
                   </h3>
+                  <p className="text-base text-muted-foreground">
+                    Keep track of internship and job applications with statuses, deadlines, and
+                    personal notes. Your tracker is private to you and never visible to anyone else.
+                  </p>
                 </div>
-                <p className="text-base text-muted-foreground">
-                  Keep track of internship and job applications with statuses, deadlines, and
-                  personal notes. Your tracker is private to you and never visible to anyone else.
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center justify-center rounded-card border border-border bg-background p-4 text-base font-medium text-muted-foreground">
-                <span>Deadlines &middot; Private &middot; Reminders</span>
-              </div>
-            </div>
-
-            {/* Block 3 */}
-            <div className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 md:flex-row md:items-center md:justify-between sm:p-8">
-              <div className="flex max-w-xl flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <FolderGit2Icon aria-hidden="true" className="size-6 text-primary" />
+              </li>
+              <li className="grid gap-4 border-y border-border py-6 sm:grid-cols-[3rem_1fr]">
+                <FolderGit2Icon aria-hidden="true" className="size-8 text-primary" />
+                <div className="flex max-w-xl flex-col gap-2">
                   <h3 className="font-heading text-xl font-semibold text-foreground">
                     Show what you have built
                   </h3>
+                  <p className="text-base text-muted-foreground">
+                    Create a profile and portfolio highlighting your projects, links, and
+                    repositories that you can easily share across campus.
+                  </p>
                 </div>
-                <p className="text-base text-muted-foreground">
-                  Create a profile and portfolio highlighting your projects, links, and repositories
-                  that you can easily share across campus.
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center justify-center rounded-card border border-border bg-background p-4 text-base font-medium text-muted-foreground">
-                <span>Projects &middot; Skills &middot; Campus Profile</span>
-              </div>
-            </div>
+              </li>
+            </ul>
 
-            {/* Coming next banner */}
-            <div className="rounded-card border border-border bg-secondary/50 p-6">
-              <p className="text-base font-medium text-foreground">
-                <span className="font-semibold">Coming next:</span> campus announcements, Lost and
-                Found, and events. These features are in development and not yet available.
-              </p>
-            </div>
+            <p className="border-l-4 border-primary pl-4 text-base text-foreground">
+              <span className="font-semibold">Coming next:</span> campus announcements, Lost and
+              Found, and events. These features are in development and not yet available.
+            </p>
           </div>
         </section>
 
         {/* S4: Your college, your rules (Trust) */}
         <section
           aria-labelledby="trust-title"
-          className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 sm:p-8"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
         >
-          <div className="flex flex-col gap-3">
-            <h2
-              id="trust-title"
-              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
-            >
-              Your college, your rules
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Privacy, boundary controls, and safety built from the ground up for campus
-              communities.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            03
+          </span>
+          <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                Private college space
-              </h3>
-              <p className="text-base text-muted-foreground">
-                Each college has its own private space. Content, posts, and member directories are
-                isolated to your campus community.
+              <h2
+                id="trust-title"
+                className="font-heading text-3xl font-semibold text-foreground sm:text-4xl"
+              >
+                Your college, your rules
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Privacy, boundary controls, and safety built from the ground up for campus
+                communities.
               </p>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                Verified members
-              </h3>
-              <p className="text-base text-muted-foreground">
-                Members are verified using a college email, invite codes, class roster, or admin
-                approval, depending on your college.
-              </p>
+            <div className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
+              <div className="flex flex-col gap-2 border-t border-border pt-4">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Private college space
+                </h3>
+                <p className="text-base text-muted-foreground">
+                  Each college has its own private space. Content, posts, and member directories are
+                  isolated to your campus community.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 border-t border-border pt-4">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Verified members
+                </h3>
+                <p className="text-base text-muted-foreground">
+                  Members are verified using a college email, invite codes, class roster, or admin
+                  approval, depending on your college.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 border-t border-border pt-4">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Private tracker
+                </h3>
+                <p className="text-base text-muted-foreground">
+                  Your application tracker is never visible to anyone else, including college
+                  administrators or faculty.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 border-t border-border pt-4">
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Built-in moderation
+                </h3>
+                <p className="text-base text-muted-foreground">
+                  Reporting and moderation tools let the community and designated campus moderators
+                  keep conversations respectful.
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                Private tracker
-              </h3>
-              <p className="text-base text-muted-foreground">
-                Your application tracker is never visible to anyone else, including college
-                administrators or faculty.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                Built-in moderation
-              </h3>
-              <p className="text-base text-muted-foreground">
-                Reporting and moderation tools let the community and designated campus moderators
-                keep conversations respectful.
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-2">
             <Link
               href="/safety"
-              className="inline-flex min-h-11 items-center gap-2 font-medium text-primary underline underline-offset-4 outline-none hover:text-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center gap-2 self-start font-medium text-primary underline underline-offset-4 outline-none hover:text-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <span>Read how verification, privacy, and moderation work on our Safety page</span>
               <ArrowRightIcon aria-hidden="true" className="size-4" />
@@ -358,75 +346,104 @@ export default function Home() {
         </section>
 
         {/* S5: How it starts */}
-        <section aria-labelledby="start-title" className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h2
-              id="start-title"
-              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
-            >
-              How it starts
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Getting started takes three simple steps.
+        <section
+          aria-labelledby="start-title"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
+        >
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            04
+          </span>
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-2">
+              <h2
+                id="start-title"
+                className="font-heading text-3xl font-semibold text-foreground sm:text-4xl"
+              >
+                How it starts
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Getting started takes three simple steps.
+              </p>
+            </div>
+
+            <ol className="flex flex-col">
+              <li className="grid gap-2 border-t border-border py-6 sm:grid-cols-[5rem_1fr]">
+                <span
+                  aria-hidden="true"
+                  className="font-heading text-5xl font-semibold text-primary"
+                >
+                  1
+                </span>
+                <div className="flex max-w-xl flex-col gap-2">
+                  <h3 className="font-heading text-xl font-semibold text-foreground">
+                    Your college joins
+                  </h3>
+                  <p className="text-base text-muted-foreground">
+                    A college space is opened for your campus during our pilot program.
+                  </p>
+                </div>
+              </li>
+              <li className="grid gap-2 border-t border-border py-6 sm:grid-cols-[5rem_1fr]">
+                <span
+                  aria-hidden="true"
+                  className="font-heading text-5xl font-semibold text-primary"
+                >
+                  2
+                </span>
+                <div className="flex max-w-xl flex-col gap-2">
+                  <h3 className="font-heading text-xl font-semibold text-foreground">
+                    You verify you belong
+                  </h3>
+                  <p className="text-base text-muted-foreground">
+                    Verify your affiliation using your college email address or an invite code.
+                  </p>
+                </div>
+              </li>
+              <li className="grid gap-2 border-y border-border py-6 sm:grid-cols-[5rem_1fr]">
+                <span
+                  aria-hidden="true"
+                  className="font-heading text-5xl font-semibold text-primary"
+                >
+                  3
+                </span>
+                <div className="flex max-w-xl flex-col gap-2">
+                  <h3 className="font-heading text-xl font-semibold text-foreground">You start</h3>
+                  <p className="text-base text-muted-foreground">
+                    Find teammates, post roles, track applications, and share your work.
+                  </p>
+                </div>
+              </li>
+            </ol>
+
+            <p className="text-base text-muted-foreground">
+              Verification methods differ by college.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-6">
-              <span className="font-heading text-2xl font-semibold text-primary">1</span>
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                Your college joins
-              </h3>
-              <p className="text-base text-muted-foreground">
-                A college space is opened for your campus during our pilot program.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-6">
-              <span className="font-heading text-2xl font-semibold text-primary">2</span>
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                You verify you belong
-              </h3>
-              <p className="text-base text-muted-foreground">
-                Verify your affiliation using your college email address or an invite code.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-6">
-              <span className="font-heading text-2xl font-semibold text-primary">3</span>
-              <h3 className="font-heading text-lg font-semibold text-foreground">You start</h3>
-              <p className="text-base text-muted-foreground">
-                Find teammates, post roles, track applications, and share your work.
-              </p>
-            </div>
-          </div>
-
-          <p className="text-base text-muted-foreground">Verification methods differ by college.</p>
         </section>
 
         {/* S6: For colleges */}
         <section
           id="colleges"
           aria-labelledby="colleges-title"
-          className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 sm:p-8"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
         >
-          <div className="max-w-2xl flex flex-col gap-3">
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            05
+          </span>
+          <div className="flex flex-col gap-4">
             <h2
               id="colleges-title"
-              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+              className="font-heading text-3xl font-semibold text-foreground sm:text-4xl"
             >
               For colleges
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="max-w-2xl text-lg text-muted-foreground">
               Control who joins your campus space, and post official notices and opportunities for
               your student body.
             </p>
-          </div>
-
-          <div className="pt-2">
             <Link
               href="/colleges"
-              className="inline-flex min-h-11 items-center gap-2 font-medium text-primary underline underline-offset-4 outline-none hover:text-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center gap-2 self-start font-medium text-primary underline underline-offset-4 outline-none hover:text-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <span>Learn how to bring StudentOS to your college</span>
               <ArrowRightIcon aria-hidden="true" className="size-4" />
@@ -435,20 +452,27 @@ export default function Home() {
         </section>
 
         {/* S7: FAQ */}
-        <section aria-labelledby="faq-title" className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h2
-              id="faq-title"
-              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
-            >
-              Frequently asked questions
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Straightforward answers about privacy, verification, and how StudentOS works.
-            </p>
+        <section
+          aria-labelledby="faq-title"
+          className="grid gap-6 border-t border-foreground pt-6 md:grid-cols-[12rem_1fr] md:gap-12"
+        >
+          <span aria-hidden="true" className="font-heading text-xl font-semibold text-primary">
+            06
+          </span>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <h2
+                id="faq-title"
+                className="font-heading text-3xl font-semibold text-foreground sm:text-4xl"
+              >
+                Frequently asked questions
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Straightforward answers about privacy, verification, and how StudentOS works.
+              </p>
+            </div>
+            <FaqAccordion items={FAQ_ITEMS} />
           </div>
-
-          <FaqAccordion items={FAQ_ITEMS} />
         </section>
 
         {/* S8: Waitlist Form */}
