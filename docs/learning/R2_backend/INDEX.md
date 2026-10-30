@@ -8,3 +8,4 @@ Only R2 Backend learning files are listed here. Add one row at the end of the ta
 | 1 | R2 | docs/learning/R2_backend/build-sessions/D01_R2_api-contract.md | Contracts and sample data (Zod, fixtures) | not yet |
 | 2 | R2 | docs/learning/R2_backend/build-sessions/D02_R2_auth-email-code.md | Login by email code, limits and requireMember | not yet |
 | 2 | R2 | docs/learning/R2_backend/build-sessions/D02_R2_join-college.md | Join a college: invite code, college email, manual | not yet |
+| 3 | R2 | docs/learning/R2_backend/build-sessions/D03_R2_admin-api.md | Admin API: settings, invites, queue, members, audit | not yet |

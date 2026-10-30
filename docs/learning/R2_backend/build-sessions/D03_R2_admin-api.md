@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-10-31 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D3-1 / ADR-003, ADR-005 / PR_ADMIN_URL |
+| Linked task / ADR / PR | R2-D3-1 / ADR-003, ADR-005 / https://github.com/manikanta7cheruku/studentos-app/pull/22 |
 | Related docs | docs/API_CONTRACT.md section 8, docs/AUTH_AND_TENANCY.md sections 4 and 8, docs/FEATURES_AND_JOURNEYS.md F-05/F-06, docs/DATABASE.md section 13 |
 
 ## 1. What we are learning and why it is needed
