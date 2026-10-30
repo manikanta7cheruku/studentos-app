@@ -1,0 +1,146 @@
+import { z } from "zod";
+import { email, isoDateTime, paginationQuery, successEnvelope, uuid } from "./common";
+
+// ---------------------------------------------------------------------------
+// Notifications (NTF-01, NTF-02). payload holds ids and titles only, no personal data.
+// ---------------------------------------------------------------------------
+export const notificationType = z.enum([
+  "membership.approved",
+  "membership.rejected",
+  "announcement.published",
+  "report.actioned",
+]);
+export const notification = z.object({
+  id: uuid,
+  type: notificationType,
+  payload: z.record(z.string(), z.unknown()),
+  read_at: isoDateTime.nullable(),
+  created_at: isoDateTime,
+});
+// NTF-01 GET /api/v1/me/notifications
+export const notificationListQuery = paginationQuery.extend({
+  unread: z.enum(["true", "false"]).optional(),
+});
+export const notificationListResponse = successEnvelope(z.array(notification));
+// NTF-02 POST /api/v1/me/notifications/read
+export const notificationReadBody = z.union([
+  z.strictObject({ ids: z.array(uuid).min(1).max(100) }),
+  z.strictObject({ all: z.literal(true) }),
+]);
+export const notificationReadResponse = successEnvelope(
+  z.object({ updated: z.number().int().min(0) }),
+);
+
+// ---------------------------------------------------------------------------
+// Announcements (ANN-01 read, ANN-02 manage by moderator or admin)
+// ---------------------------------------------------------------------------
+export const announcementStatus = z.enum(["draft", "published", "expired", "removed"]);
+export const announcement = z.object({
+  id: uuid,
+  author: z.object({ user_id: uuid, display_name: z.string() }),
+  title: z.string().min(1).max(120),
+  body: z.string().min(1).max(5000),
+  pinned: z.boolean(),
+  status: announcementStatus,
+  publish_at: isoDateTime,
+  expires_at: isoDateTime.nullable(),
+  created_at: isoDateTime,
+});
+// ANN-01 GET /api/v1/c/{slug}/announcements
+export const announcementListResponse = successEnvelope(z.array(announcement));
+// ANN-02 POST (IDEM) and PATCH /api/v1/c/{slug}/admin/announcements
+export const announcementCreateBody = z.strictObject({
+  title: z.string().trim().min(1).max(120),
+  body: z.string().trim().min(1).max(5000),
+  pinned: z.boolean().default(false),
+  publish_at: isoDateTime.optional(),
+  expires_at: isoDateTime.nullable().optional(),
+});
+export const announcementPatchBody = z
+  .strictObject({
+    title: z.string().trim().min(1).max(120),
+    body: z.string().trim().min(1).max(5000),
+    pinned: z.boolean(),
+    publish_at: isoDateTime,
+    expires_at: isoDateTime.nullable(),
+    status: z.enum(["draft", "published", "removed"]),
+  })
+  .partial()
+  .refine((body) => Object.keys(body).length > 0, "Send at least one field");
+export const announcementResponse = successEnvelope(announcement);
+
+// ---------------------------------------------------------------------------
+// Reports (RPT-01 create, RPT-02 queue, RPT-03 action)
+// ---------------------------------------------------------------------------
+export const reportTargetType = z.enum(["profile", "project", "team_post", "announcement"]);
+export const reportReason = z.enum([
+  "spam",
+  "harassment",
+  "inappropriate",
+  "impersonation",
+  "scam",
+  "other",
+]);
+export const reportStatus = z.enum(["open", "dismissed", "actioned"]);
+
+// RPT-01 POST /api/v1/c/{slug}/reports (IDEM). One open report per reporter and target.
+export const reportCreateBody = z.strictObject({
+  target_type: reportTargetType,
+  target_id: uuid,
+  reason: reportReason,
+  details: z.string().trim().max(1000).optional(),
+});
+export const reportCreateResponse = successEnvelope(
+  z.object({ id: uuid, status: z.literal("open"), created_at: isoDateTime }),
+);
+
+// RPT-02 GET /api/v1/c/{slug}/admin/reports
+export const reportQueueQuery = paginationQuery.extend({ status: reportStatus.optional() });
+export const reportItem = z.object({
+  id: uuid,
+  target_type: reportTargetType,
+  target_id: uuid,
+  reason: reportReason,
+  details: z.string().nullable(),
+  status: reportStatus,
+  reporter: z.object({ user_id: uuid, display_name: z.string() }),
+  handled_by: uuid.nullable(),
+  handled_at: isoDateTime.nullable(),
+  created_at: isoDateTime,
+});
+export const reportQueueResponse = successEnvelope(z.array(reportItem));
+
+// RPT-03 POST /api/v1/c/{slug}/admin/reports/{id}/action (IDEM). Every action except dismiss needs a note.
+export const reportActionBody = z
+  .strictObject({
+    action: z.enum(["dismiss", "hide", "warn", "suspend"]),
+    note: z.string().trim().min(5).max(500).optional(),
+  })
+  .superRefine((body, ctx) => {
+    if (body.action !== "dismiss" && body.note === undefined) {
+      ctx.addIssue({ code: "custom", path: ["note"], message: "A note is needed for this action" });
+    }
+  });
+export const reportActionResponse = successEnvelope(
+  z.object({
+    report: z.object({
+      id: uuid,
+      status: z.enum(["dismissed", "actioned"]),
+      handled_by: uuid,
+      handled_at: isoDateTime,
+    }),
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// Waitlist (WL-01), used by the landing page. consent must be true. The server stamps consent_at.
+// ---------------------------------------------------------------------------
+export const waitlistBody = z.strictObject({
+  college_name: z.string().trim().min(1).max(120),
+  contact_name: z.string().trim().min(1).max(120),
+  contact_email: email,
+  role: z.enum(["student", "faculty", "college_admin", "other"]),
+  consent: z.literal(true),
+  source: z.string().trim().max(40).optional(),
+});
+export const waitlistResponse = successEnvelope(z.object({ joined: z.literal(true) }));

@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "UPSTREAM_UNAVAILABLE",
+    "message": "Something we depend on is down. Try again in a minute.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

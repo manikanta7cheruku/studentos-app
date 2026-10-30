@@ -1,0 +1,29 @@
+{
+  "data": [
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "membership_id": "44444444-4444-4444-8444-444444444444",
+      "method": "manual",
+      "status": "pending",
+      "applicant": {
+        "user_id": "aaaaaaaa-1000-4000-8000-000000000006",
+        "display_name": "Neha Pending",
+        "email": "pending@alpha.test"
+      },
+      "submitted": {
+        "program": "B.Tech ECE",
+        "grad_year": 2027,
+        "enrollment_last4": "1234"
+      },
+      "created_at": "2026-10-31T09:00:00Z",
+      "expires_at": "2026-11-30T00:00:00Z",
+      "decided_by": null,
+      "decided_at": null,
+      "decision_reason": null
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8",
+    "next_cursor": null
+  }
+}

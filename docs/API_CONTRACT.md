@@ -170,3 +170,24 @@ Every operation has: **side effects** - notifications (TMF-08, ADM-07, RPT-03), 
 4. Contract tests (Vitest + generated OpenAPI) assert: status, envelope shape, required fields, error codes.
 5. A shared collection (Bruno/Postman export) lives in `docs/api-collection/` (T-BE-02).
 6. Mock server for frontend work: contract fixtures in `src/contracts/fixtures/*.json`, served by MSW until the real endpoint is ready (doc 26 §5).
+
+## 6. Contracts in code (R2 Day 1)
+From Day 1 the Zod schemas in `src/contracts` are the source of truth for the operations of Days 2 to 4. Import them with `import { ... } from "@/contracts"`. Sample data is in `src/contracts/fixtures/*.json`, named `<operation>.<kind>.json` where kind is `request`, `query`, `success` or `error-<code>`. A Vitest test checks that every fixture passes its schema and that every error code has a sample.
+
+| Area | Operations | File |
+|---|---|---|
+| Shared (envelopes, error codes, HTTP status, pagination) | all | `common.ts` |
+| Auth | AUTH-01 to AUTH-04 | `auth.ts` |
+| Join and membership | TEN-01 to TEN-05, TEN-07 | `tenant.ts` |
+| Admin | ADM-03, ADM-05 to ADM-10 | `admin.ts` |
+| Profile and skills | PRF-01 to PRF-03 | `profile.ts` |
+| Notifications, announcements, reports, waitlist | NTF-01/02, ANN-01/02, RPT-01 to RPT-03, WL-01 | `engagement.ts` |
+
+Choices R2 made where this document was silent (change them in a contract PR, tag R3 and R4):
+- `GET /c/{slug}/me/membership` returns `200` with `{ "membership": null }` when the user has not joined, not a 404.
+- `TEN-05` (email domain) is one endpoint with a `step` field: `start` sends the code, `complete` checks it.
+- A client may never send `role`, `status` or `verification_level`. Bodies are strict, so unknown keys give `VALIDATION_FAILED`.
+- `ADM-07`: `rejected` needs `reason` (5 to 500 characters). `ADM-09`: `suspended` or `left` needs `reason`. `RPT-03`: every action except `dismiss` needs `note`.
+- Audit log ids are strings because they are 64 bit numbers.
+- `AUTH-04`, `NTF-01/02`, `ANN-01/02`, `RPT-*` and `WL-01` response shapes are proposals. The tables behind them arrive on Days 3 and 4. R2 confirms or changes them when each endpoint is built.
+- Notification types for now: `membership.approved`, `membership.rejected`, `announcement.published`, `report.actioned`.

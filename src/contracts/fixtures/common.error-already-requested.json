@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "ALREADY_REQUESTED",
+    "message": "You already asked to join this role.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

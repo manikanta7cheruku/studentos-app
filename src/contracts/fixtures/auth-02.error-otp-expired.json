@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "OTP_EXPIRED",
+    "message": "That code has expired. Ask for a new one.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

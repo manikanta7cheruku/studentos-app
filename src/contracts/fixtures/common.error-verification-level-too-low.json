@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VERIFICATION_LEVEL_TOO_LOW",
+    "message": "Your college needs a higher verification level for this.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

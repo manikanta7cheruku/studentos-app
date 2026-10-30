@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "id": "99999999-9999-4999-8999-999999999999",
+      "type": "membership.approved",
+      "payload": {
+        "college_slug": "alpha"
+      },
+      "read_at": null,
+      "created_at": "2026-11-05T18:30:00Z"
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8",
+    "next_cursor": null
+  }
+}

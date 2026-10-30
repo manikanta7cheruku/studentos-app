@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "INVITE_EXHAUSTED",
+    "message": "That invite code has been used up. Ask your college admin for a new one.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

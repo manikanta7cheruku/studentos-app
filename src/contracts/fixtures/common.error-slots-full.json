@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "SLOTS_FULL",
+    "message": "That role was just filled.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

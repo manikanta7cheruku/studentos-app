@@ -1,0 +1,17 @@
+{
+  "data": {
+    "allowed_methods": ["email_domain", "invite_code", "manual"],
+    "require_admin_approval": true,
+    "min_level_to_post": 1,
+    "network_visibility": "private",
+    "features": {
+      "team_finder": true,
+      "tracker": true,
+      "opportunities": false
+    },
+    "retention": {}
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
