@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { AppError, rateLimited } from "@/lib/errors";
 import { hashKey } from "@/lib/hash";
 import { createAnonClient } from "@/lib/supabase/request-client";
@@ -70,11 +70,12 @@ async function classifyWrongCode(key: string): Promise<AppError> {
   return new AppError(expired ? "OTP_EXPIRED" : "OTP_INVALID");
 }
 
-// AUTH-02. `supabase` must be the cookie-backed client, so the session cookies are set on success.
-export async function verifyOtp(
+// Checks a code for an address: limits, the check itself, and the right error code. Used by sign in
+// (AUTH-02) and by the college email proof (TEN-05). `supabase` decides where a session would be kept.
+export async function checkCode(
   supabase: SupabaseClient,
   input: { email: string; code: string },
-): Promise<{ user: { id: string; email: string }; is_new: boolean }> {
+): Promise<User> {
   const key = emailKey(input.email);
   await assertNotBlocked(
     "otp_verify_fail",
@@ -106,7 +107,15 @@ export async function verifyOtp(
   }
 
   await clear("otp_verify_fail", key);
-  const user = data.user;
+  return data.user;
+}
+
+// AUTH-02. `supabase` must be the cookie-backed client, so the session cookies are set on success.
+export async function verifyOtp(
+  supabase: SupabaseClient,
+  input: { email: string; code: string },
+): Promise<{ user: { id: string; email: string }; is_new: boolean }> {
+  const user = await checkCode(supabase, input);
   const is_new = await ensureProfile(supabase, user.id, input.email);
   return { user: { id: user.id, email: user.email ?? input.email }, is_new };
 }
