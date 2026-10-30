@@ -147,3 +147,13 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - `audit_logs`: clients and even the service role have no INSERT, UPDATE or DELETE right. Rows are added only through `write_audit_log(...)`, which only the service role may call. Triggers also block UPDATE, DELETE and TRUNCATE for every role, including in replica mode. `actor_id` has no foreign key on purpose, so deleting an account never blocks or rewrites history.
 - `auth_member_colleges(min_level)`, `is_college_admin(cid)`, `is_moderator_or_admin(cid)` and `auth_shares_college_with(uid)` are SECURITY DEFINER with an empty `search_path`. They check membership status `active` only. They do **not** check `colleges.status`. Blocking a suspended college (`TENANT_SUSPENDED`) is the API's job on Day 2. Open question for R2 and R5.
 - Local tests run with `pnpm db:test` (pgTAP, files in `supabase/tests/database`).
+
+## 12. Added on R2 Day 2 (migrations 0002 and 0003)
+- `rate_limit_events` (counters for code requests and wrong codes, keys are HMAC hashes) and the functions `rate_limit_consume`, `_peek`, `_record`, `_clear`, `_last`, `_purge`. Service role only. Run `rate_limit_purge()` from a scheduled job (R5 sets this up later).
+- `my_membership_for_slug(slug)`: the signed-in user's own membership and the college status. Pending and suspended people use it too.
+- `invite_codes` (hash only, admins read all columns except the hash, no client writes), `verification_requests` (members read their own, admins read their college), `idempotency_keys` (no client access, replays kept 24 hours, `idempotency_purge()` for clean up).
+- Partial unique index `memberships_enrollment_active_key`: one pending or active member per enrolment hash and college.
+- View `public_college_branding`: the only object `anon` may read. 8 columns, active colleges only.
+- Join functions (service role only): `join_prepare`, `redeem_invite`, `submit_manual_join`, `email_domain_allowed`, `complete_email_domain_join`. They raise errors whose message is the API error code.
+- `invite_codes.grants_status = 'pending'` creates a pending member (level 1) and a verification request. `'active'` creates an active member at level 2.
+- A person who is `suspended` or `rejected` cannot join again through these functions. A person who has `left` can, and reuses the old row.
