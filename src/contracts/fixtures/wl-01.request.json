@@ -1,0 +1,8 @@
+{
+  "college_name": "Gamma University",
+  "contact_name": "Test Contact",
+  "contact_email": "contact@gamma.test",
+  "role": "college_admin",
+  "consent": true,
+  "source": "landing"
+}

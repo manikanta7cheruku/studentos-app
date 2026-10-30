@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "id": "1042",
+      "actor_id": "aaaaaaaa-1000-4000-8000-000000000001",
+      "actor_role": "college_admin",
+      "action": "member.approved",
+      "target_type": "membership",
+      "target_id": "44444444-4444-4444-8444-444444444444",
+      "metadata": {
+        "method": "manual"
+      },
+      "request_id": "req_7f3a9c2e41b8",
+      "created_at": "2026-11-05T18:30:00Z"
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8",
+    "next_cursor": null
+  }
+}

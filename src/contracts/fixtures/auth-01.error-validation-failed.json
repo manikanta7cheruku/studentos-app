@@ -1,0 +1,15 @@
+{
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Check the highlighted fields.",
+    "details": {
+      "fields": [
+        {
+          "path": "email",
+          "message": "Enter a valid email address."
+        }
+      ]
+    },
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

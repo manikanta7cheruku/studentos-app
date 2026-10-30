@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "IDEMPOTENCY_KEY_REUSED",
+    "message": "That request key was already used with different data.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

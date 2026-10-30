@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "TENANT_SUSPENDED",
+    "message": "This college is not accepting members right now.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

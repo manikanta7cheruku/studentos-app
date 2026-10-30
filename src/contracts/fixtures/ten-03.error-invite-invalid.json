@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "INVITE_INVALID",
+    "message": "We could not find that invite code.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "report": {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "status": "actioned",
+      "handled_by": "aaaaaaaa-1000-4000-8000-000000000002",
+      "handled_at": "2026-11-05T18:30:00Z"
+    }
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

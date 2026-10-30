@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "CONFLICT",
+    "message": "You already have an open report for this item.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
