@@ -84,13 +84,18 @@ describe("ReportDialog (3 taps or fewer)", () => {
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("Report content")).toBeTruthy();
 
+    // Verify: No reason is pre-selected, Submit is disabled, visible message explains why
+    const submitBtn = screen.getByRole("button", { name: "Submit report" });
+    expect(submitBtn.hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("Select a reason above to enable submission.")).toBeTruthy();
+
     // Tap 2: Choose reason
     const harassmentRadio = screen.getByRole("radio", { name: /Harassment or bullying/i });
     fireEvent.click(harassmentRadio);
     expect(harassmentRadio.getAttribute("aria-checked")).toBe("true");
+    expect(submitBtn.hasAttribute("disabled")).toBe(false);
 
     // Tap 3: Send report
-    const submitBtn = screen.getByRole("button", { name: "Submit report" });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {

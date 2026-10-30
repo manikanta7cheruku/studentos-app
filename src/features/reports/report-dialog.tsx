@@ -85,7 +85,7 @@ export function ReportDialog({
     }
   };
 
-  const [selectedReason, setSelectedReason] = React.useState<ReportReason>("spam");
+  const [selectedReason, setSelectedReason] = React.useState<ReportReason | null>(null);
   const [details, setDetails] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
@@ -120,7 +120,7 @@ export function ReportDialog({
   };
 
   const resetForm = () => {
-    setSelectedReason("spam");
+    setSelectedReason(null);
     setDetails("");
     setSubmitted(false);
     setError(null);
@@ -151,8 +151,8 @@ export function ReportDialog({
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[calc(100dvh-2rem)] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="p-4 pb-2 shrink-0">
           <DialogTitle>Report content</DialogTitle>
           <DialogDescription>
             Help keep your college community safe and constructive. Reports are private and sent
@@ -163,7 +163,7 @@ export function ReportDialog({
         {submitted ? (
           <div
             data-testid="report-submitted-success"
-            className="flex flex-col items-center gap-3 py-6 text-center"
+            className="flex flex-col items-center gap-3 p-6 text-center"
           >
             <CheckCircle2Icon className="size-12 text-success" aria-hidden="true" />
             <h3 className="font-heading text-xl font-semibold">Report received</h3>
@@ -181,108 +181,117 @@ export function ReportDialog({
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {targetTitle && (
-              <div className="rounded-input border border-border bg-accent/20 px-3 py-2 text-base text-muted-foreground">
-                Reporting: <strong className="text-foreground">{targetTitle}</strong>
-              </div>
-            )}
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-4">
+              {targetTitle && (
+                <div className="rounded-input border border-border bg-accent/20 px-3 py-2 text-base text-muted-foreground">
+                  Reporting: <strong className="text-foreground">{targetTitle}</strong>
+                </div>
+              )}
 
-            {error && (
-              <div
-                role="alert"
-                className="flex items-center gap-2 rounded-input border border-destructive bg-destructive/10 p-3 text-base text-destructive"
-              >
-                <AlertCircleIcon className="size-5 shrink-0" aria-hidden="true" />
-                <span>{error}</span>
-              </div>
-            )}
+              {error && (
+                <div
+                  role="alert"
+                  className="flex items-center gap-2 rounded-input border border-destructive bg-destructive/10 p-3 text-base text-destructive"
+                >
+                  <AlertCircleIcon className="size-5 shrink-0" aria-hidden="true" />
+                  <span>{error}</span>
+                </div>
+              )}
 
-            <div className="flex flex-col gap-2">
-              <Label id="report-reason-group-label" className="text-base font-semibold">
-                Reason for reporting{" "}
-                <span className="font-normal text-muted-foreground">(Tap to select)</span>
-              </Label>
-              <div
-                role="radiogroup"
-                aria-labelledby="report-reason-group-label"
-                className="flex flex-col gap-2"
-              >
-                {REPORT_REASONS.map((r) => {
-                  const isSelected = selectedReason === r.id;
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => {
-                        setSelectedReason(r.id);
-                        if (error) setError(null);
-                      }}
-                      className={cn(
-                        "flex min-h-11 flex-col items-start justify-center rounded-input border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        isSelected
-                          ? "border-primary bg-accent/40 font-semibold ring-1 ring-primary"
-                          : "border-border bg-surface text-foreground hover:bg-accent/20",
-                      )}
-                    >
-                      <span className="flex items-center gap-2 text-base font-medium">
-                        <span
-                          className={cn(
-                            "flex size-4 items-center justify-center rounded-full border border-border-strong",
-                            isSelected && "border-primary bg-primary text-surface",
-                          )}
-                          aria-hidden="true"
-                        >
-                          {isSelected && <span className="size-2 rounded-full bg-surface" />}
+              <div className="flex flex-col gap-2">
+                <Label id="report-reason-group-label" className="text-base font-semibold">
+                  Reason for reporting{" "}
+                  <span className="font-normal text-muted-foreground">(Tap to select)</span>
+                </Label>
+                <div
+                  role="radiogroup"
+                  aria-labelledby="report-reason-group-label"
+                  className="flex flex-col gap-2"
+                >
+                  {REPORT_REASONS.map((r) => {
+                    const isSelected = selectedReason === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        onClick={() => {
+                          setSelectedReason(r.id);
+                          if (error) setError(null);
+                        }}
+                        className={cn(
+                          "flex min-h-11 flex-col items-start justify-center rounded-input border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          isSelected
+                            ? "border-primary bg-accent/40 font-semibold ring-1 ring-primary"
+                            : "border-border bg-surface text-foreground hover:bg-accent/20",
+                        )}
+                      >
+                        <span className="flex items-center gap-2 text-base font-medium">
+                          <span
+                            className={cn(
+                              "flex size-4 items-center justify-center rounded-full border border-border-strong",
+                              isSelected && "border-primary bg-primary text-surface",
+                            )}
+                            aria-hidden="true"
+                          >
+                            {isSelected && <span className="size-2 rounded-full bg-surface" />}
+                          </span>
+                          {r.label}
                         </span>
-                        {r.label}
-                      </span>
-                      <span className="pl-6 text-base text-muted-foreground font-normal">
-                        {r.description}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span className="pl-6 text-base text-muted-foreground font-normal">
+                          {r.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="report-details" className="text-base font-semibold">
+                  Additional context{" "}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
+                <Textarea
+                  id="report-details"
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder="Explain what is wrong with this post or provide relevant details..."
+                  rows={3}
+                  maxLength={1000}
+                  disabled={isSubmitting}
+                />
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="report-details" className="text-base font-semibold">
-                Additional context{" "}
-                <span className="font-normal text-muted-foreground">(optional)</span>
-              </Label>
-              <Textarea
-                id="report-details"
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-                placeholder="Explain what is wrong with this post or provide relevant details..."
-                rows={3}
-                maxLength={1000}
-                disabled={isSubmitting}
-              />
+            <div className="shrink-0 border-t border-border bg-surface px-4 py-3">
+              {!selectedReason && (
+                <p className="pb-2 text-base text-muted-foreground">
+                  Select a reason above to enable submission.
+                </p>
+              )}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSubmitting}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={isSubmitting || !selectedReason}
+                  className="flex items-center gap-2"
+                >
+                  <SendIcon className="size-4" aria-hidden="true" />
+                  <span>{isSubmitting ? "Sending..." : "Submit report"}</span>
+                </Button>
+              </DialogFooter>
             </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isSubmitting}
-                onClick={() => setIsOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={isSubmitting}
-                className="flex items-center gap-2"
-              >
-                <SendIcon className="size-4" aria-hidden="true" />
-                <span>{isSubmitting ? "Sending..." : "Submit report"}</span>
-              </Button>
-            </DialogFooter>
           </form>
         )}
       </DialogContent>

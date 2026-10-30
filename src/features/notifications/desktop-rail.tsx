@@ -57,7 +57,7 @@ export function DesktopRail({
       aria-label="Desktop primary"
       data-slot="desktop-rail"
       className={cn(
-        "hidden md:flex w-20 flex-col items-center justify-between border-r border-border bg-surface py-6",
+        "hidden md:flex w-28 md:w-32 shrink-0 sticky top-0 h-screen flex-col items-center justify-between border-r border-border bg-surface py-6 z-30",
         className,
       )}
     >
