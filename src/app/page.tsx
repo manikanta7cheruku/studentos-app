@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRightIcon, ShieldCheckIcon, UsersIcon, BriefcaseIcon, FolderGit2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaqAccordion, type FaqItem } from "@/features/landing/faq-accordion";
+import { WaitlistForm } from "@/features/waitlist/waitlist-form";
 
 export const metadata: Metadata = {
   title: "StudentOS - One place for your college",
@@ -390,18 +391,21 @@ export default function Home() {
           <FaqAccordion items={FAQ_ITEMS} />
         </section>
 
-        {/* S8: Waitlist Form Placeholder */}
+        {/* S8: Waitlist Form */}
         <section
           id="waitlist"
           aria-labelledby="waitlist-title"
-          className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 sm:p-8"
+          className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 sm:p-8"
         >
-          <h2 id="waitlist-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
-            Join the waitlist
-          </h2>
-          <p className="text-base text-muted-foreground">
-            The waitlist form will be connected here.
-          </p>
+          <div className="flex flex-col gap-2">
+            <h2 id="waitlist-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+              Join the waitlist
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Be the first to bring StudentOS to your college campus.
+            </p>
+          </div>
+          <WaitlistForm />
         </section>
       </main>
 
