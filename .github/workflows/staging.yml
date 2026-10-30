@@ -43,7 +43,8 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+          # No pnpm cache here: when staging is not configured we skip the install, so there is nothing
+          # to cache and the cache step would fail the job at the end.
       - name: Check that staging is configured
         id: config
         env:
