@@ -46,8 +46,8 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 `pnpm verify` does not need the database. To run the API or the integration tests:
 
 1. Start Docker Desktop, then `pnpm db:start` (first time downloads several GB), then `pnpm db:reset`.
-2. Run `pnpm supabase status -o env`. It prints the local keys. They are the well known demo keys of the local stack, but still keep them out of git.
-3. Fill `.env.local`:
+2. Run `pnpm env:local`. It reads the local keys from the running stack and writes `.env.local` for you (it refuses to overwrite an existing file unless you add `-- --force`). The keys are the well known demo keys of the local stack, but still keep them out of git.
+3. What the file holds (for reference, or to fill it by hand from `pnpm supabase status -o env`):
 
 | Variable | Value |
 |---|---|
@@ -76,8 +76,11 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `pnpm verify` | format check, lint, typecheck, tests, build. Run it before every pull request |
 | `pnpm db:start`, `pnpm db:stop` | start or stop the local Supabase stack in Docker. The first start downloads several GB of images |
 | `pnpm db:reset` | rebuilds the local database from `supabase/migrations` and `supabase/seed.sql` (all fake data). Needs `pnpm db:start` first |
-| `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
-| `pnpm test:integration` | API tests against the LOCAL Supabase stack (real login, limits, joins, a concurrency test). Needs `pnpm db:start`, `pnpm db:reset` and `.env.local`. It refuses to run against any other URL. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
+| `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. CI runs it as the Database tests job. Not part of `pnpm verify` |
+| `pnpm test:integration` | API tests against the LOCAL Supabase stack (real login, limits, joins, a concurrency test). Needs `pnpm db:start`, `pnpm db:reset` and `.env.local`. It refuses to run against any other URL. CI runs it as the Integration tests job. Not part of `pnpm verify` |
+| `pnpm env:local` | writes `.env.local` from the running local stack (see the section above) |
+| `pnpm test:e2e` | Playwright journeys (sign in, join) and browser smoke tests. Needs `pnpm db:start`, `pnpm db:reset`, `pnpm env:local`. First time: `pnpm exec playwright install chromium`. CI runs it as the E2E workflow |
+| `node scripts/smoke.mjs <url>` | read-only smoke test of a deployed copy, for example staging (docs/STAGING_SETUP.md) |
 
 ## 4. Every task
 
