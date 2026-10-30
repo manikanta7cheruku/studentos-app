@@ -32,7 +32,7 @@ cd studentos-app
 pnpm install --frozen-lockfile
 ```
 
-Create your local environment file. It is git-ignored. Nothing secret is needed yet.
+Create your local environment file. It is git-ignored, so real values stay on your PC.
 
 ```
 Copy-Item .env.example .env.local    (PowerShell)
@@ -40,6 +40,27 @@ cp .env.example .env.local           (macOS or Linux)
 ```
 
 Then run `pnpm verify`. It must finish with a successful build. After that, `pnpm dev` starts the app at http://localhost:3000.
+
+### Local database and the values in `.env.local` (R2, R5, and anyone running the API)
+
+`pnpm verify` does not need the database. To run the API or the integration tests:
+
+1. Start Docker Desktop, then `pnpm db:start` (first time downloads several GB), then `pnpm db:reset`.
+2. Run `pnpm supabase status -o env`. It prints the local keys. They are the well known demo keys of the local stack, but still keep them out of git.
+3. Fill `.env.local`:
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `API_URL` from the status output (`http://127.0.0.1:54321`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `ANON_KEY` (or `PUBLISHABLE_KEY`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | `SERVICE_ROLE_KEY` (or `SECRET_KEY`). Server only, never in the browser |
+| `APP_HASH_SECRET` | 32 or more random characters: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `MAILPIT_URL` | `http://127.0.0.1:54324`, only used by the integration tests |
+
+4. Sign in codes sent by the local stack arrive in Mailpit at http://127.0.0.1:54324.
+5. The app refuses to answer an API call if a needed variable is missing. The error names the variable, never the value.
+6. Seed users sign in with the email code too: `student1@alpha.test`, `admin@alpha.test`, `pending@alpha.test` (see `supabase/seed.sql`). Read their code in Mailpit.
 
 ## 3. Commands
 
@@ -56,6 +77,7 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `pnpm db:start`, `pnpm db:stop` | start or stop the local Supabase stack in Docker. The first start downloads several GB of images |
 | `pnpm db:reset` | rebuilds the local database from `supabase/migrations` and `supabase/seed.sql` (all fake data). Needs `pnpm db:start` first |
 | `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
+| `pnpm test:integration` | API tests against the LOCAL Supabase stack (real login, limits, joins, a concurrency test). Needs `pnpm db:start`, `pnpm db:reset` and `.env.local`. It refuses to run against any other URL. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
 
 ## 4. Every task
 

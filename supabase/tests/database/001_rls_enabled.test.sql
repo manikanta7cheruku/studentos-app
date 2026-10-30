@@ -2,7 +2,7 @@
 -- Run with: pnpm db:test
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(19);
 
 -- Named checks, one per table, so a failure names the table.
 select ok((select relrowsecurity from pg_class where oid = 'public.colleges'::regclass), 'RLS is on: colleges');
@@ -51,9 +51,15 @@ select is(
 -- anon (not signed in) has no privileges on any table in public.
 select is(
   (select count(*) from information_schema.role_table_grants
-   where table_schema = 'public' and grantee = 'anon'),
+   where table_schema = 'public' and grantee = 'anon' and table_name <> 'public_college_branding'),
   0::bigint,
-  'anon has no table privileges in schema public'
+  'anon has no table privileges in schema public (except the public branding view)'
+);
+select is(
+  (select array_agg(table_name || ':' || privilege_type order by table_name) from information_schema.role_table_grants
+   where table_schema = 'public' and grantee = 'anon'),
+  array['public_college_branding:SELECT'],
+  'the only thing anon may read is the public branding view'
 );
 
 -- Clients can never write memberships (role, status and level are server-only).
