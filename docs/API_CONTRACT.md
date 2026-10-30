@@ -191,3 +191,32 @@ Choices R2 made where this document was silent (change them in a contract PR, ta
 - Audit log ids are strings because they are 64 bit numbers.
 - `AUTH-04`, `NTF-01/02`, `ANN-01/02`, `RPT-*` and `WL-01` response shapes are proposals. The tables behind them arrive on Days 3 and 4. R2 confirms or changes them when each endpoint is built.
 - Notification types for now: `membership.approved`, `membership.rejected`, `announcement.published`, `report.actioned`.
+
+## 7. Built in R2 Day 2 (what is real now)
+| Operation | Path | Notes |
+|---|---|---|
+| AUTH-01 | POST `/api/v1/auth/otp/request` | Same answer for any email. 5 per hour per email, 20 per hour per IP |
+| AUTH-02 | POST `/api/v1/auth/otp/verify` | Sets HttpOnly cookies. The body never holds tokens. Lock after 5 wrong codes (15 minutes). 10 attempts per 15 minutes |
+| AUTH-03 | POST `/api/v1/auth/logout` | `?all=true` signs out everywhere. A cookie request needs a matching `Origin` |
+| TEN-01 | GET `/api/v1/colleges/public/{slug}` | No login. Active colleges only. `logo_url` is always null for now |
+| TEN-02 | GET `/api/v1/c/{slug}/me/membership` | `membership` is null if the user has not joined |
+| TEN-03 | POST `/api/v1/c/{slug}/join/invite` | IDEM. 10 tries per hour per person |
+| TEN-04 | POST `/api/v1/c/{slug}/join/manual` | IDEM. Pending until an admin decides |
+| TEN-05 | POST `/api/v1/c/{slug}/join/email-domain` | Body has `step`: `start` or `complete`. Active at level 2 on success |
+
+Rules the screens (R3) must follow:
+- Cookie session: call the API with `credentials: "include"`. The browser never sees the tokens. State changing calls from the browser carry the normal `Origin` header.
+- Tools and tests can send `Authorization: Bearer <access token>` instead.
+- IDEM endpoints (TEN-03, TEN-04) need an `Idempotency-Key` header with a new UUID for each new request. Send the same UUID when you retry the same request. A replay answers with the header `Idempotent-Replay: true`. The same key with another body gives 422 `IDEMPOTENCY_KEY_REUSED`.
+- Every answer has the header `X-Request-Id`. Show it when something goes wrong (`INTERNAL`).
+- 429 answers carry `Retry-After` (seconds) and `error.details.retry_after_seconds`.
+- A person who is `pending` can call join endpoints and TEN-02. Every other member endpoint answers 403 `MEMBERSHIP_NOT_ACTIVE`.
+- Someone who is not a member of a college gets 404 `NOT_FOUND` on its member endpoints.
+- A wrong or old code: `OTP_INVALID` (400) or `OTP_EXPIRED` (410). A person who is suspended or rejected cannot rejoin alone (403 `FORBIDDEN`).
+
+Choices R2 made on Day 2:
+- `OTP_EXPIRED` is answered when no code was sent to that address in the last 10 minutes. Supabase gives one error for both a wrong and an old code.
+- A college whose settings do not allow invite codes answers `INVITE_INVALID`, so it does not reveal itself. Manual and email-domain answer 403 `FORBIDDEN` when switched off.
+- An address that is not on a verified domain of the college gives 400 `VALIDATION_FAILED` with `details.fields[0].path = "email"`.
+- Dates are UTC with a `Z`.
+- The integration tests run against the local stack only: `pnpm test:integration`.
