@@ -154,6 +154,7 @@ export async function signIn(
 
 // A real access token, for the Authorization: Bearer path.
 export async function accessTokenFor(email: string): Promise<string> {
+  await waitForMailCooldown(email);
   const client = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
