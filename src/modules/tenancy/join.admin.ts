@@ -1,7 +1,7 @@
 import { adminClient } from "@/server/admin/supabase-admin";
 import { AppError } from "@/lib/errors";
 import { hashKey } from "@/lib/hash";
-import { errorCodes, type ErrorCode } from "@/contracts";
+import { mapDbError } from "@/lib/db-error";
 
 // Wrappers around the join SQL functions (supabase/migrations/..._join_invites_manual_domain.sql).
 // The caller has already proven who the user is. These functions run with the service role.
@@ -19,24 +19,6 @@ type JoinRow = {
   verification_level: number;
   verification_method: string;
 };
-
-// The SQL raises an error whose message is the API error code. Anything else is a real failure.
-function mapDbError(error: { code?: string; message: string }): AppError {
-  if (error.code === "P0001") {
-    if ((errorCodes as readonly string[]).includes(error.message)) {
-      return new AppError(error.message as ErrorCode);
-    }
-    if (error.message === "DOMAIN_NOT_ALLOWED") {
-      return new AppError("VALIDATION_FAILED", {
-        details: {
-          fields: [{ path: "email", message: "Use an email address from this college." }],
-        },
-      });
-    }
-  }
-  if (error.code === "23505") return new AppError("CONFLICT");
-  return new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
-}
 
 function toSummary(rows: JoinRow[] | null): MembershipSummary {
   const row = rows?.[0];

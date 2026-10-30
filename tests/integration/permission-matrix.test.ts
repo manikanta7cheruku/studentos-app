@@ -7,6 +7,12 @@ import { GET as publicCollege } from "@/app/api/v1/colleges/public/[slug]/route"
 import { POST as joinInvite } from "@/app/api/v1/c/[slug]/join/invite/route";
 import { POST as joinManual } from "@/app/api/v1/c/[slug]/join/manual/route";
 import { POST as joinEmailDomain } from "@/app/api/v1/c/[slug]/join/email-domain/route";
+import { GET as adminSettings } from "@/app/api/v1/c/[slug]/admin/settings/route";
+import { GET as adminStats } from "@/app/api/v1/c/[slug]/admin/stats/route";
+import { GET as adminInvites } from "@/app/api/v1/c/[slug]/admin/invites/route";
+import { GET as adminQueue } from "@/app/api/v1/c/[slug]/admin/verification-requests/route";
+import { GET as adminMembers } from "@/app/api/v1/c/[slug]/admin/members/route";
+import { GET as adminAudit } from "@/app/api/v1/c/[slug]/admin/audit-logs/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -310,6 +316,37 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       other_college_admin: 400,
     },
   },
+  ...(
+    [
+      ["ADM-03 GET /admin/settings", adminSettings, "settings"],
+      ["ADM-11 GET /admin/stats", adminStats, "stats"],
+      ["ADM-05 GET /admin/invites", adminInvites, "invites"],
+      ["ADM-06 GET /admin/verification-requests", adminQueue, "verification-requests"],
+      ["ADM-08 GET /admin/members", adminMembers, "members"],
+      ["ADM-10 GET /admin/audit-logs", adminAudit, "audit-logs"],
+    ] as const
+  ).map(([op, handler, path]) => ({
+    op,
+    call: (cookie: string | undefined) =>
+      call(handler, {
+        path: `/api/v1/c/alpha/admin/${path}`,
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    // Only an active admin of Alpha gets through. A student or moderator is 403, a pending or suspended
+    // member is 403, someone from another college is 404 (never confirms the college), nobody signed in is 401.
+    expect: {
+      anon: 401,
+      pending: 403,
+      suspended: 403,
+      student_l1: 403,
+      student_l2: 403,
+      moderator: 403,
+      admin: 200,
+      other_college_student: 404,
+      other_college_admin: 404,
+    } as Record<Principal, Expected>,
+  })),
 ];
 
 describe("real endpoints follow the permission matrix", () => {
