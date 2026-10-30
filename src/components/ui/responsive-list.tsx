@@ -38,7 +38,11 @@ function ResponsiveList<T extends Record<string, unknown>>({
         <thead>
           <tr className="border-b-2 border-border-strong">
             {columns.map((column) => (
-              <th key={column.key} scope="col" className="px-3 py-3 font-semibold">
+              <th
+                key={column.key}
+                scope="col"
+                className="px-3 py-3 font-semibold first:pl-0 last:pr-0"
+              >
                 {column.header}
               </th>
             ))}
@@ -48,7 +52,10 @@ function ResponsiveList<T extends Record<string, unknown>>({
           {rows.map((row) => (
             <tr key={getRowKey(row)} className="border-b border-border">
               {columns.map((column) => (
-                <td key={column.key} className="px-3 py-3 align-top">
+                <td
+                  key={column.key}
+                  className="px-3 py-3 h-[4.25rem] align-middle first:pl-0 last:pr-0"
+                >
                   {show(row, column)}
                 </td>
               ))}
