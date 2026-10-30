@@ -7,7 +7,7 @@
 | Doc ID | DOC-13 |
 | Version / Date | 0.1.0 / 2026-10-15 |
 | Owner | R2 Tech Lead (migration owner). **Only R2 merges migrations; R5 backs up.** |
-| Status | Proposed. Schema is a design; no migration exists yet. |
+| Status | Proposed. Migration 0001 (`supabase/migrations/20261031000000_tenancy_identity_audit.sql`) implements colleges, college_domains, college_settings, profiles, memberships and audit_logs. Other tables are still design only. See section 11 for choices made while implementing. |
 | Conventions | snake_case; `uuid` PKs (`gen_random_uuid()`); `created_at timestamptz default now()`, `updated_at` via trigger; soft delete via `deleted_at` only where noted; money in integer paise; enums as Postgres enums or `text` + CHECK (decision: **text + CHECK** for easier migration); every tenant-scoped table has `college_id uuid not null references colleges(id)` and **RLS enabled**. |
 
 ## 1. Entity relationship overview (P0/P1 core)
@@ -134,3 +134,16 @@ Tenant offboarding: export (JSON/CSV) → 30-day grace → hard delete.
 
 ## 10. Sensitive fields
 Enrollment number (hashed + last4), email (auth schema only), verification submissions, application notes (private), audit metadata, future ID documents (separate private bucket, 30-day max retention, access logged). Encrypted at rest by the provider; application-level encryption only where justified by ADR.
+
+## 11. Implementation notes (migration 0001, R2 Day 1)
+Where the design was silent, R2 chose the following. Change them by a new migration and update this list.
+- `colleges.status` defaults to `draft`. `country` must be two capital letters. Reserved slugs are blocked by a check (admin, api, app, auth, c, colleges, dev, docs, health, login, logout, me, p, platform, ready, signin, signup, static, waitlist, www).
+- `college_settings` is created by a trigger when a college is inserted. Default join methods: `email_domain`, `invite_code`, `manual`. `roster` is allowed too. Admins can update the settings columns but not `college_id`.
+- `college_domains` and `colleges` are written only by the server (service role). A domain claim is a trust decision, so a college admin cannot add one from the client.
+- `memberships` has no client write rights at all. Role, status and level change only through the server. An `active` membership must have `verification_level >= 1`. A trigger blocks removing, demoting or suspending the last active admin of a college.
+- A member can read only their own membership row. College admins read their whole college. Classmates do not see each other's memberships (they hold method, program and enrollment fields).
+- `profiles` are visible to yourself and to people who share an **active** membership with you, unless `visibility = 'hidden'` or `deleted_at` is set. Pending and suspended people are invisible to others. Clients cannot set `deleted_at` (account deletion runs on the server).
+- `memberships.college_id` and `audit_logs.college_id` use `on delete restrict`: a college with members or audit rows cannot be deleted by accident. Use `status = 'archived'`.
+- `audit_logs`: clients and even the service role have no INSERT, UPDATE or DELETE right. Rows are added only through `write_audit_log(...)`, which only the service role may call. Triggers also block UPDATE, DELETE and TRUNCATE for every role, including in replica mode. `actor_id` has no foreign key on purpose, so deleting an account never blocks or rewrites history.
+- `auth_member_colleges(min_level)`, `is_college_admin(cid)`, `is_moderator_or_admin(cid)` and `auth_shares_college_with(uid)` are SECURITY DEFINER with an empty `search_path`. They check membership status `active` only. They do **not** check `colleges.status`. Blocking a suspended college (`TENANT_SUSPENDED`) is the API's job on Day 2. Open question for R2 and R5.
+- Local tests run with `pnpm db:test` (pgTAP, files in `supabase/tests/database`).

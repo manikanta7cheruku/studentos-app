@@ -11,7 +11,7 @@ For R2, R3, R4 and R5. Written by R5 on Day 1. If a step is wrong, fix this file
 | pnpm | pinned in `package.json` field `packageManager` | the only package manager here. Do not use npm or yarn |
 | VS Code | optional | extensions: ESLint, Prettier, Tailwind CSS IntelliSense |
 | GitHub CLI (`gh`) | optional | open PRs and read CI results from the terminal |
-| Docker Desktop | not needed until R2 merges the local database setup | runs the local Supabase database later |
+| Docker Desktop | needed for the local database (R2 and R5). About 8 GB of RAM is enough | runs the local Supabase database. The Supabase CLI is a dev dependency, use `pnpm supabase ...` |
 
 Turn on pnpm with Corepack (it ships with Node):
 
@@ -53,7 +53,9 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `pnpm format` | rewrite files with Prettier |
 | `pnpm format:check` | only check formatting (CI uses this) |
 | `pnpm verify` | format check, lint, typecheck, tests, build. Run it before every pull request |
-| `pnpm db:reset`, `pnpm db:test` | fail on purpose with a "not configured" message until R2 merges the local database setup. They are not part of `pnpm verify` yet |
+| `pnpm db:start`, `pnpm db:stop` | start or stop the local Supabase stack in Docker. The first start downloads several GB of images |
+| `pnpm db:reset` | rebuilds the local database from `supabase/migrations` and `supabase/seed.sql` (all fake data). Needs `pnpm db:start` first |
+| `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
 
 ## 4. Every task
 
