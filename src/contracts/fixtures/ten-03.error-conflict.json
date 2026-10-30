@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "CONFLICT",
+    "message": "You are already a member of this college.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

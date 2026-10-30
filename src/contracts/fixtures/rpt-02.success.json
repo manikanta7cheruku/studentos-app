@@ -1,0 +1,23 @@
+{
+  "data": [
+    {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "target_type": "team_post",
+      "target_id": "77777777-7777-4777-8777-777777777777",
+      "reason": "spam",
+      "details": "Posted the same link five times",
+      "status": "open",
+      "reporter": {
+        "user_id": "aaaaaaaa-1000-4000-8000-000000000004",
+        "display_name": "Kabir Rao"
+      },
+      "handled_by": null,
+      "handled_at": null,
+      "created_at": "2026-10-31T09:00:00Z"
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8",
+    "next_cursor": null
+  }
+}

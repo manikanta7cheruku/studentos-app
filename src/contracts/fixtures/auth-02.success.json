@@ -1,0 +1,12 @@
+{
+  "data": {
+    "user": {
+      "id": "aaaaaaaa-1000-4000-8000-000000000003",
+      "email": "student1@alpha.test"
+    },
+    "is_new": false
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

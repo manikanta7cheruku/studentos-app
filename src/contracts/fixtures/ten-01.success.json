@@ -1,0 +1,16 @@
+{
+  "data": {
+    "slug": "alpha",
+    "name": "Alpha College",
+    "short_name": "Alpha",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "accent_hex": "#1D4ED8",
+    "logo_url": null,
+    "allowed_methods": ["email_domain", "invite_code", "manual"],
+    "require_admin_approval": true
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

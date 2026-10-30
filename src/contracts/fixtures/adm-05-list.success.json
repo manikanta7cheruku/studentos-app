@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "label": "First year batch",
+      "max_uses": 100,
+      "used_count": 12,
+      "expires_at": "2026-12-31T00:00:00Z",
+      "revoked_at": null,
+      "grants_status": "pending",
+      "created_by": "aaaaaaaa-1000-4000-8000-000000000001",
+      "created_at": "2026-10-31T09:00:00Z"
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

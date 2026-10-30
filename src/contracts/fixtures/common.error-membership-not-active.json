@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "MEMBERSHIP_NOT_ACTIVE",
+    "message": "Your membership is not active yet.",
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
