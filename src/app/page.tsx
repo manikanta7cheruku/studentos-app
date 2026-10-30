@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRightIcon, ShieldCheckIcon, UsersIcon, BriefcaseIcon, FolderGit2Icon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+  BriefcaseIcon,
+  FolderGit2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaqAccordion, type FaqItem } from "@/features/landing/faq-accordion";
 import { WaitlistForm } from "@/features/waitlist/waitlist-form";
@@ -64,6 +70,14 @@ const FAQ_ITEMS: FaqItem[] = [
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      {/* Skip link for keyboard accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-card focus:border focus:border-border focus:bg-surface focus:px-4 focus:py-2.5 focus:text-base focus:font-semibold focus:text-foreground focus:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Skip to main content
+      </a>
+
       {/* Header */}
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
@@ -95,22 +109,31 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" className="mx-auto flex w-full max-w-5xl flex-col gap-16 px-4 py-12 text-base sm:gap-20 sm:px-6 sm:py-16">
+      <main
+        id="main-content"
+        className="mx-auto flex w-full max-w-5xl flex-col gap-16 px-4 py-12 text-base sm:gap-20 sm:px-6 sm:py-16"
+      >
         {/* S1: Hero */}
-        <section aria-labelledby="hero-title" className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+        <section
+          aria-labelledby="hero-title"
+          className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between"
+        >
           <div className="flex max-w-2xl flex-col gap-6">
             <div className="inline-flex items-center gap-2 self-start rounded-card border border-border bg-surface px-3 py-1.5 text-base font-medium text-muted-foreground">
               <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
               <span>In development &middot; Pilot waitlist open</span>
             </div>
 
-            <h1 id="hero-title" className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h1
+              id="hero-title"
+              className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl"
+            >
               One place for your college.
             </h1>
 
             <p className="text-lg text-muted-foreground sm:text-xl">
-              Find teammates for projects and hackathons, keep track of your internship applications,
-              and build a portfolio &mdash; in a space run by your own college.
+              Find teammates for projects and hackathons, keep track of your internship
+              applications, and build a portfolio &mdash; in a space run by your own college.
             </p>
 
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -137,7 +160,9 @@ export default function Home() {
             className="flex w-full max-w-sm flex-col gap-3 rounded-card border border-border bg-surface p-6 shadow-xs"
           >
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="font-heading text-lg font-semibold text-foreground">Your College Space</span>
+              <span className="font-heading text-lg font-semibold text-foreground">
+                Your College Space
+              </span>
               <span className="rounded-input border border-border bg-secondary px-2 py-0.5 text-base font-medium text-secondary-foreground">
                 Verified
               </span>
@@ -182,7 +207,10 @@ export default function Home() {
         {/* S3: What You Can Do (Alternating Layout) */}
         <section aria-labelledby="features-title" className="flex flex-col gap-8">
           <div className="flex flex-col gap-2">
-            <h2 id="features-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="features-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               What you can do
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -196,7 +224,9 @@ export default function Home() {
               <div className="flex max-w-xl flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <UsersIcon aria-hidden="true" className="size-6 text-primary" />
-                  <h3 className="font-heading text-xl font-semibold text-foreground">Find your team</h3>
+                  <h3 className="font-heading text-xl font-semibold text-foreground">
+                    Find your team
+                  </h3>
                 </div>
                 <p className="text-base text-muted-foreground">
                   Post the roles you need for class projects, hackathons, or clubs. Review requests
@@ -213,11 +243,13 @@ export default function Home() {
               <div className="flex max-w-xl flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <BriefcaseIcon aria-hidden="true" className="size-6 text-primary" />
-                  <h3 className="font-heading text-xl font-semibold text-foreground">Track every application</h3>
+                  <h3 className="font-heading text-xl font-semibold text-foreground">
+                    Track every application
+                  </h3>
                 </div>
                 <p className="text-base text-muted-foreground">
-                  Keep track of internship and job applications with statuses, deadlines, and personal
-                  notes. Your tracker is private to you and never visible to anyone else.
+                  Keep track of internship and job applications with statuses, deadlines, and
+                  personal notes. Your tracker is private to you and never visible to anyone else.
                 </p>
               </div>
               <div className="flex shrink-0 items-center justify-center rounded-card border border-border bg-background p-4 text-base font-medium text-muted-foreground">
@@ -230,7 +262,9 @@ export default function Home() {
               <div className="flex max-w-xl flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <FolderGit2Icon aria-hidden="true" className="size-6 text-primary" />
-                  <h3 className="font-heading text-xl font-semibold text-foreground">Show what you have built</h3>
+                  <h3 className="font-heading text-xl font-semibold text-foreground">
+                    Show what you have built
+                  </h3>
                 </div>
                 <p className="text-base text-muted-foreground">
                   Create a profile and portfolio highlighting your projects, links, and repositories
@@ -253,19 +287,28 @@ export default function Home() {
         </section>
 
         {/* S4: Your college, your rules (Trust) */}
-        <section aria-labelledby="trust-title" className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 sm:p-8">
+        <section
+          aria-labelledby="trust-title"
+          className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 sm:p-8"
+        >
           <div className="flex flex-col gap-3">
-            <h2 id="trust-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="trust-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               Your college, your rules
             </h2>
             <p className="text-lg text-muted-foreground">
-              Privacy, boundary controls, and safety built from the ground up for campus communities.
+              Privacy, boundary controls, and safety built from the ground up for campus
+              communities.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">Private college space</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                Private college space
+              </h3>
               <p className="text-base text-muted-foreground">
                 Each college has its own private space. Content, posts, and member directories are
                 isolated to your campus community.
@@ -273,7 +316,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">Verified members</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                Verified members
+              </h3>
               <p className="text-base text-muted-foreground">
                 Members are verified using a college email, invite codes, class roster, or admin
                 approval, depending on your college.
@@ -281,7 +326,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">Private tracker</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                Private tracker
+              </h3>
               <p className="text-base text-muted-foreground">
                 Your application tracker is never visible to anyone else, including college
                 administrators or faculty.
@@ -289,7 +336,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">Built-in moderation</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                Built-in moderation
+              </h3>
               <p className="text-base text-muted-foreground">
                 Reporting and moderation tools let the community and designated campus moderators
                 keep conversations respectful.
@@ -311,7 +360,10 @@ export default function Home() {
         {/* S5: How it starts */}
         <section aria-labelledby="start-title" className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h2 id="start-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="start-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               How it starts
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -322,7 +374,9 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-6">
               <span className="font-heading text-2xl font-semibold text-primary">1</span>
-              <h3 className="font-heading text-lg font-semibold text-foreground">Your college joins</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                Your college joins
+              </h3>
               <p className="text-base text-muted-foreground">
                 A college space is opened for your campus during our pilot program.
               </p>
@@ -330,7 +384,9 @@ export default function Home() {
 
             <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-6">
               <span className="font-heading text-2xl font-semibold text-primary">2</span>
-              <h3 className="font-heading text-lg font-semibold text-foreground">You verify you belong</h3>
+              <h3 className="font-heading text-lg font-semibold text-foreground">
+                You verify you belong
+              </h3>
               <p className="text-base text-muted-foreground">
                 Verify your affiliation using your college email address or an invite code.
               </p>
@@ -345,9 +401,7 @@ export default function Home() {
             </div>
           </div>
 
-          <p className="text-base text-muted-foreground">
-            Verification methods differ by college.
-          </p>
+          <p className="text-base text-muted-foreground">Verification methods differ by college.</p>
         </section>
 
         {/* S6: For colleges */}
@@ -357,7 +411,10 @@ export default function Home() {
           className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 sm:p-8"
         >
           <div className="max-w-2xl flex flex-col gap-3">
-            <h2 id="colleges-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="colleges-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               For colleges
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -380,7 +437,10 @@ export default function Home() {
         {/* S7: FAQ */}
         <section aria-labelledby="faq-title" className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h2 id="faq-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="faq-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               Frequently asked questions
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -398,7 +458,10 @@ export default function Home() {
           className="flex flex-col gap-6 rounded-card border border-border bg-surface p-6 sm:p-8"
         >
           <div className="flex flex-col gap-2">
-            <h2 id="waitlist-title" className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+            <h2
+              id="waitlist-title"
+              className="font-heading text-2xl font-semibold text-foreground sm:text-3xl"
+            >
               Join the waitlist
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -418,7 +481,10 @@ export default function Home() {
               <p className="text-base text-muted-foreground">Working name: StudentOS.</p>
             </div>
 
-            <nav aria-label="Footer legal and support navigation" className="flex flex-wrap gap-x-6 gap-y-2">
+            <nav
+              aria-label="Footer legal and support navigation"
+              className="flex flex-wrap gap-x-6 gap-y-2"
+            >
               <Link
                 href="/colleges"
                 className="outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

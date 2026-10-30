@@ -72,9 +72,7 @@ export function WaitlistForm() {
     }
 
     const validRoles: readonly string[] =
-      audience === "student"
-        ? ["student", "other"]
-        : ["college_admin", "faculty", "other"];
+      audience === "student" ? ["student", "other"] : ["college_admin", "faculty", "other"];
 
     if (!role || !validRoles.includes(role)) {
       newErrors.role = "Select your role";
@@ -299,7 +297,13 @@ export function WaitlistForm() {
 
       {/* Submit Button */}
       <div className="pt-2">
-        <Button id="waitlist-submit" type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto">
+        <Button
+          id="waitlist-submit"
+          type="submit"
+          size="lg"
+          disabled={isSubmitting}
+          className="w-full sm:w-auto"
+        >
           {isSubmitting ? "Joining..." : "Join the waitlist"}
         </Button>
       </div>
