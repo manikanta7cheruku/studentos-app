@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import type { APIRequestContext, Playwright } from "@playwright/test";
+import type { APIRequestContext, PlaywrightWorkerArgs } from "@playwright/test";
 import { hashInviteCode } from "@/modules/tenancy/join.admin";
 
 // Helpers for the journey tests. They need the local stack and .env.local (see playwright.config.ts).
@@ -61,7 +61,7 @@ export async function codeFor(email: string): Promise<string> {
 
 // A signed-in API client. Its cookie jar keeps the session cookies, like a browser does.
 export async function signedInClient(
-  playwright: Playwright,
+  playwright: PlaywrightWorkerArgs["playwright"],
   baseURL: string,
   email: string,
 ): Promise<{ api: APIRequestContext; userId: string }> {
