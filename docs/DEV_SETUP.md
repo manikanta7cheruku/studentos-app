@@ -7,7 +7,7 @@ For R2, R3, R4 and R5. Written by R5 on Day 1. If a step is wrong, fix this file
 | Tool | Version | Why |
 |---|---|---|
 | Git | any current version | clone, branches, pull requests |
-| Node.js | the major version in `.nvmrc` (24). Allowed range is in `package.json` field `engines` | runs the app and the tools. Check with `node --version` |
+| Node.js | the major version in `.nvmrc` (24), **24.15.0 or newer** (a test package needs it). Allowed range is in `package.json` field `engines` | runs the app and the tools. Check with `node --version` |
 | pnpm | pinned in `package.json` field `packageManager` | the only package manager here. Do not use npm or yarn |
 | VS Code | optional | extensions: ESLint, Prettier, Tailwind CSS IntelliSense |
 | GitHub CLI (`gh`) | optional | open PRs and read CI results from the terminal |
@@ -94,7 +94,7 @@ Nobody pushes to `main`. GitHub cannot enforce this yet on our plan, so it is a 
 | Problem | Fix |
 |---|---|
 | `pnpm` is not recognized | run `corepack enable pnpm`, then open a new terminal |
-| Install refuses because of the Node version | install the Node major version from `.nvmrc`, then retry |
+| Install refuses because of the Node version (ERR_PNPM_UNSUPPORTED_ENGINE) | install Node 24.15.0 or newer (the latest 24.x), open a new terminal, then retry. `jsdom` needs it |
 | `frozen-lockfile` error | `package.json` and `pnpm-lock.yaml` disagree. Do not delete the lockfile. Ask R5 |
 | `pnpm format:check` fails | run `pnpm format`, then commit the changes |
 | Port 3000 is busy | stop the other process, or run `pnpm dev -- -p 3001` |
