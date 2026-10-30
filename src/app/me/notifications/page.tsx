@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { NotificationsView } from "@/features/notifications";
+import { AppShell, NotificationsView } from "@/features/notifications";
 
 export const metadata: Metadata = {
   title: "Notifications | StudentOS",
@@ -8,8 +8,10 @@ export const metadata: Metadata = {
 
 export default function NotificationsPage() {
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
-      <NotificationsView />
-    </main>
+    <AppShell currentPath="/me/notifications">
+      <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
+        <NotificationsView />
+      </main>
+    </AppShell>
   );
 }

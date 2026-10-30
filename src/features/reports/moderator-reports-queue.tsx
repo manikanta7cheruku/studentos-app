@@ -17,6 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { ModerationActionType, ReportItem, ReportReason, ReportStatus } from "./types";
 import { executeModeratorAction, fetchReportsQueue } from "./sample-data";
 
@@ -24,6 +32,17 @@ export interface ModeratorReportsQueueProps {
   initialData?: ReportItem[];
   forcedState?: "loading" | "empty" | "error" | "success";
   onActionComplete?: (reportId: string, action: ModerationActionType) => void;
+}
+
+const TARGET_TYPE_LABELS: Record<string, string> = {
+  team_post: "Team post",
+  profile: "Profile",
+  announcement: "Announcement",
+  comment: "Comment",
+};
+
+function formatTargetType(targetType: string): string {
+  return TARGET_TYPE_LABELS[targetType] || targetType;
 }
 
 function getReasonBadge(reason: ReportReason) {
@@ -101,6 +120,7 @@ export function ModeratorReportsQueue({
   );
   const [filter, setFilter] = React.useState<"all" | "open" | "resolved">("open");
   const [processingId, setProcessingId] = React.useState<string | null>(null);
+  const [suspendTargetReport, setSuspendTargetReport] = React.useState<ReportItem | null>(null);
 
   const loadData = React.useCallback(async () => {
     if (forcedState) return;
@@ -351,7 +371,10 @@ export function ModeratorReportsQueue({
                     {getStatusBadge(report.status)}
                     {getReasonBadge(report.reason)}
                     <span className="text-base text-muted-foreground">
-                      Target: <strong className="text-foreground">{report.target_type}</strong>
+                      Target:{" "}
+                      <strong className="text-foreground">
+                        {formatTargetType(report.target_type)}
+                      </strong>
                     </span>
                   </div>
                   <span className="text-base text-muted-foreground">
@@ -362,7 +385,8 @@ export function ModeratorReportsQueue({
                 {/* Content Details */}
                 <div className="flex flex-col gap-1">
                   <h2 className="font-heading text-lg font-semibold text-foreground">
-                    {report.target_title || `Reported ${report.target_type} #${report.target_id}`}
+                    {report.target_title ||
+                      `Reported ${formatTargetType(report.target_type)} #${report.target_id}`}
                   </h2>
                   {report.details && (
                     <div className="rounded-input border border-border bg-accent/20 p-3 text-base text-foreground">
@@ -420,7 +444,7 @@ export function ModeratorReportsQueue({
                       variant="destructive"
                       size="sm"
                       disabled={isBusy}
-                      onClick={() => void handleAction(report.id, "suspend")}
+                      onClick={() => setSuspendTargetReport(report)}
                       className="flex items-center gap-1.5"
                     >
                       <UserXIcon className="size-4" aria-hidden="true" />
@@ -433,6 +457,43 @@ export function ModeratorReportsQueue({
           })}
         </ul>
       )}
+
+      {/* Suspend Confirmation Dialog */}
+      <Dialog
+        open={Boolean(suspendTargetReport)}
+        onOpenChange={(open) => {
+          if (!open) setSuspendTargetReport(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm member suspension</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to suspend this member from your college? They will lose access
+              to team posts and campus spaces.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={() => setSuspendTargetReport(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={processingId === suspendTargetReport?.id}
+              onClick={async () => {
+                if (suspendTargetReport) {
+                  const targetId = suspendTargetReport.id;
+                  setSuspendTargetReport(null);
+                  await handleAction(targetId, "suspend");
+                }
+              }}
+            >
+              Confirm suspension
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

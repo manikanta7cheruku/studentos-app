@@ -1,0 +1,33 @@
+"use client";
+
+import * as React from "react";
+import { DesktopRail } from "./desktop-rail";
+
+export interface AppShellProps {
+  children: React.ReactNode;
+  currentPath?: string;
+  unreadCount?: number;
+  isAdminOrModerator?: boolean;
+}
+
+/**
+ * AppShell mounts the DesktopRail (with NotificationBell) for authenticated member pages.
+ * Shown at 768px and wider (md breakpoint). Excludes public landing "/" and "/dev/components".
+ */
+export function AppShell({
+  children,
+  currentPath = "",
+  unreadCount = 2,
+  isAdminOrModerator = true,
+}: AppShellProps) {
+  return (
+    <div className="flex min-h-screen w-full flex-col md:flex-row">
+      <DesktopRail
+        currentPath={currentPath}
+        unreadCount={unreadCount}
+        isAdminOrModerator={isAdminOrModerator}
+      />
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}

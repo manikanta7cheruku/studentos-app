@@ -88,6 +88,17 @@ describe("AnnouncementsView", () => {
     expect(screen.getByText("req-err-ann-500")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
+
+  it("opens report dialog when Report button on an announcement card is clicked", () => {
+    render(<AnnouncementsView initialData={mockAnnouncements} userRole="student" />);
+
+    const reportBtns = screen.getAllByRole("button", { name: /Report/i });
+    expect(reportBtns.length).toBeGreaterThan(0);
+
+    fireEvent.click(reportBtns[0]!);
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(screen.getByText("Report content")).toBeTruthy();
+  });
 });
 
 describe("AnnouncementForm", () => {

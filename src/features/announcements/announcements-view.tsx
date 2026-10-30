@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { AnnouncementItem, UserRole } from "./types";
 import { fetchAnnouncements } from "./sample-data";
 import { AnnouncementForm } from "./announcement-form";
+import { ReportDialog } from "@/features/reports";
 
 export interface AnnouncementsViewProps {
   initialData?: AnnouncementItem[];
@@ -238,11 +239,18 @@ export function AnnouncementsView({
                   <Badge variant="outline">{announcement.author_role}</Badge>
                 </div>
 
-                <div className="flex items-center gap-1 text-base text-muted-foreground">
-                  <CalendarIcon className="size-4" aria-hidden="true" />
-                  <time dateTime={announcement.publish_at}>
-                    {formatDate(announcement.publish_at)}
-                  </time>
+                <div className="flex items-center gap-3 text-base text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <CalendarIcon className="size-4" aria-hidden="true" />
+                    <time dateTime={announcement.publish_at}>
+                      {formatDate(announcement.publish_at)}
+                    </time>
+                  </span>
+                  <ReportDialog
+                    targetType="announcement"
+                    targetId={announcement.id}
+                    targetTitle={announcement.title}
+                  />
                 </div>
               </div>
 

@@ -117,14 +117,15 @@ describe("ReportDialog (3 taps or fewer)", () => {
 });
 
 describe("ModeratorReportsQueue", () => {
-  it("renders reports with reason badges and target information", () => {
+  it("renders reports with reason badges and target information with plain words", () => {
     render(<ModeratorReportsQueue initialData={mockReports} />);
     expect(screen.getByText("Suspicious Commercial Offer")).toBeTruthy();
     expect(screen.getByText("Spam")).toBeTruthy();
     expect(screen.getByText("Selling paid term papers")).toBeTruthy();
+    expect(screen.getByText("Team post")).toBeTruthy();
   });
 
-  it("handles moderator actions: dismiss, hide, and suspend", async () => {
+  it("handles moderator action dismiss directly", async () => {
     const onAction = vi.fn();
     render(<ModeratorReportsQueue initialData={mockReports} onActionComplete={onAction} />);
 
@@ -134,6 +135,36 @@ describe("ModeratorReportsQueue", () => {
 
     await waitFor(() => {
       expect(onAction).toHaveBeenCalledWith("rpt-t1", "dismiss");
+    });
+  });
+
+  it("requires confirmation before suspending a member", async () => {
+    const onAction = vi.fn();
+    render(<ModeratorReportsQueue initialData={mockReports} onActionComplete={onAction} />);
+
+    // Click Suspend member
+    const suspendBtn = screen.getByRole("button", { name: "Suspend member" });
+    fireEvent.click(suspendBtn);
+
+    // Confirmation dialog should be open
+    expect(screen.getByText("Confirm member suspension")).toBeTruthy();
+    expect(
+      screen.getByText(/Are you sure you want to suspend this member from your college/),
+    ).toBeTruthy();
+
+    // Click Cancel - should not suspend
+    const cancelBtn = screen.getByRole("button", { name: "Cancel" });
+    fireEvent.click(cancelBtn);
+    expect(screen.queryByText("Confirm member suspension")).toBeNull();
+    expect(onAction).not.toHaveBeenCalled();
+
+    // Click Suspend member again and Confirm
+    fireEvent.click(screen.getByRole("button", { name: "Suspend member" }));
+    const confirmBtn = screen.getByRole("button", { name: "Confirm suspension" });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(onAction).toHaveBeenCalledWith("rpt-t1", "suspend");
     });
   });
 

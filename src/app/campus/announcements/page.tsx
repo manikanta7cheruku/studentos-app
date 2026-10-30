@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AppShell } from "@/features/notifications";
 import { AnnouncementsView } from "@/features/announcements";
 
 export const metadata: Metadata = {
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 
 export default function AnnouncementsPage() {
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
-      <AnnouncementsView />
-    </main>
+    <AppShell currentPath="/campus">
+      <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
+        <AnnouncementsView />
+      </main>
+    </AppShell>
   );
 }
