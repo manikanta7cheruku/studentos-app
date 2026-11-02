@@ -8,6 +8,10 @@ import {
   RequestDialog,
   FilterBar,
   getActiveFilterCount,
+  NoPostsEmptyState,
+  NoFilterResultsEmptyState,
+  NoRequestsEmptyState,
+  TeamFinderEmptyState,
 } from "@/features/team-finder";
 import type { TeamRole, TeamPost, TeamPostFilters } from "@/features/team-finder";
 
@@ -345,5 +349,54 @@ describe("FilterBar", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });
+  });
+});
+
+describe("Empty states", () => {
+  it("renders NoPostsEmptyState with create post action", () => {
+    const handleCreate = vi.fn();
+    render(<NoPostsEmptyState onCreatePost={handleCreate} />);
+
+    expect(screen.getByText("No team posts yet")).toBeTruthy();
+    expect(
+      screen.getByText(/Be the first in your college to post a team request/),
+    ).toBeTruthy();
+
+    const createBtn = screen.getByRole("button", { name: "Post a team request" });
+    fireEvent.click(createBtn);
+    expect(handleCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders NoFilterResultsEmptyState with clear filters action", () => {
+    const handleClear = vi.fn();
+    render(<NoFilterResultsEmptyState onClearFilters={handleClear} />);
+
+    expect(screen.getByText("No results for these filters")).toBeTruthy();
+    expect(
+      screen.getByText(/No team posts matched your search criteria/),
+    ).toBeTruthy();
+
+    const clearBtn = screen.getByRole("button", { name: "Clear filters" });
+    fireEvent.click(clearBtn);
+    expect(handleClear).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders NoRequestsEmptyState with descriptive guidance", () => {
+    render(<NoRequestsEmptyState />);
+
+    expect(screen.getByText("No requests yet")).toBeTruthy();
+    expect(
+      screen.getByText(/When students request to join your open roles/),
+    ).toBeTruthy();
+  });
+
+  it("renders all states through TeamFinderEmptyState helper", () => {
+    const handleClear = vi.fn();
+    render(<TeamFinderEmptyState variant="no-results" onClearFilters={handleClear} />);
+
+    expect(screen.getByText("No results for these filters")).toBeTruthy();
+    const clearBtn = screen.getByRole("button", { name: "Clear filters" });
+    fireEvent.click(clearBtn);
+    expect(handleClear).toHaveBeenCalledTimes(1);
   });
 });
