@@ -91,13 +91,13 @@ export default function Home() {
           <nav aria-label="Main navigation" className="flex items-center gap-4 sm:gap-6">
             <Link
               href="/colleges"
-              className="text-base font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="hidden text-base sm:inline font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Colleges
             </Link>
             <Link
               href="/safety"
-              className="text-base font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="hidden text-base sm:inline font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Safety
             </Link>
