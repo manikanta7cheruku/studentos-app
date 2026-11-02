@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { InboxIcon, SearchXIcon, UserPlusIcon, UsersIcon } from "lucide-react";
+import { SearchXIcon, UserPlusIcon, UsersIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -11,11 +11,7 @@ export interface NoPostsEmptyStateProps {
   className?: string;
 }
 
-export function NoPostsEmptyState({
-  onCreatePost,
-  action,
-  className,
-}: NoPostsEmptyStateProps) {
+export function NoPostsEmptyState({ onCreatePost, action, className }: NoPostsEmptyStateProps) {
   return (
     <EmptyState
       icon={<UsersIcon aria-hidden="true" />}
@@ -53,12 +49,7 @@ export function NoFilterResultsEmptyState({
       action={
         action ??
         (onClearFilters ? (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClearFilters}
-            className="min-h-[44px]"
-          >
+          <Button type="button" variant="outline" onClick={onClearFilters} className="min-h-[44px]">
             Clear filters
           </Button>
         ) : undefined)
@@ -104,9 +95,17 @@ export function TeamFinderEmptyState({
 }: TeamFinderEmptyStateProps) {
   switch (variant) {
     case "no-posts":
-      return <NoPostsEmptyState onCreatePost={onCreatePost} action={action} className={className} />;
+      return (
+        <NoPostsEmptyState onCreatePost={onCreatePost} action={action} className={className} />
+      );
     case "no-results":
-      return <NoFilterResultsEmptyState onClearFilters={onClearFilters} action={action} className={className} />;
+      return (
+        <NoFilterResultsEmptyState
+          onClearFilters={onClearFilters}
+          action={action}
+          className={className}
+        />
+      );
     case "no-requests":
       return <NoRequestsEmptyState action={action} className={className} />;
   }

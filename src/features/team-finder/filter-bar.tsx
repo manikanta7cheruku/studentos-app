@@ -1,14 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { FilterIcon, RotateCcwIcon, SearchIcon, CheckIcon } from "lucide-react";
+import { FilterIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
 import { cn } from "cn";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -57,11 +56,6 @@ export function FilterBar({
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<TeamPostFilters>(filters);
 
-  // Sync external filter changes
-  React.useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
   const activeCount = getActiveFilterCount(filters);
   const localActiveCount = getActiveFilterCount(localFilters);
 
@@ -84,11 +78,18 @@ export function FilterBar({
     setSheetOpen(false);
   };
 
+  const handleSheetOpenChange = (open: boolean) => {
+    if (open) {
+      setLocalFilters(filters);
+    }
+    setSheetOpen(open);
+  };
+
   return (
     <div data-slot="team-filter-bar" className={cn("w-full min-w-0", className)}>
       {/* Phone View (< sm breakpoint): "Filters" button that opens bottom sheet */}
       <div className="flex sm:hidden items-center justify-between gap-3 w-full">
-        <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+        <Dialog open={sheetOpen} onOpenChange={handleSheetOpenChange}>
           <DialogTrigger asChild>
             <Button
               type="button"
@@ -133,9 +134,7 @@ export function FilterBar({
             <DialogHeader className="text-left pb-2">
               <div className="flex items-center justify-between">
                 <DialogTitle>Filters</DialogTitle>
-                {localActiveCount > 0 && (
-                  <Badge variant="outline">{localActiveCount} active</Badge>
-                )}
+                {localActiveCount > 0 && <Badge variant="outline">{localActiveCount} active</Badge>}
               </div>
               <DialogDescription>
                 Narrow team posts by kind, skill, status, or keyword.
@@ -237,11 +236,7 @@ export function FilterBar({
       <div className="hidden sm:flex flex-wrap items-end gap-3 rounded-card border border-border bg-card p-4">
         {/* Keyword Search */}
         <div className="flex-1 min-w-[200px]">
-          <FormField
-            id="desktop-filter-keyword"
-            label="Search"
-            help="Keyword (max 80 chars)"
-          >
+          <FormField id="desktop-filter-keyword" label="Search" help="Keyword (max 80 chars)">
             <div className="relative">
               <SearchIcon
                 className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"

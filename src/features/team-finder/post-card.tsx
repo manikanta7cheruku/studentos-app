@@ -120,10 +120,7 @@ export function PostCard({ post, onRequestJoin, className }: PostCardProps) {
       {/* Action footer */}
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         {isRequestDisabled ? (
-          <div
-            role="status"
-            className="flex items-center gap-2 text-base text-muted-foreground"
-          >
+          <div role="status" className="flex items-center gap-2 text-base text-muted-foreground">
             <AlertCircleIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             <span>{disabledReason}</span>
           </div>

@@ -193,8 +193,12 @@ describe("RequestDialog", () => {
     fireEvent.click(sendBtn);
 
     expect(handleSubmit).not.toHaveBeenCalled();
-    expect(screen.getAllByText("Please choose a role to apply for.").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Please write a short message explaining why you'd like to join.").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Please choose a role to apply for.").length).toBeGreaterThanOrEqual(
+      1,
+    );
+    expect(
+      screen.getAllByText("Please write a short message explaining why you'd like to join.").length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("alert")).toBeTruthy();
   });
 
@@ -224,7 +228,9 @@ describe("RequestDialog", () => {
     fireEvent.click(frontendRoleBtn);
 
     const textarea = screen.getByLabelText(/Short note to the creator/i);
-    fireEvent.change(textarea, { target: { value: "I would love to contribute to this hackathon project." } });
+    fireEvent.change(textarea, {
+      target: { value: "I would love to contribute to this hackathon project." },
+    });
 
     const sendBtn = screen.getByRole("button", { name: "Send request" });
     fireEvent.click(sendBtn);
@@ -240,14 +246,18 @@ describe("RequestDialog", () => {
     render(<RequestDialog post={sampleOpenPost} open errorCode="DUPLICATE_REQUEST" />);
 
     expect(screen.getByRole("alert")).toBeTruthy();
-    expect(screen.getAllByText("You have already sent a request to join this role.").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("You have already sent a request to join this role.").length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("shows role full (SLOTS_FULL) error passed via errorCode", () => {
     render(<RequestDialog post={sampleOpenPost} open errorCode="SLOTS_FULL" />);
 
     expect(screen.getByRole("alert")).toBeTruthy();
-    expect(screen.getAllByText("That role was just filled. See other open roles.").length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText("That role was just filled. See other open roles.").length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("shows sending state with spinner when isSending is true", () => {
@@ -286,7 +296,9 @@ describe("FilterBar", () => {
     expect(getActiveFilterCount({})).toBe(0);
     expect(getActiveFilterCount({ kind: "all", status: "all", skill: "", q: "" })).toBe(0);
     expect(getActiveFilterCount({ kind: "hackathon" })).toBe(1);
-    expect(getActiveFilterCount({ kind: "project", status: "open", skill: "React", q: "IoT" })).toBe(4);
+    expect(
+      getActiveFilterCount({ kind: "project", status: "open", skill: "React", q: "IoT" }),
+    ).toBe(4);
   });
 
   it("calls onChange and onApply when desktop filters change", () => {
@@ -312,7 +324,12 @@ describe("FilterBar", () => {
   it("calls onClear and resets filters when Clear is clicked", () => {
     const handleClear = vi.fn();
     const handleChange = vi.fn();
-    const initialFilters: TeamPostFilters = { kind: "hackathon", status: "open", skill: "Python", q: "AI" };
+    const initialFilters: TeamPostFilters = {
+      kind: "hackathon",
+      status: "open",
+      skill: "Python",
+      q: "AI",
+    };
 
     render(<FilterBar filters={initialFilters} onClear={handleClear} onChange={handleChange} />);
 
@@ -358,9 +375,7 @@ describe("Empty states", () => {
     render(<NoPostsEmptyState onCreatePost={handleCreate} />);
 
     expect(screen.getByText("No team posts yet")).toBeTruthy();
-    expect(
-      screen.getByText(/Be the first in your college to post a team request/),
-    ).toBeTruthy();
+    expect(screen.getByText(/Be the first in your college to post a team request/)).toBeTruthy();
 
     const createBtn = screen.getByRole("button", { name: "Post a team request" });
     fireEvent.click(createBtn);
@@ -372,9 +387,7 @@ describe("Empty states", () => {
     render(<NoFilterResultsEmptyState onClearFilters={handleClear} />);
 
     expect(screen.getByText("No results for these filters")).toBeTruthy();
-    expect(
-      screen.getByText(/No team posts matched your search criteria/),
-    ).toBeTruthy();
+    expect(screen.getByText(/No team posts matched your search criteria/)).toBeTruthy();
 
     const clearBtn = screen.getByRole("button", { name: "Clear filters" });
     fireEvent.click(clearBtn);
@@ -385,9 +398,7 @@ describe("Empty states", () => {
     render(<NoRequestsEmptyState />);
 
     expect(screen.getByText("No requests yet")).toBeTruthy();
-    expect(
-      screen.getByText(/When students request to join your open roles/),
-    ).toBeTruthy();
+    expect(screen.getByText(/When students request to join your open roles/)).toBeTruthy();
   });
 
   it("renders all states through TeamFinderEmptyState helper", () => {

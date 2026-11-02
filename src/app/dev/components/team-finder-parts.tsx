@@ -91,13 +91,7 @@ export function TeamFinderSections() {
             />
           </StateCell>
           <StateCell label="Selectable: Full (Disabled)">
-            <RoleChip
-              role={sandboxRoleFull}
-              selectable
-              disabled
-              showSkills
-              className="w-full"
-            />
+            <RoleChip role={sandboxRoleFull} selectable disabled showSkills className="w-full" />
           </StateCell>
         </div>
       </Section>
@@ -169,9 +163,7 @@ export function TeamFinderSections() {
             <FilterBar
               filters={desktopFilters}
               onChange={setDesktopFilters}
-              onClear={() =>
-                setDesktopFilters({ kind: "all", skill: "", status: "all", q: "" })
-              }
+              onClear={() => setDesktopFilters({ kind: "all", skill: "", status: "all", q: "" })}
               availableSkills={["React", "TypeScript", "Python", "Node.js", "Figma"]}
             />
           </StateCell>

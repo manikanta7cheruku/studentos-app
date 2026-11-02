@@ -18,7 +18,7 @@ import {
 import { ErrorSummary, type ErrorSummaryItem } from "@/components/ui/error-summary";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
-import type { JoinRequestErrorCode, JoinRequestError, TeamPost, TeamRole } from "./types";
+import type { JoinRequestErrorCode, JoinRequestError, TeamPost } from "./types";
 import { RoleChip } from "./role-chip";
 
 export interface RequestDialogProps {
@@ -60,16 +60,14 @@ export function RequestDialog({
   };
 
   const lastActiveElementRef = React.useRef<HTMLElement | null>(null);
-  const [selectedRoleId, setSelectedRoleId] = React.useState<string | null>(initialRoleId ?? null);
+  const [selectedRoleIdOverride, setSelectedRoleIdOverride] = React.useState<
+    string | null | undefined
+  >(undefined);
+  const selectedRoleId =
+    selectedRoleIdOverride !== undefined ? selectedRoleIdOverride : (initialRoleId ?? null);
+
   const [message, setMessage] = React.useState("");
   const [localErrors, setLocalErrors] = React.useState<ErrorSummaryItem[]>([]);
-
-  // Update selected role if initialRoleId changes
-  React.useEffect(() => {
-    if (initialRoleId) {
-      setSelectedRoleId(initialRoleId);
-    }
-  }, [initialRoleId]);
 
   // Derive error messages from props or local state
   const errorItems = React.useMemo<ErrorSummaryItem[]>(() => {
@@ -154,9 +152,7 @@ export function RequestDialog({
       }
     } else {
       setLocalErrors([]);
-      if (!initialRoleId) {
-        setSelectedRoleId(null);
-      }
+      setSelectedRoleIdOverride(undefined);
       setMessage("");
       if (lastActiveElementRef.current) {
         lastActiveElementRef.current.focus();
@@ -244,7 +240,7 @@ export function RequestDialog({
                       selected={isSelected}
                       disabled={isFull || isSending}
                       onSelect={(r) => {
-                        setSelectedRoleId(r.id);
+                        setSelectedRoleIdOverride(r.id);
                         setLocalErrors((prev) => prev.filter((e) => e.fieldId !== "request-role"));
                       }}
                       showSkills
@@ -297,12 +293,7 @@ export function RequestDialog({
 
           <DialogFooter className="p-4 border-t border-border bg-muted/30">
             <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isSending}
-                className="min-h-[44px]"
-              >
+              <Button type="button" variant="outline" disabled={isSending} className="min-h-[44px]">
                 Cancel
               </Button>
             </DialogClose>
