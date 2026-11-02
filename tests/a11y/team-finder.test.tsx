@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import axe from "axe-core";
 
-import { RoleChip, PostCard, RequestDialog } from "@/features/team-finder";
+import { RoleChip, PostCard, RequestDialog, FilterBar } from "@/features/team-finder";
 import type { TeamRole, TeamPost } from "@/features/team-finder";
 
 beforeAll(() => {
@@ -122,6 +122,24 @@ describe("accessibility of team finder parts (axe)", () => {
     const { container } = render(
       <main>
         <RequestDialog post={sampleOpenPost} open errorCode="DUPLICATE_REQUEST" />
+      </main>,
+    );
+    const results = await axe.run(container, {
+      rules: { "color-contrast": { enabled: false } },
+    });
+    const serious = results.violations.filter(
+      (violation) => violation.impact === "serious" || violation.impact === "critical",
+    );
+    expect(serious).toEqual([]);
+  });
+
+  it("has no serious or critical accessibility problems in filter bar (desktop and phone)", async () => {
+    const { container } = render(
+      <main>
+        <FilterBar
+          filters={{ kind: "hackathon", status: "open", skill: "React", q: "IoT" }}
+          availableSkills={["React", "TypeScript", "Python"]}
+        />
       </main>,
     );
     const results = await axe.run(container, {

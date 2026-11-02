@@ -2,8 +2,14 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-import { RoleChip, PostCard, RequestDialog } from "@/features/team-finder";
-import type { TeamRole, TeamPost } from "@/features/team-finder";
+import {
+  RoleChip,
+  PostCard,
+  RequestDialog,
+  FilterBar,
+  getActiveFilterCount,
+} from "@/features/team-finder";
+import type { TeamRole, TeamPost, TeamPostFilters } from "@/features/team-finder";
 
 beforeAll(() => {
   if (typeof window.ResizeObserver !== "function") {
@@ -267,6 +273,77 @@ describe("RequestDialog", () => {
 
     await waitFor(() => {
       expect(document.activeElement).toBe(triggerBtn);
+    });
+  });
+});
+
+describe("FilterBar", () => {
+  it("accurately calculates active filter count", () => {
+    expect(getActiveFilterCount({})).toBe(0);
+    expect(getActiveFilterCount({ kind: "all", status: "all", skill: "", q: "" })).toBe(0);
+    expect(getActiveFilterCount({ kind: "hackathon" })).toBe(1);
+    expect(getActiveFilterCount({ kind: "project", status: "open", skill: "React", q: "IoT" })).toBe(4);
+  });
+
+  it("calls onChange and onApply when desktop filters change", () => {
+    const handleChange = vi.fn();
+    const handleApply = vi.fn();
+    const initialFilters: TeamPostFilters = { kind: "all", status: "all", skill: "", q: "" };
+
+    render(<FilterBar filters={initialFilters} onChange={handleChange} onApply={handleApply} />);
+
+    const searchInput = screen.getByPlaceholderText("Search posts...");
+    fireEvent.change(searchInput, { target: { value: "robotics" } });
+
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ q: "robotics" }));
+    expect(handleApply).toHaveBeenCalledWith(expect.objectContaining({ q: "robotics" }));
+  });
+
+  it("enforces max length 80 on search keyword input", () => {
+    render(<FilterBar filters={{ q: "" }} />);
+    const searchInput = screen.getByPlaceholderText("Search posts...");
+    expect(searchInput.getAttribute("maxLength")).toBe("80");
+  });
+
+  it("calls onClear and resets filters when Clear is clicked", () => {
+    const handleClear = vi.fn();
+    const handleChange = vi.fn();
+    const initialFilters: TeamPostFilters = { kind: "hackathon", status: "open", skill: "Python", q: "AI" };
+
+    render(<FilterBar filters={initialFilters} onClear={handleClear} onChange={handleChange} />);
+
+    // Active count shows Clear (4)
+    const clearBtn = screen.getByRole("button", { name: /Clear \(4\)/i });
+    fireEvent.click(clearBtn);
+
+    expect(handleClear).toHaveBeenCalledTimes(1);
+    expect(handleChange).toHaveBeenCalledWith({
+      kind: "all",
+      skill: "",
+      status: "all",
+      q: "",
+    });
+  });
+
+  it("opens phone bottom sheet, modifies filters and applies them", async () => {
+    const handleApply = vi.fn();
+    render(<FilterBar filters={{ kind: "all", status: "all" }} onApply={handleApply} />);
+
+    const openSheetBtn = screen.getByRole("button", { name: /Open filters/i });
+    fireEvent.click(openSheetBtn);
+
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(screen.getByText("Narrow team posts by kind, skill, status, or keyword.")).toBeTruthy();
+
+    const kindSelect = screen.getByLabelText("Type of post");
+    fireEvent.change(kindSelect, { target: { value: "hackathon" } });
+
+    const applyBtn = screen.getByRole("button", { name: "Apply filters" });
+    fireEvent.click(applyBtn);
+
+    expect(handleApply).toHaveBeenCalledWith(expect.objectContaining({ kind: "hackathon" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
     });
   });
 });
