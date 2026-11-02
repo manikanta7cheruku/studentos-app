@@ -220,3 +220,34 @@ Choices R2 made on Day 2:
 - An address that is not on a verified domain of the college gives 400 `VALIDATION_FAILED` with `details.fields[0].path = "email"`.
 - Dates are UTC with a `Z`.
 - The integration tests run against the local stack only: `pnpm test:integration`.
+
+## 8. Admin endpoints built in R2 Day 3 (what is real now)
+All paths start with `/api/v1/c/{slug}/admin`. They are for **college admins only**. Sample data for every one of them is in `src/contracts/fixtures` (`adm-*.json`), the shapes are in `src/contracts/admin.ts`.
+
+| Operation | Method and path | Notes |
+|---|---|---|
+| ADM-03 | GET `/settings` | Join methods, approval rule, level to post, module flags, and a read only `college` block (name, colours, domains) |
+| ADM-03 | PATCH `/settings` | Send only what changes. Audit: `settings.updated`. `network_visibility` can only be `private` in v1 |
+| ADM-11 | GET `/stats` | `total_members`, `pending_verifications`, `active_invites` for the dashboard |
+| ADM-05 | GET `/invites` | The 100 newest invites, each with `status`: `active`, `exhausted`, `expired`, `revoked` |
+| ADM-05 | POST `/invites` | IDEM. Body: `label`, `max_uses` (1 to 1000), `expires_at` (future, at most 365 days), `grants_status` (`active` = joins as member at level 2, `pending` = waits in the queue). Answer 201 with the plain `code` **once**. Audit: `invite.created` |
+| ADM-05 | DELETE `/invites/{id}` | Revoke. 404 unknown, 409 already revoked. Audit: `invite.revoked` |
+| ADM-06 | GET `/verification-requests?status=pending&limit=20&cursor=` | The queue. Applicant name and email, program, year, last 4 of the enrolment number |
+| ADM-07 | POST `/verification-requests/{id}/decision` | IDEM. `{ "decision": "approved" }` or `{ "decision": "rejected", "reason": "5 or more characters" }`. Audit: `member.approved` or `member.rejected` |
+| ADM-08 | GET `/members?q=&status=&role=&limit=&cursor=` | Everyone who joined, newest first. **No email addresses** |
+| ADM-09 | PATCH `/members/{membershipId}` | `role` and/or `status` (`active`, `suspended`, `left`). `reason` (5 or more characters) is required for `suspended` and `left`. Audit: `member.role_changed`, `member.suspended`, `member.reinstated` or `member.removed` |
+| ADM-10 | GET `/audit-logs?action=&actor_id=&limit=&cursor=` | Read only. Each row has `actor_name` |
+
+Who gets through (checked on every call, in this order): not signed in = 401 `UNAUTHENTICATED`; pending or suspended member = 403 `MEMBERSHIP_NOT_ACTIVE`; student or moderator = 403 `FORBIDDEN`; a person who is not a member of that college (even an admin of another college) = 404 `NOT_FOUND`; suspended college = 403 `TENANT_SUSPENDED`. Hiding a button is not security: the server decides.
+
+Rules for the screens (R4, R3):
+- **Lists** answer `{ data: [...], meta: { request_id, next_cursor } }`. Send `next_cursor` back as `?cursor=` to get the next page. `next_cursor` is `null` on the last page. `limit` is 1 to 50 (default 20). Unknown query parameters give 400.
+- **IDEM endpoints** (create invite, decision) need an `Idempotency-Key` header with a new UUID for each new action. Reuse the same UUID only when retrying the same action. The create answer holds the plain invite code once. A retry with the same key returns the invite with `code: null`: the screen must then say "This code was already shown. Revoke it and create a new one."
+- **Reject needs a reason** (5 or more characters). **Suspend and remove need a reason.** Show the reason box before the call, the server refuses without it.
+- **Errors to design for**: 409 `CONFLICT` on a decision means the item was already decided (reload the queue). 409 on a member change also means "a college must keep at least one active admin" (read `error.message`). 403 `FORBIDDEN` when an admin changes their own role or status, or decides their own request.
+- **Every change writes exactly one audit row.** Refused calls write none.
+- **Dates** are UTC with a `Z`. `audit.id` is a string.
+- Call with `credentials: "include"` (cookie session). State changing calls from the browser carry the normal `Origin` header.
+- Rate limit: 120 admin calls per minute per person, then 429 `RATE_LIMITED` with `Retry-After`.
+
+Not built yet (so keep sample data for these): notifications to the applicant after a decision (Day 4), the roster import (ADM-04), the data export (ADM-12), moderator tools.

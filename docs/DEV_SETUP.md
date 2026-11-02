@@ -7,7 +7,7 @@ For R2, R3, R4 and R5. Written by R5 on Day 1. If a step is wrong, fix this file
 | Tool | Version | Why |
 |---|---|---|
 | Git | any current version | clone, branches, pull requests |
-| Node.js | the major version in `.nvmrc` (24). Allowed range is in `package.json` field `engines` | runs the app and the tools. Check with `node --version` |
+| Node.js | the major version in `.nvmrc` (24), **24.15.0 or newer** (a test package needs it). Allowed range is in `package.json` field `engines` | runs the app and the tools. Check with `node --version` |
 | pnpm | pinned in `package.json` field `packageManager` | the only package manager here. Do not use npm or yarn |
 | VS Code | optional | extensions: ESLint, Prettier, Tailwind CSS IntelliSense |
 | GitHub CLI (`gh`) | optional | open PRs and read CI results from the terminal |
@@ -46,8 +46,8 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 `pnpm verify` does not need the database. To run the API or the integration tests:
 
 1. Start Docker Desktop, then `pnpm db:start` (first time downloads several GB), then `pnpm db:reset`.
-2. Run `pnpm supabase status -o env`. It prints the local keys. They are the well known demo keys of the local stack, but still keep them out of git.
-3. Fill `.env.local`:
+2. Run `pnpm env:local`. It reads the local keys from the running stack and writes `.env.local` for you (it refuses to overwrite an existing file unless you add `-- --force`). The keys are the well known demo keys of the local stack, but still keep them out of git.
+3. What the file holds (for reference, or to fill it by hand from `pnpm supabase status -o env`):
 
 | Variable | Value |
 |---|---|
@@ -76,8 +76,11 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `pnpm verify` | format check, lint, typecheck, tests, build. Run it before every pull request |
 | `pnpm db:start`, `pnpm db:stop` | start or stop the local Supabase stack in Docker. The first start downloads several GB of images |
 | `pnpm db:reset` | rebuilds the local database from `supabase/migrations` and `supabase/seed.sql` (all fake data). Needs `pnpm db:start` first |
-| `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
-| `pnpm test:integration` | API tests against the LOCAL Supabase stack (real login, limits, joins, a concurrency test). Needs `pnpm db:start`, `pnpm db:reset` and `.env.local`. It refuses to run against any other URL. Not part of `pnpm verify` yet (R5 adds it to CI on Day 2) |
+| `pnpm db:test` | runs the pgTAP tests in `supabase/tests/database`. Needs `pnpm db:start` first. CI runs it as the Database tests job. Not part of `pnpm verify` |
+| `pnpm test:integration` | API tests against the LOCAL Supabase stack (real login, limits, joins, a concurrency test). Needs `pnpm db:start`, `pnpm db:reset` and `.env.local`. It refuses to run against any other URL. CI runs it as the Integration tests job. Not part of `pnpm verify` |
+| `pnpm env:local` | writes `.env.local` from the running local stack (see the section above) |
+| `pnpm test:e2e` | Playwright journeys (sign in, join) and browser smoke tests. Needs `pnpm db:start`, `pnpm db:reset`, `pnpm env:local`. First time: `pnpm exec playwright install chromium`. CI runs it as the E2E workflow |
+| `node scripts/smoke.mjs <url>` | read-only smoke test of a deployed copy, for example staging (docs/STAGING_SETUP.md) |
 
 ## 4. Every task
 
@@ -94,7 +97,7 @@ Nobody pushes to `main`. GitHub cannot enforce this yet on our plan, so it is a 
 | Problem | Fix |
 |---|---|
 | `pnpm` is not recognized | run `corepack enable pnpm`, then open a new terminal |
-| Install refuses because of the Node version | install the Node major version from `.nvmrc`, then retry |
+| Install refuses because of the Node version (ERR_PNPM_UNSUPPORTED_ENGINE) | install Node 24.15.0 or newer (the latest 24.x), open a new terminal, then retry. `jsdom` needs it |
 | `frozen-lockfile` error | `package.json` and `pnpm-lock.yaml` disagree. Do not delete the lockfile. Ask R5 |
 | `pnpm format:check` fails | run `pnpm format`, then commit the changes |
 | Port 3000 is busy | stop the other process, or run `pnpm dev -- -p 3001` |

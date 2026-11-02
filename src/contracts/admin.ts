@@ -12,6 +12,14 @@ import {
 import { membershipSummary } from "./tenant";
 
 // ADM-03 GET / PATCH /api/v1/c/{slug}/admin/settings
+// `college` is read only: name, colours and domains are managed by the platform, not by the college admin.
+export const adminCollegeInfo = z.object({
+  name: z.string(),
+  short_name: z.string().nullable(),
+  accent_hex: z.string().nullable(),
+  status: z.enum(["draft", "active", "suspended", "archived"]),
+  domains: z.array(z.object({ domain: z.string(), verified: z.boolean() })),
+});
 export const adminSettings = z.object({
   allowed_methods: z.array(verificationMethod).min(1),
   require_admin_approval: z.boolean(),
@@ -19,6 +27,7 @@ export const adminSettings = z.object({
   network_visibility: z.enum(["private", "read_shared", "full_shared"]),
   features: z.record(z.string(), z.boolean()),
   retention: z.record(z.string(), z.unknown()),
+  college: adminCollegeInfo,
 });
 export const adminSettingsResponse = successEnvelope(adminSettings);
 export const adminSettingsPatchBody = z
@@ -26,7 +35,10 @@ export const adminSettingsPatchBody = z
     allowed_methods: z.array(verificationMethod).min(1),
     require_admin_approval: z.boolean(),
     min_level_to_post: z.number().int().min(0).max(3),
-    network_visibility: z.enum(["private", "read_shared", "full_shared"]),
+    // Sharing between colleges is not built in v1, so the only value a college can set is "private".
+    network_visibility: z.literal("private", {
+      error: "Sharing between colleges is not available yet.",
+    }),
     features: z.record(z.string(), z.boolean()),
     retention: z.record(z.string(), z.unknown()),
   })
@@ -41,6 +53,7 @@ export const inviteCreateBody = z.strictObject({
   expires_at: isoDateTime,
   grants_status: inviteGrantsStatus,
 });
+export const inviteStatus = z.enum(["active", "exhausted", "expired", "revoked"]);
 export const invite = z.object({
   id: uuid,
   label: z.string(),
@@ -49,12 +62,22 @@ export const invite = z.object({
   expires_at: isoDateTime,
   revoked_at: isoDateTime.nullable(),
   grants_status: inviteGrantsStatus,
+  // Worked out by the server: revoked, then expired, then exhausted (all uses taken), else active.
+  status: inviteStatus,
   created_by: uuid,
   created_at: isoDateTime,
 });
 // The plain code is shown once, at creation. Only a hash is stored.
+// `code` is null when this is a replay of an earlier request (same Idempotency-Key): the code is
+// shown once and never stored, so the admin must revoke that invite and create a new one if it was lost.
 export const inviteCreateResponse = successEnvelope(
-  z.object({ invite, code: z.string().regex(/^[A-Z0-9-]{6,32}$/) }),
+  z.object({
+    invite,
+    code: z
+      .string()
+      .regex(/^[A-Z0-9-]{6,32}$/)
+      .nullable(),
+  }),
 );
 export const inviteListResponse = successEnvelope(z.array(invite));
 export const inviteRevokeResponse = successEnvelope(z.object({ invite }));
@@ -167,6 +190,7 @@ export const auditLogQuery = paginationQuery.extend({
 export const auditLogEntry = z.object({
   id: z.string().regex(/^\d+$/),
   actor_id: uuid.nullable(),
+  actor_name: z.string().nullable(),
   actor_role: z.string(),
   action: z.string(),
   target_type: z.string().nullable(),
@@ -176,3 +200,11 @@ export const auditLogEntry = z.object({
   created_at: isoDateTime,
 });
 export const auditLogListResponse = successEnvelope(z.array(auditLogEntry));
+
+// ADM-11 GET /api/v1/c/{slug}/admin/stats
+export const adminStats = z.object({
+  total_members: z.number().int().min(0),
+  pending_verifications: z.number().int().min(0),
+  active_invites: z.number().int().min(0),
+});
+export const adminStatsResponse = successEnvelope(adminStats);

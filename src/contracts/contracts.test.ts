@@ -42,6 +42,7 @@ const operations: Record<string, Kinds> = {
   "adm-08": { query: c.memberListQuery, success: c.memberListResponse },
   "adm-09": { request: c.memberPatchBody, success: c.memberPatchResponse },
   "adm-10": { query: c.auditLogQuery, success: c.auditLogListResponse },
+  "adm-11": { success: c.adminStatsResponse },
   "ntf-01": { query: c.notificationListQuery, success: c.notificationListResponse },
   "ntf-02": { request: c.notificationReadBody, success: c.notificationReadResponse },
   "ntf-02-all": { request: c.notificationReadBody },

@@ -9,7 +9,19 @@
       "tracker": true,
       "opportunities": false
     },
-    "retention": {}
+    "retention": {},
+    "college": {
+      "name": "Alpha College",
+      "short_name": "Alpha",
+      "accent_hex": "#1D4ED8",
+      "status": "active",
+      "domains": [
+        {
+          "domain": "alpha.test",
+          "verified": true
+        }
+      ]
+    }
   },
   "meta": {
     "request_id": "req_7f3a9c2e41b8"
