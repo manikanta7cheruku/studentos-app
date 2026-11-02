@@ -33,6 +33,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 
 import { FormPartsSections } from "./form-parts";
+import { TeamFinderSections } from "./team-finder-parts";
 
 type ButtonVariant = "default" | "outline" | "secondary" | "ghost" | "destructive" | "link";
 
@@ -305,6 +306,7 @@ export default function ComponentsSandbox() {
       </Section>
 
       <FormPartsSections />
+      <TeamFinderSections />
     </main>
   );
 }
