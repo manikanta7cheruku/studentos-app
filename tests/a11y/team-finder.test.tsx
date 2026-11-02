@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/react";
 import axe from "axe-core";
 
-import { RoleChip, PostCard } from "@/features/team-finder";
+import { RoleChip, PostCard, RequestDialog } from "@/features/team-finder";
 import type { TeamRole, TeamPost } from "@/features/team-finder";
 
 beforeAll(() => {
@@ -107,6 +107,21 @@ describe("accessibility of team finder parts (axe)", () => {
         <PostCard post={sampleClosedPost} />
         <PostCard post={sampleExpiredPost} />
         <PostCard post={sampleFilledPost} />
+      </main>,
+    );
+    const results = await axe.run(container, {
+      rules: { "color-contrast": { enabled: false } },
+    });
+    const serious = results.violations.filter(
+      (violation) => violation.impact === "serious" || violation.impact === "critical",
+    );
+    expect(serious).toEqual([]);
+  });
+
+  it("has no serious or critical accessibility problems in request dialog (open, error, sending)", async () => {
+    const { container } = render(
+      <main>
+        <RequestDialog post={sampleOpenPost} open errorCode="DUPLICATE_REQUEST" />
       </main>,
     );
     const results = await axe.run(container, {
