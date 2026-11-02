@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
 import {
   RoleChip,
@@ -12,6 +12,7 @@ import {
   NoFilterResultsEmptyState,
   NoRequestsEmptyState,
   TeamFinderEmptyState,
+  sampleTeamPosts,
 } from "@/features/team-finder";
 import type { TeamRole, TeamPost, TeamPostFilters } from "@/features/team-finder";
 
@@ -123,6 +124,25 @@ describe("RoleChip", () => {
     expect(handleSelect).not.toHaveBeenCalled();
     expect(screen.getByText("(Role full)")).toBeTruthy();
   });
+
+  it("renders Closed or Expired text when postStatus is not open for unfilled roles", () => {
+    const { unmount: unmount1 } = render(<RoleChip role={openRole} postStatus="closed" />);
+    expect(screen.getByText("Closed")).toBeTruthy();
+    unmount1();
+
+    const { unmount: unmount2 } = render(<RoleChip role={openRole} postStatus="expired" />);
+    expect(screen.getByText("Expired")).toBeTruthy();
+    unmount2();
+
+    const { unmount: unmount3 } = render(<RoleChip role={openRole} postStatus="filled" />);
+    expect(screen.getByText("Closed")).toBeTruthy();
+    unmount3();
+
+    // Full role still says Full even if post is closed
+    const { unmount: unmount4 } = render(<RoleChip role={fullRole} postStatus="closed" />);
+    expect(screen.getByText("Full")).toBeTruthy();
+    unmount4();
+  });
 });
 
 describe("PostCard", () => {
@@ -181,6 +201,48 @@ describe("PostCard", () => {
     expect(text).not.toMatch(/\+91/);
     expect(text).not.toMatch(/email/i);
     expect(text).not.toMatch(/phone/i);
+  });
+
+  it("reflects post status in role chips for closed, expired, filled, and open posts", () => {
+    // Open post: open roles still say "Open" and full roles still say "Full"
+    const openPost = sampleTeamPosts.find((p) => p.status === "open")!;
+    const { unmount: unmountOpen } = render(<PostCard post={openPost} />);
+    const openRoleChips = screen.getByRole("list", { name: `Roles for ${openPost.title}` });
+    expect(within(openRoleChips).getAllByText("Open").length).toBeGreaterThan(0);
+    expect(within(openRoleChips).getAllByText("Full").length).toBeGreaterThan(0);
+    unmountOpen();
+
+    // Closed post: no role chip in a closed post says "Open"; chips show "Closed"
+    const closedPost = sampleTeamPosts.find((p) => p.status === "closed")!;
+    const { unmount: unmountClosed } = render(<PostCard post={closedPost} />);
+    const closedRoleChips = screen.getByRole("list", { name: `Roles for ${closedPost.title}` });
+    expect(within(closedRoleChips).queryByText("Open")).toBeNull();
+    expect(within(closedRoleChips).getAllByText("Closed").length).toBeGreaterThan(0);
+    unmountClosed();
+
+    // Expired post: no role chip in an expired post says "Open"; chips show "Expired"
+    const expiredPost = sampleTeamPosts.find((p) => p.status === "expired")!;
+    const { unmount: unmountExpired } = render(<PostCard post={expiredPost} />);
+    const expiredRoleChips = screen.getByRole("list", { name: `Roles for ${expiredPost.title}` });
+    expect(within(expiredRoleChips).queryByText("Open")).toBeNull();
+    expect(within(expiredRoleChips).getAllByText("Expired").length).toBeGreaterThan(0);
+    unmountExpired();
+
+    // Filled post: full roles say "Full"; any chip that is not full shows "Closed"
+    const filledPostWithOpenRole: TeamPost = {
+      ...sampleOpenPost,
+      id: "p-filled-with-unfilled-role",
+      status: "filled",
+      roles: [openRole, fullRole],
+    };
+    const { unmount: unmountFilled } = render(<PostCard post={filledPostWithOpenRole} />);
+    const filledRoleChips = screen.getByRole("list", {
+      name: `Roles for ${filledPostWithOpenRole.title}`,
+    });
+    expect(within(filledRoleChips).queryByText("Open")).toBeNull();
+    expect(within(filledRoleChips).getAllByText("Full").length).toBeGreaterThan(0);
+    expect(within(filledRoleChips).getAllByText("Closed").length).toBeGreaterThan(0);
+    unmountFilled();
   });
 });
 

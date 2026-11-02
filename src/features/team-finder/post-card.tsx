@@ -111,7 +111,7 @@ export function PostCard({ post, onRequestJoin, className }: PostCardProps) {
         >
           {post.roles.map((role) => (
             <li key={role.id}>
-              <RoleChip role={role} showSkills />
+              <RoleChip role={role} postStatus={post.status} showSkills />
             </li>
           ))}
         </ul>

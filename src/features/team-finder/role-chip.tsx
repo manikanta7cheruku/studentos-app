@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "cn";
-import type { TeamRole } from "./types";
+import type { PostStatus, TeamRole } from "./types";
 
 export interface RoleChipProps {
   role: TeamRole;
@@ -11,13 +11,14 @@ export interface RoleChipProps {
   selectable?: boolean;
   disabled?: boolean;
   showSkills?: boolean;
+  postStatus?: PostStatus;
   className?: string;
 }
 
 /**
  * RoleChip displays a role name, its filled/slots ratio ("2 of 3 filled"),
- * and an explicit textual state ("Open" or "Full", not color alone).
- * Full roles are disabled and cannot be selected.
+ * and an explicit textual state ("Open", "Full", "Closed", or "Expired", not color alone).
+ * Full roles and roles on non-open posts are disabled and cannot be selected.
  */
 export function RoleChip({
   role,
@@ -26,13 +27,26 @@ export function RoleChip({
   selectable = false,
   disabled = false,
   showSkills = false,
+  postStatus = "open",
   className,
 }: RoleChipProps) {
   const isFull = role.filled >= role.slots;
+  const isPostNotOpen = postStatus !== "open";
   const isInteractive = selectable || typeof onSelect === "function";
-  const isDisabled = disabled || (isInteractive && isFull);
+  const isDisabled = disabled || (isInteractive && (isFull || isPostNotOpen));
 
-  const statusText = isFull ? "Full" : "Open";
+  let statusText: string;
+  if (isFull) {
+    statusText = "Full";
+  } else if (postStatus === "closed" || postStatus === "filled") {
+    statusText = "Closed";
+  } else if (postStatus === "expired") {
+    statusText = "Expired";
+  } else {
+    statusText = "Open";
+  }
+
+  const isMuted = isFull || isPostNotOpen;
   const ratioText = `${role.filled} of ${role.slots} filled`;
 
   const content = (
@@ -42,7 +56,7 @@ export function RoleChip({
         <span
           className={cn(
             "rounded-input border px-2 py-0.5 text-base font-medium",
-            isFull
+            isMuted
               ? "border-border-strong bg-muted/60 text-muted-foreground"
               : "border-primary/30 bg-primary/10 text-primary",
           )}
@@ -55,6 +69,9 @@ export function RoleChip({
         <span>{ratioText}</span>
         {isFull && isInteractive && (
           <span className="text-destructive font-medium">(Role full)</span>
+        )}
+        {!isFull && isPostNotOpen && isInteractive && (
+          <span className="text-destructive font-medium">({statusText})</span>
         )}
       </div>
 
@@ -106,7 +123,7 @@ export function RoleChip({
       data-slot="role-chip"
       className={cn(
         "flex min-h-[44px] flex-col items-start justify-center gap-1 rounded-card border border-border bg-surface p-3 text-left",
-        isFull && "border-dashed bg-muted/20",
+        isMuted && "border-dashed bg-muted/20",
         className,
       )}
     >

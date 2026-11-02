@@ -97,6 +97,8 @@ describe("accessibility of team finder parts (axe)", () => {
         <RoleChip role={fullRole} />
         <RoleChip role={openRole} selectable />
         <RoleChip role={fullRole} selectable />
+        <RoleChip role={openRole} postStatus="closed" />
+        <RoleChip role={openRole} postStatus="expired" />
       </main>,
     );
     const results = await axe.run(container, {
