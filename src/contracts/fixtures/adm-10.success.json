@@ -3,6 +3,7 @@
     {
       "id": "1042",
       "actor_id": "aaaaaaaa-1000-4000-8000-000000000001",
+      "actor_name": "Aarav Admin",
       "actor_role": "college_admin",
       "action": "member.approved",
       "target_type": "membership",

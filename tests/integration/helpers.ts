@@ -127,13 +127,21 @@ export async function signIn(
   email: string,
 ): Promise<{ cookie: string; userId: string; isNew: boolean }> {
   const ip = randomIp();
-  await waitForMailCooldown(email);
-  const requested = await call(routes.request, {
-    method: "POST",
-    path: "/api/v1/auth/otp/request",
-    json: { email },
-    ip,
-  });
+  // Test files run one after the other, each with its own memory. The mail service may still be in its
+  // one second pause for this address from an earlier file, so a 429 is retried a few times.
+  let requested: Result | undefined;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await waitForMailCooldown(email);
+    requested = await call(routes.request, {
+      method: "POST",
+      path: "/api/v1/auth/otp/request",
+      json: { email },
+      ip,
+    });
+    if (requested.status !== 429) break;
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+  }
+  if (!requested) throw new Error("OTP request was not sent");
   if (requested.status !== 200)
     throw new Error(`OTP request failed: ${requested.status} ${JSON.stringify(requested.body)}`);
   const code = await latestCode(email);
@@ -154,6 +162,7 @@ export async function signIn(
 
 // A real access token, for the Authorization: Bearer path.
 export async function accessTokenFor(email: string): Promise<string> {
+  await waitForMailCooldown(email);
   const client = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -161,7 +170,15 @@ export async function accessTokenFor(email: string): Promise<string> {
       auth: { persistSession: false },
     },
   );
-  const sent = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  let sent = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  for (
+    let attempt = 0;
+    attempt < 6 && sent.error?.code === "over_email_send_rate_limit";
+    attempt++
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    sent = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  }
   if (sent.error) throw sent.error;
   const code = await latestCode(email);
   const verified = await client.auth.verifyOtp({ email, token: code, type: "email" });

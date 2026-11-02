@@ -7,3 +7,6 @@ Only R5 Testing and DevOps learning files are listed here. Add one row at the en
 | 1 | R5 | docs/learning/R5_qa_devops/build-sessions/D01_R5_scaffold-ci.md | Project scaffold and CI | pending (R2) |
 | 1 | R5 | docs/learning/R5_qa_devops/build-sessions/D01_R5_branch-protection.md | Protecting the main branch | pending (R2) |
 | 1 | R5 | docs/learning/R5_qa_devops/build-sessions/D01_R5_provider-check.md | Provider check from official pages | pending (R2) |
+| 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_isolation-tests.md | College isolation and permission tests | pending |
+| 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_staging.md | Staging environment | pending |
+| 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_e2e-setup.md | Browser test setup (Playwright) | pending |

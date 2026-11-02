@@ -157,3 +157,13 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - Join functions (service role only): `join_prepare`, `redeem_invite`, `submit_manual_join`, `email_domain_allowed`, `complete_email_domain_join`. They raise errors whose message is the API error code.
 - `invite_codes.grants_status = 'pending'` creates a pending member (level 1) and a verification request. `'active'` creates an active member at level 2.
 - A person who is `suspended` or `rejected` cannot join again through these functions. A person who has `left` can, and reuses the old row.
+
+## 13. Added on R2 Day 3 (migration 0004)
+- Eleven `admin_*` functions for the college admin endpoints: `admin_get_settings`, `admin_update_settings`, `admin_create_invite`, `admin_list_invites`, `admin_revoke_invite`, `admin_list_verification_requests`, `admin_decide_verification`, `admin_list_members`, `admin_update_member`, `admin_list_audit_logs`, `admin_stats`, plus helpers. Service role only.
+- **Defence in depth:** every function checks again, inside the database, that the actor is an active admin of that college (`admin_assert`) and that the college is not suspended or archived. A mistake in the TypeScript guard cannot become a permission hole.
+- **One audit row per change**, written in the same transaction (`write_audit_log`). A refused call writes none. Audit metadata holds ids and short facts, never the invite code or its hash.
+- Deciding a verification request locks the row, refuses a request that is not `pending` (409), refuses the admin's own request (403), and refuses a rejection without a reason of 5 or more characters.
+- Member changes: allowed moves are `active` to `suspended` or `left`, `suspended` to `active` or `left`, `pending` to `left`. Nobody changes their own role or status. The last active admin cannot be demoted, suspended or removed (error `LAST_ADMIN`, and the trigger from migration 0001 as a second lock).
+- Lists use keyset paging on (`created_at`, `id`), never offsets, so pages do not skip or repeat rows.
+- Invite `status` is worked out in SQL: revoked, then expired, then exhausted, else active.
+- A member who is removed (`left`) can join again with a valid invite. To keep someone out, suspend them.

@@ -23,9 +23,12 @@ export function readIdempotencyKey(request: Request): string {
 
 export type IdempotentResult = { status: number; data: unknown };
 
+// `keep` lets a route store a smaller answer than it returns. Example: the invite code is shown once
+// to the admin and must never be stored, so a replay returns the invite without the code.
 export async function withIdempotency(
   input: { userId: string; route: string; key: string; body: unknown },
   run: () => Promise<IdempotentResult>,
+  options: { keep?: (data: unknown) => unknown } = {},
 ): Promise<IdempotentResult & { replay: boolean }> {
   const admin = adminClient();
   const requestHash = hashKey("idempotency", JSON.stringify(input.body));
@@ -51,7 +54,7 @@ export async function withIdempotency(
     key: input.key,
     route: input.route,
     request_hash: requestHash,
-    response: result.data as object,
+    response: (options.keep ? options.keep(result.data) : result.data) as object,
     status_code: result.status,
     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
   };
