@@ -1,13 +1,15 @@
 import { UserIcon } from "lucide-react";
 import { PlaceholderScreen } from "@/features/tenancy";
 
+export const instant = false;
+
 export default function MePage() {
   return (
     <PlaceholderScreen
       moduleName="Me"
       title="Student Profile & Settings"
-      description="View and update your student profile, verified skills, project portfolio, and notifications."
-      actionLabel="Edit my profile"
+      description="Manage your profile, skills, verified achievements, and notifications."
+      actionLabel="Edit profile"
       icon={<UserIcon className="size-8" />}
     />
   );

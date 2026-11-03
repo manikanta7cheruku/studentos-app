@@ -1,6 +1,8 @@
 import { UsersIcon } from "lucide-react";
 import { PlaceholderScreen } from "@/features/tenancy";
 
+export const instant = false;
+
 export default function CollaboratePage() {
   return (
     <PlaceholderScreen

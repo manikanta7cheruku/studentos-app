@@ -1,13 +1,15 @@
 import { BriefcaseIcon } from "lucide-react";
 import { PlaceholderScreen } from "@/features/tenancy";
 
+export const instant = false;
+
 export default function CareerPage() {
   return (
     <PlaceholderScreen
       moduleName="Career"
-      title="Internships, Jobs & Application Tracker"
-      description="Explore curated internships, track your active job applications, and prepare for interviews."
-      actionLabel="Browse opportunities"
+      title="Application Tracker & Opportunities"
+      description="Track job applications, find verified campus opportunities, and prepare for interviews."
+      actionLabel="Add application"
       icon={<BriefcaseIcon className="size-8" />}
     />
   );

@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { sampleColleges, sampleCollege, CollegeAppShell } from "@/features/tenancy";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const instant = false;
+
 async function ShellWithParams({
   params,
   children,
