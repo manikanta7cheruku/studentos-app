@@ -13,17 +13,21 @@ import {
 import { cn } from "cn";
 import { NotificationBell } from "./notification-bell";
 
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
 export interface DesktopRailProps {
   currentPath: string;
   unreadCount?: number;
   isAdminOrModerator?: boolean;
   className?: string;
-}
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
+  items?: NavItem[];
+  collegeName?: string;
+  logoUrl?: string | null;
+  homeHref?: string;
 }
 
 /**
@@ -36,21 +40,27 @@ export function DesktopRail({
   unreadCount = 0,
   isAdminOrModerator = false,
   className,
+  items,
+  collegeName,
+  logoUrl,
+  homeHref,
 }: DesktopRailProps) {
-  const primaryNavItems: NavItem[] = [
+  const defaultNavItems: NavItem[] = [
     { href: "/campus", label: "Campus", icon: <Building2Icon className="size-6" /> },
     { href: "/collaborate", label: "Collaborate", icon: <UsersIcon className="size-6" /> },
     { href: "/career", label: "Career", icon: <BriefcaseIcon className="size-6" /> },
     { href: "/me", label: "Me", icon: <UserIcon className="size-6" /> },
   ];
 
-  if (isAdminOrModerator) {
-    primaryNavItems.push({
+  if (isAdminOrModerator && !items) {
+    defaultNavItems.push({
       href: "/admin",
       label: "Admin",
       icon: <ShieldAlertIcon className="size-6" />,
     });
   }
+
+  const primaryNavItems = items ?? defaultNavItems;
 
   return (
     <nav
@@ -63,11 +73,20 @@ export function DesktopRail({
     >
       <div className="flex w-full flex-col items-center gap-6">
         <Link
-          href="/campus"
-          aria-label="StudentOS Home"
+          href={homeHref ?? primaryNavItems[0]?.href ?? "/campus"}
+          aria-label={collegeName ? `${collegeName} Home` : "StudentOS Home"}
           className="flex min-h-11 min-w-11 items-center justify-center rounded-card font-heading text-xl font-bold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          OS
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={collegeName ?? "College logo"}
+              className="size-8 rounded object-contain"
+            />
+          ) : (
+            <span>{collegeName ? collegeName.slice(0, 2).toUpperCase() : "OS"}</span>
+          )}
         </Link>
 
         <ul className="flex w-full flex-col items-center gap-3">
