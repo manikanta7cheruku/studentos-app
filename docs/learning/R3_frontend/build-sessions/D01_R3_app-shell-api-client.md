@@ -85,6 +85,7 @@ None (handled in R2 Day 1/Day 2 backend tasks).
 - **Missing College**: Falls back to `sampleCollege` if an unknown slug is opened in mock mode.
 - **Network failure or HTML error page**: `apiClient` catches non-JSON responses and network disconnects, wrapping them into an `ApiError` with code `INTERNAL` or `NETWORK_ERROR`.
 - **Disabled Module**: Nav item is excluded completely, never disabled or greyed out.
+- **Next.js 16 Instant Navigation Validation**: Next.js 16.4.2 with Partial Prefetching checks for instant navigation during dev. Dynamic tenant routes (`/c/[slug]`) awaiting `params` in layouts or suspense boundaries trigger an "Instant: Dropped segment" validation error if not opted out. Setting `export const instant = false;` on the layout and page segments opts them out of instant validation cleanly.
 
 ## 11. Tests: what exists and how to run them (exact commands)
 
@@ -107,6 +108,7 @@ Runs `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm 
 - **MSW not intercepting**: Ensure `NEXT_PUBLIC_API_MOCKING=enabled` is present in your `.env.local` or environment.
 - **Port 3000 in use**: Run `lsof -i :3000` and kill the old process, then rerun `pnpm dev`.
 - **Zod validation failed**: If `apiClient` throws `VALIDATION_FAILED`, inspect `error.details` for schema mismatches against `@/contracts`.
+- **Instant Navigation Dropped Segment Error**: If the dev overlay warns `Could not validate that a segment in your UI has instant navigation - Dropped segment`, ensure `export const instant = false;` is exported from the dynamic route segment (see Next.js 16.3+ instant route segment config).
 
 ## 13. Security considerations
 
