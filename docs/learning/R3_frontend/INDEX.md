@@ -4,3 +4,4 @@ Only R3 Frontend learning files are listed here. Add one row at the end of the t
 
 | Day | Role | File | Topic | Walkthrough passed by |
 |---|---|---|---|---|
+| 1 | R3 | [D01_R3_app-shell-api-client.md](build-sessions/D01_R3_app-shell-api-client.md) | App shell, tab navigation, typed API client and MSW sample API | |
