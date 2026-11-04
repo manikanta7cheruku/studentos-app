@@ -54,8 +54,8 @@ function ErrorSummary({
       {...props}
     >
       <OctagonXIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-destructive" />
-      <div className="flex flex-col gap-2">
-        <h2 className="font-heading text-xl font-semibold">{title}</h2>
+      <div className="flex flex-col gap-2 min-w-0">
+        <h2 className="font-heading text-xl font-semibold break-words min-w-0">{title}</h2>
         <ul className="flex flex-col gap-1">
           {errors.map((error) => (
             <li key={error.fieldId}>

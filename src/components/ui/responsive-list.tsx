@@ -38,8 +38,8 @@ function ResponsiveList<T extends Record<string, unknown>>({
   const listBreakpointClass = breakpoint === "lg" ? "lg:hidden" : "md:hidden";
 
   return (
-    <div data-slot="responsive-list" className={className}>
-      <div className="w-full overflow-x-auto">
+    <div data-slot="responsive-list" className={cn("w-full min-w-0", className)}>
+      <div className="w-full min-w-0 overflow-x-auto">
         <table className={cn("hidden w-full border-collapse text-left text-base", tableBreakpointClass)}>
           <caption className="sr-only">{caption}</caption>
           <thead>
@@ -72,12 +72,12 @@ function ResponsiveList<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      <ul aria-label={caption} className={cn("flex flex-col gap-3", listBreakpointClass)}>
+      <ul aria-label={caption} className={cn("flex flex-col gap-3 min-w-0", listBreakpointClass)}>
         {rows.map((row) => (
-          <li key={getRowKey(row)} className="rounded-card border border-border bg-surface p-4">
-            <dl className="flex flex-col gap-2">
+          <li key={getRowKey(row)} className="rounded-card border border-border bg-surface p-4 min-w-0">
+            <dl className="flex flex-col gap-2 min-w-0">
               {columns.map((column) => (
-                <div key={column.key} className="flex flex-col">
+                <div key={column.key} className="flex flex-col min-w-0">
                   <dt className="text-base text-muted-foreground">{column.header}</dt>
                   <dd className="text-base text-foreground break-words min-w-0">{show(row, column)}</dd>
                 </div>
