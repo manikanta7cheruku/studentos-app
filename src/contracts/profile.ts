@@ -71,3 +71,37 @@ export const skillSearchQuery = z.strictObject({ q: z.string().trim().min(1).max
 export const skillSearchResponse = successEnvelope(
   z.array(z.object({ id: uuid, name: z.string(), category: z.string().nullable() })),
 );
+
+// PRF-04 POST /api/v1/me/avatar/upload-url
+export const avatarAllowedMimeTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/avif",
+  "image/svg+xml",
+] as const;
+
+export const avatarMimeType = z.enum(avatarAllowedMimeTypes);
+export type AvatarMimeType = z.infer<typeof avatarMimeType>;
+
+export const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+
+export const avatarUploadUrlBody = z.strictObject({
+  file_name: z.string().min(1).max(255),
+  content_type: avatarMimeType,
+  file_size: z.number().int().min(1).max(AVATAR_MAX_BYTES),
+});
+
+export const avatarUploadUrlResponse = successEnvelope(
+  z.object({
+    upload_url: z.string().url(),
+    path: z.string().min(1),
+  }),
+);
+
+export const avatarUploadResponse = successEnvelope(
+  z.object({
+    avatar_url: z.string().url(),
+  }),
+);

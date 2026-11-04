@@ -1,0 +1,9 @@
+{
+  "data": {
+    "upload_url": "https://example.supabase.co/storage/v1/object/upload/sign/avatars/sample.png?token=sample",
+    "path": "avatars/sample.png"
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
