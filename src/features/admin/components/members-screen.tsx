@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ResponsiveList, type ResponsiveListColumn } from "@/components/ui/responsive-list";
 import {
@@ -98,15 +99,19 @@ export function MembersScreen() {
         <p className="text-muted-foreground">Everyone in your college on StudentOS.</p>
       </div>
 
-      <div className="relative max-w-sm">
-        <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          aria-label="Search members"
-          placeholder="Search by name or email…"
-          className="pl-10"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex flex-col gap-2 max-w-sm">
+        <Label htmlFor="member-search">Search members</Label>
+        <div className="relative">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="member-search"
+            aria-label="Search members"
+            placeholder="Search by name or email…"
+            className="pl-10"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (
