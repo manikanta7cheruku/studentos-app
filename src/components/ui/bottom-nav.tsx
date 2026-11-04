@@ -30,25 +30,25 @@ function BottomNav({ items, currentPath, label = "Main", className }: BottomNavP
         className,
       )}
     >
-      <ul className="flex">
+      <ul className="flex overflow-x-auto">
         {items.map((item) => {
           const isCurrent =
             currentPath === item.href ||
             (item.href !== "/" && currentPath.startsWith(`${item.href}/`));
           return (
-            <li key={item.href} className="flex-1">
+            <li key={item.href} className="flex-1 shrink-0">
               <Link
                 href={item.href}
                 aria-current={isCurrent ? "page" : undefined}
                 className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-2 text-center text-base leading-tight outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-6",
+                  "flex min-h-14 flex-col items-center justify-center gap-1 px-3 py-2 text-center text-base leading-tight outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-6",
                   isCurrent
                     ? "bg-accent font-semibold text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <span aria-hidden="true">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             </li>
           );
