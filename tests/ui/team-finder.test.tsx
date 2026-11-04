@@ -326,6 +326,27 @@ describe("RequestDialog", () => {
     });
   });
 
+  it("deselects role when clicked again and shows error on submit", () => {
+    render(<RequestDialog post={sampleOpenPost} open />);
+
+    const frontendRoleBtn = screen.getByRole("button", { name: /Frontend Developer/i });
+    fireEvent.click(frontendRoleBtn);
+    expect(frontendRoleBtn.getAttribute("aria-pressed")).toBe("true");
+
+    fireEvent.click(frontendRoleBtn);
+    expect(frontendRoleBtn.getAttribute("aria-pressed")).toBe("false");
+
+    const textarea = screen.getByLabelText(/Short note to the creator/i);
+    fireEvent.change(textarea, { target: { value: "Hello, I want to join." } });
+
+    const sendBtn = screen.getByRole("button", { name: "Send request" });
+    fireEvent.click(sendBtn);
+
+    expect(screen.getAllByText("Please choose a role to apply for.").length).toBeGreaterThanOrEqual(
+      1,
+    );
+  });
+
   it("shows duplicate request error passed via errorCode", () => {
     render(<RequestDialog post={sampleOpenPost} open errorCode="DUPLICATE_REQUEST" />);
 
