@@ -240,7 +240,7 @@ export function RequestDialog({
                       selected={isSelected}
                       disabled={isFull || isSending}
                       onSelect={(r) => {
-                        setSelectedRoleIdOverride(r.id);
+                        setSelectedRoleIdOverride(selectedRoleId === r.id ? null : r.id);
                         setLocalErrors((prev) => prev.filter((e) => e.fieldId !== "request-role"));
                       }}
                       showSkills

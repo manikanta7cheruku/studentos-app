@@ -85,7 +85,7 @@ export function TeamFinderSections() {
               role={sandboxRoleOpen}
               selectable
               selected={selectedRole?.id === sandboxRoleOpen.id}
-              onSelect={setSelectedRole}
+              onSelect={(role) => setSelectedRole((prev) => (prev?.id === role.id ? null : role))}
               showSkills
               className="w-full"
             />
