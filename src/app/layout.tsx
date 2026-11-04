@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { MSWProvider } from "@/mocks";
 
 const fraunces = localFont({
   src: "../../public/fonts/fraunces/fraunces-variable.ttf",
@@ -28,7 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fraunces.variable} ${publicSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <MSWProvider>{children}</MSWProvider>
+      </body>
     </html>
   );
 }
