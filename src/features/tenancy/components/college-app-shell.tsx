@@ -81,23 +81,23 @@ export function CollegeAppShell({ slug, college, children }: CollegeAppShellProp
     >
       {/* Mobile Top Header (< 768px) */}
       <header className="flex h-14 items-center justify-between border-b border-border bg-surface px-4 md:hidden">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           {college.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={college.logo_url}
               alt={college.name}
-              className="size-8 rounded object-contain"
+              className="size-8 rounded object-contain shrink-0"
             />
           ) : (
             <div
               aria-label={`${college.name} initials`}
-              className="flex size-8 items-center justify-center rounded bg-accent font-heading text-sm font-bold text-primary"
+              className="flex size-8 items-center justify-center rounded bg-accent font-heading text-sm font-bold text-primary shrink-0"
             >
               {collegeInitials}
             </div>
           )}
-          <span className="font-heading font-semibold text-ink line-clamp-1">{college.name}</span>
+          <span className="font-heading font-semibold text-ink truncate min-w-0">{college.name}</span>
         </div>
       </header>
 
@@ -110,7 +110,7 @@ export function CollegeAppShell({ slug, college, children }: CollegeAppShellProp
         homeHref={`/c/${slug}/campus`}
         isAdminOrModerator={false}
       >
-        <div className="flex-1 pb-20 md:pb-6">{children}</div>
+        <div className="flex-1 min-w-0 pb-20 md:pb-6">{children}</div>
       </AppShell>
 
       {/* Mobile Bottom Navigation (< 768px) */}
