@@ -34,8 +34,7 @@ A new student or visitor enters through their college link (`/c/{slug}`) and nee
 1. **Routing and Streaming**:
    Each dynamic route (`/c/[slug]`, `/c/[slug]/sign-in`, `/c/[slug]/verify`, `/c/[slug]/pending`, `/c/[slug]/rejected`) receives `params: Promise<{ slug: string }>`. To comply with Next.js 16 Partial Prerendering rules, async parameter resolution is encapsulated inside `<Suspense>` boundaries with matching skeleton fallbacks.
 2. **Unified Client Service (`api.ts`)**:
-   Calls check `AUTH_JOIN_CONFIG.useRealApi`. When `false`, realistic in-memory handlers simulate latency and specific test error cases (`000000` -> invalid, `999999` -> expired, `EXHAUSTED` -> invite exhausted). When `true`, it delegates to real fetch endpoints with `credentials: "include"`, `Origin`, and `Idgit checkout main
-git pull origin mainempotency-Key` headers.
+   Calls check `AUTH_JOIN_CONFIG.useRealApi`. When `false`, realistic in-memory handlers simulate latency and specific test error cases (`000000` -> invalid, `999999` -> expired, `EXHAUSTED` -> invite exhausted). When `true`, it delegates to real fetch endpoints with `credentials: "include"`, `Origin`, and `Idempotency-Key` headers.
 3. **Screen Flow**:
    - `/c/{slug}`: Queries public branding and checks existing membership.
    - `/c/{slug}/sign-in`: Handles email entry (`EnterEmailStep`) &rarr; 6-digit OTP code (`EnterCodeStep`).
