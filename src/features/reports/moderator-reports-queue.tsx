@@ -269,14 +269,14 @@ export function ModeratorReportsQueue({
   const openCount = items.filter((r) => r.status === "open").length;
 
   return (
-    <div data-testid="reports-queue-container" className="flex flex-col gap-6">
+    <div data-testid="reports-queue-container" className="flex flex-col gap-6 min-w-0">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <ShieldAlertIcon className="size-7 text-primary" aria-hidden="true" />
-          <h1 className="font-heading text-2xl font-semibold sm:text-3xl">Moderation Queue</h1>
+      <div className="flex flex-col gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <ShieldAlertIcon className="size-7 shrink-0 text-primary" aria-hidden="true" />
+          <h1 className="font-heading text-2xl font-semibold sm:text-3xl break-words min-w-0">Moderation Queue</h1>
         </div>
-        <p className="text-base text-muted-foreground">
+        <p className="text-base text-muted-foreground break-words">
           Review community reports submitted by students at your college. Actions are logged for
           accountability.
         </p>
@@ -389,7 +389,7 @@ export function ModeratorReportsQueue({
                       `Reported ${formatTargetType(report.target_type)} #${report.target_id}`}
                   </h2>
                   {report.details && (
-                    <div className="rounded-input border border-border bg-accent/20 p-3 text-base text-foreground">
+                    <div className="rounded-input border border-border bg-accent/20 p-3 text-base text-foreground break-words min-w-0">
                       <span className="font-semibold text-foreground">Reporter note: </span>
                       {/* Plain text only */}
                       {report.details}
