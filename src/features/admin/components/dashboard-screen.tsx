@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { UsersIcon, ShieldCheckIcon, MailIcon, ClockIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClockIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminScreenSkeleton } from "./admin-screen-skeleton";
 import { AdminError } from "./admin-error";
@@ -10,10 +9,10 @@ import { useAdminData } from "../use-admin-data";
 import { sampleStats } from "../sample-data";
 import type { AdminStats, AuditEntry } from "../types";
 
-const statCards = [
-  { key: "totalMembers", label: "Members", icon: <UsersIcon /> },
-  { key: "pendingVerifications", label: "Pending verifications", icon: <ShieldCheckIcon /> },
-  { key: "activeInvites", label: "Active invites", icon: <MailIcon /> },
+const summaryStats = [
+  { key: "totalMembers", label: "Members" },
+  { key: "pendingVerifications", label: "Pending verifications" },
+  { key: "activeInvites", label: "Active invites" },
 ] as const;
 
 function formatDate(iso: string): string {
@@ -61,20 +60,21 @@ export function DashboardScreen() {
         <p className="text-muted-foreground">Overview of your college on StudentOS.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {statCards.map((stat) => (
-          <Card key={stat.key}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground [&_svg]:size-5">
-                {stat.icon}
-                {stat.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-heading text-3xl font-semibold">{data[stat.key]}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="rounded-card border border-border bg-surface p-6">
+        <h2 className="text-base font-medium text-muted-foreground">College figures</h2>
+        <dl className="mt-4 grid grid-cols-1 divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {summaryStats.map((stat) => (
+            <div
+              key={stat.key}
+              className="flex flex-col gap-1 py-3 sm:px-6 sm:py-0 first:sm:pl-0 last:sm:pr-0 min-w-0"
+            >
+              <dt className="text-base text-muted-foreground">{stat.label}</dt>
+              <dd className="font-heading text-3xl font-semibold text-foreground break-words min-w-0">
+                {data[stat.key]}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <section>
