@@ -17,7 +17,7 @@ export interface RoleChipProps {
 
 /**
  * RoleChip displays a role name, its filled/slots ratio ("2 of 3 filled"),
- * and an explicit textual state ("Open", "Full", "Closed", or "Expired", not color alone).
+ * and an explicit textual state ("Open", "Full", "Closed", "Filled", or "Expired", not color alone).
  * Full roles and roles on non-open posts are disabled and cannot be selected.
  */
 export function RoleChip({
@@ -38,8 +38,10 @@ export function RoleChip({
   let statusText: string;
   if (isFull) {
     statusText = "Full";
-  } else if (postStatus === "closed" || postStatus === "filled") {
+  } else if (postStatus === "closed") {
     statusText = "Closed";
+  } else if (postStatus === "filled") {
+    statusText = "Filled";
   } else if (postStatus === "expired") {
     statusText = "Expired";
   } else {

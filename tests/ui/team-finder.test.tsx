@@ -135,13 +135,19 @@ describe("RoleChip", () => {
     unmount2();
 
     const { unmount: unmount3 } = render(<RoleChip role={openRole} postStatus="filled" />);
-    expect(screen.getByText("Closed")).toBeTruthy();
+    expect(screen.getByText("Filled")).toBeTruthy();
     unmount3();
 
     // Full role still says Full even if post is closed
     const { unmount: unmount4 } = render(<RoleChip role={fullRole} postStatus="closed" />);
     expect(screen.getByText("Full")).toBeTruthy();
     unmount4();
+  });
+
+  it("renders Filled state text on unfilled role chip when postStatus is filled", () => {
+    render(<RoleChip role={openRole} postStatus="filled" selectable />);
+    expect(screen.getByText("Filled")).toBeTruthy();
+    expect(screen.getByText("(Filled)")).toBeTruthy();
   });
 });
 
@@ -228,7 +234,7 @@ describe("PostCard", () => {
     expect(within(expiredRoleChips).getAllByText("Expired").length).toBeGreaterThan(0);
     unmountExpired();
 
-    // Filled post: full roles say "Full"; any chip that is not full shows "Closed"
+    // Filled post: full roles say "Full"; any chip that is not full shows "Filled"
     const filledPostWithOpenRole: TeamPost = {
       ...sampleOpenPost,
       id: "p-filled-with-unfilled-role",
@@ -241,7 +247,7 @@ describe("PostCard", () => {
     });
     expect(within(filledRoleChips).queryByText("Open")).toBeNull();
     expect(within(filledRoleChips).getAllByText("Full").length).toBeGreaterThan(0);
-    expect(within(filledRoleChips).getAllByText("Closed").length).toBeGreaterThan(0);
+    expect(within(filledRoleChips).getAllByText("Filled").length).toBeGreaterThan(0);
     unmountFilled();
   });
 });
