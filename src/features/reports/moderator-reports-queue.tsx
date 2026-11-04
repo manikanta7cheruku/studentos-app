@@ -366,18 +366,18 @@ export function ModeratorReportsQueue({
                 )}
               >
                 {/* Meta row */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
                     {getStatusBadge(report.status)}
                     {getReasonBadge(report.reason)}
-                    <span className="text-base text-muted-foreground">
+                    <span className="text-base text-muted-foreground break-words min-w-0">
                       Target:{" "}
                       <strong className="text-foreground">
                         {formatTargetType(report.target_type)}
                       </strong>
                     </span>
                   </div>
-                  <span className="text-base text-muted-foreground">
+                  <span className="text-base text-muted-foreground shrink-0">
                     Reported on {formatDate(report.created_at)}
                   </span>
                 </div>

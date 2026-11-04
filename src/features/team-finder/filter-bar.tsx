@@ -87,25 +87,25 @@ export function FilterBar({
   return (
     <div data-slot="team-filter-bar" className={cn("w-full min-w-0", className)}>
       {/* Phone View (< sm breakpoint): "Filters" button that opens bottom sheet */}
-      <div className="flex sm:hidden items-center justify-between gap-3 w-full">
+      <div className="flex sm:hidden items-center justify-between gap-3 w-full min-w-0">
         <Dialog open={sheetOpen} onOpenChange={handleSheetOpenChange}>
           <DialogTrigger asChild>
             <Button
               type="button"
               variant="outline"
-              className="flex-1 min-h-[44px] justify-between text-base px-4"
+              className="flex-1 min-h-[44px] justify-between text-base px-4 min-w-0 max-w-full"
               aria-label={`Open filters. ${activeCount} active filter${activeCount === 1 ? "" : "s"}`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <FilterIcon className="size-5 shrink-0" aria-hidden="true" />
-                <span>Filters</span>
+                <span className="truncate">Filters</span>
               </div>
               {activeCount > 0 ? (
-                <Badge variant="default" className="ml-2">
+                <Badge variant="default" className="ml-2 shrink-0 max-w-[6rem]">
                   {activeCount}
                 </Badge>
               ) : (
-                <span className="text-muted-foreground text-base">All</span>
+                <span className="text-muted-foreground text-base shrink-0">All</span>
               )}
             </Button>
           </DialogTrigger>

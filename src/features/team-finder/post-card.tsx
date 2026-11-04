@@ -82,13 +82,13 @@ export function PostCard({ post, onRequestJoin, className }: PostCardProps) {
       )}
     >
       {/* Header: Kind badge, Status, and Deadline */}
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-        <div className="flex flex-wrap items-center gap-2">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3 min-w-0">
+        <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
           <Badge variant="outline">{KIND_LABELS[post.kind] || post.kind}</Badge>
           <Badge variant={statusBadgeVariant}>{statusText}</Badge>
         </div>
 
-        <div className="flex items-center gap-1.5 text-base text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-base text-muted-foreground shrink-0">
           <CalendarIcon className="size-5 shrink-0" aria-hidden="true" />
           <span>{formatDeadline(post.deadline)}</span>
         </div>
