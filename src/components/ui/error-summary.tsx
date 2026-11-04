@@ -62,7 +62,7 @@ function ErrorSummary({
               <a
                 href={`#${error.fieldId}`}
                 onClick={(event) => focusField(event, error.fieldId)}
-                className="font-medium text-destructive underline underline-offset-4"
+                className="inline-flex min-h-11 items-center font-medium text-destructive underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {error.message}
               </a>
