@@ -117,6 +117,7 @@ export function InvitesScreen() {
         columns={columns}
         rows={data}
         getRowKey={(row) => row.id}
+        breakpoint="lg"
       />
 
       {/* Create invite dialog */}

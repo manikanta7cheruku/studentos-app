@@ -124,6 +124,7 @@ export function VerificationScreen() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
+        breakpoint="lg"
       />
 
       {/* Reject dialog — requires a reason */}

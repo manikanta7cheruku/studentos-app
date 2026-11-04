@@ -60,6 +60,7 @@ export function AuditScreen() {
         columns={columns}
         rows={data}
         getRowKey={(row) => row.id}
+        breakpoint="lg"
       />
     </div>
   );

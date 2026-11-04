@@ -117,6 +117,7 @@ export function MembersScreen() {
           columns={columns}
           rows={filtered}
           getRowKey={(row) => row.id}
+          breakpoint="lg"
         />
       )}
 

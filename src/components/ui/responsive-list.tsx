@@ -14,11 +14,13 @@ type ResponsiveListProps<T> = {
   columns: ResponsiveListColumn<T>[];
   rows: T[];
   getRowKey: (row: T) => string;
+  /** Breakpoint where table view takes over from cards. Defaults to "md". Use "lg" when space is constrained (e.g. sidebars). */
+  breakpoint?: "md" | "lg";
   className?: string;
 };
 
 /**
- * A table from 768px up. On phones the same rows become a list of cards,
+ * A table on larger screens. On smaller screens the same rows become a list of cards,
  * each with "Header: value" pairs, so nothing scrolls sideways.
  */
 function ResponsiveList<T extends Record<string, unknown>>({
@@ -26,45 +28,51 @@ function ResponsiveList<T extends Record<string, unknown>>({
   columns,
   rows,
   getRowKey,
+  breakpoint = "md",
   className,
 }: ResponsiveListProps<T>) {
   const show = (row: T, column: ResponsiveListColumn<T>) =>
     column.cell ? column.cell(row) : (row[column.key] as React.ReactNode);
 
+  const tableBreakpointClass = breakpoint === "lg" ? "lg:table" : "md:table";
+  const listBreakpointClass = breakpoint === "lg" ? "lg:hidden" : "md:hidden";
+
   return (
     <div data-slot="responsive-list" className={className}>
-      <table className="hidden w-full border-collapse text-left text-base md:table">
-        <caption className="sr-only">{caption}</caption>
-        <thead>
-          <tr className="border-b-2 border-border-strong">
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                scope="col"
-                className="px-3 py-3 font-semibold first:pl-0 last:pr-0"
-              >
-                {column.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={getRowKey(row)} className="border-b border-border">
+      <div className="w-full overflow-x-auto">
+        <table className={cn("hidden w-full border-collapse text-left text-base", tableBreakpointClass)}>
+          <caption className="sr-only">{caption}</caption>
+          <thead>
+            <tr className="border-b-2 border-border-strong">
               {columns.map((column) => (
-                <td
+                <th
                   key={column.key}
-                  className="px-3 py-3 h-[4.25rem] align-middle first:pl-0 last:pr-0"
+                  scope="col"
+                  className="px-3 py-3 font-semibold first:pl-0 last:pr-0"
                 >
-                  {show(row, column)}
-                </td>
+                  {column.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={getRowKey(row)} className="border-b border-border">
+                {columns.map((column) => (
+                  <td
+                    key={column.key}
+                    className="px-3 py-3 h-[4.25rem] align-middle first:pl-0 last:pr-0"
+                  >
+                    {show(row, column)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      <ul aria-label={caption} className={cn("flex flex-col gap-3 md:hidden")}>
+      <ul aria-label={caption} className={cn("flex flex-col gap-3", listBreakpointClass)}>
         {rows.map((row) => (
           <li key={getRowKey(row)} className="rounded-card border border-border bg-surface p-4">
             <dl className="flex flex-col gap-2">
