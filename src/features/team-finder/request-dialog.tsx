@@ -204,9 +204,9 @@ export function RequestDialog({
 
             {/* Role Selection */}
             <div className="flex flex-col gap-2">
-              <label id="role-select-label" className="text-base font-semibold text-foreground">
+              <span id="role-select-label" className="text-base font-semibold text-foreground">
                 Role to join <span className="font-normal text-muted-foreground">(required)</span>
-              </label>
+              </span>
               <p id="role-select-help" className="text-base text-muted-foreground">
                 Select an open role. Full roles cannot be selected.
               </p>
@@ -220,7 +220,7 @@ export function RequestDialog({
               <div
                 id="request-role"
                 tabIndex={-1}
-                role="radiogroup"
+                role="group"
                 aria-labelledby="role-select-label"
                 aria-describedby={
                   [roleError ? "request-role-error" : null, "role-select-help"]

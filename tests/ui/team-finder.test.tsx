@@ -264,6 +264,22 @@ describe("RequestDialog", () => {
     expect(screen.getByRole("alert")).toBeTruthy();
   });
 
+  it("uses group role for role picker named 'Role to join' and focuses #request-role via error link", () => {
+    render(<RequestDialog post={sampleOpenPost} open />);
+
+    const roleGroup = screen.getByRole("group", { name: /Role to join/i });
+    expect(roleGroup).toBeTruthy();
+    expect(roleGroup.getAttribute("id")).toBe("request-role");
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+
+    const sendBtn = screen.getByRole("button", { name: "Send request" });
+    fireEvent.click(sendBtn);
+
+    const errorLink = screen.getByRole("link", { name: "Please choose a role to apply for." });
+    fireEvent.click(errorLink);
+    expect(document.activeElement).toBe(roleGroup);
+  });
+
   it("blocks selecting full roles", () => {
     render(<RequestDialog post={sampleOpenPost} open />);
 
