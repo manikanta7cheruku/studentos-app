@@ -26,13 +26,13 @@ function formatDate(iso: string): string {
 
 function ActivityRow({ entry }: { entry: AuditEntry }) {
   return (
-    <li className="flex flex-col gap-1 border-b border-border py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
-      <div>
+    <li className="flex flex-col gap-1 border-b border-border py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between min-w-0">
+      <div className="break-words min-w-0">
         <span className="font-medium">{entry.actor}</span>{" "}
         <span className="text-muted-foreground">{entry.action}</span>{" "}
         <span className="font-medium">{entry.target}</span>
       </div>
-      <time className="flex items-center gap-1 text-muted-foreground" dateTime={entry.timestamp}>
+      <time className="flex items-center gap-1 text-muted-foreground shrink-0" dateTime={entry.timestamp}>
         <ClockIcon className="size-4" />
         {formatDate(entry.timestamp)}
       </time>

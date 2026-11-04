@@ -53,8 +53,8 @@ export function RoleChip({
 
   const content = (
     <>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold text-foreground">{role.role_name}</span>
+      <div className="flex flex-wrap items-center gap-2 min-w-0">
+        <span className="font-semibold text-foreground break-words min-w-0">{role.role_name}</span>
         <span
           className={cn(
             "rounded-input border px-2 py-0.5 text-base font-medium",

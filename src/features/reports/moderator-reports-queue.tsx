@@ -383,8 +383,8 @@ export function ModeratorReportsQueue({
                 </div>
 
                 {/* Content Details */}
-                <div className="flex flex-col gap-1">
-                  <h2 className="font-heading text-lg font-semibold text-foreground">
+                <div className="flex flex-col gap-1 min-w-0">
+                  <h2 className="font-heading text-lg font-semibold text-foreground break-words min-w-0">
                     {report.target_title ||
                       `Reported ${formatTargetType(report.target_type)} #${report.target_id}`}
                   </h2>

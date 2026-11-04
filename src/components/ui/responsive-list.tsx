@@ -61,7 +61,7 @@ function ResponsiveList<T extends Record<string, unknown>>({
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className="px-3 py-3 h-[4.25rem] align-middle first:pl-0 last:pr-0"
+                    className="px-3 py-3 h-[4.25rem] align-middle first:pl-0 last:pr-0 break-words min-w-0"
                   >
                     {show(row, column)}
                   </td>
@@ -79,7 +79,7 @@ function ResponsiveList<T extends Record<string, unknown>>({
               {columns.map((column) => (
                 <div key={column.key} className="flex flex-col">
                   <dt className="text-base text-muted-foreground">{column.header}</dt>
-                  <dd className="text-base text-foreground">{show(row, column)}</dd>
+                  <dd className="text-base text-foreground break-words min-w-0">{show(row, column)}</dd>
                 </div>
               ))}
             </dl>
