@@ -69,7 +69,6 @@ export function FilterBar({
   const handleLocalChange = (partial: Partial<TeamPostFilters>) => {
     const updated = { ...localFilters, ...partial };
     setLocalFilters(updated);
-    onChange?.(updated);
   };
 
   const handleApplySheet = () => {

@@ -429,6 +429,65 @@ describe("FilterBar", () => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });
   });
+
+  it("does not call onChange or onApply while editing phone sheet until Apply filters is clicked", () => {
+    const handleChange = vi.fn();
+    const handleApply = vi.fn();
+    render(
+      <FilterBar
+        filters={{ kind: "all", status: "all", skill: "", q: "" }}
+        onChange={handleChange}
+        onApply={handleApply}
+      />,
+    );
+
+    const openSheetBtn = screen.getByRole("button", { name: /Open filters/i });
+    fireEvent.click(openSheetBtn);
+
+    const keywordInput = screen.getByLabelText("Search by keyword");
+    fireEvent.change(keywordInput, { target: { value: "robotics" } });
+
+    expect(handleChange).not.toHaveBeenCalled();
+    expect(handleApply).not.toHaveBeenCalled();
+
+    const applyBtn = screen.getByRole("button", { name: "Apply filters" });
+    fireEvent.click(applyBtn);
+
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ q: "robotics" }));
+    expect(handleApply).toHaveBeenCalledWith(expect.objectContaining({ q: "robotics" }));
+  });
+
+  it("discards unapplied edits when phone sheet is closed without applying and reopened", async () => {
+    const handleChange = vi.fn();
+    const handleApply = vi.fn();
+    render(
+      <FilterBar
+        filters={{ kind: "all", status: "all", skill: "", q: "" }}
+        onChange={handleChange}
+        onApply={handleApply}
+      />,
+    );
+
+    const openSheetBtn = screen.getByRole("button", { name: /Open filters/i });
+    fireEvent.click(openSheetBtn);
+
+    const keywordInput = screen.getByLabelText("Search by keyword") as HTMLInputElement;
+    fireEvent.change(keywordInput, { target: { value: "robotics" } });
+    expect(keywordInput.value).toBe("robotics");
+
+    const dialog = screen.getByRole("dialog");
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+
+    fireEvent.click(openSheetBtn);
+    const reopenedInput = screen.getByLabelText("Search by keyword") as HTMLInputElement;
+    expect(reopenedInput.value).toBe("");
+    expect(handleChange).not.toHaveBeenCalled();
+    expect(handleApply).not.toHaveBeenCalled();
+  });
 });
 
 describe("Empty states", () => {
