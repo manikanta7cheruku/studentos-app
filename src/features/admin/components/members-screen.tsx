@@ -93,9 +93,9 @@ export function MembersScreen() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">Members</h1>
+    <div className="flex flex-col gap-6 min-w-0">
+      <div className="min-w-0">
+        <h1 className="font-heading text-2xl font-semibold break-words min-w-0">Members</h1>
         <p className="text-muted-foreground">Everyone in your college on StudentOS.</p>
       </div>
 

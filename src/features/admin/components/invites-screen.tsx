@@ -101,15 +101,15 @@ export function InvitesScreen() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">Invite codes</h1>
+    <div className="flex flex-col gap-6 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between min-w-0">
+        <div className="min-w-0">
+          <h1 className="font-heading text-2xl font-semibold break-words min-w-0">Invite codes</h1>
           <p className="text-muted-foreground">
             Share invite codes so students can join your college.
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>Create invite code</Button>
+        <Button onClick={() => setShowCreate(true)} className="shrink-0">Create invite code</Button>
       </div>
 
       <ResponsiveList
