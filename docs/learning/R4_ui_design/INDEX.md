@@ -10,3 +10,4 @@ Only R4 UI design learning files are listed here. Add one row at the end of the 
 | 4 | R4 | [D04_R4_notify-report-ui.md](build-sessions/D04_R4_notify-report-ui.md) | Notifications, announcements and report screens | not yet |
 | 4 | R4 | [D04_R4_landing-page.md](build-sessions/D04_R4_landing-page.md) | Landing page and waitlist form | not yet |
 | 5 | R4 | [D05_R4_team-finder-parts.md](build-sessions/D05_R4_team-finder-parts.md) | Team Finder parts | not yet |
+| 6 | R4 | [D06_R4_long-titles-and-viewport.md](build-sessions/D06_R4_long-titles-and-viewport.md) | Long titles and viewport test | not yet |
