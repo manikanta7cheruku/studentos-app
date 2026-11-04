@@ -510,6 +510,17 @@ describe("FilterBar", () => {
     expect(handleChange).not.toHaveBeenCalled();
     expect(handleApply).not.toHaveBeenCalled();
   });
+
+  it("overrides dialog zoom animation with zoom-in-100 and zoom-out-100 on bottom sheet", () => {
+    render(<FilterBar filters={{ kind: "all", status: "all" }} />);
+
+    const openSheetBtn = screen.getByRole("button", { name: /Open filters/i });
+    fireEvent.click(openSheetBtn);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).toContain("data-open:zoom-in-100");
+    expect(dialog.className).toContain("data-closed:zoom-out-100");
+  });
 });
 
 describe("Empty states", () => {

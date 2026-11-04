@@ -127,7 +127,7 @@ export function FilterBar({
             className={cn(
               "fixed inset-x-0 bottom-0 top-auto z-50 flex max-h-[90dvh] w-full max-w-full -translate-x-0 -translate-y-0 flex-col gap-4",
               "rounded-t-sheet rounded-b-none border-t border-border bg-popover p-6 text-base outline-none",
-              "data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom",
+              "data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom data-open:zoom-in-100 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom data-closed:zoom-out-100",
             )}
           >
             <DialogHeader className="text-left pb-2">
