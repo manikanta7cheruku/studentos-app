@@ -109,7 +109,9 @@ export function InvitesScreen() {
             Share invite codes so students can join your college.
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="shrink-0">Create invite code</Button>
+        <Button onClick={() => setShowCreate(true)} className="shrink-0">
+          Create invite code
+        </Button>
       </div>
 
       <ResponsiveList

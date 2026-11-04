@@ -274,7 +274,9 @@ export function ModeratorReportsQueue({
       <div className="flex flex-col gap-2 min-w-0">
         <div className="flex items-center gap-2 min-w-0">
           <ShieldAlertIcon className="size-7 shrink-0 text-primary" aria-hidden="true" />
-          <h1 className="font-heading text-2xl font-semibold sm:text-3xl break-words min-w-0">Moderation Queue</h1>
+          <h1 className="font-heading text-2xl font-semibold sm:text-3xl break-words min-w-0">
+            Moderation Queue
+          </h1>
         </div>
         <p className="text-base text-muted-foreground break-words">
           Review community reports submitted by students at your college. Actions are logged for

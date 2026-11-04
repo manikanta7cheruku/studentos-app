@@ -97,7 +97,9 @@ export function CollegeAppShell({ slug, college, children }: CollegeAppShellProp
               {collegeInitials}
             </div>
           )}
-          <span className="font-heading font-semibold text-ink truncate min-w-0">{college.name}</span>
+          <span className="font-heading font-semibold text-ink truncate min-w-0">
+            {college.name}
+          </span>
         </div>
       </header>
 

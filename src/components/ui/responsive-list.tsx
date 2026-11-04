@@ -40,7 +40,9 @@ function ResponsiveList<T extends Record<string, unknown>>({
   return (
     <div data-slot="responsive-list" className={cn("w-full min-w-0", className)}>
       <div className="w-full min-w-0 overflow-x-auto">
-        <table className={cn("hidden w-full border-collapse text-left text-base", tableBreakpointClass)}>
+        <table
+          className={cn("hidden w-full border-collapse text-left text-base", tableBreakpointClass)}
+        >
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr className="border-b-2 border-border-strong">
@@ -74,12 +76,17 @@ function ResponsiveList<T extends Record<string, unknown>>({
 
       <ul aria-label={caption} className={cn("flex flex-col gap-3 min-w-0", listBreakpointClass)}>
         {rows.map((row) => (
-          <li key={getRowKey(row)} className="rounded-card border border-border bg-surface p-4 min-w-0">
+          <li
+            key={getRowKey(row)}
+            className="rounded-card border border-border bg-surface p-4 min-w-0"
+          >
             <dl className="flex flex-col gap-2 min-w-0">
               {columns.map((column) => (
                 <div key={column.key} className="flex flex-col min-w-0">
                   <dt className="text-base text-muted-foreground">{column.header}</dt>
-                  <dd className="text-base text-foreground break-words min-w-0">{show(row, column)}</dd>
+                  <dd className="text-base text-foreground break-words min-w-0">
+                    {show(row, column)}
+                  </dd>
                 </div>
               ))}
             </dl>

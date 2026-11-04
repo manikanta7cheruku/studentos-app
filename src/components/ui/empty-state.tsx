@@ -24,7 +24,9 @@ function EmptyState({ className, icon, title, description, action, ...props }: E
         </div>
       ) : null}
       <h2 className="font-heading text-xl font-semibold break-words min-w-0 max-w-full">{title}</h2>
-      {description ? <p className="max-w-prose text-muted-foreground break-words">{description}</p> : null}
+      {description ? (
+        <p className="max-w-prose text-muted-foreground break-words">{description}</p>
+      ) : null}
       {action ? <div className="pt-1">{action}</div> : null}
     </div>
   );

@@ -31,7 +31,10 @@ function ActivityRow({ entry }: { entry: AuditEntry }) {
         <span className="text-muted-foreground">{entry.action}</span>{" "}
         <span className="font-medium">{entry.target}</span>
       </div>
-      <time className="flex items-center gap-1 text-muted-foreground shrink-0" dateTime={entry.timestamp}>
+      <time
+        className="flex items-center gap-1 text-muted-foreground shrink-0"
+        dateTime={entry.timestamp}
+      >
         <ClockIcon className="size-4" />
         {formatDate(entry.timestamp)}
       </time>
