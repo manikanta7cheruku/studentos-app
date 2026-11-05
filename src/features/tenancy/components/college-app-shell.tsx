@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Building2Icon, UsersIcon, BriefcaseIcon, UserIcon } from "lucide-react";
 import { AppShell } from "@/features/notifications/app-shell";
 import { BottomNav, type BottomNavItem } from "@/components/ui/bottom-nav";
+import { Toaster } from "@/components/ui/sonner";
 import type { College } from "../types";
 
 export interface CollegeAppShellProps {
@@ -115,6 +116,9 @@ export function CollegeAppShell({ slug, college, children }: CollegeAppShellProp
 
       {/* Mobile Bottom Navigation (< 768px) */}
       <BottomNav items={navItems} currentPath={pathname} label="College navigation" />
+
+      {/* One Toaster for every screen under /c/[slug]. Do not add another one in a child layout. */}
+      <Toaster />
     </div>
   );
 }
