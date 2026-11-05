@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-05 / R4 (UI and design) |
-| Linked task / ADR / PR | R4-D7-1 / none / PR link: add after the PR is opened |
+| Linked task / ADR / PR | R4-D7-1 / none / https://github.com/manikanta7cheruku/studentos-app/pull/28 |
 | Related docs | docs/API_CONTRACT.md (OPP-01 to OPP-04, APP-01), docs/DESIGN_SYSTEM.md, docs/ACCESSIBILITY.md |
 
 ## 1. What we are learning and why it is needed
