@@ -60,6 +60,9 @@ create policy user_skills_delete on public.user_skills
   for delete to authenticated
   using (user_id = (select auth.uid()));
 
+revoke all on public.skills from anon, authenticated;
+revoke all on public.user_skills from anon, authenticated;
+
 grant select on public.skills to authenticated;
 grant select, insert, update, delete on public.user_skills to authenticated;
 
