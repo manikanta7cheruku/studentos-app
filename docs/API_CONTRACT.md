@@ -251,3 +251,35 @@ Rules for the screens (R4, R3):
 - Rate limit: 120 admin calls per minute per person, then 429 `RATE_LIMITED` with `Retry-After`.
 
 Not built yet (so keep sample data for these): notifications to the applicant after a decision (Day 4), the roster import (ADM-04), the data export (ADM-12), moderator tools.
+
+## 9. Built in R2 Day 4 (what is real now)
+
+Base `/api/v1`. All changes need a matching `Origin`. Writes are limited to 60 a minute per person (429 `RATE_LIMITED` with `Retry-After`). `IDEM` = send an `Idempotency-Key`.
+
+| ID | Call | What it does |
+|---|---|---|
+| NTF-01 | GET `/me/notifications?unread=true&limit=20&cursor=` | Your own notifications, newest first. `meta.unread_count` counts all unread, not only this page |
+| NTF-02 | POST `/me/notifications/read` | Body `{ "ids": [..] }` or `{ "all": true }`. Answer `{ "updated": n }`. Other people's ids change nothing |
+| ANN-01 | GET `/c/{slug}/announcements?limit=&cursor=` | Members. Pinned first, then newest. Only current, published, not hidden ones |
+| ANN-02 | GET `/c/{slug}/admin/announcements` | Moderators and admins. All statuses, hidden ones too |
+| ANN-02 | POST `/c/{slug}/admin/announcements` | IDEM. `title`, `body`, `pinned`, optional `publish_at`, `expires_at` (future). Published now = every active member except you gets a notification. Audit `announcement.created` |
+| ANN-02 | PATCH `/c/{slug}/admin/announcements/{id}` | Send only what changes (`title`, `body`, `pinned`, `status`, `publish_at`, `expires_at`). 409 if removed. Audit `announcement.updated` |
+| ANN-02 | DELETE `/c/{slug}/admin/announcements/{id}` | Sets `status` to `removed`. Audit `announcement.removed` |
+| RPT-01 | POST `/c/{slug}/reports` | IDEM. `target_type` (`announcement` or `profile` for now), `target_id`, `reason`, optional `details`. 409 if you already have an open report on it, 400 for yourself, 404 for another college |
+| RPT-02 | GET `/c/{slug}/admin/reports?status=open&limit=&cursor=` | Moderators and admins. Each item has `target_title`, `reporter`, `status` |
+| RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | IDEM. `action`: `dismiss`, `hide`, `warn`, `suspend`. `note` of 5 or more characters is needed except for dismiss. 409 if already handled. 403 if the report is about you, or you may not suspend that role (a moderator suspends students only, nobody suspends an admin here) |
+| RPT-04 | PUT / DELETE `/me/blocks/{userId}` | Block or unblock a classmate. Safe to repeat. 400 for yourself, 404 for someone not in a college you share |
+| WL-01 | POST `/waitlist` | Public. `college_name`, `contact_name`, `contact_email`, `role`, `consent: true`, optional `source`. Always answers `{ "joined": true }`, even for an email already there. 5 a hour per IP |
+
+Notification types and `payload` (always has `title` and `message`):
+
+| `type` | When | Extra payload |
+|---|---|---|
+| `membership.approved` / `membership.rejected` | An admin decided your join request (the reason is in `message`) | `college_slug` |
+| `announcement.published` | A new announcement | `announcement_id`, `college_slug` |
+| `report.actioned` | A moderator handled your report | `report_id` |
+| `moderation.warned` / `moderation.hidden` | A moderator warned you or hid your content (the note is in `message`) | `report_id` |
+
+For R4 and R3 (mapping from the sample screens): `verification_decision` is `membership.approved` or `membership.rejected`, `report_outcome` is `report.actioned`, notification `title` and `body` are `payload.title` and `payload.message`. Announcement `author` and report `reporter` have `user_id` (can be null after an account is deleted) and `display_name`. Fixtures: `src/contracts/fixtures/ntf-*`, `ann-*`, `rpt-*`, `wl-*`.
+
+Who may call each endpoint: docs/PERMISSIONS.md.
