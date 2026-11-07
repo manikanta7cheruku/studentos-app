@@ -24,6 +24,7 @@ import { PUT as blockUser } from "@/app/api/v1/me/blocks/[userId]/route";
 import { POST as waitlist } from "@/app/api/v1/waitlist/route";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { POST as maintenance } from "@/app/api/internal/maintenance/route";
 import { GET as health } from "@/app/api/health/route";
 import { GET as ready } from "@/app/api/ready/route";
 import { PATCH as patchSettings } from "@/app/api/v1/c/[slug]/admin/settings/route";
@@ -696,6 +697,14 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     op: "SYS-01 GET /api/health (public)",
     call: (cookie) => call(health, { path: "/api/health", cookie }).then((r) => r.status),
     expect: Object.fromEntries(allPrincipals.map((p) => [p, 200])) as Record<Principal, Expected>,
+  },
+  {
+    op: "SYS-02 POST /api/internal/maintenance (cron secret only; a person, even an admin, gets 401)",
+    call: (cookie) =>
+      call(maintenance, { method: "POST", path: "/api/internal/maintenance", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 401])) as Record<Principal, Expected>,
   },
   {
     op: "SYS-01 GET /api/ready (public)",
