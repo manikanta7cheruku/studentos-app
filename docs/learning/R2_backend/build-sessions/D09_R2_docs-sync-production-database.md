@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D9-1 / DECISIONS D-24 / PR_LINK9 |
+| Linked task / ADR / PR | R2-D9-1 / DECISIONS D-24 / https://github.com/manikanta7cheruku/studentos-app/pull/35 |
 | Related docs | docs/BACKEND_STATUS.md, docs/PRODUCTION_SETUP.md, docs/R2_MANUAL_STEPS.md, docs/openapi.v1.json |
 
 ## 1. What we are learning and why it is needed
