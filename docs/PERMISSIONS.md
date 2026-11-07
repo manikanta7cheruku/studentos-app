@@ -5,7 +5,7 @@ One row per route method. The test `tests/integration/permission-matrix.test.ts`
 - a `route.ts` method exists that is not in this table (or a row has no route), or
 - a row has no matching call in the matrix (every row is called as anon, pending, suspended, student level 1 and 2, moderator, admin, student of another college, admin of another college).
 
-Who: **pub** = nobody signed in needed. **ses** = any signed-in person. **mem** = active member of the college (pending and suspended get 403 `MEMBERSHIP_NOT_ACTIVE`). **mod** = active moderator or admin. **adm** = active college admin.
+Who: **pub** = nobody signed in needed. **ses** = any signed-in person. **mem** = active member of the college (pending and suspended get 403 `MEMBERSHIP_NOT_ACTIVE`). "(author)" or "(applicant)" means the rule inside the function also needs you to own the post or request: someone else gets 403 or 404 (tested in `teamfinder.test.ts`). **mod** = active moderator or admin. **adm** = active college admin.
 Other college = always 404 on `/c/{slug}/...` (never confirms the college exists). Nobody signed in = 401 on everything except **pub**.
 Paths are under `/api/v1` unless they start with `/api/`.
 
@@ -36,6 +36,16 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | PRF-04 | POST | /me/avatar | ses | write limit |
 | PRF-04 | POST | /me/avatar/upload-url | ses | write limit |
 | PRF-05 | GET | /c/{slug}/people | mem | none |
+| TMF-01 | POST | /c/{slug}/team-posts | mem | write limit, 10 open posts |
+| TMF-02 | GET | /c/{slug}/team-posts | mem | none |
+| TMF-03 | GET | /c/{slug}/team-posts/{id} | mem | none |
+| TMF-04 | PATCH | /c/{slug}/team-posts/{id} | mem (author) | write limit |
+| TMF-05 | POST | /c/{slug}/team-posts/{id}/close | mem (author) | write limit |
+| TMF-06 | POST | /c/{slug}/team-posts/{id}/roles/{roleId}/requests | mem | write limit, 10 waiting requests |
+| TMF-07 | GET | /c/{slug}/team-posts/{id}/requests | mem (author) | none |
+| TMF-08 | POST | /c/{slug}/join-requests/{id}/decision | mem (author) | write limit |
+| TMF-09 | DELETE | /c/{slug}/join-requests/{id} | mem (applicant) | write limit |
+| TMF-10 | GET | /c/{slug}/me/join-requests | mem | none |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
 | RPT-01 | POST | /c/{slug}/reports | mem | write limit |
 | ANN-02 | GET | /c/{slug}/admin/announcements | mod | admin bucket |

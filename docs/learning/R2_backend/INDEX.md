@@ -11,3 +11,4 @@ Only R2 Backend learning files are listed here. Add one row at the end of the ta
 | 3 | R2 | docs/learning/R2_backend/build-sessions/D03_R2_admin-api.md | Admin API: settings, invites, queue, members, audit | not yet |
 | 4 | R2 | docs/learning/R2_backend/build-sessions/D04_R2_notify-announce-report.md | Notifications, announcements, reports, blocks, waitlist | not yet |
 | 4 | R2 | docs/learning/R2_backend/build-sessions/D04_R2_security-pass-1.md | Security pass 1: headers, CSP, write limits, permission table | not yet |
+| 5 | R2 | docs/learning/R2_backend/build-sessions/D05_R2_team-finder-backend.md | Team Finder: posts, roles, requests, decisions | not yet |

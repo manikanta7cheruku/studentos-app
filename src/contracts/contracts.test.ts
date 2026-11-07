@@ -56,6 +56,17 @@ const operations: Record<string, Kinds> = {
   "rpt-03": { request: c.reportActionBody, success: c.reportActionResponse },
   "rpt-04-put": { success: c.blockResponse },
   "rpt-04-delete": { success: c.blockResponse },
+  "tmf-01": { request: c.teamPostCreateBody, success: c.teamPostResponse },
+  "tmf-02": { query: c.teamPostListQuery, success: c.teamPostListResponse },
+  "tmf-03": { success: c.teamPostResponse },
+  "tmf-04": { request: c.teamPostPatchBody, success: c.teamPostResponse },
+  "tmf-05": { success: c.teamPostResponse },
+  "tmf-06": { request: c.joinRequestBody, success: c.joinRequestCreateResponse },
+  "tmf-07": { query: c.joinRequestListQuery, success: c.joinRequestListResponse },
+  "tmf-08-accept": { request: c.joinRequestDecisionBody, success: c.joinRequestDecisionResponse },
+  "tmf-08-decline": { request: c.joinRequestDecisionBody, success: c.joinRequestDecisionResponse },
+  "tmf-09": { success: c.joinRequestWithdrawResponse },
+  "tmf-10": { query: c.joinRequestListQuery, success: c.myJoinRequestListResponse },
   "wl-01": { request: c.waitlistBody, success: c.waitlistResponse },
 };
 

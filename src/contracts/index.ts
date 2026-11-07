@@ -6,3 +6,4 @@ export * from "./tenant";
 export * from "./admin";
 export * from "./profile";
 export * from "./engagement";
+export * from "./teamfinder";

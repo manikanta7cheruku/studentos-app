@@ -283,3 +283,30 @@ Notification types and `payload` (always has `title` and `message`):
 For R4 and R3 (mapping from the sample screens): `verification_decision` is `membership.approved` or `membership.rejected`, `report_outcome` is `report.actioned`, notification `title` and `body` are `payload.title` and `payload.message`. Announcement `author` and report `reporter` have `user_id` (can be null after an account is deleted) and `display_name`. Fixtures: `src/contracts/fixtures/ntf-*`, `ann-*`, `rpt-*`, `wl-*`.
 
 Who may call each endpoint: docs/PERMISSIONS.md.
+
+## 10. Team Finder, built in R2 Day 5 (what is real now)
+
+Base `/api/v1/c/{slug}`. All calls need an active member (pending and suspended get 403, another college gets 404). Changes need a matching `Origin` and are limited to 60 a minute. `IDEM` = send an `Idempotency-Key`. Shapes: `src/contracts/teamfinder.ts`, samples: `src/contracts/fixtures/tmf-*`.
+
+| ID | Call | What it does |
+|---|---|---|
+| TMF-01 | POST `/team-posts` | IDEM. `kind`, `title` (5 to 120), `description` (up to 3000), optional `deadline` (future, up to 180 days), `external_link` and `team_link` (https), `roles` (1 to 8: `role_name`, `slots` 1 to 20, `skill_ids`). 201 with the post. 403 `VERIFICATION_LEVEL_TOO_LOW` if the college asks for more. 429 at 10 open posts |
+| TMF-02 | GET `/team-posts?kind=&status=open&skill=&q=&mine=true&limit=&cursor=` | Newest first. `status`: `open` (default), `closed`, `filled`, `expired`, `all`. `skill` is a skill id. `q` searches title and description. `mine=true` is my own posts ("My posts") |
+| TMF-03 | GET `/team-posts/{id}` | One post. `team_link` is null unless you are the author or an accepted member. `pending_requests` only for the author |
+| TMF-04 | PATCH `/team-posts/{id}` | Author only, open posts only. Send only what changes, `null` clears a link or the deadline. Roles cannot be edited |
+| TMF-05 | POST `/team-posts/{id}/close` | Author only. Waiting requests are cancelled and their people told. 409 if not open |
+| TMF-06 | POST `/team-posts/{id}/roles/{roleId}/requests` | IDEM. `{ "message": "up to 500" }`. 409 `ALREADY_REQUESTED`, 409 `SLOTS_FULL`, 409 `CONFLICT` (not open or past its deadline), 403 your own post, 404 hidden or blocked, 429 at 10 waiting requests. The author gets a notification |
+| TMF-07 | GET `/team-posts/{id}/requests?status=pending` | Author only (403 for others). Applicant name, headline and skills, never an email |
+| TMF-08 | POST `/join-requests/{id}/decision` | IDEM. `{ "decision": "accepted" or "declined", "note": "optional" }`. Author only. 409 `SLOTS_FULL`, 409 `CONFLICT` if already decided. Answer `{ request, role: { slots, filled } }`. When all roles are full the post becomes `filled` and the rest are cancelled. The applicant is told |
+| TMF-09 | DELETE `/join-requests/{id}` | Applicant only (404 for others). Pending or accepted. After an acceptance the slot is free again and the author is told. 409 if already withdrawn, declined or cancelled |
+| TMF-10 | GET `/me/join-requests?status=&limit=&cursor=` | New. My own requests with the post title, kind, status and the role. For the "My requests" screen |
+
+Rules for the screens:
+
+- A post has `status` open, closed, filled or expired. `expired` is worked out from the deadline, so it is right even before any clean up.
+- Each post carries `my_requests` (my request id, role id and status), so a screen can show Request, Requested or Accepted without another call.
+- A role chip is full when `filled >= slots`. A 409 `SLOTS_FULL` means somebody else was faster: reload the post.
+- Roles have `skills` (names, for chips) and `skill_ids` (for filters).
+- Notification types: `team.request_received` (to the author), `team.request_accepted`, `team.request_declined`, `team.request_cancelled` (post closed or full), `team.request_withdrawn` (to the author). `payload` has `title`, `message`, `post_id`, and `request_id` or `role_id`.
+- Reports: `target_type: "team_post"` works in RPT-01. A moderator `hide` removes the post from every list. The author still sees it.
+- Posts of people you blocked (or who blocked you) and of people who left the college never appear.
