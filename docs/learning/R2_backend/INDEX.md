@@ -18,3 +18,4 @@ Only R2 Backend learning files are listed here. Add one row at the end of the ta
 | 8 | R2 | docs/learning/R2_backend/build-sessions/D08_R2_make-backend-strong.md | Make the backend strong: security check 2, limits, speed, review follow-ups | not yet |
 | 9 | R2 | docs/learning/R2_backend/build-sessions/D09_R2_docs-sync-production-database.md | Docs match code (registry, OpenAPI, doc tests) and the production database | not yet |
 | 9 | R2 | docs/learning/R2_backend/build-sessions/D09_R2_account-leave-profile.md | Delete my account, leave a college, view a classmate | not yet |
+| 10 | R2 | docs/learning/R2_backend/build-sessions/D10_R2_release-review.md | Release review and retrospective | not yet |

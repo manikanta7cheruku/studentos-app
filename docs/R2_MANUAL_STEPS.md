@@ -48,7 +48,7 @@ Nothing from R2 may be marked **Done** until a reviewer approves. One reviewer c
 | #33 Day 7 | `20261109000000_*.sql` (opportunities, reminders) | 45 min |
 | #34 Day 8 | `20261110000000_hardening.sql`, `src/lib/api.ts`, `src/modules/engagement/context.ts`, the OTP routes | 45 min |
 | Day 9 | `20261111000000_account_leave_profile.sql` (delete account, leave a college, view a profile), `src/app/api/v1/me/route.ts`, `supabase/production/create-college.sql`, `scripts/check-environment.mjs` | 45 min |
-| Day 10 | the release review (written on Day 10, see docs/progress/R2_backend) | 20 min |
+| Day 10 | `docs/progress/R2_backend/RELEASE_REVIEW.md` (read sections 5 and 7) and `docs/progress/R2_backend/RETROSPECTIVE.md` | 20 min |
 
 What the reviewer checks in every SQL function (from the lessons of the project):
 
@@ -97,6 +97,8 @@ The commit rule you set (you are the only contributor, no AI trailers) was follo
 - Look at the Vercel and Supabase dashboards every day for the first week (errors, slow queries, the hourly maintenance run).
 - Run `pnpm env:check --production` after every release.
 - Repeat the restore drill monthly (`docs/BACKUP_AND_RELEASE_RUNBOOK.md`).
+
+The recommendation of R2 for the release (Go for staging, Delay for real students until the blockers close) and the evidence behind it are in `docs/progress/R2_backend/RELEASE_REVIEW.md`. The lessons of the ten days are in `docs/progress/R2_backend/RETROSPECTIVE.md`.
 
 ## H. Sign-off
 
