@@ -2,8 +2,9 @@
   "data": [
     {
       "id": "66666666-6666-4666-8666-666666666666",
-      "target_type": "team_post",
-      "target_id": "77777777-7777-4777-8777-777777777777",
+      "target_type": "announcement",
+      "target_id": "55555555-5555-4555-8555-555555555555",
+      "target_title": "Hackathon sign-ups open",
       "reason": "spam",
       "details": "Posted the same link five times",
       "status": "open",
