@@ -167,3 +167,14 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - Lists use keyset paging on (`created_at`, `id`), never offsets, so pages do not skip or repeat rows.
 - Invite `status` is worked out in SQL: revoked, then expired, then exhausted, else active.
 - A member who is removed (`left`) can join again with a valid invite. To keep someone out, suspend them.
+
+## 14. Added on R2 Day 4 (migration 20261101000000)
+
+- `notifications` (RLS: own rows; a person can update only `read_at`), functions `notifications_list`, `notify_user` (internal), `notifications_purge`.
+- `announcements` (draft, published, removed; `publish_at`, `expires_at`, `moderation_hidden_at`; RLS: members see current published not hidden, moderators see all), functions `announcements_list`, `mod_create_announcement`, `mod_update_announcement`, `mod_list_announcements`.
+- `reports` (one open report per reporter and target), `moderation_actions`, functions `create_report`, `mod_list_reports`, `mod_act_on_report`, `mod_assert`.
+- `blocks`, `is_blocked_between`, `block_user`, `unblock_user`.
+- `waitlist_leads` (unique lowercase email), `join_waitlist`, `waitlist_purge`.
+- `memberships.profile_hidden_at`; `auth_shares_college_with` ignores hidden profiles.
+- `admin_decide_verification` now also notifies the applicant (same transaction).
+- Every server function is revoked from public, anon and authenticated, and granted to service_role (the read functions for members are `security invoker` and granted to authenticated). Each moderator function checks the actor again.

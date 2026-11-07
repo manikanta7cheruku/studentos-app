@@ -3,6 +3,7 @@ import { assertSameOrigin, ok, readJson, route } from "@/lib/api";
 import { AppError } from "@/lib/errors";
 import { hashKey } from "@/lib/hash";
 import { readIdempotencyKey, withIdempotency } from "@/lib/idempotency.admin";
+import { limitWrites } from "@/lib/write-limit";
 import { CookieJar, getCurrentUser } from "@/lib/supabase/request-client";
 import { consumeOrThrow } from "@/modules/rate-limit/rate-limit.admin";
 import { redeemInvite } from "@/modules/tenancy/join.admin";
@@ -16,6 +17,7 @@ export const POST = route<{ slug: string }>(async ({ request, requestId, params 
   const key = readIdempotencyKey(request);
   const jar = new CookieJar();
   const { user } = await getCurrentUser(request, jar);
+  await limitWrites(user.id);
 
   const result = await withIdempotency(
     { userId: user.id, route: `POST join/invite ${slug.data}`, key, body },

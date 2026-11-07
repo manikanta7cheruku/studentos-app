@@ -1,6 +1,7 @@
 import { joinEmailDomainBody, slug as slugSchema } from "@/contracts";
 import { assertSameOrigin, clientIp, ok, readJson, route } from "@/lib/api";
 import { AppError, validationError } from "@/lib/errors";
+import { limitWrites } from "@/lib/write-limit";
 import { CookieJar, createAnonClient, getCurrentUser } from "@/lib/supabase/request-client";
 import { checkCode, requestOtp } from "@/modules/auth/otp";
 import {
@@ -23,6 +24,7 @@ export const POST = route<{ slug: string }>(async ({ request, requestId, params 
   const body = await readJson(request, joinEmailDomainBody);
   const jar = new CookieJar();
   const { user } = await getCurrentUser(request, jar);
+  await limitWrites(user.id);
 
   // Stop early if the person cannot join (already a member, suspended college, method switched off).
   await joinPrepare(user.id, slug.data, "email_domain");

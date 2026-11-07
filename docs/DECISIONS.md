@@ -23,3 +23,4 @@ These are the starting decisions. Change one only by adding a new row with a dat
 | D-17 | Tests: Vitest, Playwright with axe, pgTAP, k6 (small). |
 | D-18 | Code licence: private repository, all rights reserved, until the owners decide with legal advice. |
 | D-19 | Slack is the team chat. GitHub is for code. |
+| D-20 | Content Security Policy allows inline scripts and styles (`'unsafe-inline'`), everything else is strict. Reason: nonce based CSP needs every page rendered per request, which does not work with our prerendered pages (Cache Components). Revisit with Subresource Integrity when stable. Owner: R2 |
