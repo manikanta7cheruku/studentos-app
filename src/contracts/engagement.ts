@@ -11,6 +11,11 @@ export const notificationType = z.enum([
   "report.actioned",
   "moderation.warned",
   "moderation.hidden",
+  "team.request_received",
+  "team.request_accepted",
+  "team.request_declined",
+  "team.request_cancelled",
+  "team.request_withdrawn",
 ]);
 // payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
 // announcement_id, report_id or college_slug that the screen can turn into a link.

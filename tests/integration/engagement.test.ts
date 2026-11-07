@@ -634,8 +634,8 @@ describe("RPT-01 to RPT-03 reports and moderation", () => {
         target_id: randomUUID(),
         reason: "spam",
       }),
-      400,
-      "VALIDATION_FAILED",
+      404,
+      "NOT_FOUND",
     );
     expectError(await report("student", { ...target, reason: "rude" }), 400, "VALIDATION_FAILED");
     expectError(await report("pending", target), 403, "MEMBERSHIP_NOT_ACTIVE");

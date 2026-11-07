@@ -43,6 +43,14 @@ import { GET as skillSearch } from "@/app/api/v1/skills/route";
 import { POST as uploadAvatar } from "@/app/api/v1/me/avatar/route";
 import { POST as avatarUploadUrl } from "@/app/api/v1/me/avatar/upload-url/route";
 import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
+import { GET as tmfList, POST as tmfCreate } from "@/app/api/v1/c/[slug]/team-posts/route";
+import { GET as tmfGet, PATCH as tmfPatch } from "@/app/api/v1/c/[slug]/team-posts/[id]/route";
+import { POST as tmfClose } from "@/app/api/v1/c/[slug]/team-posts/[id]/close/route";
+import { POST as tmfRequest } from "@/app/api/v1/c/[slug]/team-posts/[id]/roles/[roleId]/requests/route";
+import { GET as tmfRequests } from "@/app/api/v1/c/[slug]/team-posts/[id]/requests/route";
+import { POST as tmfDecision } from "@/app/api/v1/c/[slug]/join-requests/[id]/decision/route";
+import { DELETE as tmfWithdraw } from "@/app/api/v1/c/[slug]/join-requests/[id]/route";
+import { GET as tmfMine } from "@/app/api/v1/c/[slug]/me/join-requests/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -546,6 +554,128 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         cookie,
       }).then((r) => r.status),
     expect: memberOnly(200),
+  },
+  {
+    op: "TMF-02 GET /c/alpha/team-posts (members)",
+    call: (cookie) =>
+      call(tmfList, {
+        path: "/api/v1/c/alpha/team-posts",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "TMF-10 GET /c/alpha/me/join-requests (members)",
+    call: (cookie) =>
+      call(tmfMine, {
+        path: "/api/v1/c/alpha/me/join-requests",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "TMF-01 POST /c/alpha/team-posts (an empty body is the probe -> 400 for members)",
+    call: (cookie) =>
+      call(tmfCreate, {
+        method: "POST",
+        path: "/api/v1/c/alpha/team-posts",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: memberOnly(400),
+  },
+  ...(
+    [
+      [
+        "TMF-03 GET /c/alpha/team-posts/{id} (unknown post is the probe -> 404 for members)",
+        tmfGet,
+        "GET",
+        undefined,
+        "",
+      ],
+      [
+        "TMF-04 PATCH /c/alpha/team-posts/{id} (unknown post -> 404 for members)",
+        tmfPatch,
+        "PATCH",
+        { title: "Some new title" },
+        "",
+      ],
+      [
+        "TMF-05 POST /c/alpha/team-posts/{id}/close (unknown post -> 404 for members)",
+        tmfClose,
+        "POST",
+        undefined,
+        "/close",
+      ],
+      [
+        "TMF-07 GET /c/alpha/team-posts/{id}/requests (unknown post -> 404 for members)",
+        tmfRequests,
+        "GET",
+        undefined,
+        "/requests",
+      ],
+    ] as const
+  ).map(([op, handler, method, json, tail]) => ({
+    op,
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(handler, {
+        method,
+        path: `/api/v1/c/alpha/team-posts/${id}${tail}`,
+        json,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  })),
+  {
+    op: "TMF-06 POST /c/alpha/team-posts/{id}/roles/{roleId}/requests (unknown post -> 404 for members)",
+    call: (cookie) => {
+      const id = randomUUID();
+      const roleId = randomUUID();
+      return call(tmfRequest, {
+        method: "POST",
+        path: `/api/v1/c/alpha/team-posts/${id}/roles/${roleId}/requests`,
+        json: {},
+        params: { slug: "alpha", id, roleId },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "TMF-08 POST /c/alpha/join-requests/{id}/decision (unknown request -> 404 for members)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(tmfDecision, {
+        method: "POST",
+        path: `/api/v1/c/alpha/join-requests/${id}/decision`,
+        json: { decision: "accepted" },
+        params: { slug: "alpha", id },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "TMF-09 DELETE /c/alpha/join-requests/{id} (unknown request -> 404 for members)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(tmfWithdraw, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/join-requests/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
   },
   {
     op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",

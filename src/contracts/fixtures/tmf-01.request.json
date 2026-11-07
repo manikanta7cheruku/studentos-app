@@ -1,0 +1,20 @@
+{
+  "kind": "hackathon",
+  "title": "Smart-campus hackathon team",
+  "description": "Building an IoT attendance system for the college hackathon.",
+  "deadline": "2026-11-25T18:00:00Z",
+  "external_link": "https://example.org/hackathon",
+  "team_link": "https://chat.example.org/room1",
+  "roles": [
+    {
+      "role_name": "Backend developer",
+      "slots": 1,
+      "skill_ids": ["88888888-8888-4888-8888-888888888888"]
+    },
+    {
+      "role_name": "UI designer",
+      "slots": 2,
+      "skill_ids": []
+    }
+  ]
+}

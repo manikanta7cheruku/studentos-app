@@ -178,3 +178,12 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - `memberships.profile_hidden_at`; `auth_shares_college_with` ignores hidden profiles.
 - `admin_decide_verification` now also notifies the applicant (same transaction).
 - Every server function is revoked from public, anon and authenticated, and granted to service_role (the read functions for members are `security invoker` and granted to authenticated). Each moderator function checks the actor again.
+
+## 15. Added on R2 Day 5 (migration 20261107000000)
+
+- `team_posts` (status open, closed, filled, expired, removed; `deadline`, `external_link`, `moderation_hidden_at`, full text `search`), `team_post_private` (the team link, separate on purpose), `team_post_roles` (`slots`, `filled`, `position`, check `filled <= slots`), `team_post_role_skills`, `join_requests` (statuses pending, accepted, declined, withdrawn, cancelled; partial unique index on (role, applicant) while pending or accepted).
+- All five tables: row level security on, a single "no" policy, all rights revoked from clients. The server reaches them through `tf_*` functions only (service role).
+- Functions: `tf_assert_member`, `tf_can_see`, `tf_shown_status`, `tf_post_json`, `tf_create_post`, `tf_list_posts`, `tf_get_post`, `tf_update_post`, `tf_close_post`, `tf_create_request`, `tf_list_requests`, `tf_list_my_requests`, `tf_decide_request`, `tf_withdraw_request`. Lock order is post, role, request in every function.
+- `notifications.type` accepts `team.request_received`, `team.request_accepted`, `team.request_declined`, `team.request_cancelled`, `team.request_withdrawn`.
+- `create_report`, `mod_list_reports`, `mod_act_on_report` now handle `team_post`.
+- Limits inside the database: 10 open posts per person, 10 waiting requests per person, 1 to 8 roles, 180 day deadlines.
