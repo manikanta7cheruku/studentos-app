@@ -261,34 +261,15 @@ export async function getMemberProfile(
 
 export async function getVisibleCollegePeople(
   supabase: SupabaseClient,
-  collegeSlug: string,
+  collegeId: string,
   options: { query?: string } = {},
 ): Promise<DirectoryPerson[]> {
-  let query = supabase
-    .from("profiles")
-    .select(
-      `
-      user_id,
-      display_name,
-      handle,
-      headline,
-      avatar_path,
-      interests,
-      visibility,
-      deleted_at,
-      memberships!inner(college_id, status, colleges!inner(slug))
-    `,
-    )
-    .eq("memberships.colleges.slug", collegeSlug)
-    .eq("memberships.status", "active")
-    .eq("visibility", "college")
-    .is("deleted_at", null);
-
-  if (options.query) {
-    query = query.ilike("display_name", `%${options.query}%`);
-  }
-
-  const { data, error } = await query;
+  // The database function checks the caller is an active member and hides hidden, blocked and deleted people.
+  const { data, error } = await supabase.rpc("directory_list", {
+    p_college: collegeId,
+    p_q: options.query ?? null,
+    p_limit: 50,
+  });
   if (error) {
     throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
   }

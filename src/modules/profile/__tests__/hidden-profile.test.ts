@@ -58,10 +58,14 @@ describe("hidden-profile rule enforcement", () => {
     );
   });
 
-  it("excludes hidden profiles from the college people directory list", async () => {
-    // Database query for directory has .eq("visibility", "college")
-    // If user A is hidden, the query returns only visible members (e.g. user B)
-    const mockVisibleRows = [
+  const college = "bbbbbbbb-0000-4000-8000-000000000001";
+  const rpcClient = (rows: unknown[]) => {
+    const rpc = vi.fn().mockResolvedValue({ data: rows, error: null });
+    return { client: { rpc } as unknown as SupabaseClient, rpc };
+  };
+
+  it("reads the directory through the database function, which hides hidden profiles", async () => {
+    const { client, rpc } = rpcClient([
       {
         user_id: userB,
         display_name: "Kabir Rao",
@@ -70,65 +74,24 @@ describe("hidden-profile rule enforcement", () => {
         avatar_path: null,
         interests: ["algorithms"],
       },
-    ];
-
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockResolvedValue({ data: mockVisibleRows, error: null }),
-              }),
-            }),
-          }),
-        }),
-      }),
-    } as unknown as SupabaseClient;
-
-    const people = await getVisibleCollegePeople(mockSupabase, "alpha");
+    ]);
+    const people = await getVisibleCollegePeople(client, college, { query: "Kab" });
+    expect(rpc).toHaveBeenCalledWith("directory_list", {
+      p_college: college,
+      p_q: "Kab",
+      p_limit: 50,
+    });
     expect(people).toHaveLength(1);
     expect(people[0]?.user_id).toBe(userB);
-    // User A (hidden) is not present
     expect(people.some((p) => p.user_id === userA)).toBe(false);
   });
 
-  it("includes profile in people directory once visibility is set back to 'college'", async () => {
-    const mockVisibleRows = [
-      {
-        user_id: userA,
-        display_name: "Riya Sharma",
-        handle: "riya_alpha",
-        headline: "Visible student",
-        avatar_path: null,
-        interests: ["web"],
-      },
-      {
-        user_id: userB,
-        display_name: "Kabir Rao",
-        handle: "kabir_alpha",
-        headline: "Peer student",
-        avatar_path: null,
-        interests: ["algorithms"],
-      },
-    ];
-
-    const mockSupabase = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockResolvedValue({ data: mockVisibleRows, error: null }),
-              }),
-            }),
-          }),
-        }),
-      }),
+  it("turns a database error into a safe upstream error", async () => {
+    const client = {
+      rpc: vi.fn().mockResolvedValue({ data: null, error: { code: "XX000", message: "boom" } }),
     } as unknown as SupabaseClient;
-
-    const people = await getVisibleCollegePeople(mockSupabase, "alpha");
-    expect(people).toHaveLength(2);
-    expect(people.some((p) => p.user_id === userA)).toBe(true);
+    await expect(getVisibleCollegePeople(client, college)).rejects.toThrowError(
+      expect.objectContaining({ code: "UPSTREAM_UNAVAILABLE" }),
+    );
   });
 });

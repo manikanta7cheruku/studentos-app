@@ -28,6 +28,14 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | RPT-04 | PUT | /me/blocks/{userId} | ses | write limit |
 | RPT-04 | DELETE | /me/blocks/{userId} | ses | write limit |
 | WL-01 | POST | /waitlist | pub | 5/h per IP |
+| PRF-01 | GET | /me/profile | ses | none |
+| PRF-01 | PATCH | /me/profile | ses | write limit |
+| PRF-02 | GET | /me/skills | ses | none |
+| PRF-02 | PUT | /me/skills | ses | write limit |
+| PRF-03 | GET | /skills | ses | none |
+| PRF-04 | POST | /me/avatar | ses | write limit |
+| PRF-04 | POST | /me/avatar/upload-url | ses | write limit |
+| PRF-05 | GET | /c/{slug}/people | mem | none |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
 | RPT-01 | POST | /c/{slug}/reports | mem | write limit |
 | ANN-02 | GET | /c/{slug}/admin/announcements | mod | admin bucket |
