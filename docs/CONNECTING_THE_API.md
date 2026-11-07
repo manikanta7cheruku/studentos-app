@@ -32,7 +32,8 @@ Sign in: `POST /auth/otp/request` with the email, read the code in Mailpit, `POS
 - **Changes need the same origin.** A browser sends it. A script outside the browser must send a matching `Origin`.
 - **IDEM endpoints** (marked IDEM in the contract) need an `Idempotency-Key` header with a fresh UUID for each user action. Reuse the same key for a retry of the same action, never for a new one. A retry returns the first answer with `Idempotent-Replay: true`. The same key with another body is 422. If the first call is still running, a retry gets 409 `CONFLICT` with `Retry-After: 1`: wait a second and send the same call again.
 - **Lists** return `meta.next_cursor`. Send it back as `?cursor=`. Never build a cursor yourself. `limit` is 1 to 50 (default 20).
-- **Limits:** 60 changes a minute per person (429 `RATE_LIMITED`, read `Retry-After`). Some endpoints have extra limits (listed in `docs/PERMISSIONS.md`).
+- **Limits:** 60 changes and 300 reads a minute per person (429 `RATE_LIMITED`, read `Retry-After`). Some endpoints have extra limits (listed in `docs/PERMISSIONS.md`).
+- **Tabs switched off:** a call for a tab the college turned off answers 404 `FEATURE_DISABLED`. Hide the tab from `modules` and show a friendly "not available" page if someone still arrives.
 - **Times** are UTC with a `Z`. Show them in the local time zone.
 - **Another college is always 404**, never 403. A pending or suspended member is 403 `MEMBERSHIP_NOT_ACTIVE`.
 - **Tabs:** `GET /colleges/public/{slug}` now has `modules: { campus, collaborate, career }`. Hide a tab when its value is false.
@@ -53,6 +54,9 @@ Sign in: `POST /auth/otp/request` with the email, read the code in Mailpit, `POS
 | Team Finder request and my requests | TMF-06, TMF-10, TMF-09 |
 | Team Finder my posts and requests inbox | TMF-02 with `mine=true`, TMF-07, TMF-08, TMF-05, TMF-04 |
 | Admin console | ADM-03, ADM-05, ADM-06, ADM-07, ADM-08, ADM-09, ADM-10, ADM-11 |
+| Opportunities list, filters, detail, save | OPP-01, OPP-02, OPP-04 (`saved=true` is "my saved") |
+| Moderator opportunity management | OPP-03 |
+| Reminder setting | REM-01 |
 | Landing waitlist form | WL-01 |
 
 ## 5. Things that will surprise you (read once)
@@ -64,11 +68,13 @@ Sign in: `POST /auth/otp/request` with the email, read the code in Mailpit, `POS
 - The default Team Finder list is `status=open`. Use `status=all` for "my history".
 - `author.user_id` and `reporter.user_id` can be `null` after someone deleted their account. Show the `display_name` ("Former member").
 - Notification `payload` always has `title` and `message` (plain text) plus ids for a link. Types are in `notificationType`.
+- Avatars: send the image to `POST /me/avatar` (JPEG, PNG, WebP, GIF or AVIF, up to 2 MB, no SVG). Do not rely on the signed link flow yet.
+- Opportunities: `changed_since_saved` is the "changed" badge, `status` can be `expired`, `location` can be an empty string. Deadline reminders arrive as the notification type `opportunity.deadline_soon`.
 - The waitlist always says `joined: true`, even for an email that is already there. That is on purpose.
 
 ## 6. Not built yet (do not call these)
 
-AUTH-04 (delete account), TEN-06 (roster), TEN-07 (leave college), ADM-01, ADM-02, ADM-04, ADM-12, PRF-06 (view one person), PRF-07 (achievements), PRJ-01 to PRJ-06 (projects and portfolio), APP-01 to APP-04 (tracker), OPP-01 to OPP-04 (opportunities). R2 plans them for Day 7 and Day 8 (the roadmap decides the order). If a screen needs one earlier, tell R2 which and why.
+AUTH-04 (delete account), TEN-06 (roster), TEN-07 (leave college), ADM-01, ADM-02, ADM-04, ADM-12, PRF-06 (view one person), PRF-07 (achievements), PRJ-01 to PRJ-06 (projects and portfolio) and APP-01 to APP-04 (the tracker, which is R3's). Opportunities (OPP-01 to OPP-04) and the reminder setting (REM-01) are built since Day 7. If a screen needs another one earlier, tell R2 which and why.
 
 ## 7. When something does not match
 

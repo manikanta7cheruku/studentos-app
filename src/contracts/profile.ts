@@ -79,7 +79,7 @@ export const avatarAllowedMimeTypes = [
   "image/gif",
   "image/webp",
   "image/avif",
-  "image/svg+xml",
+  // No SVG: an SVG file can carry scripts.
 ] as const;
 
 export const avatarMimeType = z.enum(avatarAllowedMimeTypes);

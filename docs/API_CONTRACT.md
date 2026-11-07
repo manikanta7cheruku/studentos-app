@@ -343,3 +343,12 @@ Rules for the screens:
 - The Career tab: when a college switched it off (`modules.career` false in TEN-01), every call here answers 404 `FEATURE_DISABLED`.
 - Notification type `opportunity.deadline_soon` has `payload.opportunity_id`.
 - `in_tracker` (already added to the tracker) is not part of this API: the tracker is R3's (APP-01 to APP-04).
+
+## 13. Changes from R2 Day 8 (hardening)
+
+- **Reads are limited** to 300 a minute per person (429 `RATE_LIMITED`, read `Retry-After`). Changes stay at 60 a minute.
+- **Tabs switched off:** when a college sets a tab off (`modules.campus`, `modules.collaborate` or `modules.career` in TEN-01 is false), its calls answer 404 `FEATURE_DISABLED`: announcements (campus), Team Finder (collaborate), opportunities (career).
+- **Sign in** calls (AUTH-01, AUTH-02) now check the Origin like every other change: a call from another website is 403.
+- **Request size:** a body over its limit is 413 `PAYLOAD_TOO_LARGE` as soon as the limit is passed, also without a Content-Length. JSON is 100 KB, an avatar is 2 MB.
+- **Avatars (PRF-04):** JPEG, PNG, WebP, GIF or AVIF only (no SVG), 2 MB, stored under `<user id>/`. If the upload fails the answer is 503 and the profile is not changed. Use `POST /me/avatar` to attach an avatar; the signed upload link (`/me/avatar/upload-url`) only stores the file, and the storage rules refuse other types and sizes.
+- **Skills (PRF-02):** replaced in one step. An unknown skill id is 400 and the old list stays.

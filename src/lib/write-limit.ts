@@ -12,3 +12,15 @@ export async function limitWrites(userId: string): Promise<void> {
     WRITE_LIMIT.windowSeconds,
   );
 }
+
+// Reads are limited too (300 a minute per person), so one account cannot scrape the whole college.
+export const READ_LIMIT = { limit: 300, windowSeconds: 60 } as const;
+
+export async function limitReads(userId: string): Promise<void> {
+  await consumeOrThrow(
+    "read_user",
+    hashKey("user", userId),
+    READ_LIMIT.limit,
+    READ_LIMIT.windowSeconds,
+  );
+}

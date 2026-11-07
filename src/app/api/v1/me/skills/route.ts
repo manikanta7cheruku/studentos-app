@@ -1,5 +1,6 @@
 import { skillsPutBody } from "@/contracts";
 import { assertSameOrigin, ok, readJson, route } from "@/lib/api";
+import { limitWrites } from "@/lib/write-limit";
 import { CookieJar, getCurrentUser } from "@/lib/supabase/request-client";
 import { getMySkills, updateMySkills } from "@/modules/profile";
 
@@ -16,6 +17,7 @@ export const PUT = route(async ({ request, requestId }) => {
   assertSameOrigin(request);
   const jar = new CookieJar();
   const { user, supabase } = await getCurrentUser(request, jar);
+  await limitWrites(user.id);
   const body = await readJson(request, skillsPutBody);
   const data = await updateMySkills(supabase, user.id, body.skills);
   return jar.applyTo(ok(data, requestId));

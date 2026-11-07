@@ -174,7 +174,7 @@ describe("profile module logic", () => {
       });
 
       expect(res.upload_url).toBe("https://storage.example.com/upload-signed");
-      expect(res.path).toContain("avatars/");
+      expect(res.path.startsWith(`${mockUserId}/`)).toBe(true);
     });
   });
 });

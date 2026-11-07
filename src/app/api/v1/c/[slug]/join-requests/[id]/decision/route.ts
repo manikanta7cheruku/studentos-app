@@ -12,6 +12,7 @@ import { decideJoinRequest } from "@/modules/teamfinder/teamfinder.admin";
 export const POST = route<{ slug: string; id: string }>(async ({ request, requestId, params }) => {
   const { jar, slug, actorId, collegeId } = await memberContext(request, params.slug, {
     write: true,
+    module: "collaborate",
   });
   const id = pathUuid(params.id);
   const body = await readJson(request, joinRequestDecisionBody);

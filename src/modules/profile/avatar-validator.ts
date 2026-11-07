@@ -66,20 +66,6 @@ export function detectImageMime(buffer: Uint8Array): string | null {
     }
   }
 
-  // SVG: starts with <svg or <?xml ... <svg
-  const headerSlice = new TextDecoder()
-    .decode(buffer.slice(0, Math.min(buffer.length, 512)))
-    .trim();
-  if (
-    headerSlice.startsWith("<svg") ||
-    (headerSlice.startsWith("<?xml") && headerSlice.includes("<svg"))
-  ) {
-    // Basic sanitisation check: ensure no script injection in SVG
-    if (!/<script[\s>]/i.test(headerSlice) && !/javascript:/i.test(headerSlice)) {
-      return "image/svg+xml";
-    }
-  }
-
   return null;
 }
 
@@ -104,7 +90,7 @@ export function validateAvatarBuffer(buffer: Uint8Array): { mimeType: string; si
   if (!mimeType) {
     throw new AppError("UNSUPPORTED_MEDIA_TYPE", {
       message:
-        "The uploaded file is not a supported image. Only genuine image files (JPEG, PNG, WebP, GIF, AVIF, SVG) are allowed.",
+        "The uploaded file is not a supported image. Only genuine image files (JPEG, PNG, WebP, GIF, AVIF) are allowed.",
     });
   }
 
@@ -123,8 +109,6 @@ export function extensionForMime(mimeType: string): string {
       return "gif";
     case "image/avif":
       return "avif";
-    case "image/svg+xml":
-      return "svg";
     default:
       return "img";
   }
@@ -140,25 +124,19 @@ export async function uploadAvatar(
 ): Promise<{ avatar_url: string }> {
   const { mimeType } = validateAvatarBuffer(buffer);
   const ext = extensionForMime(mimeType);
-  const storagePath = `avatars/${userId}/${Date.now()}-avatar.${ext}`;
+  // The folder is the user id, so the storage rule "only write in your own folder" can check it.
+  const storagePath = `${userId}/${Date.now()}-avatar.${ext}`;
 
-  // Upload to Supabase Storage bucket 'avatars'
+  // Upload to Supabase Storage bucket 'avatars' (the bucket also refuses files over 2 MB and non-image types).
   const { error: uploadError } = await supabase.storage
     .from("avatars")
-    .upload(storagePath, buffer, {
-      contentType: mimeType,
-      upsert: true,
-    });
-
-  let avatarUrl: string;
+    .upload(storagePath, buffer, { contentType: mimeType, upsert: false });
   if (uploadError) {
-    // If storage bucket upload is unavailable in local test without storage running,
-    // construct fallback avatar data url or placeholder path
-    avatarUrl = `https://example.supabase.co/storage/v1/object/public/${storagePath}`;
-  } else {
-    const { data: pubData } = supabase.storage.from("avatars").getPublicUrl(storagePath);
-    avatarUrl = pubData.publicUrl;
+    // Never save a path to a file that does not exist.
+    throw new AppError("UPSTREAM_UNAVAILABLE", { cause: uploadError });
   }
+  const { data: pubData } = supabase.storage.from("avatars").getPublicUrl(storagePath);
+  const avatarUrl = pubData.publicUrl;
 
   // Update profile avatar_path
   const { error: dbError } = await supabase
