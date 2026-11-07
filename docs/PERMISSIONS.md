@@ -5,7 +5,7 @@ One row per route method. The test `tests/integration/permission-matrix.test.ts`
 - a `route.ts` method exists that is not in this table (or a row has no route), or
 - a row has no matching call in the matrix (every row is called as anon, pending, suspended, student level 1 and 2, moderator, admin, student of another college, admin of another college).
 
-Who: **pub** = nobody signed in needed. **ses** = any signed-in person. **mem** = active member of the college (pending and suspended get 403 `MEMBERSHIP_NOT_ACTIVE`). "(author)" or "(applicant)" means the rule inside the function also needs you to own the post or request: someone else gets 403 or 404 (tested in `teamfinder.test.ts`). **mod** = active moderator or admin. **adm** = active college admin.
+Who: **pub** = nobody signed in needed. **ses** = any signed-in person. **mem** = active member of the college (pending and suspended get 403 `MEMBERSHIP_NOT_ACTIVE`). "(author)" or "(applicant)" means the rule inside the function also needs you to own the post or request: someone else gets 403 or 404 (tested in `teamfinder.test.ts`). **mod** = active moderator or admin. **adm** = active college admin. **cron** = the scheduler, with the shared secret (people get 401 whoever they are).
 Other college = always 404 on `/c/{slug}/...` (never confirms the college exists). Nobody signed in = 401 on everything except **pub**.
 Paths are under `/api/v1` unless they start with `/api/`.
 
@@ -15,6 +15,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | --- | --- | --- | --- | --- |
 | SYS-01 | GET | /api/health | pub | none |
 | SYS-01 | GET | /api/ready | pub | none |
+| SYS-02 | POST | /api/internal/maintenance | cron | secret in `Authorization: Bearer` (CRON_SECRET), never a cookie |
 | AUTH-01 | POST | /auth/otp/request | pub | 5/h per email, 20/h per IP |
 | AUTH-02 | POST | /auth/otp/verify | pub | lock after 5 wrong codes |
 | AUTH-03 | POST | /auth/logout | ses | write limit |

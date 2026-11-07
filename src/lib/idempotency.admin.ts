@@ -5,6 +5,7 @@ import { hashKey } from "./hash";
 
 // Create endpoints marked IDEM in docs/API_CONTRACT.md need an `Idempotency-Key` header (a UUID).
 // Same key and same body within 24 hours: the first answer comes back with `Idempotent-Replay: true`.
+// Same key at the same moment as an unfinished request: 409 CONFLICT with `Retry-After: 1`.
 // Same key with a different body: 422 IDEMPOTENCY_KEY_REUSED. Only successful answers are kept.
 
 export function readIdempotencyKey(request: Request): string {
@@ -25,6 +26,17 @@ export type IdempotentResult = { status: number; data: unknown };
 
 // `keep` lets a route store a smaller answer than it returns. Example: the invite code is shown once
 // to the admin and must never be stored, so a replay returns the invite without the code.
+//
+// The key is CLAIMED before the work starts (database function idem_claim), so two requests with the same key
+// at the same moment run the work once: the second gets 409 CONFLICT with Retry-After and can try again.
+// If the work fails, the claim is released so the same key can try again. A claim older than 60 seconds
+// (a crashed request) is taken over.
+type ClaimResult =
+  | { outcome: "claimed" }
+  | { outcome: "replay"; status_code: number; response: unknown }
+  | { outcome: "in_progress" }
+  | { outcome: "mismatch" };
+
 export async function withIdempotency(
   input: { userId: string; route: string; key: string; body: unknown },
   run: () => Promise<IdempotentResult>,
@@ -32,38 +44,42 @@ export async function withIdempotency(
 ): Promise<IdempotentResult & { replay: boolean }> {
   const admin = adminClient();
   const requestHash = hashKey("idempotency", JSON.stringify(input.body));
+  const ids = { p_user: input.userId, p_key: input.key, p_route: input.route };
 
-  const { data: existing, error: readError } = await admin
-    .from("idempotency_keys")
-    .select("request_hash, response, status_code, expires_at")
-    .eq("user_id", input.userId)
-    .eq("key", input.key)
-    .eq("route", input.route)
-    .maybeSingle();
-  if (readError) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: readError });
+  const { data: claim, error: claimError } = await admin.rpc("idem_claim", {
+    ...ids,
+    p_hash: requestHash,
+  });
+  if (claimError) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: claimError });
+  const outcome = claim as ClaimResult;
 
-  if (existing && new Date(existing.expires_at).getTime() > Date.now()) {
-    if (existing.request_hash !== requestHash) throw new AppError("IDEMPOTENCY_KEY_REUSED");
-    return { status: existing.status_code, data: existing.response, replay: true };
+  if (outcome.outcome === "mismatch") throw new AppError("IDEMPOTENCY_KEY_REUSED");
+  if (outcome.outcome === "in_progress") {
+    throw new AppError("CONFLICT", {
+      message: "The same request is still being processed. Try again in a moment.",
+      headers: { "Retry-After": "1" },
+    });
+  }
+  if (outcome.outcome === "replay") {
+    return { status: outcome.status_code, data: outcome.response, replay: true };
   }
 
-  const result = await run();
+  let result: IdempotentResult;
+  try {
+    result = await run();
+  } catch (error) {
+    await admin.rpc("idem_release", ids);
+    throw error;
+  }
 
-  const row = {
-    user_id: input.userId,
-    key: input.key,
-    route: input.route,
-    request_hash: requestHash,
-    response: (options.keep ? options.keep(result.data) : result.data) as object,
-    status_code: result.status,
-    expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-  };
-  const { error: writeError } = await admin
-    .from("idempotency_keys")
-    .upsert(row, { onConflict: "user_id,key,route" });
-  if (writeError) {
-    // The join already happened. Do not fail the request because the replay record was not saved.
-    console.error("idempotency key not saved:", writeError.code);
+  const { error: completeError } = await admin.rpc("idem_complete", {
+    ...ids,
+    p_status: result.status,
+    p_response: (options.keep ? options.keep(result.data) : result.data) as object,
+  });
+  if (completeError) {
+    // The work already happened. Do not fail the request because the replay record was not saved.
+    console.error("idempotency key not saved:", completeError.code);
   }
   return { ...result, replay: false };
 }

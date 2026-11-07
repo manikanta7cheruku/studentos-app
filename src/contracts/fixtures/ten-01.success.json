@@ -8,7 +8,8 @@
     "accent_hex": "#1D4ED8",
     "logo_url": null,
     "allowed_methods": ["email_domain", "invite_code", "manual"],
-    "require_admin_approval": true
+    "require_admin_approval": true,
+    "modules": { "campus": true, "collaborate": true, "career": true }
   },
   "meta": {
     "request_id": "req_7f3a9c2e41b8"

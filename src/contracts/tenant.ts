@@ -26,6 +26,8 @@ export const publicCollegeData = z.object({
   logo_url: z.url().nullable(),
   allowed_methods: z.array(verificationMethod).min(1),
   require_admin_approval: z.boolean(),
+  // Which tabs the college has switched on. A tab is on unless the admin turned it off (ADM-03 features).
+  modules: z.object({ campus: z.boolean(), collaborate: z.boolean(), career: z.boolean() }),
 });
 export const publicCollegeResponse = successEnvelope(publicCollegeData);
 

@@ -187,3 +187,10 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - `notifications.type` accepts `team.request_received`, `team.request_accepted`, `team.request_declined`, `team.request_cancelled`, `team.request_withdrawn`.
 - `create_report`, `mod_list_reports`, `mod_act_on_report` now handle `team_post`.
 - Limits inside the database: 10 open posts per person, 10 waiting requests per person, 1 to 8 roles, 180 day deadlines.
+
+## 16. Added on R2 Day 6 (migration 20261108000000)
+
+- `idempotency_keys`: new `state` (`in_progress` or `done`) and `locked_until`; `response` and `status_code` may be empty while in progress. Functions `idem_claim`, `idem_complete`, `idem_release` (service role only).
+- `maintenance_run()` (service role only): expires team posts and join requests, deletes old idempotency keys, rate limit events, notifications and waitlist rows, and returns the counts.
+- `notifications.type` accepts `membership.expired` and `team.post_expired`.
+- View `public_college_branding` has a new column `modules` (three booleans from `college_settings.features`).

@@ -310,3 +310,12 @@ Rules for the screens:
 - Notification types: `team.request_received` (to the author), `team.request_accepted`, `team.request_declined`, `team.request_cancelled` (post closed or full), `team.request_withdrawn` (to the author). `payload` has `title`, `message`, `post_id`, and `request_id` or `role_id`.
 - Reports: `target_type: "team_post"` works in RPT-01. A moderator `hide` removes the post from every list. The author still sees it.
 - Posts of people you blocked (or who blocked you) and of people who left the college never appear.
+
+## 11. Built in R2 Day 6 (what changed)
+
+- **Safe retries (all IDEM endpoints).** The `Idempotency-Key` is claimed before the work starts. Same key and same body: the first answer again with `Idempotent-Replay: true`. Same key, different body: 422 `IDEMPOTENCY_KEY_REUSED`. Same key while the first call is still running: 409 `CONFLICT` with `Retry-After: 1`, wait and send the same call again. A call that fails does not keep the key. Keys live 24 hours.
+- **TEN-01** also returns `modules: { campus, collaborate, career }` (true unless the college admin switched the tab off). Use it to hide a tab before sign in.
+- **SYS-02** `POST /api/internal/maintenance` is for the scheduler only (`Authorization: Bearer <CRON_SECRET>`, 401 for everyone else). Screens never call it.
+- **Expiry rules.** An open team post past its deadline is shown as `expired` immediately; the maintenance run then closes it, cancels the waiting requests and tells the author and the applicants (`team.post_expired`, `team.request_cancelled`). A join request that waited more than 30 days for an admin becomes `expired`, the membership goes to `left`, the person gets `membership.expired` and can apply again.
+- New notification types: `membership.expired`, `team.post_expired`.
+- Rules for R3: see docs/CONNECTING_THE_API.md.
