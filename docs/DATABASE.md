@@ -201,3 +201,9 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - Functions (service role only): `opp_assert` (member, college active, Career tab on), `opp_shown_status`, `opp_json`, `opp_list`, `opp_get`, `opp_set_saved`, `mod_create_opportunity`, `mod_update_opportunity`, `mod_remove_opportunity`, `mod_list_opportunities`, `rem_get`, `rem_set`, `reminders_run`.
 - `notifications.type` accepts `opportunity.deadline_soon`.
 - `maintenance_run()` now also marks listings past their deadline `expired`, runs `reminders_run()` and deletes reminders older than 90 days. Its answer has `opportunities_expired`, `reminders_sent` and `reminders_deleted`.
+
+## 18. Added on R2 Day 8 (migration 20261110000000)
+
+- Storage: bucket `avatars` (public read, 2 MB, JPEG, PNG, WebP, GIF, AVIF) and three policies on `storage.objects`: insert, update and delete only inside the folder named after your own user id.
+- `set_my_skills(jsonb)` (security invoker, authenticated): replaces the signed-in person's skills in one transaction.
+- `tf_list_posts` rewritten with joins for visibility and an index friendly status test (same answers, about 5 times faster with 4000 posts).

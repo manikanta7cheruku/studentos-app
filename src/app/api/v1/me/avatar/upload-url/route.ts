@@ -1,5 +1,6 @@
 import { avatarUploadUrlBody } from "@/contracts";
 import { assertSameOrigin, ok, readJson, route } from "@/lib/api";
+import { limitWrites } from "@/lib/write-limit";
 import { CookieJar, getCurrentUser } from "@/lib/supabase/request-client";
 import { createAvatarUploadUrl } from "@/modules/profile";
 
@@ -8,6 +9,7 @@ export const POST = route(async ({ request, requestId }) => {
   assertSameOrigin(request);
   const jar = new CookieJar();
   const { user, supabase } = await getCurrentUser(request, jar);
+  await limitWrites(user.id);
   const body = await readJson(request, avatarUploadUrlBody);
   const data = await createAvatarUploadUrl(supabase, user.id, body);
   return jar.applyTo(ok(data, requestId));

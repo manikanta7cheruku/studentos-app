@@ -9,7 +9,9 @@ import { createTeamPost, listTeamPosts } from "@/modules/teamfinder/teamfinder.a
 // Newest first. `status` is open by default (use all for everything). `mine=true` lists my own posts.
 // Hidden posts, posts of people who left, and posts of someone you blocked (or who blocked you) never appear.
 export const GET = route<{ slug: string }>(async ({ request, requestId, params }) => {
-  const { jar, actorId, collegeId } = await memberContext(request, params.slug);
+  const { jar, actorId, collegeId } = await memberContext(request, params.slug, {
+    module: "collaborate",
+  });
   const query = readQuery(request, teamPostListQuery);
   const { items, nextCursor } = await listTeamPosts(actorId, collegeId, {
     kind: query.kind,
@@ -29,6 +31,7 @@ export const GET = route<{ slug: string }>(async ({ request, requestId, params }
 export const POST = route<{ slug: string }>(async ({ request, requestId, params }) => {
   const { jar, slug, actorId, collegeId } = await memberContext(request, params.slug, {
     write: true,
+    module: "collaborate",
   });
   const body = await readJson(request, teamPostCreateBody);
   const key = readIdempotencyKey(request);

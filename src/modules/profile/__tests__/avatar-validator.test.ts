@@ -47,8 +47,8 @@ describe("avatar upload validation (server-side magic bytes and size)", () => {
       expect(detectImageMime(validWebp)).toBe("image/webp");
     });
 
-    it("identifies genuine SVG files", () => {
-      expect(detectImageMime(validSvg)).toBe("image/svg+xml");
+    it("no longer accepts SVG files (they can carry scripts)", () => {
+      expect(detectImageMime(validSvg)).toBeNull();
     });
 
     it("returns null for non-images", () => {
@@ -106,6 +106,23 @@ describe("avatar upload validation (server-side magic bytes and size)", () => {
   });
 
   describe("uploadAvatar", () => {
+    it("does not save a path to a file that was not uploaded (upload error -> UPSTREAM_UNAVAILABLE)", async () => {
+      const update = vi.fn();
+      const mockSupabase = {
+        storage: {
+          from: vi.fn().mockReturnValue({
+            upload: vi.fn().mockResolvedValue({ error: { message: "bucket missing" } }),
+            getPublicUrl: vi.fn(),
+          }),
+        },
+        from: vi.fn().mockReturnValue({ update }),
+      } as unknown as SupabaseClient;
+      await expect(
+        uploadAvatar(mockSupabase, "aaaaaaaa-1000-4000-8000-000000000003", validPng),
+      ).rejects.toThrowError(expect.objectContaining({ code: "UPSTREAM_UNAVAILABLE" }));
+      expect(update).not.toHaveBeenCalled();
+    });
+
     it("uploads valid image and updates profile avatar_path", async () => {
       const mockUserId = "aaaaaaaa-1000-4000-8000-000000000003";
       const mockSupabase = {

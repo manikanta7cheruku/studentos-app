@@ -13,6 +13,7 @@ export const POST = route<{ slug: string; id: string; roleId: string }>(
   async ({ request, requestId, params }) => {
     const { jar, slug, actorId, collegeId } = await memberContext(request, params.slug, {
       write: true,
+      module: "collaborate",
     });
     const postId = pathUuid(params.id);
     const roleId = pathUuid(params.roleId);

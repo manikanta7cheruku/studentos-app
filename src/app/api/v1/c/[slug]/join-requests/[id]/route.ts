@@ -9,7 +9,10 @@ import { withdrawJoinRequest } from "@/modules/teamfinder/teamfinder.admin";
 // 409 if it was already withdrawn, declined or cancelled.
 export const DELETE = route<{ slug: string; id: string }>(
   async ({ request, requestId, params }) => {
-    const { jar, actorId, collegeId } = await memberContext(request, params.slug, { write: true });
+    const { jar, actorId, collegeId } = await memberContext(request, params.slug, {
+      write: true,
+      module: "collaborate",
+    });
     const result = await withdrawJoinRequest(actorId, collegeId, pathUuid(params.id), requestId);
     return jar.applyTo(ok(result, requestId));
   },

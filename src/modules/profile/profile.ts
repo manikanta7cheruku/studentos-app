@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { z } from "zod";
 import type { avatarUploadUrlBody, profilePatchBody, skillsPutBody } from "@/contracts";
 import { AppError } from "@/lib/errors";
+import { mapDbError } from "@/lib/db-error";
 import { toIso } from "@/lib/api";
 import { serverEnv } from "@/lib/env";
 
@@ -130,27 +131,15 @@ export async function updateMySkills(
 ) {
   await requireMembershipLevel1(supabase, userId);
 
-  // Clear existing skills for this user
-  const { error: delError } = await supabase.from("user_skills").delete().eq("user_id", userId);
-
-  if (delError) {
-    throw new AppError("UPSTREAM_UNAVAILABLE", { cause: delError });
-  }
-
-  if (skillsInput.length > 0) {
-    const rows = skillsInput.map((s) => ({
-      user_id: userId,
+  // One database call (one transaction): either the whole list is replaced or nothing changes.
+  const { error } = await supabase.rpc("set_my_skills", {
+    p_skills: skillsInput.map((s) => ({
       skill_id: s.skill_id,
       level: s.level,
       evidence_url: s.evidence_url ?? null,
-    }));
-
-    const { error: insError } = await supabase.from("user_skills").insert(rows);
-    if (insError) {
-      throw new AppError("UPSTREAM_UNAVAILABLE", { cause: insError });
-    }
-  }
-
+    })),
+  });
+  if (error) throw mapDbError(error);
   return getMySkills(supabase, userId);
 }
 
@@ -159,7 +148,7 @@ export async function searchSkills(supabase: SupabaseClient, query: string) {
     .from("skills")
     .select("id, name, category")
     .eq("status", "approved")
-    .ilike("name", `%${query}%`)
+    .ilike("name", `%${query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`)
     .limit(20);
 
   if (error) {
@@ -179,7 +168,7 @@ export async function createAvatarUploadUrl(
   body: z.infer<typeof avatarUploadUrlBody>,
 ) {
   const cleanFileName = body.file_name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const path = `avatars/${userId}/${Date.now()}-${cleanFileName}`;
+  const path = `${userId}/${Date.now()}-${cleanFileName}`;
 
   const { data, error } = await supabase.storage.from("avatars").createSignedUploadUrl(path);
 

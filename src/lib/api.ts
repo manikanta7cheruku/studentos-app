@@ -21,6 +21,37 @@ export function bearerToken(request: Request): string | null {
   return scheme?.toLowerCase() === "bearer" && token ? token : null;
 }
 
+// Reads a request body but stops as soon as it is bigger than `maxBytes` (413 PAYLOAD_TOO_LARGE), even when the
+// sender gave no Content-Length or lied about it. The body is never held in memory beyond the cap.
+export async function readBodyCapped(
+  request: Request,
+  maxBytes: number,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (declared > maxBytes) throw new AppError("PAYLOAD_TOO_LARGE");
+  if (!request.body) return new Uint8Array();
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => undefined);
+      throw new AppError("PAYLOAD_TOO_LARGE");
+    }
+    chunks.push(value);
+  }
+  const all = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    all.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return all;
+}
+
 // Parse a JSON body with a Zod schema. Bad JSON, a wrong content type, a big body or a wrong shape
 // all become the stable error codes of docs/API_CONTRACT.md section 2.
 export async function readJson<T>(request: Request, schema: ZodType<T>): Promise<T> {
@@ -28,11 +59,7 @@ export async function readJson<T>(request: Request, schema: ZodType<T>): Promise
   if (!contentType.toLowerCase().includes("application/json")) {
     throw new AppError("UNSUPPORTED_MEDIA_TYPE");
   }
-  const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > MAX_JSON_BYTES) throw new AppError("PAYLOAD_TOO_LARGE");
-  const text = await request.text();
-  if (new TextEncoder().encode(text).length > MAX_JSON_BYTES)
-    throw new AppError("PAYLOAD_TOO_LARGE");
+  const text = new TextDecoder().decode(await readBodyCapped(request, MAX_JSON_BYTES));
   let raw: unknown;
   try {
     raw = JSON.parse(text);
