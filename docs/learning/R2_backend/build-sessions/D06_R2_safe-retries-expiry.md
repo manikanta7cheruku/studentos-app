@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D6-1 / DECISIONS D-21 / PR_LINK |
+| Linked task / ADR / PR | R2-D6-1 / DECISIONS D-21 / https://github.com/manikanta7cheruku/studentos-app/pull/32 |
 | Related docs | docs/ERROR_HANDLING.md section 3, docs/API_CONTRACT.md section 11, docs/DATABASE.md section 16, docs/OBSERVABILITY.md section 11 |
 
 ## 1. What we are learning and why it is needed

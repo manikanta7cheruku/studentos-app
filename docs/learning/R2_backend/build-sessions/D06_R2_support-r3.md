@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D6-2 / none / PR_LINK |
+| Linked task / ADR / PR | R2-D6-2 / none / https://github.com/manikanta7cheruku/studentos-app/pull/32 |
 | Related docs | docs/CONNECTING_THE_API.md, docs/API_CONTRACT.md, docs/PERMISSIONS.md |
 
 ## 1. What we are learning and why it is needed
