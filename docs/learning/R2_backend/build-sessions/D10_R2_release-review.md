@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D10-1 / none / PR_LINK10 |
+| Linked task / ADR / PR | R2-D10-1 / none / https://github.com/manikanta7cheruku/studentos-app/pull/36 |
 | Related docs | docs/progress/R2_backend/RELEASE_REVIEW.md, docs/progress/R2_backend/RETROSPECTIVE.md, docs/RELEASE_CHECKLIST.md |
 
 ## 1. What we are learning and why it is needed
