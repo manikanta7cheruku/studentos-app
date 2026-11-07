@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D8-1 / DECISIONS D-23 / PR_LINK8 |
+| Linked task / ADR / PR | R2-D8-1 / DECISIONS D-23 / https://github.com/manikanta7cheruku/studentos-app/pull/34 |
 | Related docs | docs/PERMISSIONS.md, docs/CONNECTING_THE_API.md, docs/API_CONTRACT.md section 13, docs/DATABASE.md section 18 |
 
 ## 1. What we are learning and why it is needed
