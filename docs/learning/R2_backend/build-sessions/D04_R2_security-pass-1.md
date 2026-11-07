@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D4-2 / DECISIONS (CSP with inline scripts) / PR link added when opened |
+| Linked task / ADR / PR | R2-D4-2 / DECISIONS (CSP with inline scripts) / https://github.com/manikanta7cheruku/studentos-app/pull/30 |
 | Related docs | docs/PERMISSIONS.md, docs/SECURITY_AND_PRIVACY.md, docs/AUTH_AND_TENANCY.md section 4 |
 
 ## 1. What we are learning and why it is needed
