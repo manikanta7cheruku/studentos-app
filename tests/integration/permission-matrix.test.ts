@@ -52,6 +52,21 @@ import { GET as tmfRequests } from "@/app/api/v1/c/[slug]/team-posts/[id]/reques
 import { POST as tmfDecision } from "@/app/api/v1/c/[slug]/join-requests/[id]/decision/route";
 import { DELETE as tmfWithdraw } from "@/app/api/v1/c/[slug]/join-requests/[id]/route";
 import { GET as tmfMine } from "@/app/api/v1/c/[slug]/me/join-requests/route";
+import { GET as oppList } from "@/app/api/v1/c/[slug]/opportunities/route";
+import { GET as oppGet } from "@/app/api/v1/c/[slug]/opportunities/[id]/route";
+import {
+  GET as oppAdminList,
+  POST as oppCreate,
+} from "@/app/api/v1/c/[slug]/admin/opportunities/route";
+import {
+  DELETE as oppRemove,
+  PATCH as oppPatch,
+} from "@/app/api/v1/c/[slug]/admin/opportunities/[id]/route";
+import {
+  DELETE as oppUnsave,
+  PUT as oppSave,
+} from "@/app/api/v1/me/saved-opportunities/[id]/route";
+import { GET as remGet, PUT as remPut } from "@/app/api/v1/me/reminder-settings/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -677,6 +692,105 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "OPP-01 GET /c/alpha/opportunities (members)",
+    call: (cookie) =>
+      call(oppList, {
+        path: "/api/v1/c/alpha/opportunities",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "OPP-02 GET /c/alpha/opportunities/{id} (unknown id is the probe -> 404 for members)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(oppGet, {
+        path: `/api/v1/c/alpha/opportunities/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "OPP-03 GET /c/alpha/admin/opportunities (moderators)",
+    call: (cookie) =>
+      call(oppAdminList, {
+        path: "/api/v1/c/alpha/admin/opportunities",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: modOnly(200),
+  },
+  {
+    op: "OPP-03 POST /c/alpha/admin/opportunities (an empty body is the probe -> 400 for moderators)",
+    call: (cookie) =>
+      call(oppCreate, {
+        method: "POST",
+        path: "/api/v1/c/alpha/admin/opportunities",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: modOnly(400),
+  },
+  ...(
+    [
+      ["PATCH", oppPatch, { title: "Some new title" }],
+      ["DELETE", oppRemove, undefined],
+    ] as const
+  ).map(([method, handler, json]) => ({
+    op: `OPP-03 ${method} /c/alpha/admin/opportunities/{id} (unknown id -> 404 for moderators)`,
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(handler, {
+        method,
+        path: `/api/v1/c/alpha/admin/opportunities/${id}`,
+        json,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: modOnly(404),
+  })),
+  ...(
+    [
+      ["PUT", oppSave],
+      ["DELETE", oppUnsave],
+    ] as const
+  ).map(([method, handler]) => ({
+    op: `OPP-04 ${method} /me/saved-opportunities/{id} (unknown id -> 404 for everyone signed in)`,
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(handler, {
+        method,
+        path: `/api/v1/me/saved-opportunities/${id}`,
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  })),
+  {
+    op: "REM-01 GET /me/reminder-settings (own setting)",
+    call: (cookie) =>
+      call(remGet, { path: "/api/v1/me/reminder-settings", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "REM-01 PUT /me/reminder-settings (an empty body is the probe -> 400)",
+    call: (cookie) =>
+      call(remPut, {
+        method: "PUT",
+        path: "/api/v1/me/reminder-settings",
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
   },
   {
     op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",

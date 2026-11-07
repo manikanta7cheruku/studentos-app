@@ -319,3 +319,27 @@ Rules for the screens:
 - **Expiry rules.** An open team post past its deadline is shown as `expired` immediately; the maintenance run then closes it, cancels the waiting requests and tells the author and the applicants (`team.post_expired`, `team.request_cancelled`). A join request that waited more than 30 days for an admin becomes `expired`, the membership goes to `left`, the person gets `membership.expired` and can apply again.
 - New notification types: `membership.expired`, `team.post_expired`.
 - Rules for R3: see docs/CONNECTING_THE_API.md.
+
+## 12. Opportunities and reminders, built in R2 Day 7 (what is real now)
+
+Base `/api/v1`. Shapes: `src/contracts/opportunities.ts`, samples: `src/contracts/fixtures/opp-*` and `rem-01`, mock answers: `src/mocks/handlers-day7.ts`. Changes need a matching `Origin` and are limited to 60 a minute. IDEM = send an `Idempotency-Key`.
+
+| ID | Call | What it does |
+|---|---|---|
+| OPP-01 | GET `/c/{slug}/opportunities?kind=job,internship&skills=React,SQL&mode=remote&location=hyd&deadline=7d&q=acme&saved=true&limit=&cursor=` | Members. Newest first. `kind` and `skills` take comma lists (skills match any, ignoring case). `deadline`: `any` (default), `7d`, `30d` (closing within), `hide_closed`. `saved=true` is "my saved". Drafts and removed listings never appear |
+| OPP-02 | GET `/c/{slug}/opportunities/{id}` | One listing. 404 for a draft, a removed one or another college |
+| OPP-03 | GET `/c/{slug}/admin/opportunities?status=draft` | Moderators and admins. Every listing, drafts and removed included. `raw_status` is the stored status |
+| OPP-03 | POST `/c/{slug}/admin/opportunities` | IDEM. `title`, `org`, `kind`, `location`, `mode`, `stipend_min`, `stipend_max` (paise a month), `eligibility`, `skills` (up to 10), `deadline`, `apply_url` (https), `status` (`draft` or `published`). 201. Audit `opportunity.created` |
+| OPP-03 | PATCH `/c/{slug}/admin/opportunities/{id}` | Send only what changes. `verified: true` moves `last_verified_at` to now. 409 if removed. Audit `opportunity.updated` |
+| OPP-03 | DELETE `/c/{slug}/admin/opportunities/{id}` | Sets status `removed`. 409 if already removed. Audit `opportunity.removed` |
+| OPP-04 | PUT or DELETE `/me/saved-opportunities/{id}` | Save or unsave. Safe to repeat. 404 for a draft, an unknown id or a college you are not an active member of |
+| REM-01 | GET or PUT `/me/reminder-settings` | `{ "enabled": true }`, on by default. When on, a saved listing closing within 48 hours sends one notification |
+
+Rules for the screens:
+
+- Each listing has `saved` (for me) and `changed_since_saved` (edited after I saved it: show a "changed" badge).
+- `status` can be `expired` even before any clean up runs. `last_verified_at` and `posted_by` (a display name) are always shown.
+- `location` can be an empty string. `stipend_min` and `stipend_max` can be null.
+- The Career tab: when a college switched it off (`modules.career` false in TEN-01), every call here answers 404 `FEATURE_DISABLED`.
+- Notification type `opportunity.deadline_soon` has `payload.opportunity_id`.
+- `in_tracker` (already added to the tracker) is not part of this API: the tracker is R3's (APP-01 to APP-04).

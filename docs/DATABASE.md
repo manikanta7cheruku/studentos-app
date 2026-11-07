@@ -194,3 +194,10 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - `maintenance_run()` (service role only): expires team posts and join requests, deletes old idempotency keys, rate limit events, notifications and waitlist rows, and returns the counts.
 - `notifications.type` accepts `membership.expired` and `team.post_expired`.
 - View `public_college_branding` has a new column `modules` (three booleans from `college_settings.features`).
+
+## 17. Added on R2 Day 7 (migration 20261109000000)
+
+- `opportunities` (college, title, org, kind, location, mode, stipend range in paise, eligibility, up to 10 skills, deadline, https apply link, poster, status draft, published, expired or removed, `last_verified_at`), `saved_opportunities` (with `saved_at`), `user_prefs` (`reminders_enabled`), `reminders` (unique per person, kind, listing and date). All four tables: row level security on, one "no" policy, rights revoked from clients.
+- Functions (service role only): `opp_assert` (member, college active, Career tab on), `opp_shown_status`, `opp_json`, `opp_list`, `opp_get`, `opp_set_saved`, `mod_create_opportunity`, `mod_update_opportunity`, `mod_remove_opportunity`, `mod_list_opportunities`, `rem_get`, `rem_set`, `reminders_run`.
+- `notifications.type` accepts `opportunity.deadline_soon`.
+- `maintenance_run()` now also marks listings past their deadline `expired`, runs `reminders_run()` and deletes reminders older than 90 days. Its answer has `opportunities_expired`, `reminders_sent` and `reminders_deleted`.
