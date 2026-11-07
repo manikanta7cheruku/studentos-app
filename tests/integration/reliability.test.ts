@@ -93,15 +93,20 @@ describe("SYS-02 maintenance endpoint", () => {
   it("with the secret it answers the counts, and a second run changes nothing", async () => {
     const first = await runMaintenance();
     expect(first.status).toBe(200);
-    expect(Object.keys(first.body.data).sort()).toEqual([
-      "idempotency_keys_deleted",
-      "join_requests_expired",
-      "notifications_deleted",
-      "rate_limit_events_deleted",
-      "team_posts_expired",
-      "team_requests_cancelled",
-      "waitlist_deleted",
-    ]);
+    expect(Object.keys(first.body.data).sort()).toEqual(
+      [
+        "idempotency_keys_deleted",
+        "join_requests_expired",
+        "notifications_deleted",
+        "opportunities_expired",
+        "rate_limit_events_deleted",
+        "reminders_deleted",
+        "reminders_sent",
+        "team_posts_expired",
+        "team_requests_cancelled",
+        "waitlist_deleted",
+      ].sort(),
+    );
     const second = await runMaintenance();
     expect(second.body.data.team_posts_expired).toBe(0);
     expect(second.body.data.join_requests_expired).toBe(0);

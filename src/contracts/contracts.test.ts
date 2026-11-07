@@ -67,6 +67,15 @@ const operations: Record<string, Kinds> = {
   "tmf-08-decline": { request: c.joinRequestDecisionBody, success: c.joinRequestDecisionResponse },
   "tmf-09": { success: c.joinRequestWithdrawResponse },
   "tmf-10": { query: c.joinRequestListQuery, success: c.myJoinRequestListResponse },
+  "opp-01": { query: c.opportunityListQuery, success: c.opportunityListResponse },
+  "opp-02": { success: c.opportunityResponse },
+  "opp-03-create": { request: c.opportunityCreateBody, success: c.opportunityResponse },
+  "opp-03-patch": { request: c.opportunityPatchBody, success: c.opportunityResponse },
+  "opp-03-list": { query: c.adminOpportunityListQuery, success: c.adminOpportunityListResponse },
+  "opp-03-delete": { success: c.opportunityRemoveResponse },
+  "opp-04-put": { success: c.savedOpportunityResponse },
+  "opp-04-delete": { success: c.savedOpportunityResponse },
+  "rem-01": { request: c.reminderSettingsBody, success: c.reminderSettingsResponse },
   "wl-01": { request: c.waitlistBody, success: c.waitlistResponse },
 };
 

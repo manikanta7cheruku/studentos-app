@@ -47,6 +47,16 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | TMF-08 | POST | /c/{slug}/join-requests/{id}/decision | mem (author) | write limit |
 | TMF-09 | DELETE | /c/{slug}/join-requests/{id} | mem (applicant) | write limit |
 | TMF-10 | GET | /c/{slug}/me/join-requests | mem | none |
+| OPP-01 | GET | /c/{slug}/opportunities | mem | none |
+| OPP-02 | GET | /c/{slug}/opportunities/{id} | mem | none |
+| OPP-03 | GET | /c/{slug}/admin/opportunities | mod | admin bucket |
+| OPP-03 | POST | /c/{slug}/admin/opportunities | mod | admin bucket |
+| OPP-03 | PATCH | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
+| OPP-03 | DELETE | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
+| OPP-04 | PUT | /me/saved-opportunities/{id} | ses | write limit |
+| OPP-04 | DELETE | /me/saved-opportunities/{id} | ses | write limit |
+| REM-01 | GET | /me/reminder-settings | ses | none |
+| REM-01 | PUT | /me/reminder-settings | ses | write limit |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
 | RPT-01 | POST | /c/{slug}/reports | mem | write limit |
 | ANN-02 | GET | /c/{slug}/admin/announcements | mod | admin bucket |

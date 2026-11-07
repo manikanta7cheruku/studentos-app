@@ -7,3 +7,4 @@ export * from "./admin";
 export * from "./profile";
 export * from "./engagement";
 export * from "./teamfinder";
+export * from "./opportunities";

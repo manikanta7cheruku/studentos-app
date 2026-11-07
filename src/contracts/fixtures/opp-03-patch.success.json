@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": "dddddddd-0000-4000-8000-000000000001",
+    "title": "Backend internship at Acme Labs",
+    "org": "Acme Labs",
+    "kind": "internship",
+    "location": "Hyderabad",
+    "mode": "hybrid",
+    "stipend_min": 1500000,
+    "stipend_max": 2500000,
+    "eligibility": "Final year students, CS or related",
+    "skills": ["TypeScript", "PostgreSQL"],
+    "deadline": "2026-11-25T18:00:00Z",
+    "apply_url": "https://acme.example.org/jobs/1",
+    "posted_by": "Meera Moderator",
+    "last_verified_at": "2026-11-07T09:00:00Z",
+    "status": "published",
+    "created_at": "2026-11-01T09:00:00Z",
+    "saved": true,
+    "changed_since_saved": false
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
