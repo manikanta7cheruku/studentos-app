@@ -13,6 +13,30 @@ import { GET as adminInvites } from "@/app/api/v1/c/[slug]/admin/invites/route";
 import { GET as adminQueue } from "@/app/api/v1/c/[slug]/admin/verification-requests/route";
 import { GET as adminMembers } from "@/app/api/v1/c/[slug]/admin/members/route";
 import { GET as adminAudit } from "@/app/api/v1/c/[slug]/admin/audit-logs/route";
+import { GET as myNotifications } from "@/app/api/v1/me/notifications/route";
+import { POST as readNotifications } from "@/app/api/v1/me/notifications/read/route";
+import { GET as announcementsList } from "@/app/api/v1/c/[slug]/announcements/route";
+import { GET as modAnnouncements } from "@/app/api/v1/c/[slug]/admin/announcements/route";
+import { GET as modReports } from "@/app/api/v1/c/[slug]/admin/reports/route";
+import { POST as fileReport } from "@/app/api/v1/c/[slug]/reports/route";
+import { POST as actOnReport } from "@/app/api/v1/c/[slug]/admin/reports/[id]/action/route";
+import { PUT as blockUser } from "@/app/api/v1/me/blocks/[userId]/route";
+import { POST as waitlist } from "@/app/api/v1/waitlist/route";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { GET as health } from "@/app/api/health/route";
+import { GET as ready } from "@/app/api/ready/route";
+import { PATCH as patchSettings } from "@/app/api/v1/c/[slug]/admin/settings/route";
+import { POST as createInvite } from "@/app/api/v1/c/[slug]/admin/invites/route";
+import { DELETE as revokeInvite } from "@/app/api/v1/c/[slug]/admin/invites/[id]/route";
+import { POST as decideRequest } from "@/app/api/v1/c/[slug]/admin/verification-requests/[id]/decision/route";
+import { PATCH as patchMember } from "@/app/api/v1/c/[slug]/admin/members/[membershipId]/route";
+import { POST as postAnnouncement } from "@/app/api/v1/c/[slug]/admin/announcements/route";
+import {
+  DELETE as deleteAnnouncement,
+  PATCH as patchAnnouncement,
+} from "@/app/api/v1/c/[slug]/admin/announcements/[id]/route";
+import { DELETE as unblockUser } from "@/app/api/v1/me/blocks/[userId]/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -198,6 +222,36 @@ type Expected = number | "skip";
 
 const idem = () => ({ "idempotency-key": randomUUID() });
 
+// Expectation builders for the Day 4 rows.
+const signedIn = (status: number): Record<Principal, Expected> =>
+  Object.fromEntries(allPrincipals.map((p) => [p, p === "anon" ? 401 : status])) as Record<
+    Principal,
+    Expected
+  >;
+// An endpoint for active members of Alpha: pending and suspended are 403, another college is 404.
+const memberOnly = (ok: number): Record<Principal, Expected> => ({
+  anon: 401,
+  pending: 403,
+  suspended: 403,
+  student_l1: ok,
+  student_l2: ok,
+  moderator: ok,
+  admin: ok,
+  other_college_student: 404,
+  other_college_admin: 404,
+});
+// An endpoint for the college admin only: students and moderators are 403.
+const adminOnly = (ok: number): Record<Principal, Expected> => ({
+  ...modOnly(ok),
+  moderator: 403,
+});
+// An endpoint for moderators and admins of Alpha: students are 403.
+const modOnly = (ok: number): Record<Principal, Expected> => ({
+  ...memberOnly(ok),
+  student_l1: 403,
+  student_l2: 403,
+});
+
 const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }[] = [
   {
     op: "TEN-01 GET /colleges/public/alpha (public)",
@@ -347,6 +401,239 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       other_college_admin: 404,
     } as Record<Principal, Expected>,
   })),
+  {
+    op: "NTF-01 GET /me/notifications (any signed-in user, own rows only)",
+    call: (cookie) =>
+      call(myNotifications, { path: "/api/v1/me/notifications", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "NTF-02 POST /me/notifications/read (own rows only; an unknown id changes nothing)",
+    call: (cookie) =>
+      call(readNotifications, {
+        method: "POST",
+        path: "/api/v1/me/notifications/read",
+        json: { ids: [randomUUID()] },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "RPT-04 PUT /me/blocks/{stranger} (no such classmate -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(blockUser, {
+        method: "PUT",
+        path: `/api/v1/me/blocks/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "WL-01 POST /waitlist (public; an empty body is the probe, 400 for everyone)",
+    call: (cookie) =>
+      call(waitlist, { method: "POST", path: "/api/v1/waitlist", json: {}, cookie }).then(
+        (r) => r.status,
+      ),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 400])) as Record<Principal, Expected>,
+  },
+  {
+    op: "ANN-01 GET /c/alpha/announcements (members)",
+    call: (cookie) =>
+      call(announcementsList, {
+        path: "/api/v1/c/alpha/announcements",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: { ...memberOnly(200), anon: 401 },
+  },
+  {
+    op: "RPT-01 POST /c/alpha/reports (members; a target that does not exist is the probe -> 404)",
+    call: (cookie) =>
+      call(fileReport, {
+        method: "POST",
+        path: "/api/v1/c/alpha/reports",
+        json: { target_type: "announcement", target_id: randomUUID(), reason: "spam" },
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: memberOnly(404),
+  },
+  ...(
+    [
+      ["ANN-02 GET /admin/announcements (moderators)", modAnnouncements, "announcements"],
+      ["RPT-02 GET /admin/reports (moderators)", modReports, "reports"],
+    ] as const
+  ).map(([op, handler, path]) => ({
+    op,
+    call: (cookie: string | undefined) =>
+      call(handler, {
+        path: `/api/v1/c/alpha/admin/${path}`,
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: modOnly(200),
+  })),
+  {
+    op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(actOnReport, {
+        method: "POST",
+        path: `/api/v1/c/alpha/admin/reports/${id}/action`,
+        json: { action: "dismiss" },
+        params: { slug: "alpha", id },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: modOnly(404),
+  },
+  {
+    op: "SYS-01 GET /api/health (public)",
+    call: (cookie) => call(health, { path: "/api/health", cookie }).then((r) => r.status),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 200])) as Record<Principal, Expected>,
+  },
+  {
+    op: "SYS-01 GET /api/ready (public)",
+    call: (cookie) => call(ready, { path: "/api/ready", cookie }).then((r) => r.status),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 200])) as Record<Principal, Expected>,
+  },
+  ...(
+    [
+      [
+        "AUTH-01 POST /auth/otp/request (public; an empty body is the probe)",
+        otpRequest,
+        "request",
+      ],
+      ["AUTH-02 POST /auth/otp/verify (public; an empty body is the probe)", otpVerify, "verify"],
+    ] as const
+  ).map(([op, handler, path]) => ({
+    op,
+    call: (cookie: string | undefined) =>
+      call(handler, {
+        method: "POST",
+        path: `/api/v1/auth/otp/${path}`,
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 400])) as Record<Principal, Expected>,
+  })),
+  {
+    op: "RPT-04 DELETE /me/blocks/{stranger} (nothing to remove -> 200 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(unblockUser, {
+        method: "DELETE",
+        path: `/api/v1/me/blocks/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(200),
+  },
+  {
+    op: "ADM-03 PATCH /admin/settings (empty patch is the probe -> 400 for the admin)",
+    call: (cookie) =>
+      call(patchSettings, {
+        method: "PATCH",
+        path: "/api/v1/c/alpha/admin/settings",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: adminOnly(400),
+  },
+  {
+    op: "ADM-05 POST /admin/invites (empty body is the probe -> 400 for the admin)",
+    call: (cookie) =>
+      call(createInvite, {
+        method: "POST",
+        path: "/api/v1/c/alpha/admin/invites",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: adminOnly(400),
+  },
+  {
+    op: "ADM-05 DELETE /admin/invites/{id} (unknown invite is the probe -> 404 for the admin)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(revokeInvite, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/admin/invites/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: adminOnly(404),
+  },
+  {
+    op: "ADM-07 POST /admin/verification-requests/{id}/decision (unknown request -> 404 for the admin)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(decideRequest, {
+        method: "POST",
+        path: `/api/v1/c/alpha/admin/verification-requests/${id}/decision`,
+        json: { decision: "approved" },
+        params: { slug: "alpha", id },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: adminOnly(404),
+  },
+  {
+    op: "ADM-09 PATCH /admin/members/{membershipId} (unknown member -> 404 for the admin)",
+    call: (cookie) => {
+      const membershipId = randomUUID();
+      return call(patchMember, {
+        method: "PATCH",
+        path: `/api/v1/c/alpha/admin/members/${membershipId}`,
+        json: { role: "student" },
+        params: { slug: "alpha", membershipId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: adminOnly(404),
+  },
+  {
+    op: "ANN-02 POST /admin/announcements (empty body is the probe -> 400 for moderators)",
+    call: (cookie) =>
+      call(postAnnouncement, {
+        method: "POST",
+        path: "/api/v1/c/alpha/admin/announcements",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: modOnly(400),
+  },
+  ...(
+    [
+      ["PATCH", patchAnnouncement, { pinned: true }],
+      ["DELETE", deleteAnnouncement, undefined],
+    ] as const
+  ).map(([method, handler, json]) => ({
+    op: `ANN-02 ${method} /admin/announcements/{id} (unknown announcement -> 404 for moderators)`,
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(handler, {
+        method,
+        path: `/api/v1/c/alpha/admin/announcements/${id}`,
+        json,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: modOnly(404),
+  })),
 ];
 
 describe("real endpoints follow the permission matrix", () => {
@@ -364,4 +651,48 @@ describe("real endpoints follow the permission matrix", () => {
       }
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// 3. docs/PERMISSIONS.md must list every route method, and the matrix must call every row
+// ---------------------------------------------------------------------------
+function routeFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) return routeFiles(full);
+    return name === "route.ts" ? [full] : [];
+  });
+}
+
+describe("docs/PERMISSIONS.md matches the code and the matrix", () => {
+  const root = join(__dirname, "..", "..");
+  const apiRoot = join(root, "src", "app", "api");
+  const fromCode = routeFiles(apiRoot)
+    .flatMap((file) => {
+      const path = file
+        .slice(apiRoot.length)
+        .replace(/\\/g, "/")
+        .replace(/\/route\.ts$/, "")
+        .replace(/\[(\w+)\]/g, "{$1}");
+      const source = readFileSync(file, "utf8");
+      return [
+        ...source.matchAll(/export (?:async )?(?:function|const) (GET|POST|PUT|PATCH|DELETE)\b/g),
+      ].map((m) => `${m[1]} ${path.startsWith("/v1/") ? path.slice(3) : `/api${path}`}`);
+    })
+    .sort();
+  const doc = readFileSync(join(root, "docs", "PERMISSIONS.md"), "utf8");
+  const rows = [
+    ...doc.matchAll(/^\| ([A-Z]+-\d+) \| (GET|POST|PUT|PATCH|DELETE) \| (\S+) \|/gm),
+  ].map((m) => ({ id: m[1], method: m[2], path: m[3] }));
+
+  it("lists exactly the route methods that exist", () => {
+    expect(rows.map((r) => `${r.method} ${r.path}`).sort()).toEqual(fromCode);
+  });
+
+  it("has a call in the matrix for every row", () => {
+    const missing = rows.filter(
+      (r) => !endpoints.some((e) => e.op.startsWith(`${r.id} ${r.method} `)),
+    );
+    expect(missing).toEqual([]);
+  });
 });

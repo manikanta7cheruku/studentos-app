@@ -5,6 +5,11 @@ import { AppError } from "./errors";
 // Anything else from the database becomes a safe error. The cause is kept for the log only.
 export function mapDbError(error: { code?: string; message: string }): AppError {
   if (error.code === "P0001") {
+    if (error.message === "VALIDATION_FAILED") {
+      return new AppError("VALIDATION_FAILED", {
+        details: { fields: [{ path: "(body)", message: "One of the values is not allowed." }] },
+      });
+    }
     if ((errorCodes as readonly string[]).includes(error.message)) {
       return new AppError(error.message as ErrorCode);
     }

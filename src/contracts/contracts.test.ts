@@ -48,11 +48,14 @@ const operations: Record<string, Kinds> = {
   "ntf-02": { request: c.notificationReadBody, success: c.notificationReadResponse },
   "ntf-02-all": { request: c.notificationReadBody },
   "ann-01": { success: c.announcementListResponse },
+  "ann-02-list": { success: c.adminAnnouncementListResponse },
   "ann-02-create": { request: c.announcementCreateBody, success: c.announcementResponse },
   "ann-02-patch": { request: c.announcementPatchBody, success: c.announcementResponse },
   "rpt-01": { request: c.reportCreateBody, success: c.reportCreateResponse },
   "rpt-02": { query: c.reportQueueQuery, success: c.reportQueueResponse },
   "rpt-03": { request: c.reportActionBody, success: c.reportActionResponse },
+  "rpt-04-put": { success: c.blockResponse },
+  "rpt-04-delete": { success: c.blockResponse },
   "wl-01": { request: c.waitlistBody, success: c.waitlistResponse },
 };
 
