@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Date / Author (role) | 2026-11-07 / R2 Backend and database |
-| Linked task / ADR / PR | R2-D5-1 / ADR-003, ADR-005 / PR_LINK |
+| Linked task / ADR / PR | R2-D5-1 / ADR-003, ADR-005 / https://github.com/manikanta7cheruku/studentos-app/pull/31 |
 | Related docs | docs/API_CONTRACT.md section 10, docs/DATABASE.md section 15, docs/PERMISSIONS.md, docs/FEATURES_AND_JOURNEYS.md F-11, docs/PRD.md AC-TMF-004 |
 
 ## 1. What we are learning and why it is needed
