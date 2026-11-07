@@ -28,6 +28,7 @@ const operations: Record<string, Kinds> = {
   "prf-01-patch": { request: c.profilePatchBody, success: c.profileResponse },
   "prf-02": { request: c.skillsPutBody, success: c.skillsPutResponse },
   "prf-03": { query: c.skillSearchQuery, success: c.skillSearchResponse },
+  "prf-04": { request: c.avatarUploadUrlBody, success: c.avatarUploadUrlResponse },
   "adm-03-get": { success: c.adminSettingsResponse },
   "adm-03-patch": { request: c.adminSettingsPatchBody, success: c.adminSettingsResponse },
   "adm-05-create": { request: c.inviteCreateBody, success: c.inviteCreateResponse },
@@ -205,6 +206,27 @@ describe("bad input is rejected", () => {
         { skill_id: id, level: 4 },
       ],
     });
+  });
+
+  it("avatar upload: rejects wrong mime type, oversized file, or empty filename", () => {
+    reject(c.avatarUploadUrlBody, { file_name: "", content_type: "image/png", file_size: 1000 });
+    reject(c.avatarUploadUrlBody, {
+      file_name: "test.pdf",
+      content_type: "application/pdf",
+      file_size: 1000,
+    });
+    reject(c.avatarUploadUrlBody, {
+      file_name: "big.png",
+      content_type: "image/png",
+      file_size: 3 * 1024 * 1024,
+    });
+    expect(
+      c.avatarUploadUrlBody.safeParse({
+        file_name: "avatar.png",
+        content_type: "image/png",
+        file_size: 50000,
+      }).success,
+    ).toBe(true);
   });
 
   it("report action: everything except dismiss needs a note", () => {

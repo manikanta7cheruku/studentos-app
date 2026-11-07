@@ -37,6 +37,12 @@ import {
   PATCH as patchAnnouncement,
 } from "@/app/api/v1/c/[slug]/admin/announcements/[id]/route";
 import { DELETE as unblockUser } from "@/app/api/v1/me/blocks/[userId]/route";
+import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
+import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route";
+import { GET as skillSearch } from "@/app/api/v1/skills/route";
+import { POST as uploadAvatar } from "@/app/api/v1/me/avatar/route";
+import { POST as avatarUploadUrl } from "@/app/api/v1/me/avatar/upload-url/route";
+import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -477,6 +483,70 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status),
     expect: modOnly(200),
   })),
+  {
+    op: "PRF-01 GET /me/profile (own profile, any signed-in user)",
+    call: (cookie) => call(myProfile, { path: "/api/v1/me/profile", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "PRF-01 PATCH /me/profile (an unknown field is the probe -> 400)",
+    call: (cookie) =>
+      call(patchProfile, {
+        method: "PATCH",
+        path: "/api/v1/me/profile",
+        json: { not_a_field: true },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
+  },
+  {
+    op: "PRF-02 GET /me/skills (own skills)",
+    call: (cookie) => call(mySkills, { path: "/api/v1/me/skills", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "PRF-02 PUT /me/skills (an empty body is the probe -> 400)",
+    call: (cookie) =>
+      call(putSkills, { method: "PUT", path: "/api/v1/me/skills", json: {}, cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(400),
+  },
+  {
+    op: "PRF-03 GET /skills (skill autocomplete)",
+    call: (cookie) =>
+      call(skillSearch, { path: "/api/v1/skills?q=py", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "PRF-04 POST /me/avatar (an empty file is the probe -> 400)",
+    call: (cookie) =>
+      call(uploadAvatar, { method: "POST", path: "/api/v1/me/avatar", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(400),
+  },
+  {
+    op: "PRF-04 POST /me/avatar/upload-url (an empty body is the probe -> 400)",
+    call: (cookie) =>
+      call(avatarUploadUrl, {
+        method: "POST",
+        path: "/api/v1/me/avatar/upload-url",
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
+  },
+  {
+    op: "PRF-05 GET /c/alpha/people (members)",
+    call: (cookie) =>
+      call(peopleList, {
+        path: "/api/v1/c/alpha/people",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
   {
     op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",
     call: (cookie) => {
