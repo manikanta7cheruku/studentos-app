@@ -7,7 +7,7 @@
 | Doc ID | DOC-14 |
 | Version / Date | 0.1.0 / 2026-10-15 |
 | Owner | R2 Tech Lead (contract owner). Change process: doc 26 §6 |
-| Status | Proposed. Machine-readable skeleton: `openapi.v1.yaml` (this folder). The Zod schemas in `src/contracts` become the source of truth once code exists; OpenAPI is generated from them. |
+| Status | Proposed. Machine-readable file: `openapi.v1.json` (this folder), generated from the Zod schemas in `src/contracts` with `pnpm docs:openapi`. A test fails when it is out of date. |
 
 ## 1. Conventions
 - **Base:** `/api/v1`. Tenant-scoped resources live under `/api/v1/c/{slug}/…`. Global resources under `/api/v1/me`, `/api/v1/auth`, `/api/v1/colleges/public`.
@@ -352,3 +352,11 @@ Rules for the screens:
 - **Request size:** a body over its limit is 413 `PAYLOAD_TOO_LARGE` as soon as the limit is passed, also without a Content-Length. JSON is 100 KB, an avatar is 2 MB.
 - **Avatars (PRF-04):** JPEG, PNG, WebP, GIF or AVIF only (no SVG), 2 MB, stored under `<user id>/`. If the upload fails the answer is 503 and the profile is not changed. Use `POST /me/avatar` to attach an avatar; the signed upload link (`/me/avatar/upload-url`) only stores the file, and the storage rules refuse other types and sizes.
 - **Skills (PRF-02):** replaced in one step. An unknown skill id is 400 and the old list stays.
+
+## 14. Built in R2 Day 9 (what is real now)
+
+| ID | Call | What it does |
+|---|---|---|
+| AUTH-04 | DELETE `/me` | Delete my account for good, in two steps with the same call. Send `{}`: a 6 digit code is emailed to my address and the answer is `{ "deletion_requested": true, "confirmation": "otp" }`. Send `{ "code": "123456" }`: the code is checked, every session ends, my profile, memberships, posts, requests, notifications, skills and saved items are deleted, and the answer is `{ "deleted": true }`. 409 `CONFLICT` if I am the only admin of a college (the message names it). 400 `OTP_INVALID`, 410 `OTP_EXPIRED`. The audit log keeps my user id (an anonymous number) and no name or email |
+| TEN-07 | POST `/c/{slug}/me/leave` | Leave this college. Answer `{ "membership": { "id", "status": "left" } }`. Active members and people waiting for approval only: 403 for a suspended or rejected person, 404 if I never joined, 409 if I already left or if I am the last admin. Closes my open team posts, withdraws my requests, gives back my team seats. I can join again later |
+| PRF-06 | GET `/c/{slug}/people/{userId}` | One classmate: `display_name`, `handle`, `headline`, `bio`, `avatar_url`, `interests`, `career_goal`, `program`, `grad_year`, `skills[{name, level}]`, `is_self`. 404 if hidden (by the person or a moderator), blocked either way, left, in another college or unknown. Never an email address |

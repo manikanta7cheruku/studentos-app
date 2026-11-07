@@ -207,3 +207,32 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - Storage: bucket `avatars` (public read, 2 MB, JPEG, PNG, WebP, GIF, AVIF) and three policies on `storage.objects`: insert, update and delete only inside the folder named after your own user id.
 - `set_my_skills(jsonb)` (security invoker, authenticated): replaces the signed-in person's skills in one transaction.
 - `tf_list_posts` rewritten with joins for visibility and an index friendly status test (same answers, about 5 times faster with 4000 posts).
+
+## 19. Migration list (what is built, in order)
+
+Applied by `pnpm db:reset` locally and by `supabase db push` on staging and production (docs/PRODUCTION_SETUP.md). Never edit a migration that was already pushed; add a new one.
+
+| Migration | What it adds |
+|---|---|
+| `20261031000000_tenancy_identity_audit.sql` | colleges, domains, settings, profiles, memberships, audit log, row level security, helper functions |
+| `20261031010000_rate_limits_and_membership_lookup.sql` | rate limit events and functions, membership lookup by slug |
+| `20261031020000_join_invites_manual_domain.sql` | invite codes, verification requests, idempotency keys, join functions, public branding view |
+| `20261031030000_admin_endpoints.sql` | the `admin_*` functions (settings, invites, queue, members, audit, stats) |
+| `20261031040000_skills_and_user_skills.sql` | skills catalog and user skills (R3, with seed skills) |
+| `20261101000000_notifications_announcements_reports_waitlist.sql` | notifications, announcements, reports and moderation, blocks, waitlist, applicant notification |
+| `20261105000000_people_directory.sql` | `directory_list` for the people directory |
+| `20261107000000_team_finder.sql` | Team Finder tables and `tf_*` functions, reports on team posts |
+| `20261108000000_expiry_and_safe_retries.sql` | idempotency claim functions, `maintenance_run`, `modules` in the public branding view |
+| `20261109000000_opportunities_reminders.sql` | opportunities, saved opportunities, preferences, reminders, `opp_*` and `mod_*_opportunity` functions |
+| `20261110000000_hardening.sql` | avatars bucket and storage rules, `set_my_skills`, faster `tf_list_posts` |
+| `20261111000000_account_leave_profile.sql` | `account_blockers`, `account_delete_prepare` (delete my account), `leave_college`, `profile_view` |
+
+The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
+
+## 20. Added on R2 Day 9 (migration 20261111000000)
+
+- `account_blockers(user)`: names of the colleges where the person is the only active admin (they must hand over first).
+- `account_delete_prepare(user, request id)`: writes one `account.deleted` audit row per college (user id only, no name, no email) just before the login account is removed. The account removal then cascades to the profile, memberships, posts, requests, notifications, saved items, skills and preferences. Reports the person filed and announcements they wrote stay without their name. The audit log keeps the user id as an anonymous number.
+- `leave_college(actor, slug, request id)`: sets the membership to `left`, gives back accepted team seats, withdraws waiting requests, closes open posts, cancels a waiting verification request, writes `member.left`. A suspended or rejected person cannot leave; the last admin cannot leave (the existing database rule).
+- `profile_view(actor, college, target)`: one classmate, under the same visibility rule as the people directory.
+

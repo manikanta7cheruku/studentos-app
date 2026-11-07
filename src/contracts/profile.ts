@@ -105,3 +105,21 @@ export const avatarUploadResponse = successEnvelope(
     avatar_url: z.string().url(),
   }),
 );
+
+// PRF-06 GET /api/v1/c/{slug}/people/{userId}: one classmate. No email address, ever.
+export const personProfileResponse = successEnvelope(
+  z.object({
+    user_id: uuid,
+    display_name: z.string(),
+    handle: z.string().nullable(),
+    headline: z.string().nullable(),
+    bio: z.string().nullable(),
+    avatar_url: z.string().nullable(),
+    interests: z.array(z.string()),
+    career_goal: z.string().nullable(),
+    program: z.string().nullable(),
+    grad_year: z.number().int().nullable(),
+    skills: z.array(z.object({ name: z.string(), level: z.number().int().min(1).max(5) })),
+    is_self: z.boolean(),
+  }),
+);

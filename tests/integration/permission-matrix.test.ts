@@ -67,6 +67,9 @@ import {
   PUT as oppSave,
 } from "@/app/api/v1/me/saved-opportunities/[id]/route";
 import { GET as remGet, PUT as remPut } from "@/app/api/v1/me/reminder-settings/route";
+import { DELETE as deleteMe } from "@/app/api/v1/me/route";
+import { POST as leaveCollege } from "@/app/api/v1/c/[slug]/me/leave/route";
+import { GET as personProfile } from "@/app/api/v1/c/[slug]/people/[userId]/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -791,6 +794,37 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         cookie,
       }).then((r) => r.status),
     expect: signedIn(400),
+  },
+  {
+    op: "AUTH-04 DELETE /me (an invalid code is the probe -> 400; nothing is sent or deleted)",
+    call: (cookie) =>
+      call(deleteMe, { method: "DELETE", path: "/api/v1/me", json: { code: "x" }, cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(400),
+  },
+  {
+    op: "TEN-07 POST /c/{slug}/me/leave (a college nobody joined is the probe -> 404 for everyone signed in)",
+    call: (cookie) =>
+      call(leaveCollege, {
+        method: "POST",
+        path: "/api/v1/c/no-such-college-xyz/me/leave",
+        params: { slug: "no-such-college-xyz" },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(404),
+  },
+  {
+    op: "PRF-06 GET /c/alpha/people/{userId} (unknown person is the probe -> 404 for members)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(personProfile, {
+        path: `/api/v1/c/alpha/people/${userId}`,
+        params: { slug: "alpha", userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
   },
   {
     op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",

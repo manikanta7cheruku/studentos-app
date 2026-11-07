@@ -1,0 +1,24 @@
+{
+  "data": {
+    "user_id": "aaaaaaaa-1000-4000-8000-000000000004",
+    "display_name": "Kabir Rao",
+    "handle": "kabir_alpha",
+    "headline": "Backend learner",
+    "bio": "I like databases.",
+    "avatar_url": null,
+    "interests": ["sql", "hiking"],
+    "career_goal": "Data engineer",
+    "program": "B.Tech CSE",
+    "grad_year": 2028,
+    "skills": [
+      {
+        "name": "PostgreSQL",
+        "level": 4
+      }
+    ],
+    "is_self": false
+  },
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}
