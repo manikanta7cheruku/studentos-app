@@ -16,3 +16,5 @@ Only R2 Backend learning files are listed here. Add one row at the end of the ta
 | 6 | R2 | docs/learning/R2_backend/build-sessions/D06_R2_support-r3.md | Helping R3 connect the real API (guide, sample handlers, modules flags) | not yet |
 | 7 | R2 | docs/learning/R2_backend/build-sessions/D07_R2_opportunities-reminders.md | Opportunities, saved opportunities, reminders | not yet |
 | 8 | R2 | docs/learning/R2_backend/build-sessions/D08_R2_make-backend-strong.md | Make the backend strong: security check 2, limits, speed, review follow-ups | not yet |
+| 9 | R2 | docs/learning/R2_backend/build-sessions/D09_R2_docs-sync-production-database.md | Docs match code (registry, OpenAPI, doc tests) and the production database | not yet |
+| 9 | R2 | docs/learning/R2_backend/build-sessions/D09_R2_account-leave-profile.md | Delete my account, leave a college, view a classmate | not yet |

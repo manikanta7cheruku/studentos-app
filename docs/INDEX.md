@@ -13,7 +13,7 @@
 | ACCESSIBILITY.md | Accessibility rules |
 | LANDING_PAGE.md | Landing page plan |
 | DATABASE.md | Tables and rules |
-| API_CONTRACT.md and openapi.v1.yaml | Endpoints, errors, examples |
+| API_CONTRACT.md and openapi.v1.json | Endpoints, errors, examples |
 | AUTH_AND_TENANCY.md | Login, verification, permissions |
 | ERROR_HANDLING.md | What happens when things fail |
 | CODING_STANDARDS.md | Code rules |
@@ -34,5 +34,11 @@
 | research/ | Interview plan and findings |
 | legal/ | Privacy and terms drafts |
 | DEV_SETUP.md | Install and first run for every developer |
+| STAGING_SETUP.md | Staging project, site and secrets (fake data) |
+| PRODUCTION_SETUP.md | Production database, site, scheduler, first college, checks, rollback |
+| PERMISSIONS.md | Who may call every endpoint (checked by tests) |
+| BACKEND_STATUS.md | What the backend has built and what it has not |
+| CONNECTING_THE_API.md | For the frontend: how to use the real API |
+| R2_MANUAL_STEPS.md | The owner's list: what only people can do to finish the backend |
 
 Some copied files mention "doc NN", "T-" task IDs or Figma. Ignore those. Use ROADMAP.md for tasks.

@@ -21,7 +21,7 @@ change. If a step does not match, check the official page and fix this file in y
 1. In Supabase create a new project named `studentos-staging`. Choose the region closest to the students. Set a strong database password and keep it in the team password manager. Do not post it in Slack or GitHub.
 2. Note the **project reference** (Project Settings, General). It looks like `abcdefghijklmnop`.
 3. Authentication settings (Authentication, then Sign In / Providers, then Email). They must match `supabase/config.toml`:
-   - Email sign in on, "Confirm email" off, email OTP length 6, OTP expiry 600 seconds.
+   - Email sign in on, "Confirm email" ON (the local stack has it on too since Day 9: the sign in tests pass with it on and it stops anyone creating an account for an email they do not own), email OTP length 6, OTP expiry 600 seconds.
    - Email templates: open "Magic Link" and "Confirm signup". Paste the content of `supabase/templates/otp.html` into both. The code is `{{ .Token }}`.
    - URL configuration: Site URL = your staging site address (step 3).
 4. Email sending. The built-in sender of a hosted project has a very low hourly cap and is only meant for the team, not for tests. Before the Day 2 checkpoint set up a custom sender (SMTP) with a provider (candidates in `docs/PROVIDER_CHECK.md`, the choice is still open, decision D-11). Check the official pricing and free caps first. Never use real student emails in staging.

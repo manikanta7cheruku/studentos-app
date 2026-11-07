@@ -57,6 +57,8 @@ Sign in: `POST /auth/otp/request` with the email, read the code in Mailpit, `POS
 | Opportunities list, filters, detail, save | OPP-01, OPP-02, OPP-04 (`saved=true` is "my saved") |
 | Moderator opportunity management | OPP-03 |
 | Reminder setting | REM-01 |
+| Settings: leave a college, delete my account | TEN-07, AUTH-04 (two steps, see section 5) |
+| A classmate's profile page | PRF-06 |
 | Landing waitlist form | WL-01 |
 
 ## 5. Things that will surprise you (read once)
@@ -70,11 +72,13 @@ Sign in: `POST /auth/otp/request` with the email, read the code in Mailpit, `POS
 - Notification `payload` always has `title` and `message` (plain text) plus ids for a link. Types are in `notificationType`.
 - Avatars: send the image to `POST /me/avatar` (JPEG, PNG, WebP, GIF or AVIF, up to 2 MB, no SVG). Do not rely on the signed link flow yet.
 - Opportunities: `changed_since_saved` is the "changed" badge, `status` can be `expired`, `location` can be an empty string. Deadline reminders arrive as the notification type `opportunity.deadline_soon`.
+- Delete my account (`DELETE /me`) takes two calls: `{}` emails a code and answers `deletion_requested`, then `{ "code": "123456" }` deletes everything and signs the person out. A college's only admin gets 409 with the college name. Ask for a typed confirmation on the screen too.
+- Leaving a college (`POST /c/{slug}/me/leave`) closes the person's open team posts, withdraws their requests and gives back their seats. Then `GET /c/{slug}/me/membership` says `left` and every college call answers 403 until they join again.
 - The waitlist always says `joined: true`, even for an email that is already there. That is on purpose.
 
 ## 6. Not built yet (do not call these)
 
-AUTH-04 (delete account), TEN-06 (roster), TEN-07 (leave college), ADM-01, ADM-02, ADM-04, ADM-12, PRF-06 (view one person), PRF-07 (achievements), PRJ-01 to PRJ-06 (projects and portfolio) and APP-01 to APP-04 (the tracker, which is R3's). Opportunities (OPP-01 to OPP-04) and the reminder setting (REM-01) are built since Day 7. If a screen needs another one earlier, tell R2 which and why.
+TEN-06 (roster), ADM-01, ADM-02, ADM-04, ADM-12, PRF-07 (achievements), PRJ-01 to PRJ-06 (projects and portfolio) and APP-01 to APP-04 (the tracker, which is R3's). Opportunities (OPP-01 to OPP-04) and the reminder setting (REM-01) are built since Day 7. If a screen needs another one earlier, tell R2 which and why.
 
 ## 7. When something does not match
 

@@ -19,11 +19,13 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | AUTH-01 | POST | /auth/otp/request | pub | 5/h per email, 20/h per IP |
 | AUTH-02 | POST | /auth/otp/verify | pub | lock after 5 wrong codes |
 | AUTH-03 | POST | /auth/logout | ses | write limit |
+| AUTH-04 | DELETE | /me | ses | write limit, code by email (sign in code limits) |
 | TEN-01 | GET | /colleges/public/{slug} | pub | none |
 | TEN-02 | GET | /c/{slug}/me/membership | ses | none |
 | TEN-03 | POST | /c/{slug}/join/invite | ses | write limit, 10/h |
 | TEN-04 | POST | /c/{slug}/join/manual | ses | write limit, 10/h |
 | TEN-05 | POST | /c/{slug}/join/email-domain | ses | write limit |
+| TEN-07 | POST | /c/{slug}/me/leave | ses | write limit |
 | NTF-01 | GET | /me/notifications | ses | none |
 | NTF-02 | POST | /me/notifications/read | ses | write limit |
 | RPT-04 | PUT | /me/blocks/{userId} | ses | write limit |
@@ -37,6 +39,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | PRF-04 | POST | /me/avatar | ses | write limit |
 | PRF-04 | POST | /me/avatar/upload-url | ses | write limit |
 | PRF-05 | GET | /c/{slug}/people | mem | none |
+| PRF-06 | GET | /c/{slug}/people/{userId} | mem | none |
 | TMF-01 | POST | /c/{slug}/team-posts | mem | write limit, 10 open posts |
 | TMF-02 | GET | /c/{slug}/team-posts | mem | none |
 | TMF-03 | GET | /c/{slug}/team-posts/{id} | mem | none |
