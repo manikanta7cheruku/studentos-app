@@ -101,6 +101,12 @@ export default function Home() {
             >
               Safety
             </Link>
+            <Link
+              href="/signin"
+              className="inline-flex min-h-11 items-center text-base font-medium text-foreground outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              Sign in
+            </Link>
             <Button asChild size="default">
               <a href="#waitlist">Join the waitlist</a>
             </Button>
