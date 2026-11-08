@@ -12,7 +12,7 @@ export type KeyboardReport = {
   trapped: boolean;
 };
 
-type Focused = { id: string; ring: boolean; text: string } | null;
+type Focused = { id: string; ring: boolean; text: string; ignored?: boolean } | null;
 
 // Presses Tab until focus cycles back to a place it has already been, or max is reached.
 // Reports: the tab order, visible things Tab never reached, stops with no focus ring, and a possible trap.
@@ -51,7 +51,12 @@ export async function tabThrough(page: Page, max = 120): Promise<KeyboardReport>
         style.boxShadow !== "none";
       // The Next.js dev tools button only exists in `pnpm dev`. It is not part of the app, so it is not judged.
       if (el.tagName === "NEXTJS-PORTAL")
-        return { id: "", ring: true, text: "nextjs-portal (Next.js dev tools, ignored)" };
+        return {
+          id: "",
+          ring: true,
+          text: "nextjs-portal (Next.js dev tools, ignored)",
+          ignored: true,
+        };
       const text = el.getAttribute("aria-label") || el.innerText || "";
       return {
         id: el.dataset.kb ?? "",
@@ -86,6 +91,14 @@ export async function tabThrough(page: Page, max = 120): Promise<KeyboardReport>
         break;
       }
       wrapped = true;
+      continue;
+    }
+    if (now.ignored) {
+      // Dev tools can hold several tab stops. List them once, never judge them, never stop on them.
+      if (!seen.has(now.text)) {
+        seen.add(now.text);
+        stops.push(`${stops.length + 1}. ${now.text}`);
+      }
       continue;
     }
     if (seen.has(now.id || now.text)) {

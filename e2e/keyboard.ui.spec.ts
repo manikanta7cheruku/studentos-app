@@ -21,6 +21,8 @@ const TRACKER = "/c/alpha/career/tracker";
 const PARTS = "/dev/components";
 const REQUEST_BUTTON = "Open normal request dialog";
 const EMAIL = "student1@alpha.test";
+// The typed sign in test asks for a fresh code, so it uses its own user and cannot hit the limit of the cached one.
+const SIGN_IN_EMAIL = "student2@alpha.test";
 
 async function signIn(
   context: BrowserContext,
@@ -68,10 +70,10 @@ test("sign in works with the keyboard only", async ({ page }) => {
     await page.keyboard.press("Tab");
     if (await page.evaluate(() => document.activeElement?.tagName === "INPUT")) break;
   }
-  await page.keyboard.type(EMAIL);
+  await page.keyboard.type(SIGN_IN_EMAIL);
   await page.keyboard.press("Enter");
 
-  const code = await codeFor(EMAIL);
+  const code = await codeFor(SIGN_IN_EMAIL);
   await expect
     .poll(() => page.evaluate(() => document.activeElement?.tagName), {
       message: "focus should move to the code field",
