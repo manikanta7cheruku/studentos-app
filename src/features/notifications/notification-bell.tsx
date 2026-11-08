@@ -38,7 +38,7 @@ export function NotificationBell({
   const safeCount = Math.max(0, unreadCount);
   const displayCount = safeCount > 99 ? "99+" : safeCount.toString();
   const accessibleLabel =
-    safeCount > 0 ? `Notifications (${safeCount} unread)` : "Notifications (no unread)";
+    safeCount > 0 ? `${displayCount} unread notifications` : "Notifications (no unread)";
 
   return (
     <Link

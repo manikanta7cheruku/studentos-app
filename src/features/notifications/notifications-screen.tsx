@@ -112,6 +112,7 @@ export function NotificationsScreen() {
         <div
           className="flex flex-col gap-px overflow-hidden rounded-card border border-border"
           aria-busy="true"
+          role="status"
           aria-label="Loading notifications"
         >
           {[0, 1, 2, 3].map((n) => (

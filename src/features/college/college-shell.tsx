@@ -64,7 +64,8 @@ function CollegeMark({ className }: { className?: string }) {
 
 function BellLink({ className }: { className?: string }) {
   const { slug, unread } = useCollege();
-  const label = unread > 0 ? `Notifications, ${unread} unread` : "Notifications";
+  const badgeText = unread > 99 ? "99+" : unread.toString();
+  const label = unread > 0 ? `${badgeText} unread notifications` : "Notifications";
   return (
     <Link
       href={`/c/${slug}/notifications`}
@@ -78,7 +79,7 @@ function BellLink({ className }: { className?: string }) {
       {unread > 0 ? (
         <span
           aria-hidden="true"
-          className="tabular absolute right-1 top-1 min-w-[18px] rounded-full bg-danger px-1 text-center text-[11px] font-bold leading-[18px] text-white"
+          className="tabular absolute right-1 top-1 min-w-[20px] rounded-full bg-danger px-1 text-center text-[12px] font-bold leading-[20px] text-white"
         >
           {unread > 99 ? "99+" : unread}
         </span>
@@ -108,7 +109,6 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
         <button
           type="button"
           className="flex min-h-14 w-full items-center gap-3 rounded-lg px-2 text-left transition-colors hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Account menu for ${name}`}
         >
           <Avatar name={name} src={profile?.avatar_url} size="sm" />
           <span className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           align={align}
           side="top"
           sideOffset={8}
-          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[15px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
+          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[15px]"
         >
           <DropdownMenu.Item asChild>
             <Link
@@ -235,7 +235,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-h-dvh min-w-0 flex-col">
         {/* Phone: a slim bar with the college, people and the bell */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-surface/85 md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface px-4 md:hidden">
           <Link
             href={homePath(slug)}
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -250,6 +250,19 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           >
             <UsersRoundIcon aria-hidden="true" className="size-[22px]" />
           </Link>
+          {more
+            .filter((item) => item.label === "Admin")
+            .map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label="Admin"
+                aria-current={isCurrent(pathname, item) ? "page" : undefined}
+                className="inline-flex size-11 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-accent-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ShieldCheckIcon aria-hidden="true" className="size-[22px]" />
+              </Link>
+            ))}
           <BellLink />
         </header>
 
@@ -264,7 +277,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
       {/* Phone: the main areas, always within reach of the thumb */}
       <nav
-        aria-label="College"
+        aria-label="College areas"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[var(--safe-bottom)] md:hidden"
       >
         <ul className="flex">
@@ -276,7 +289,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-[13px] leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-[22px]",
+                    "relative flex min-h-16 flex-col items-center justify-center gap-1 px-0.5 text-[14px] leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-[22px]",
                     current ? "font-semibold text-primary" : "text-ink-muted",
                   )}
                 >

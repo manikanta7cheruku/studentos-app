@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { UsersIcon, ShieldCheckIcon, MailIcon, ClockIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClockIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminScreenSkeleton } from "./admin-screen-skeleton";
 import { AdminError } from "./admin-error";
@@ -11,9 +10,9 @@ import { sampleStats } from "../sample-data";
 import type { AdminStats, AuditEntry } from "../types";
 
 const statCards = [
-  { key: "totalMembers", label: "Members", icon: <UsersIcon /> },
-  { key: "pendingVerifications", label: "Pending verifications", icon: <ShieldCheckIcon /> },
-  { key: "activeInvites", label: "Active invites", icon: <MailIcon /> },
+  { key: "totalMembers", label: "Members" },
+  { key: "pendingVerifications", label: "Pending verifications" },
+  { key: "activeInvites", label: "Active invites" },
 ] as const;
 
 function formatDate(iso: string): string {
@@ -61,21 +60,14 @@ export function DashboardScreen() {
         <p className="text-muted-foreground">Overview of your college on StudentOS.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <dl className="flex flex-col divide-y divide-border rounded-card border border-border bg-surface sm:flex-row sm:divide-x sm:divide-y-0">
         {statCards.map((stat) => (
-          <Card key={stat.key}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground [&_svg]:size-5">
-                {stat.icon}
-                {stat.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-heading text-3xl font-semibold">{data[stat.key]}</p>
-            </CardContent>
-          </Card>
+          <div key={stat.key} className="flex-1 p-4 sm:p-6">
+            <dt className="text-base text-muted-foreground">{stat.label}</dt>
+            <dd className="pt-1 font-heading text-3xl font-semibold">{data[stat.key]}</dd>
+          </div>
         ))}
-      </div>
+      </dl>
 
       <section>
         <h2 className="font-heading text-xl font-semibold">Recent activity</h2>

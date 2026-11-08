@@ -94,12 +94,12 @@ export function FilterBar({
               type="button"
               variant="outline"
               className="flex-1 min-h-[44px] justify-between text-base px-4"
-              aria-label={`Open filters. ${activeCount} active filter${activeCount === 1 ? "" : "s"}`}
+              aria-label={`Open filters ${activeCount > 0 ? `${activeCount} active` : "All"}`}
             >
               <div className="flex items-center gap-2">
                 <FilterIcon className="size-5 shrink-0" aria-hidden="true" />
                 <span>Filters</span>
-              </div>
+              </div>{" "}
               {activeCount > 0 ? (
                 <Badge variant="default" className="ml-2">
                   {activeCount}

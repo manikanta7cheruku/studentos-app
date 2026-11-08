@@ -70,10 +70,10 @@ test("signing out ends the session", async ({ page, isMobile }) => {
     await page.goto("/c/alpha/me/settings");
     await page.getByRole("button", { name: /^sign out/i }).click();
   } else {
+    // The account button is named by its visible text: the person's name and role.
     await page
-      .getByRole("button", { name: /account menu/i })
-      .filter({ visible: true })
-      .first()
+      .locator("aside")
+      .getByRole("button", { name: /student|moderator|college admin/i })
       .click();
     await page.getByRole("menuitem", { name: /sign out/i }).click();
   }

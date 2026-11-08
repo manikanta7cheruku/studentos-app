@@ -25,6 +25,7 @@ function ShellSkeleton() {
     <div
       className="min-h-dvh bg-bg md:grid md:grid-cols-[17rem_minmax(0,1fr)]"
       aria-busy="true"
+      role="status"
       aria-label="Loading your college"
     >
       <div className="hidden h-dvh flex-col gap-6 border-r border-border bg-surface px-4 py-5 md:flex">

@@ -12,7 +12,12 @@ import { ProfileView } from "./profile-view";
 
 function ProfileSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading your profile" className="flex flex-col gap-6">
+    <div
+      aria-busy="true"
+      role="status"
+      aria-label="Loading your profile"
+      className="flex flex-col gap-6"
+    >
       <div className="flex items-center gap-6">
         <Skeleton className="size-24 rounded-full" />
         <div className="flex-1">
