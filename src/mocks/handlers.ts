@@ -3,10 +3,12 @@ import ten01Fixture from "@/contracts/fixtures/ten-01.success.json";
 import { sampleColleges } from "@/features/tenancy";
 import { day4And5Handlers } from "./handlers-day4-5";
 import { day7Handlers } from "./handlers-day7";
+import { appHandlers } from "./handlers-app";
 
 export const handlers = [
   ...day4And5Handlers,
   ...day7Handlers,
+  ...appHandlers,
   // TEN-01: GET /api/v1/colleges/public/:slug
   http.get("*/api/v1/colleges/public/:slug", ({ params }) => {
     const rawSlug = params.slug;

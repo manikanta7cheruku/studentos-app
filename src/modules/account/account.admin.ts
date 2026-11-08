@@ -53,3 +53,42 @@ export async function viewPerson(actor: string, college: string, target: string)
     : null;
   return { ...person, avatar_url };
 }
+
+type MembershipRow = {
+  id: string;
+  role: string;
+  status: string;
+  verification_level: number;
+  colleges: {
+    slug: string;
+    name: string;
+    short_name: string | null;
+    city: string | null;
+    accent_hex: string | null;
+  } | null;
+};
+
+// My own memberships with the college branding. The college rows are read with the service role because a person
+// who is still waiting for approval is not allowed to read the college table yet; the query only ever filters by
+// the verified user id.
+export async function listMyMemberships(userId: string) {
+  const { data, error } = await adminClient()
+    .from("memberships")
+    .select(
+      "id, role, status, verification_level, colleges(slug, name, short_name, city, accent_hex)",
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw mapDbError(error);
+  return ((data ?? []) as unknown as MembershipRow[])
+    .filter((row) => row.colleges !== null)
+    .map((row) => ({
+      college: row.colleges!,
+      membership: {
+        id: row.id,
+        role: row.role,
+        status: row.status,
+        verification_level: row.verification_level,
+      },
+    }));
+}

@@ -159,3 +159,54 @@ Antigravity wrote the code, test files, and configurations according to the Stud
 ## 20. Walkthrough drill: passed by / date
 
 Pending R4 peer review.
+
+
+---
+
+## Upgrade (R3 takeover, 2026-11-08): the shell, session and API layer connected to the real backend
+
+Branch: `r3/d1-upgrade-app-shell`. This section is added on top of the original session above. The original build used sample data and a placeholder shell. The upgrade connects the shell to the real API, rebuilds the layout for phone and desktop, and adds the pieces the first version was missing.
+
+### U1. What changed and why
+
+| Before | After | Why |
+|---|---|---|
+| One static shell with sample data and placeholder screens | A **college gate** (`CollegeGate`) in front of every `/c/{slug}` screen, then a **shell** (`CollegeShell`) | A screen must know who is signed in and which college they belong to before it shows anything |
+| No way to know who is signed in | One new endpoint **TEN-08 `GET /api/v1/me/memberships`** answers both questions: 401 means signed out, a list means signed in (an empty list means signed in with no college) | One request, no guessing, no extra round trips |
+| `fetch` calls spread over hooks, errors as strings | `src/lib/api-client.ts` (`ApiError`, `friendlyMessage`, idempotency keys) and `src/lib/api/endpoints.ts` (one typed function per endpoint, answers checked with the contract schemas) | A screen can never receive a shape the contract does not promise |
+| Every screen invented its own loading and error | `useLoad` returns loading, ready or error with `reload`; `LoadError` shows plain words, a retry button and the request code | The four states of DESIGN_SYSTEM rule 2 look the same everywhere |
+| Sidebar only | Sidebar on desktop and tablet, a slim top bar plus a **bottom tab bar** on phones (44px and larger touch targets, safe area under the home bar) | Mobile first |
+| Same blue for every college | The college accent colour is applied through CSS variables, but only if it has at least 4.5 to 1 contrast on white (`src/lib/color.ts`) | DESIGN_SYSTEM colour rule |
+
+### U2. How it works
+
+1. `CollegeGate` mounts `SessionProvider`, which calls `GET /me/memberships` once and again when the tab becomes visible.
+2. `useCollegeLoad(slug)` loads the public college (`GET /colleges/public/{slug}`) and finds my membership in the session. It returns one of: `loading`, `missing` (404), `error`, `signed-out`, `needs-join`, `needs-approval`, `ready`.
+3. The gate redirects: signed out to `/signin?next=...`, not a member to `/c/{slug}/join`, waiting or refused to `/c/{slug}/pending`. While it asks, the shell's own outline (skeleton) is shown, so nothing jumps.
+4. When `ready`, the shell shows only the tabs the college switched on (`modules`), the unread count on the bell (refreshed every 60 seconds), and my name and picture.
+5. Campus shows real announcements (ANN-01) and Notifications shows real notifications (NOT-01, NOT-02). Collaborate and Career are honest "coming soon" pages, not fake content.
+
+### U3. Things we learned the hard way
+
+- **Next.js keeps the screens you left alive in the background** (Cache Components uses React `Activity`). The college gate that saw you signed out was still alive after sign in, and showed the old answer for a moment, so you were sent back to the sign in page. Fix: after sign in, sign out, leaving a college and deleting an account the app does a **full page load** (`window.location.replace`). Rule: when the identity of the person changes, do not use a client navigation.
+- **Lint rule `react-hooks/set-state-in-effect`**: state must not be set synchronously in an effect body. `useLoad` stores each answer together with the inputs it belongs to, and "loading" simply means "the stored answer belongs to older inputs". No `setState` in the effect body, no flicker.
+- **`export const instant = false`**: routes that depend on the signed in person cannot be prerendered, so they opt out of Next 16's instant navigation check. Client components cannot export it, so each page is a small server component that renders the client screen.
+- **Route groups**: `(app)` is behind the gate, `(public)` is not (the college front door, join, waiting). The address stays `/c/{slug}/...`.
+
+### U4. Tests (what exists, how to run)
+
+```bash
+node node_modules/vitest/vitest.mjs run src/lib src/components   # color, use-load, api-client, otp-input, avatar
+pnpm test:integration                                          # includes TEN-08 and the permission matrix
+pnpm test:e2e -- e2e/shell.ui.spec.ts                          # desktop and phone, real backend (needs pnpm db:start)
+```
+
+The shell browser tests check: a member sees Campus inside the shell, the tabs open, signing out ends the session, an unknown address shows the not found page, and no page scrolls sideways.
+
+### U5. Docs updated because of this
+
+`docs/API_CONTRACT.md` (section 15, TEN-08), `docs/PERMISSIONS.md`, `docs/BACKEND_STATUS.md`, `docs/openapi.v1.json` (regenerated), `docs/DESIGN_SYSTEM.md` (shell and shared parts), `docs/ROUTES_AND_NAVIGATION.md`, `docs/progress/R3_frontend/PROGRESS.md`.
+
+### U6. What a human verified
+
+Ran the shell against the real local backend (Supabase and the dev server) on a phone width and a desktop width, read the pages in a browser, and ran the tests above. The original sample data mode (`NEXT_PUBLIC_API_MOCKING=enabled`) still works: its handlers are in `src/mocks/handlers-app.ts`.

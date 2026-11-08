@@ -21,6 +21,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | AUTH-03 | POST | /auth/logout | ses | write limit |
 | AUTH-04 | DELETE | /me | ses | write limit, code by email (sign in code limits) |
 | TEN-01 | GET | /colleges/public/{slug} | pub | none |
+| TEN-08 | GET | /me/memberships | ses | read limit |
 | TEN-02 | GET | /c/{slug}/me/membership | ses | none |
 | TEN-03 | POST | /c/{slug}/join/invite | ses | write limit, 10/h |
 | TEN-04 | POST | /c/{slug}/join/manual | ses | write limit, 10/h |

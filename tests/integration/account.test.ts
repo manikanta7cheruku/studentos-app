@@ -1,9 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { deleteMeResponse, errorEnvelope, leaveResponse, personProfileResponse } from "@/contracts";
+import {
+  deleteMeResponse,
+  errorEnvelope,
+  leaveResponse,
+  myMembershipsResponse,
+  personProfileResponse,
+} from "@/contracts";
 import { POST as otpRequest } from "@/app/api/v1/auth/otp/request/route";
 import { POST as otpVerify } from "@/app/api/v1/auth/otp/verify/route";
 import { DELETE as deleteMe } from "@/app/api/v1/me/route";
+import { GET as myMemberships } from "@/app/api/v1/me/memberships/route";
 import { POST as joinManual } from "@/app/api/v1/c/[slug]/join/manual/route";
 import { POST as leave } from "@/app/api/v1/c/[slug]/me/leave/route";
 import { GET as myMembership } from "@/app/api/v1/c/[slug]/me/membership/route";
@@ -440,5 +447,33 @@ describe("AUTH-04 delete my account", () => {
     const code = await latestCode(email);
     expect((await del(session.cookie, { code })).body.data).toEqual({ deleted: true });
     expect((await admin.auth.admin.getUserById(session.userId)).data.user).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("TEN-08 my colleges", () => {
+  const mine = (cookie: string | undefined) =>
+    call(myMemberships, { path: "/api/v1/me/memberships", cookie });
+
+  it("lists only my own colleges with their branding, any status, and nothing of other people", async () => {
+    const waiting = await newMember("memberships", false);
+    const result = await mine(waiting.cookie);
+    expect(result.status).toBe(200);
+    expectMatches(myMembershipsResponse, result.body);
+    expect(result.body.data).toHaveLength(1);
+    expect(result.body.data[0]).toMatchObject({
+      college: { slug: SLUG, name: "Alpha College" },
+      membership: { status: "pending", role: "student" },
+    });
+    // an admin sees only their own row, not every member of the college
+    const asAdmin = await mine(cookies.admin);
+    expect(asAdmin.body.data).toHaveLength(1);
+    expect(asAdmin.body.data[0].membership.role).toBe("college_admin");
+    // a person with no college gets an empty list
+    const email = randomEmail("no-college-list");
+    created.push(email);
+    const loner = await signIn(routes, email);
+    expect((await mine(loner.cookie)).body.data).toEqual([]);
+    expectError(await mine(undefined), 401, "UNAUTHENTICATED");
   });
 });
