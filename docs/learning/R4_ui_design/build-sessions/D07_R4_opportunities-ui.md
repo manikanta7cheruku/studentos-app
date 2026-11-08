@@ -7,48 +7,47 @@
 | Related docs | docs/API_CONTRACT.md (OPP-01 to OPP-04, APP-01), docs/DESIGN_SYSTEM.md, docs/ACCESSIBILITY.md |
 
 ## 1. What we are learning and why it is needed
-Students need to find curated opportunities and keep track of the ones they care about. We built the Opportunities screen: a list with four filters (type, skills, location, deadline), a Save/Unsave button, and an Add to tracker action.
+Students need to find curated opportunities and keep track of the ones they care about. We built the Opportunities screen on the real API: a list with filters (type, skills, mode, location, deadline), search, My saved, a Save/Unsave button, and an Add to tracker button. Add to tracker was not checked against the real backend.
 
 ## 2. What problem it solves
 Without this screen a student cannot browse opportunities, narrow them down, or move one into their application tracker. Filters stored in the URL also let a student share or reload a filtered list.
 
 ## 3. Concepts and terminology (short glossary)
-- **Mock API (MSW)**: fake handlers in `src/mocks/handlers.ts` that answer API calls while the real endpoints do not exist. It is switched on with `NEXT_PUBLIC_API_MOCKING=enabled` in `.env.local`.
+- **Mock API (MSW)**: fake handlers in `src/mocks/handlers.ts` and `handlers-day7.ts` that the tests use. The mock returns one fixed list, so it cannot test filtering. The screen itself was checked against the local real API.
 - **Optimistic update with rollback**: the Save button changes at once, and if the server call fails the button goes back and an error shows.
-- **Query params as filter state**: the four filters live in the URL, so the page can be reloaded or shared.
+- **Query params as filter state**: the filters and search live in the URL, so the page can be reloaded or shared.
 - **Toaster**: the component that shows short messages (toasts), for example after Save.
-- **TODO(R2)**: a marker on a local placeholder that R2 must replace with the real contract.
+- **Contract types**: the screen takes its types from `@/contracts` (R2's contract). The old local stand-in schema was removed.
 
 ## 4. How it works internally (appropriate depth)
-- The list reads the four filters from the URL and asks the API (the mock for now) for matching opportunities.
-- Save/Unsave updates the button first, then calls the save endpoint. On failure it rolls back.
-- Add to tracker creates an application. If the item is already in the tracker, the screen handles the duplicate and tells the student.
-- The screen has loading, empty and error states and a phone layout.
-- The `<Toaster />` now lives once in `CollegeAppShell`. It used to be only in the admin shell, so toasts never showed on career pages. The admin copy was removed so admin pages do not show two toasts.
+- The screen reads the filters (type, skills, mode, location, deadline, search q, saved) from the URL and calls OPP-01 through apiClient.
+- Types come from @/contracts. The only UI-only field is in_tracker.
+- Save/Unsave updates the button first, then calls PUT or DELETE /me/saved-opportunities/{id}. On failure it rolls back.
+- The card hides the map pin when location is empty, hides the stipend line when both values are null, shows 'Posted by', an Expired badge from status 'expired', and a 'Changed since you saved' badge.
+- If the college switched Career off, the API answers 404 FEATURE_DISABLED and the screen says 'Career is not available for your college.'
+- One <Toaster /> is in src/app/c/[slug]/(app)/layout.tsx, so toasts show on every college screen.
 
 ## 5. How it is used in StudentOS (files/modules)
-- `src/features/opportunities/` (new files)
-- `src/app/c/[slug]/career/opportunities/` (new route)
-- `src/app/c/[slug]/career/page.tsx` ("View tracker" link goes to `/career` for now)
-- `src/app/dev/components/` (demo page plus `opportunities-parts.tsx`)
-- `src/mocks/handlers.ts` (mock handlers)
-- `src/features/tenancy/components/college-app-shell.tsx` (Toaster added)
-- `src/features/admin/components/admin-layout-shell.tsx` (Toaster removed)
-- Tests: `tests/ui/opportunities.test.tsx`, `tests/a11y/opportunities.test.tsx`
+- src/features/opportunities/ (screen, card, filter bar, empty states, types)
+- src/app/c/[slug]/(app)/career/opportunities/page.tsx
+- src/features/campus/coming-soon.tsx (R3's file: optional cta prop) and src/app/c/[slug]/(app)/career/page.tsx (Browse opportunities link)
+- src/app/c/[slug]/(app)/layout.tsx (R3's file: Toaster)
+- src/app/dev/components/opportunities-parts.tsx (built from the contract fixture opp-01)
+- Tests: tests/ui/opportunities.test.tsx, tests/a11y/opportunities.test.tsx, tests/helpers/opportunity-fixtures.ts
 
 ## 6. Request/response and data flow (diagram or numbered trace)
-1. The student opens the Opportunities page. The filters are read from the URL.
-2. The page asks for the list (OPP-01, mock for now).
-3. The student changes a filter. The URL updates and the list reloads.
-4. The student presses Save. The button changes at once, then the save call (OPP-04) runs. On failure the button rolls back.
-5. The student presses Add to tracker. The create-application call (APP-01) runs, then a toast shows with a View tracker link.
+1. The student opens the Opportunities page. The filters and search are read from the URL.
+2. The page asks for the list (OPP-01) through apiClient. If the college switched Career off, the API answers 404 FEATURE_DISABLED and the screen shows 'Career is not available for your college.'
+3. The student changes a filter or types in search. The URL updates and the list reloads.
+4. The student presses Save. The button changes at once, then PUT /me/saved-opportunities/{id} (OPP-04) runs. On failure the button rolls back. A toast shows.
+5. Add to tracker posts to /me/applications (APP-01). That route is not on the backend yet, so this step was not checked against the real backend.
 
 ## 7. API methods, endpoints, schemas, status codes
-From `docs/API_CONTRACT.md`:
-- OPP-01: GET `/c/{slug}/opportunities` (list and filter)
-- OPP-04: PUT/DELETE `/me/saved-opportunities/{id}` (save and unsave)
-- APP-01: POST `/me/applications` (create)
-The contract has only the method and path for these. The response schemas in this PR are local placeholders marked `TODO(R2)`. The exact query param names also need R2 to confirm. Status codes are not verified against a real server.
+From docs/API_CONTRACT.md and src/contracts:
+- OPP-01: GET /c/{slug}/opportunities (filters kind, skills, mode, location, deadline, q, saved)
+- OPP-04: PUT/DELETE /me/saved-opportunities/{id}
+- 404 FEATURE_DISABLED when the Career tab is off (college_settings.features.career = false)
+- APP-01: POST /me/applications is NOT on the backend yet. Add to tracker was not checked against the real backend.
 
 ## 8. Database changes and relationships
 Not applicable for this PR. No database change was made by R4.
@@ -57,45 +56,45 @@ Not applicable for this PR. No database change was made by R4.
 The contract says OPP-01 and OPP-04 need an active membership and APP-01 needs a session. The screen does not decide permissions. The server must check them. Not tested against the real server.
 
 ## 10. Errors and edge cases
-- **Real API not verified.** The screen works with the mock only. The real OPP-01, OPP-04 and APP-01 endpoints are not in `main` at the time of this PR, and R2 builds them on Day 7. The "done when" line "works with the real API" is NOT met.
-- Save fails: the button rolls back.
-- Add to tracker for an item already in the tracker: handled as a duplicate.
-- Empty list, loading and error states exist.
-- "View tracker" goes to `/career` (R3's placeholder, "No Career items yet"). Change it to `/career/tracker` when R3's tracker page exists.
+- Real data differs from the old sample data: location can be an empty string, stipend and deadline can be null, status can be 'expired'. The old stand-in schema rejected location '' and showed 'filter parameters were invalid'. Fixed by using the contract types.
+- Career switched off: tested by setting features.career to false for alpha, then restoring features to {}. SEEN in a screenshot (message, Career missing from the sidebar). The restore SQL result was reported, not shown.
+- Add to tracker: not checked. The 2 tracker tests pass only against a mock.
+- Expired cards still show Apply, Save and Add to tracker (open question).
+- Search sends a request on every keystroke (no debounce).
 
 ## 11. Tests: what exists and how to run them (exact commands)
-- All checks: `pnpm verify`
-- Component test: `pnpm test tests/ui/opportunities.test.tsx`
-- Accessibility (axe) test: `pnpm test tests/a11y/opportunities.test.tsx`
-- Last `pnpm verify` result seen: format, lint and typecheck clean, 31 test files and 334 tests passed, build includes the opportunities route.
+- All checks: pnpm verify
+- Component test: pnpm exec vitest run tests/ui/opportunities.test.tsx
+- Accessibility (axe) test: pnpm exec vitest run tests/a11y/opportunities.test.tsx
+- Last pnpm verify SEEN: format, lint and typecheck clean, whole suite 46 test files and 492 tests passed (earlier days' tests included), build ok.
+- Tests use the contract fixture opp-01 through tests/helpers/opportunity-fixtures.ts. The mock returns one fixed list, so server-side filtering has no automated test.
 
 ## 12. How to debug common failures
-- Screen shows no data: check that `NEXT_PUBLIC_API_MOCKING=enabled` is in `.env.local`, then restart the dev server.
-- No toast on career pages: check that `<Toaster />` is in `CollegeAppShell` and only there.
-- Two toasts on admin pages: the Toaster is in both shells.
-- `pnpm verify` fails on format: run `pnpm exec prettier --write` on the file.
+- 'filter parameters were invalid': check the status. Only a 400 should say that. A response that does not match the schema also uses VALIDATION_FAILED.
+- No toast: check that <Toaster /> is in src/app/c/[slug]/(app)/layout.tsx and only there.
+- Opportunities missing for a college: check college_settings.features.career is not false.
+- pnpm verify fails on format: run pnpm exec prettier --write on the file.
 
 ## 13. Security considerations
-Only fake data from the mock is used. No secrets and no real student data. `.env.local` must not be committed. The server must check membership and college isolation, because the screen only shows what it is given.
+Only fake data is used (5 seeded fake listings on the local database, and contract fixtures in tests). No secrets and no real student data. `.env.local` must not be committed. The server must check membership and college isolation, because the screen only shows what it is given.
 
 ## 14. Alternatives and trade-offs
 - Filters in the URL (chosen) let students reload and share a list, but need careful parsing. Filters in component state would be simpler but lost on reload.
 - Optimistic Save feels fast, but needs a rollback for failures.
-- Building against a mock lets R4 work before R2 finishes, but the contract may change once the real endpoints exist.
+- Building against the real API found bugs a mock hid (empty location, null stipend, null deadline, expired status), but needs a seeded local database. Contract fixtures keep tests tied to the real shapes.
 
 ## 15. What AI generated or suggested (prompts used, summary)
-The AI helped write the Opportunities screen, the filters, Save/Unsave, Add to tracker, the mock handlers, the Toaster move, the "View tracker" link fix and the tests. I used the Day 7 prompt for R4 (`DAY_07_PROMPT.md`).
+The AI helped with the Opportunities screen, the fixes found while checking the real API, search and My saved, the Career page link, the Toaster, and rebuilding the tests from the contract fixture. It also wrote the seed script and the commands for each check. I used the Day 7 prompt for R4.
 
 ## 16. What a human verified (how: ran tests, read code, checked docs, tried to break it)
-- Ran `pnpm verify` and saw it pass (31 files, 334 tests, build OK).
-- Checked in the browser: filters, Save, Add to tracker, the toast, and "View tracker" going to the Career page.
-- Approved a person on `/c/test-college/admin/verification` and saw exactly one toast, so the Toaster move did not double up.
-- Not checked yet: the real API (the endpoints are not built), staging, keyboard-only and screen reader use by hand, tracker polish with R3, and R3's review.
+SEEN (terminal or screenshot): merge commit d487846, pnpm verify passing on the whole suite, the FEATURE_DISABLED message, 5 seeded listings, Expired badge, Career page button, save toast, 360px card, commit 8e7311f.
+REPORTED by R4 without screenshots: search and My saved, all filters, Clear filters, save after reload, unsave toast, keyboard-only pass, rest of the 360px pass, click on Browse opportunities, the restore SQL result.
+NOT checked: Add to tracker against the real backend, staging, screen reader, R3's review.
 
 ## 17. What each teammate can now explain/implement independently
-- How the four filters live in the URL.
+- How the filters and search live in the URL.
 - How Save rolls back when the call fails.
-- Why the Toaster is in `CollegeAppShell` once.
+- Why the Toaster is in `src/app/c/[slug]/(app)/layout.tsx` once.
 - How to run the mock and the tests.
 - That real API verification depends on R2.
 
@@ -105,7 +104,7 @@ The AI helped write the Opportunities screen, the filters, Save/Unsave, Add to t
 - MSW documentation (mocking APIs)
 
 ## 19. Docs updated because of this (per trigger table)
-This learning file, `docs/learning/R4_ui_design/INDEX.md`, `docs/progress/R4_ui_design/PROGRESS.md`, `daily/D07_R4.md` and `CARRYOVER.md`. Slack #changes: tell R2 about the OPP-01, OPP-04 and APP-01 placeholder schemas and the query param names, and tell the team the Toaster moved.
+This learning file, `docs/learning/R4_ui_design/INDEX.md`, `docs/progress/R4_ui_design/PROGRESS.md`, `daily/D07_R4.md` and `CARRYOVER.md`. Slack #changes: tell R3 about the optional cta prop on ComingSoon, the Toaster in the college app layout and the Career page wording; tell R3 and R2 that POST /me/applications is not on the backend.
 
 ## 20. Walkthrough drill: passed by / date
 Not done yet.
