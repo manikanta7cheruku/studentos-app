@@ -291,7 +291,7 @@ export function RequestDialog({
             </div>
           </div>
 
-          <DialogFooter className="p-4 border-t border-border bg-muted/30">
+          <DialogFooter className="m-0 p-4 border-t border-border bg-muted/30">
             <DialogClose asChild>
               <Button type="button" variant="outline" disabled={isSending} className="min-h-[44px]">
                 Cancel

@@ -44,11 +44,11 @@ export function PlaceholderScreen({
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
       {/* Page Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <span className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
             {moduleName}
           </span>
-          <h1 className="font-heading text-2xl font-bold md:text-3xl">{title}</h1>
+          <h1 className="font-heading text-2xl font-bold break-words md:text-3xl">{title}</h1>
         </div>
 
         {/* State preview toggles for reviewers & tests */}

@@ -109,5 +109,6 @@ body {
   h3,
   h4 {
     font-family: var(--font-heading);
+    overflow-wrap: break-word;
   }
 }

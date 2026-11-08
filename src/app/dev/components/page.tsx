@@ -60,8 +60,8 @@ const forcedFocus = "ring-2 ring-ring ring-offset-2 ring-offset-background";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-2xl font-semibold">{title}</h2>
+    <section className="flex flex-col gap-4 min-w-0">
+      <h2 className="text-2xl font-semibold break-words min-w-0">{title}</h2>
       {children}
     </section>
   );
@@ -69,8 +69,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function StateCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-2">
-      <span className="text-base text-muted-foreground">{label}</span>
+    <div className="flex flex-col items-start gap-2 min-w-0 max-w-full">
+      <span className="text-base text-muted-foreground break-words min-w-0">{label}</span>
       {children}
     </div>
   );
@@ -78,12 +78,12 @@ function StateCell({ label, children }: { label: string; children: React.ReactNo
 
 export default function ComponentsSandbox() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-10 sm:px-6">
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-10 sm:px-6 min-w-0">
       <Toaster />
 
-      <header className="flex flex-col gap-2">
-        <h1 className="text-4xl font-semibold">Components</h1>
-        <p className="max-w-prose text-muted-foreground">
+      <header className="flex flex-col gap-2 min-w-0">
+        <h1 className="text-4xl font-semibold break-words min-w-0">Components</h1>
+        <p className="max-w-prose text-muted-foreground break-words">
           Every shared part in every state. Hover and focus are forced with classes so they can be
           seen without a mouse. Use Tab to check the real focus ring.
         </p>

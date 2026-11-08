@@ -13,7 +13,7 @@ function EmptyState({ className, icon, title, description, action, ...props }: E
     <div
       data-slot="empty-state"
       className={cn(
-        "flex flex-col items-start gap-3 rounded-card border border-dashed border-border-strong bg-surface p-6",
+        "flex flex-col items-start gap-3 rounded-card border border-dashed border-border-strong bg-surface p-6 min-w-0 max-w-full",
         className,
       )}
       {...props}
@@ -23,8 +23,10 @@ function EmptyState({ className, icon, title, description, action, ...props }: E
           {icon}
         </div>
       ) : null}
-      <h2 className="font-heading text-xl font-semibold">{title}</h2>
-      {description ? <p className="max-w-prose text-muted-foreground">{description}</p> : null}
+      <h2 className="font-heading text-xl font-semibold break-words min-w-0 max-w-full">{title}</h2>
+      {description ? (
+        <p className="max-w-prose text-muted-foreground break-words">{description}</p>
+      ) : null}
       {action ? <div className="pt-1">{action}</div> : null}
     </div>
   );

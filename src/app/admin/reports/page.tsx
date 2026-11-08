@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ReportsAdminPage() {
   return (
     <AppShell currentPath="/admin">
-      <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6 min-w-0">
         <ModeratorReportsQueue />
       </main>
     </AppShell>

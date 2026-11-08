@@ -15,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-2xl font-semibold">{title}</h2>
+    <section className="flex flex-col gap-4 min-w-0">
+      <h2 className="text-2xl font-semibold break-words min-w-0">{title}</h2>
       {children}
     </section>
   );
@@ -24,8 +24,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function StateCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-2">
-      <span className="text-base text-muted-foreground">{label}</span>
+    <div className="flex flex-col items-start gap-2 min-w-0 max-w-full">
+      <span className="text-base text-muted-foreground break-words min-w-0">{label}</span>
       {children}
     </div>
   );
@@ -183,7 +183,11 @@ export function FormPartsSections() {
             {
               key: "action",
               header: "Action",
-              cell: (row) => <Button variant="outline">Review {String(row.name)}</Button>,
+              cell: (row) => (
+                <Button variant="outline" className="max-w-xs truncate">
+                  Review {String(row.name)}
+                </Button>
+              ),
             },
           ]}
           rows={requests}
