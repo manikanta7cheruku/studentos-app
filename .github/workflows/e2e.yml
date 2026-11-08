@@ -39,8 +39,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Start the local Supabase stack (database, login, API, test mailbox)
-        run: pnpm supabase start -x realtime,storage-api,imgproxy,studio,edge-runtime,logflare,vector,supavisor,postgres-meta
+      - name: Start the local Supabase stack (database, login, API, file storage, test mailbox)
+        run: pnpm supabase start -x realtime,imgproxy,studio,edge-runtime,logflare,vector,supavisor,postgres-meta
       - name: Write .env.local from the stack (local demo keys, nothing secret)
         run: pnpm env:local
       - name: Build the app

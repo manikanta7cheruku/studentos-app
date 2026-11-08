@@ -2,7 +2,6 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import NotificationsPage from "@/app/me/notifications/page";
 import AnnouncementsPage from "@/app/campus/announcements/page";
 import ReportsAdminPage from "@/app/admin/reports/page";
 import Home from "@/app/page";
@@ -39,13 +38,6 @@ afterEach(() => {
 });
 
 describe("DesktopRail route mounting", () => {
-  it("mounts DesktopRail and NotificationBell on /me/notifications", () => {
-    render(<NotificationsPage />);
-    const rail = screen.getByRole("navigation", { name: "Desktop primary" });
-    expect(rail).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Notifications/i })).toBeTruthy();
-  });
-
   it("mounts DesktopRail and NotificationBell on /campus/announcements", () => {
     render(<AnnouncementsPage />);
     const rail = screen.getByRole("navigation", { name: "Desktop primary" });

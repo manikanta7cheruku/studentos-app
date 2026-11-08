@@ -57,3 +57,56 @@ Students and campus community members need a rich, authentic profile to showcase
 - **SVGs with embedded `<script>`**: SVG is valid XML but can contain XSS attacks. Ensure SVGs are inspected for `<script>` or event handlers.
 - **Hidden profile leakage**: Writing a raw query that forgets `AND (visibility = 'college' OR user_id = auth.uid())` exposes students who opted to be hidden.
 - **State reset on prop change**: When wrapping edit forms inside data loaders, use a `key` prop tied to the fetched entity ID or version to prevent stale form state or illegal setState calls inside effects.
+
+
+---
+
+## Upgrade (R3 takeover, 2026-11-08): profile, skills, settings and people on the real backend
+
+Branch: `r3/d3-upgrade-profile`. The first version fell back to **sample data** when the API answered 401 or failed, so a broken backend looked like a working screen. The upgrade removes every fallback: a screen shows real data or an honest error with a retry.
+
+### U1. The screens
+
+| Address (inside `/c/{slug}`) | What it does | Endpoints |
+|---|---|---|
+| `/me` | My profile as classmates see it, with Edit, Skills and Settings | PRF-01 `GET /me/profile`, PRF-02 `GET /me/skills` |
+| `/me/edit` | Name, handle, headline, about, career goal, interests, **photo upload** | PRF-01 `PATCH`, PRF-04 `POST /me/avatar` |
+| `/me/skills` | Search the skill list, add, level 1 to 5, link to your work, save the whole list | PRF-03 `GET /skills?q=`, PRF-02 `PUT /me/skills` |
+| `/me/settings` | Show profile to college or hide it, public portfolio, deadline reminders, sign out, **leave the college**, **delete the account** (two steps) | PRF-01 `PATCH`, REM-01, TEN-07, AUTH-04 |
+| `/people` | Classmates who chose to be visible, search by name or interest | PRF-05 |
+| `/people/{userId}` | One classmate (never shows an email address) | PRF-06 |
+
+The old addresses without a college (`/me`, `/me/edit`, `/me/skills`, `/me/notifications`) now redirect into your college (the last one you used).
+
+### U2. How it works
+
+- **Only changed fields are sent** (`profileChanges`): the form compares with the saved profile. Cleared text becomes `null`. Nothing changed means no request.
+- **Photo**: the browser checks the type (JPEG, PNG, WebP, GIF, AVIF) and the size (2 MB) first, then sends the picture as it is. The server checks the real bytes again (magic bytes), so a renamed file is still refused. SVG is refused because it can carry scripts.
+- **Skills**: one `PUT` replaces the whole list. Empty links are left out, links must start with `https://`. The level is a real `<select>` with words ("Just starting" to "Expert"), not colour alone.
+- **Interests**: a comma ends an interest (also from a paste or a phone keyboard), no duplicates, up to 20.
+- **Settings save at once** with an honest message ("Your profile is hidden.") and undo the checkbox if the server refuses.
+- **Delete account has two steps**: the first call emails a code, the second call with the code deletes everything. A person who is the only admin of a college gets a clear message (409). After deleting, the app loads the home page fresh.
+- **Leave the college**: a confirm dialog, then a full page load to `/find`.
+
+### U3. Things we learned
+
+- **Stale screens**: because Next keeps the previous screen alive in the background, the profile page you left shows old data for a moment after you edit. `useLoad` re-runs when the screen comes back, so the new data replaces the old within a moment. In browser tests, assert on visible elements only (`filter({ visible: true })`), because the hidden copy is still in the page.
+- **A label must point at the input**: `FormField` puts the `id` on its single child. The interests field wraps an input and the chips, so the chips live outside `FormField` and the input is its direct child. Otherwise the label is not connected to the input (a real accessibility bug caught by the browser test).
+- **Avoid reloading a form while the person is typing**: the photo upload does not reload the profile, because that would replace the form with a skeleton and lose the text typed so far.
+
+### U4. Tests
+
+```bash
+node node_modules/vitest/vitest.mjs run src/features/profile   # profileChanges, skillsPayload, level labels
+pnpm test:e2e -- e2e/profile.ui.spec.ts                         # real backend, desktop and phone
+```
+
+Browser tests: edit profile and skills and see them on my page, handle that is not allowed, photo upload, a file that is not an image, people search, privacy saved after reload, old `/me` address redirect, leave college, delete account (real code from the mailbox). Every page is checked for sideways scrolling.
+
+### U5. What a human verified
+
+Ran the 18 profile browser tests (desktop and phone) against the real local backend, and looked at the screens at 390px and 1280px wide.
+
+### U6. Docs updated
+
+`docs/ROUTES_AND_NAVIGATION.md` (people and settings routes), `docs/progress/R3_frontend/PROGRESS.md`.

@@ -1,17 +1,8 @@
-import type { Metadata } from "next";
-import { AppShell, NotificationsView } from "@/features/notifications";
+import { CollegeRedirect } from "@/features/session/college-redirect";
 
-export const metadata: Metadata = {
-  title: "Notifications | StudentOS",
-  description: "Stay updated with announcements, team requests, and reminders from your college.",
-};
+export const instant = false;
 
-export default function NotificationsPage() {
-  return (
-    <AppShell currentPath="/me/notifications">
-      <main className="mx-auto flex w-full max-w-4xl flex-col px-4 py-8 sm:px-6">
-        <NotificationsView />
-      </main>
-    </AppShell>
-  );
+// Older address without a college in it: it opens the same screen inside your college.
+export default function Page() {
+  return <CollegeRedirect suffix="/notifications" />;
 }
