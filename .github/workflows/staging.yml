@@ -73,19 +73,37 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-        run: pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD" --dry-run
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: |
+          if [ -n "$STAGING_DB_URL" ]; then
+            pnpm supabase db push --db-url "$STAGING_DB_URL" --dry-run
+          else
+            pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD" --dry-run
+          fi
       - name: Apply migrations
         if: steps.config.outputs.configured == 'true' && inputs.seed != true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-        run: pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD"
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: |
+          if [ -n "$STAGING_DB_URL" ]; then
+            pnpm supabase db push --db-url "$STAGING_DB_URL"
+          else
+            pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD"
+          fi
       - name: Apply migrations and load the fake seed data
         if: steps.config.outputs.configured == 'true' && inputs.seed == true
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-        run: pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD" --include-seed
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+        run: |
+          if [ -n "$STAGING_DB_URL" ]; then
+            pnpm supabase db push --db-url "$STAGING_DB_URL" --include-seed
+          else
+            pnpm supabase db push --linked --password "$STAGING_DB_PASSWORD" --include-seed
+          fi
 
   smoke:
     name: Staging smoke test
