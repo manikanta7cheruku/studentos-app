@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, GlobeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { GLOBAL_SLUG } from "@/lib/home-path";
 import { AuthFrame } from "./auth-frame";
 
 /** Turn what a person typed (a link, or just the college code) into the college code. */
@@ -57,6 +59,18 @@ export function FindCollegeScreen() {
           </Button>
         </div>
       </form>
+      <div className="mt-10 border-t border-border pt-6">
+        <h2 className="text-[18px] font-semibold">Your college is not on StudentOS yet?</h2>
+        <p className="mt-1 max-w-prose text-[16px] leading-relaxed text-ink-muted">
+          No problem, and no college email needed. Global is open to every student. Your profile
+          shows that no college has verified you.
+        </p>
+        <Button asChild variant="outline" size="lg" className="mt-4">
+          <Link href={`/c/${GLOBAL_SLUG}/join`}>
+            <GlobeIcon aria-hidden="true" /> Join Global
+          </Link>
+        </Button>
+      </div>
     </AuthFrame>
   );
 }

@@ -116,3 +116,33 @@ test("an unknown college says so", async ({ page }) => {
   await page.goto("/c/no-such-college");
   await expect(page.getByRole("heading", { name: /could not find that college/i })).toBeVisible();
 });
+
+test("a student with no college joins Global and lands in Collaborate", async ({ page }) => {
+  const email = uniqueEmail();
+  await signIn(page, email);
+  await expect(page).toHaveURL(/\/find$/);
+  await page.getByRole("link", { name: /join global/i }).click();
+  await expect(page).toHaveURL(/\/c\/global\/join$/);
+  await expect(page.getByRole("heading", { name: /join studentos global/i })).toBeVisible();
+  await expectNoSidewaysScroll(page);
+  await page.getByRole("button", { name: /join global/i }).click();
+  await expect(page).toHaveURL(/\/c\/global\/collaborate$/);
+  await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
+  await expectNoSidewaysScroll(page);
+});
+
+test("a college join page offers Global for students whose college has no email", async ({
+  page,
+}) => {
+  await signIn(page, uniqueEmail(), "/c/alpha/join");
+  await expect(page).toHaveURL(/\/c\/alpha\/join$/);
+  await page.getByRole("link", { name: /join global instead/i }).click();
+  await expect(page).toHaveURL(/\/c\/global\/join$/);
+});
+
+test("Continue with Google stays hidden until Google sign in is switched on", async ({ page }) => {
+  await page.goto("/signin");
+  await expect(page.getByRole("link", { name: /continue with google/i })).toHaveCount(0);
+  await page.goto("/signin?error=google_cancelled");
+  await expect(page.getByText(/cancelled the google sign in/i)).toBeVisible();
+});

@@ -41,6 +41,17 @@ Authentication, then Sign In / Providers, then Email:
 3. In Supabase: Authentication, SMTP Settings, turn on custom SMTP and paste host, port, user, password and the sender address (for example `no-reply@studentos.in`).
 4. Send yourself a sign in code and open it from a real mailbox (not a `.test` address). Check it is not in spam.
 
+### Continue with Google (YOU, optional but recommended)
+
+Needs a Google Cloud project. Do staging first, then production. Nothing here goes into git.
+
+1. Open the Google Cloud console, create (or pick) a project named StudentOS. Under "APIs and services", "OAuth consent screen": user type External, app name StudentOS, your support email, your logo, the sign in domain `studentos.in`, and the links to your privacy and terms pages. Scopes: only `email`, `profile` and `openid` (they need no Google review).
+2. "Credentials", "Create credentials", "OAuth client ID", type Web application. Under "Authorized redirect URIs" add exactly the callback shown in Supabase (Authentication, Sign In / Providers, Google; it looks like `https://<project-ref>.supabase.co/auth/v1/callback`). Save. Copy the client ID and the client secret.
+3. In Supabase: Authentication, Sign In / Providers, Google: turn it on, paste the client ID and the secret, save. Under Authentication, URL Configuration, set Site URL to your site (`https://studentos.in`) and add `https://studentos.in/**` to Redirect URLs.
+4. In Vercel: set `NEXT_PUBLIC_GOOGLE_SIGNIN` to `enabled` for that environment and redeploy (the button shows on the sign in page only then).
+5. Check: open the sign in page in a private window, tap Continue with Google, choose an account. You must land in the app, signed in. Cancel once on purpose: you must come back to the sign in page with a plain message.
+6. When the consent screen is ready for real users, press "Publish app" (from Testing to In production). While it is in Testing only the test users you list can sign in.
+
 ## 4. Vercel production site (YOU)
 
 1. Import the GitHub repository as a **new** project named `studentos` (not the staging project). Production branch `main`, Node.js 24.x (24.15 or newer).

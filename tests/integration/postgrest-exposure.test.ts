@@ -74,7 +74,7 @@ describe("not signed in (only the anon key)", () => {
     const result = await rest("public_college_branding?select=*");
     expect(result.status).toBe(200);
     const data = rows(result.json);
-    expect(data.map((r) => r.slug).sort()).toEqual(["alpha", "beta"]);
+    expect(data.map((r) => r.slug).sort()).toEqual(["alpha", "beta", "global"]);
     expect(Object.keys(data[0]!).sort()).toEqual([
       "accent_hex",
       "allowed_methods",

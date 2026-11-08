@@ -24,6 +24,7 @@ const operations: Record<string, Kinds> = {
   "ten-02-none": { success: c.myMembershipResponse },
   "ten-03": { request: c.joinInviteBody, success: c.joinInviteResponse },
   "ten-04": { request: c.joinManualBody, success: c.joinManualResponse },
+  "ten-09": { request: c.joinOpenBody, success: c.joinOpenResponse },
   "ten-05-start": { request: c.joinEmailDomainBody, success: c.joinEmailDomainStartResponse },
   "ten-05-complete": { request: c.joinEmailDomainBody, success: c.joinEmailDomainCompleteResponse },
   "ten-07": { success: c.leaveResponse },

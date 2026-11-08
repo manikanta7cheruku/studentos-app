@@ -22,11 +22,44 @@ import { useCooldown } from "./use-cooldown";
 
 type Step = "email" | "code";
 
+const GOOGLE_ON = process.env.NEXT_PUBLIC_GOOGLE_SIGNIN === "enabled";
+
+// What the server tells us in `?error=` after a Continue with Google that did not work.
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_unavailable: "Google sign in is not available right now. Use your email instead.",
+  google_cancelled: "You cancelled the Google sign in. You can try again or use your email.",
+  google_failed: "Google sign in did not work. Try again, or use your email.",
+};
+
+function GoogleMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5">
+      <path
+        fill="#4285F4"
+        d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.57-5.17 3.57-8.81Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3a7.2 7.2 0 0 1-10.72-3.78H1.35v3.09A12 12 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.35 14.31a7.2 7.2 0 0 1 0-4.62V6.6H1.35a12 12 0 0 0 0 10.8l4-3.09Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.76 0 3.34.61 4.59 1.8l3.44-3.44A12 12 0 0 0 1.35 6.6l4 3.09A7.2 7.2 0 0 1 12 4.75Z"
+      />
+    </svg>
+  );
+}
+
 export function SigninScreen() {
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
 
   const [step, setStep] = React.useState<Step>("email");
+  const googleError = GOOGLE_ERRORS[params.get("error") ?? ""] ?? null;
   const [email, setEmail] = React.useState("");
   const [code, setCode] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -190,6 +223,27 @@ export function SigninScreen() {
         </p>
       }
     >
+      {GOOGLE_ON ? (
+        <div className="mb-6 flex flex-col gap-5">
+          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+            <a href={`/api/v1/auth/google${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
+              <GoogleMark /> Continue with Google
+            </a>
+          </Button>
+          <p className="flex items-center gap-3 text-[14px] text-ink-muted">
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            or use your email
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
+          </p>
+        </div>
+      ) : null}
+      {googleError ? (
+        <div className="mb-5">
+          <Banner variant="error">
+            <p>{googleError}</p>
+          </Banner>
+        </div>
+      ) : null}
       <form onSubmit={sendCode} className="flex flex-col gap-5" noValidate>
         <FormField
           label="Email address"

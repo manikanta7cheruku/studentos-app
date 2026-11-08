@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ApiError } from "@/lib/api-client";
 import { api, type MyCollege } from "@/lib/api/endpoints";
+import { homePath } from "@/lib/home-path";
 
 // Who is signed in, and which colleges they belong to. One request (GET /me/memberships) answers both:
 // 401 means signed out, a list (possibly empty) means signed in. Screens read it with useSession().
@@ -115,11 +116,9 @@ export function homeFor(colleges: MyCollege[]): string {
   const remembered = lastCollege();
   if (remembered && colleges.some((item) => item.college.slug === remembered)) {
     const item = colleges.find((c) => c.college.slug === remembered)!;
-    return item.membership.status === "active"
-      ? `/c/${remembered}/campus`
-      : `/c/${remembered}/pending`;
+    return item.membership.status === "active" ? homePath(remembered) : `/c/${remembered}/pending`;
   }
-  if (active.length >= 1) return `/c/${active[0]!.college.slug}/campus`;
+  if (active.length >= 1) return homePath(active[0]!.college.slug);
   if (colleges.length >= 1) return `/c/${colleges[0]!.college.slug}/pending`;
   return "/find";
 }

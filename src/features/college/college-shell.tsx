@@ -19,6 +19,7 @@ import {
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { accentVars } from "@/lib/color";
+import { homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
 import { useCollege } from "./college-provider";
 
@@ -189,7 +190,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-border bg-surface px-4 py-5 md:flex">
         <div className="flex items-center gap-3 px-1">
           <Link
-            href={`/c/${slug}/campus`}
+            href={homePath(slug)}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <CollegeMark />
@@ -236,7 +237,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         {/* Phone: a slim bar with the college, people and the bell */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-surface/85 md:hidden">
           <Link
-            href={`/c/${slug}/campus`}
+            href={homePath(slug)}
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <CollegeMark className="size-8 text-[14px]" />

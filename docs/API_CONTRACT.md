@@ -56,11 +56,14 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | AUTH-02 | POST `/auth/otp/verify` | Exchange code for session | pub | P0 | | TC-AUTH-05..08 |
 | AUTH-03 | POST `/auth/logout` | End session (`?all=true`) | ses | P0 | | TC-AUTH-09 |
 | AUTH-04 | DELETE `/me` | Request account deletion | ses | P0 | | TC-AUTH-10 |
+| AUTH-05 | GET `/auth/google` | Start Continue with Google | pub | P0 | | TC-AUTH-11 |
+| AUTH-06 | GET `/auth/google/callback` | Finish Continue with Google | pub | P0 | | TC-AUTH-12 |
 | TEN-01 | GET `/colleges/public/{slug}` | Public branding + enabled methods | pub | P0 | | TC-TEN-01 |
 | TEN-02 | GET `/c/{slug}/me/membership` | My status, level, method | ses | P0 | | TC-VER-01 |
 | TEN-03 | POST `/c/{slug}/join/invite` | Redeem invite code | ses | P0 | ✓ | TC-VER-02..05 |
 | TEN-04 | POST `/c/{slug}/join/manual` | Submit manual verification | ses | P0 | ✓ | TC-VER-06..08 |
 | TEN-05 | POST `/c/{slug}/join/email-domain` | Start/complete domain verification | ses | P0 | | TC-VER-09..12 |
+| TEN-09 | POST `/c/{slug}/join/open` | Join the Global space (unverified, level 1) | ses | P0 | ✓ | TC-VER-16 |
 | TEN-06 | POST `/c/{slug}/join/roster` | Claim roster row | ses | P1 | ✓ | TC-VER-13..15 |
 | TEN-07 | POST `/c/{slug}/me/leave` | Leave tenant | mem(0) | P1 | | TC-TEN-05 |
 | PRF-01 | GET / PATCH `/me/profile` | Read/update own profile | ses | P0 | | TC-PRF-01..04 |
@@ -207,7 +210,7 @@ Choices R2 made where this document was silent (change them in a contract PR, ta
 Rules the screens (R3) must follow:
 - Cookie session: call the API with `credentials: "include"`. The browser never sees the tokens. State changing calls from the browser carry the normal `Origin` header.
 - Tools and tests can send `Authorization: Bearer <access token>` instead.
-- IDEM endpoints (TEN-03, TEN-04) need an `Idempotency-Key` header with a new UUID for each new request. Send the same UUID when you retry the same request. A replay answers with the header `Idempotent-Replay: true`. The same key with another body gives 422 `IDEMPOTENCY_KEY_REUSED`.
+- IDEM endpoints (TEN-03, TEN-04, TEN-09) need an `Idempotency-Key` header with a new UUID for each new request. Send the same UUID when you retry the same request. A replay answers with the header `Idempotent-Replay: true`. The same key with another body gives 422 `IDEMPOTENCY_KEY_REUSED`.
 - Every answer has the header `X-Request-Id`. Show it when something goes wrong (`INTERNAL`).
 - 429 answers carry `Retry-After` (seconds) and `error.details.retry_after_seconds`.
 - A person who is `pending` can call join endpoints and TEN-02. Every other member endpoint answers 403 `MEMBERSHIP_NOT_ACTIVE`.
@@ -358,6 +361,8 @@ Rules for the screens:
 | ID | Call | What it does |
 |---|---|---|
 | AUTH-04 | DELETE `/me` | Delete my account for good, in two steps with the same call. Send `{}`: a 6 digit code is emailed to my address and the answer is `{ "deletion_requested": true, "confirmation": "otp" }`. Send `{ "code": "123456" }`: the code is checked, every session ends, my profile, memberships, posts, requests, notifications, skills and saved items are deleted, and the answer is `{ "deleted": true }`. 409 `CONFLICT` if I am the only admin of a college (the message names it). 400 `OTP_INVALID`, 410 `OTP_EXPIRED`. The audit log keeps my user id (an anonymous number) and no name or email |
+| AUTH-05 | GET `/auth/google?next=/path` | Starts Continue with Google. Answers 302 to Google and sets a short lived cookie that holds the one time proof (PKCE). `next` must be a path inside the app. If Google sign in is not switched on in the project, answers 302 to `/signin?error=google_unavailable`. Not a JSON endpoint: open it with a normal link or `window.location`, not `fetch` |
+| AUTH-06 | GET `/auth/google/callback?code=...&next=/path` | Where Google sends the person back. Exchanges the code for a session (cookies) and answers 302 to `next` (or `/`). A cancelled or failed sign in answers 302 to `/signin?error=google_cancelled` or `google_failed`. Not a JSON endpoint |
 | TEN-07 | POST `/c/{slug}/me/leave` | Leave this college. Answer `{ "membership": { "id", "status": "left" } }`. Active members and people waiting for approval only: 403 for a suspended or rejected person, 404 if I never joined, 409 if I already left or if I am the last admin. Closes my open team posts, withdraws my requests, gives back my team seats. I can join again later |
 | PRF-06 | GET `/c/{slug}/people/{userId}` | One classmate: `display_name`, `handle`, `headline`, `bio`, `avatar_url`, `interests`, `career_goal`, `program`, `grad_year`, `skills[{name, level}]`, `is_self`. 404 if hidden (by the person or a moderator), blocked either way, left, in another college or unknown. Never an email address |
 
@@ -366,4 +371,5 @@ Rules for the screens:
 | ID | Call | What it does |
 |---|---|---|
 | TEN-08 | GET `/me/memberships` | Every college I belong to or asked to join, newest first, each as `{ college: { slug, name, short_name, city, accent_hex }, membership: { id, role, status, verification_level } }`. Any signed-in person, own rows only. Used right after sign in: no college sends the person to the college list, one college goes straight in, several show a chooser |
+| TEN-09 | POST `/c/{slug}/join/open` | IDEM. Only the Global college (`slug` `global`) allows it; every other college answers 403 FORBIDDEN. The person is active at once with `verification_level` 1 and `verification_method` "open" (signed in, not verified by any college). 10 tries per hour per person. Body is `{}` |
 

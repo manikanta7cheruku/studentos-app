@@ -157,7 +157,7 @@ reset role;
 -- ===== the public view =======================================================
 update public.colleges set status = 'draft' where slug = 'beta';
 set local role anon;
-select is((select array_agg(slug order by slug) from public.public_college_branding), array['alpha'], 'anon sees active colleges only');
+select is((select array_agg(slug order by slug) from public.public_college_branding), array['alpha', 'global'], 'anon sees active colleges only (Alpha, and the Global space)');
 select throws_ok($$select * from public.colleges$$, '42501', null, 'anon still cannot read the colleges table');
 select throws_ok($$select college_id from public.public_college_branding$$, '42703', null, 'the view does not expose internal columns');
 reset role;

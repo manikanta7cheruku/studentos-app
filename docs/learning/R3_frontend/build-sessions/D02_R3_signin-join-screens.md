@@ -111,6 +111,14 @@ The browser tests sign in with a real code read from the local mailbox (Mailpit)
 
 Ran all browser tests on a desktop and a phone browser against the real local backend (18 sign in and join tests passed, 7 shell tests passed and 1 skipped because the phone sign out is in Settings, Day 3), and looked at the pages at 390px and 1280px wide.
 
+### U5b. Addendum (2026-11-08, decision D-25): Global and Continue with Google
+
+- **Global**: one special college (`global`) with the open join method (TEN-09, `POST /c/global/join/open`). Anyone signed in joins at once at level 1 (not verified by any college). `/find` and every college join page offer it ("Join Global instead"), for students whose college has no college email or is not on StudentOS. Global has no Campus tab, so its first screen is Collaborate (`homePath` in `src/lib/home-path.ts`).
+- **Only Global may use `open`**: a trigger in the database refuses it for any other college, and the admin settings body does not accept it.
+- **Continue with Google** (AUTH-05 start, AUTH-06 callback): server routes that redirect. The server asks Supabase Auth for the Google address, keeps the one time proof (PKCE) in a cookie, and on the way back exchanges the code for a session. The button shows only when `NEXT_PUBLIC_GOOGLE_SIGNIN=enabled`. A failed or cancelled attempt comes back to `/signin?error=...` with a plain message. `next` is checked with `safeNext` on the server too.
+- **What could not be tested here**: the round trip to Google itself needs a Google client. The tests check the redirect to Supabase (provider google, callback address, PKCE cookie), the unsafe `next` being dropped, and the failure paths. The real round trip is a manual check on staging (`docs/PRODUCTION_SETUP.md`).
+- **Tests**: `tests/integration/global-join.test.ts` (9 tests), `tests/integration/google-signin.test.ts` (6), `supabase/tests/database/013_global_open_join.test.sql`, matrix rows for TEN-09, AUTH-05, AUTH-06, and 3 browser journeys in `e2e/signin-join.ui.spec.ts`.
+
 ### U6. Docs updated
 
 `docs/ROUTES_AND_NAVIGATION.md` (real sign in, find, join and waiting addresses), `docs/progress/R3_frontend/PROGRESS.md` (the old Day 2 row said the screens were ready, but they were never pushed; corrected).
