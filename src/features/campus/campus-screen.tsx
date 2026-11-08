@@ -61,7 +61,12 @@ export function CampusScreen() {
         description="Notices from your college. Pinned ones stay at the top."
       />
       {state.status === "loading" ? (
-        <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading announcements">
+        <div
+          className="flex flex-col gap-4"
+          aria-busy="true"
+          role="status"
+          aria-label="Loading announcements"
+        >
           {[0, 1, 2].map((n) => (
             <div key={n} className="rounded-card border border-border bg-surface p-6">
               <Skeleton className="h-6 w-2/3" />

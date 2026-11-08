@@ -62,6 +62,13 @@ export function DesktopRail({
 
   const primaryNavItems = items ?? defaultNavItems;
 
+  const initials = collegeName ? collegeName.slice(0, 2).toUpperCase() : "OS";
+  const homeLabel = logoUrl
+    ? collegeName
+      ? `${collegeName} Home`
+      : "StudentOS Home"
+    : `${initials} - ${collegeName ? `${collegeName} Home` : "StudentOS Home"}`;
+
   return (
     <nav
       aria-label="Desktop primary"
@@ -74,7 +81,7 @@ export function DesktopRail({
       <div className="flex w-full flex-col items-center gap-6">
         <Link
           href={homeHref ?? primaryNavItems[0]?.href ?? "/campus"}
-          aria-label={collegeName ? `${collegeName} Home` : "StudentOS Home"}
+          aria-label={homeLabel}
           className="flex min-h-11 min-w-11 items-center justify-center rounded-card font-heading text-xl font-bold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {logoUrl ? (
@@ -85,7 +92,7 @@ export function DesktopRail({
               className="size-8 rounded object-contain"
             />
           ) : (
-            <span>{collegeName ? collegeName.slice(0, 2).toUpperCase() : "OS"}</span>
+            <span>{initials}</span>
           )}
         </Link>
 

@@ -64,7 +64,8 @@ function CollegeMark({ className }: { className?: string }) {
 
 function BellLink({ className }: { className?: string }) {
   const { slug, unread } = useCollege();
-  const label = unread > 0 ? `Notifications, ${unread} unread` : "Notifications";
+  const badgeText = unread > 99 ? "99+" : unread.toString();
+  const label = unread > 0 ? `${badgeText} unread notifications` : "Notifications";
   return (
     <Link
       href={`/c/${slug}/notifications`}
@@ -108,7 +109,6 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
         <button
           type="button"
           className="flex min-h-14 w-full items-center gap-3 rounded-lg px-2 text-left transition-colors hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Account menu for ${name}`}
         >
           <Avatar name={name} src={profile?.avatar_url} size="sm" />
           <span className="min-w-0 flex-1">
