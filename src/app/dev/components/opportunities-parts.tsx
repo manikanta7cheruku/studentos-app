@@ -8,9 +8,10 @@ import {
   NoOpportunityResultsEmptyState,
   OpportunitiesErrorState,
   OpportunitiesSkeleton,
-  sampleOpportunities,
+  type Opportunity,
   type OpportunityFilters,
 } from "@/features/opportunities";
+import opp01 from "@/contracts/fixtures/opp-01.success.json";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -39,9 +40,21 @@ export function OpportunitiesSections() {
     deadline: "7d",
   });
 
-  const openOpp = sampleOpportunities[0]!;
-  const closedOpp = sampleOpportunities[5]!;
-  const unpaidOpp = sampleOpportunities[3]!;
+  const baseOpp = { ...opp01.data[0], in_tracker: false } as unknown as Opportunity;
+  const openOpp: Opportunity = { ...baseOpp };
+  const closedOpp: Opportunity = {
+    ...baseOpp,
+    id: "dddddddd-0000-4000-8000-0000000000c2",
+    status: "expired",
+    deadline: "2026-10-01T00:00:00Z",
+  };
+  const unpaidOpp: Opportunity = {
+    ...baseOpp,
+    id: "dddddddd-0000-4000-8000-0000000000c3",
+    stipend_min: null,
+    stipend_max: null,
+    mode: "remote",
+  };
   const demoRefDate = new Date("2026-11-05T00:00:00Z");
 
   return (

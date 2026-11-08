@@ -11,8 +11,8 @@ import {
   NoOpportunityResultsEmptyState,
   OpportunitiesErrorState,
   OpportunitiesScreen,
-  sampleOpportunities,
 } from "@/features/opportunities";
+import { makeOpportunity } from "../helpers/opportunity-fixtures";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -73,10 +73,24 @@ afterAll(() => {
 
 describe("accessibility of opportunities parts (axe)", () => {
   it("has no serious or critical accessibility problems in opportunity cards across states", async () => {
-    const opp1 = sampleOpportunities[0]!;
-    const opp2 = sampleOpportunities[1]!;
-    const opp3 = sampleOpportunities[3]!;
-    const opp4 = sampleOpportunities[5]!;
+    const opp1 = makeOpportunity({ id: "dddddddd-0000-4000-8000-0000000000b1" });
+    const opp2 = makeOpportunity({
+      id: "dddddddd-0000-4000-8000-0000000000b2",
+      saved: true,
+      changed_since_saved: true,
+    });
+    const opp3 = makeOpportunity({
+      id: "dddddddd-0000-4000-8000-0000000000b3",
+      stipend_min: null,
+      stipend_max: null,
+      location: "",
+      deadline: null,
+    });
+    const opp4 = makeOpportunity({
+      id: "dddddddd-0000-4000-8000-0000000000b4",
+      status: "expired",
+      deadline: "2026-10-01T00:00:00Z",
+    });
 
     const { container } = render(
       <main>

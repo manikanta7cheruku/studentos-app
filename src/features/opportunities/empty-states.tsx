@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircleIcon, BriefcaseIcon, RotateCcwIcon, SearchXIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  BookmarkIcon,
+  BriefcaseIcon,
+  RotateCcwIcon,
+  SearchXIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -49,6 +55,17 @@ export function NoOpportunityResultsEmptyState({
           </Button>
         ) : undefined
       }
+      className={className}
+    />
+  );
+}
+
+export function NoSavedOpportunitiesEmptyState({ className }: { className?: string }) {
+  return (
+    <EmptyState
+      icon={<BookmarkIcon aria-hidden="true" />}
+      title="No saved opportunities yet"
+      description="Use the Save button on any opportunity and it will show up here."
       className={className}
     />
   );

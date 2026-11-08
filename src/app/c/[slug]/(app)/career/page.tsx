@@ -20,6 +20,7 @@ export default function CareerPage() {
           text: "Keep every application, its status and its deadline in one list. It is private to you.",
         },
       ]}
+      cta={{ label: "Browse opportunities", path: "career/opportunities" }}
     />
   );
 }

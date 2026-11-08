@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { CheckIcon, FilterIcon, RotateCcwIcon, SearchIcon, XIcon } from "lucide-react";
+import {
+  BookmarkIcon,
+  CheckIcon,
+  FilterIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  XIcon,
+} from "lucide-react";
 import { cn } from "cn";
 
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +55,8 @@ export const DEFAULT_OPPORTUNITY_FILTERS: OpportunityFilters = {
   mode: "all",
   location: "",
   deadline: "any",
+  q: "",
+  saved: false,
 };
 
 export function getActiveFilterCount(filters: OpportunityFilters): number {
@@ -57,6 +66,8 @@ export function getActiveFilterCount(filters: OpportunityFilters): number {
   if (filters.mode && filters.mode !== "all") count += 1;
   if (filters.location && filters.location.trim().length > 0) count += 1;
   if (filters.deadline && filters.deadline !== "any") count += 1;
+  if (filters.q && filters.q.trim().length > 0) count += 1;
+  if (filters.saved) count += 1;
   return count;
 }
 
@@ -169,6 +180,36 @@ export function FilterBar({
     }
   };
 
+  const handleQChange = (value: string, isLocal = false) => {
+    const targetFilters = isLocal ? localFilters : filters;
+    const updated = { ...targetFilters, q: value };
+    if (isLocal) {
+      setLocalFilters(updated);
+    } else {
+      onChange?.(updated);
+      onApply?.(updated);
+    }
+  };
+
+  const handleSavedToggle = (isLocal = false) => {
+    const targetFilters = isLocal ? localFilters : filters;
+    const updated = { ...targetFilters, saved: !targetFilters.saved };
+    if (isLocal) {
+      setLocalFilters(updated);
+    } else {
+      onChange?.(updated);
+      onApply?.(updated);
+    }
+  };
+
+  const savedButtonClass = (on: boolean) =>
+    cn(
+      "min-h-[44px] gap-2 px-4 transition-colors",
+      on
+        ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary hover:bg-primary/15"
+        : "border-border-strong bg-surface text-foreground hover:bg-accent/40 font-normal",
+    );
+
   const handleApplySheet = () => {
     onApply?.(localFilters);
     onChange?.(localFilters);
@@ -224,6 +265,30 @@ export function FilterBar({
             </DialogHeader>
 
             <div className="flex flex-col gap-5 py-4">
+              {/* Search (title or company) and My saved */}
+              <div className="flex flex-col gap-3 min-w-0 max-w-full">
+                <FormField id="mobile-q-input" label="Search">
+                  <Input
+                    id="mobile-q-input"
+                    value={localFilters.q || ""}
+                    onChange={(e) => handleQChange(e.target.value, true)}
+                    placeholder="Search by title or company"
+                    maxLength={80}
+                    className="min-h-[44px] text-base"
+                  />
+                </FormField>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-pressed={Boolean(localFilters.saved)}
+                  onClick={() => handleSavedToggle(true)}
+                  className={savedButtonClass(Boolean(localFilters.saved))}
+                >
+                  <BookmarkIcon className="size-4 shrink-0" aria-hidden="true" />
+                  <span>My saved</span>
+                </Button>
+              </div>
+
               {/* Type = kind multi-select */}
               <div className="flex flex-col gap-2 min-w-0 max-w-full">
                 <span className="text-base font-semibold text-ink">Type</span>
@@ -420,6 +485,42 @@ export function FilterBar({
               <span>Clear filters</span>
             </Button>
           ) : null}
+        </div>
+
+        {/* 0. Search (title or company) and My saved */}
+        <div className="flex flex-wrap items-end gap-3 min-w-0 max-w-full">
+          <div className="min-w-[240px] max-w-sm flex-1">
+            <label
+              htmlFor="desktop-q-input"
+              className="text-base font-semibold text-ink mb-1.5 block"
+            >
+              Search
+            </label>
+            <div className="relative">
+              <Input
+                id="desktop-q-input"
+                value={filters.q || ""}
+                onChange={(e) => handleQChange(e.target.value, false)}
+                placeholder="Search by title or company"
+                maxLength={80}
+                className="min-h-[44px] text-base w-full pl-9"
+              />
+              <SearchIcon
+                className="size-4 text-ink-muted absolute left-3 top-3.5"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            aria-pressed={Boolean(filters.saved)}
+            onClick={() => handleSavedToggle(false)}
+            className={savedButtonClass(Boolean(filters.saved))}
+          >
+            <BookmarkIcon className="size-4 shrink-0" aria-hidden="true" />
+            <span>My saved</span>
+          </Button>
         </div>
 
         {/* 1. Type = kind (multi-select) */}

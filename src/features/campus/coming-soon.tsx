@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/app/page-header";
 import { useCollege } from "@/features/college";
@@ -15,11 +15,13 @@ export function ComingSoon({
   title,
   description,
   coming,
+  cta,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   coming: { name: string; text: string }[];
+  cta?: { label: string; path: string };
 }) {
   const { slug } = useCollege();
   return (
@@ -33,6 +35,15 @@ export function ComingSoon({
           </li>
         ))}
       </ul>
+      {cta ? (
+        <div>
+          <Button asChild variant="outline">
+            <Link href={`/c/${slug}/${cta.path}`}>
+              <SparklesIcon aria-hidden="true" /> {cta.label}
+            </Link>
+          </Button>
+        </div>
+      ) : null}
       <div className="flex flex-col items-start gap-3 rounded-card bg-accent-soft p-6">
         <p className="text-lg font-semibold">Get ready now</p>
         <p className="max-w-prose text-ink-muted">

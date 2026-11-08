@@ -9,10 +9,10 @@ import {
   OpportunityCard,
   FilterBar,
   OpportunitiesScreen,
-  sampleOpportunities,
   opportunityListResponse,
 } from "@/features/opportunities";
 import type { Opportunity } from "@/features/opportunities";
+import { makeOpportunity, opp01Response } from "../helpers/opportunity-fixtures";
 
 // Mock sonner toast
 vi.mock("sonner", () => ({
@@ -82,7 +82,7 @@ afterAll(() => {
   server.close();
 });
 
-const sampleOpp: Opportunity = {
+const sampleOpp: Opportunity = makeOpportunity({
   id: "b2000000-0000-4000-8000-000000000001",
   title: "Frontend Engineering Intern",
   org: "Starlight Labs",
@@ -100,7 +100,16 @@ const sampleOpp: Opportunity = {
   status: "published",
   saved: false,
   in_tracker: false,
-};
+});
+
+const firstOpp = makeOpportunity({
+  id: "dddddddd-0000-4000-8000-0000000000a1",
+  title: "Test listing one",
+});
+const secondOpp = makeOpportunity({
+  id: "dddddddd-0000-4000-8000-0000000000a2",
+  title: "Test listing two",
+});
 
 describe("OpportunityCard", () => {
   it("renders card with title, org, kind, mode, location, formatted stipend, deadline, verified date, and apply link", () => {
@@ -121,7 +130,7 @@ describe("OpportunityCard", () => {
     expect(screen.getByText(/₹40,000.*₹50,000.*month/)).toBeTruthy();
     // Closes in 16 days
     expect(screen.getByText("Closes in 16 days")).toBeTruthy();
-    expect(screen.getByText("Verified Nov 1, 2026")).toBeTruthy();
+    expect(screen.getByText(/Verified Nov 1, 2026/)).toBeTruthy();
     expect(screen.getByText("React")).toBeTruthy();
     expect(screen.getByText("TypeScript")).toBeTruthy();
 
@@ -131,7 +140,7 @@ describe("OpportunityCard", () => {
     expect(applyLink.getAttribute("rel")).toContain("noopener");
   });
 
-  it("formats null stipend as 'Unpaid/Not listed'", () => {
+  it("hides the stipend line when both stipend values are null", () => {
     const oppWithNullStipend: Opportunity = {
       ...sampleOpp,
       id: "b2000000-0000-4000-8000-000000000002",
@@ -139,7 +148,8 @@ describe("OpportunityCard", () => {
       stipend_max: null,
     };
     render(<OpportunityCard opportunity={oppWithNullStipend} slug="alpha" />);
-    expect(screen.getByText("Unpaid/Not listed")).toBeTruthy();
+    expect(screen.queryByText(/Unpaid/)).toBeNull();
+    expect(screen.queryByText(/month/)).toBeNull();
   });
 
   it("formats past deadline as 'Closed'", () => {
@@ -273,7 +283,7 @@ describe("OpportunityCard", () => {
     });
   });
 
-  it("adds opportunity to tracker (APP-01) with mapped body and Idempotency-Key", async () => {
+  it("adds opportunity to tracker (mock-only: /me/applications is not on the backend yet) with mapped body and Idempotency-Key", async () => {
     let capturedBody: Record<string, unknown> | null = null;
     let capturedIdempotencyKey: string | null = null;
 
@@ -318,7 +328,7 @@ describe("OpportunityCard", () => {
     expect(inTrackerButton.hasAttribute("disabled")).toBe(true);
   });
 
-  it("handles duplicate application (409 CONFLICT) gracefully by marking button 'In tracker'", async () => {
+  it("handles duplicate application (409, mock-only) gracefully by marking button 'In tracker'", async () => {
     server.use(
       http.post("*/api/v1/me/applications", () => {
         return HttpResponse.json(
@@ -353,11 +363,8 @@ describe("OpportunityCard", () => {
 });
 
 describe("OpportunitiesScreen Integration", () => {
-  it("validates all sampleOpportunities against opportunitySchema", () => {
-    const result = opportunityListResponse.safeParse({
-      data: sampleOpportunities,
-      meta: { request_id: "test" },
-    });
+  it("validates the contract fixture opp-01 against the list schema", () => {
+    const result = opportunityListResponse.safeParse(opp01Response);
     if (!result.success) {
       expect(result.error.issues).toEqual([]);
     }
@@ -388,17 +395,17 @@ describe("OpportunitiesScreen Integration", () => {
     expect(jobButtons[0]!.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("the Apex Cloud Labs Apply link has href https://example.org/careers/apex-cloud, target _blank and rel containing noopener noreferrer", async () => {
+  it("the Acme Labs Apply link has the fixture href, target _blank and rel containing noopener noreferrer", async () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Cloud Infrastructure Graduate Role")).toBeTruthy();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
 
     const apexApplyLink = screen.getByRole("link", {
-      name: /Apply to Cloud Infrastructure Graduate Role at Apex Cloud Labs/i,
+      name: /Apply to Backend internship at Acme Labs/i,
     });
-    expect(apexApplyLink.getAttribute("href")).toBe("https://example.org/careers/apex-cloud");
+    expect(apexApplyLink.getAttribute("href")).toBe("https://acme.example.org/jobs/1");
     expect(apexApplyLink.getAttribute("target")).toBe("_blank");
     expect(apexApplyLink.getAttribute("rel")).toContain("noopener");
     expect(apexApplyLink.getAttribute("rel")).toContain("noreferrer");
@@ -409,7 +416,7 @@ describe("OpportunitiesScreen Integration", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Curated Opportunities" })).toBeTruthy();
-      expect(screen.getByText("Software Engineering Intern")).toBeTruthy();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
 
     // Live region check
@@ -421,7 +428,7 @@ describe("OpportunitiesScreen Integration", () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Software Engineering Intern")).toBeTruthy();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
 
     // Click Hackathon kind button
@@ -437,7 +444,7 @@ describe("OpportunitiesScreen Integration", () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Software Engineering Intern")).toBeTruthy();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
 
     const locationInput = screen.getByPlaceholderText("City or state...");
@@ -448,15 +455,22 @@ describe("OpportunitiesScreen Integration", () => {
     });
   });
 
-  it("reads initial URL search parameters and applies filters", async () => {
+  it("reads initial URL search parameters and sends them to the API", async () => {
     mockSearchParams = new URLSearchParams("kind=internship&mode=hybrid");
+    let requestedUrl = "";
+    server.use(
+      http.get("*/api/v1/c/:slug/opportunities", ({ request }) => {
+        requestedUrl = request.url;
+        return HttpResponse.json(opp01Response);
+      }),
+    );
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Software Engineering Intern")).toBeTruthy();
-      // Apex Cloud Labs is onsite job, should not appear
-      expect(screen.queryByText("Cloud Infrastructure Graduate Role")).toBeNull();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
+    expect(requestedUrl).toContain("kind=internship");
+    expect(requestedUrl).toContain("mode=hybrid");
   });
 
   it("Clear filters resets filters, restores results, and updates URL", async () => {
@@ -464,7 +478,7 @@ describe("OpportunitiesScreen Integration", () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Software Engineering Intern")).toBeTruthy();
+      expect(screen.getByText("Backend internship at Acme Labs")).toBeTruthy();
     });
 
     const clearButtons = screen.getAllByRole("button", { name: /Clear/i });
@@ -484,13 +498,13 @@ describe("OpportunitiesScreen Integration", () => {
 
         if (!cursor) {
           return HttpResponse.json({
-            data: [sampleOpportunities[0]],
+            data: [firstOpp],
             meta: { request_id: "req_p1", next_cursor: "cursor-page-2" },
           });
         }
 
         return HttpResponse.json({
-          data: [sampleOpportunities[1]],
+          data: [secondOpp],
           meta: { request_id: "req_p2", next_cursor: null },
         });
       }),
@@ -499,14 +513,14 @@ describe("OpportunitiesScreen Integration", () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(screen.getByText(sampleOpportunities[0]!.title)).toBeTruthy();
+      expect(screen.getByText(firstOpp.title)).toBeTruthy();
     });
 
     const loadMoreButton = screen.getByRole("button", { name: /Load more/i });
     fireEvent.click(loadMoreButton);
 
     await waitFor(() => {
-      expect(screen.getByText(sampleOpportunities[1]!.title)).toBeTruthy();
+      expect(screen.getByText(secondOpp.title)).toBeTruthy();
       expect(screen.queryByRole("button", { name: /Load more/i })).toBeNull();
     });
   });
@@ -577,7 +591,7 @@ describe("OpportunitiesScreen Integration", () => {
           );
         }
         return HttpResponse.json({
-          data: [sampleOpportunities[0]],
+          data: [firstOpp],
           meta: { request_id: "req_ok_retry" },
         });
       }),
@@ -586,9 +600,7 @@ describe("OpportunitiesScreen Integration", () => {
     render(<OpportunitiesScreen slug="alpha" />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Curated opportunities are not enabled for your college."),
-      ).toBeTruthy();
+      expect(screen.getByText("Career is not available for your college.")).toBeTruthy();
       expect(screen.getByText("Request ID: req_feat_disabled")).toBeTruthy();
     });
 
@@ -597,7 +609,7 @@ describe("OpportunitiesScreen Integration", () => {
     fireEvent.click(retryBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(sampleOpportunities[0]!.title)).toBeTruthy();
+      expect(screen.getByText(firstOpp.title)).toBeTruthy();
     });
   });
 });

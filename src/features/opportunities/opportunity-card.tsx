@@ -147,7 +147,15 @@ export function OpportunityCard({
   const isSaved = savedOverride !== null ? savedOverride : Boolean(opportunity.saved);
   const isInTracker = trackerOverride !== null ? trackerOverride : Boolean(opportunity.in_tracker);
 
-  const { label: deadlineLabel, isClosed } = formatDeadline(opportunity.deadline, effectiveRefDate);
+  const { label: deadlineLabel, isClosed: isPastDeadline } = formatDeadline(
+    opportunity.deadline,
+    effectiveRefDate,
+  );
+  // The API works out "expired" from the deadline, so it is the source of truth.
+  const isExpired = opportunity.status === "expired";
+  const isClosed = isPastDeadline || isExpired;
+  const hasStipend = opportunity.stipend_min !== null || opportunity.stipend_max !== null;
+  const hasLocation = opportunity.location.trim().length > 0;
   const stipendText = formatStipend(opportunity.stipend_min, opportunity.stipend_max);
   const verifiedText = formatVerifiedDate(opportunity.last_verified_at);
 
@@ -244,10 +252,20 @@ export function OpportunityCard({
         <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
           <Badge variant="outline">{KIND_LABELS[opportunity.kind] || opportunity.kind}</Badge>
           <Badge variant="secondary">{MODE_LABELS[opportunity.mode] || opportunity.mode}</Badge>
-          <div className="flex items-center gap-1 text-base text-ink-muted min-w-0 max-w-full">
-            <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
-            <span className="break-words">{opportunity.location}</span>
-          </div>
+          {isExpired ? (
+            <Badge variant="outline" className="border-danger text-danger">
+              Expired
+            </Badge>
+          ) : null}
+          {isSaved && opportunity.changed_since_saved ? (
+            <Badge variant="outline">Changed since you saved</Badge>
+          ) : null}
+          {hasLocation ? (
+            <div className="flex items-center gap-1 text-base text-ink-muted min-w-0 max-w-full">
+              <MapPinIcon className="size-4 shrink-0" aria-hidden="true" />
+              <span className="break-words">{opportunity.location}</span>
+            </div>
+          ) : null}
         </div>
 
         <div
@@ -257,7 +275,7 @@ export function OpportunityCard({
           )}
         >
           <CalendarIcon className="size-4 shrink-0" aria-hidden="true" />
-          <span className="break-words">{deadlineLabel}</span>
+          <span className="break-words">{isExpired ? "Closed" : deadlineLabel}</span>
         </div>
       </header>
 
@@ -266,10 +284,12 @@ export function OpportunityCard({
         <h3 className="font-heading text-xl font-bold break-words">{opportunity.title}</h3>
         <p className="text-base font-semibold text-ink break-words">{opportunity.org}</p>
 
-        <div className="flex items-center gap-1.5 pt-1 text-base text-ink-muted min-w-0 max-w-full">
-          <CoinsIcon className="size-4 shrink-0" aria-hidden="true" />
-          <span className="break-words">{stipendText}</span>
-        </div>
+        {hasStipend ? (
+          <div className="flex items-center gap-1.5 pt-1 text-base text-ink-muted min-w-0 max-w-full">
+            <CoinsIcon className="size-4 shrink-0" aria-hidden="true" />
+            <span className="break-words">{stipendText}</span>
+          </div>
+        ) : null}
       </div>
 
       {/* Eligibility summary */}
@@ -297,7 +317,10 @@ export function OpportunityCard({
       {/* Verification date */}
       <div className="flex items-center gap-1.5 pt-1 text-base text-ink-muted min-w-0 max-w-full">
         <BadgeCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
-        <span className="break-words">{verifiedText}</span>
+        <span className="break-words">
+          {verifiedText}
+          {opportunity.posted_by ? ` · Posted by ${opportunity.posted_by}` : ""}
+        </span>
       </div>
 
       {/* Actions footer: Apply link, Save button, Add to tracker button */}

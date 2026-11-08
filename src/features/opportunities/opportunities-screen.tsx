@@ -11,10 +11,10 @@ import { FilterBar, DEFAULT_OPPORTUNITY_FILTERS, getActiveFilterCount } from "./
 import {
   NoOpportunitiesEmptyState,
   NoOpportunityResultsEmptyState,
+  NoSavedOpportunitiesEmptyState,
   OpportunitiesErrorState,
   OpportunitiesSkeleton,
 } from "./empty-states";
-import { sampleOpportunities } from "./sample-data";
 import {
   opportunitySchema,
   type Opportunity,
@@ -61,6 +61,9 @@ function parseFiltersFromSearchParams(searchParams: URLSearchParams): Opportunit
     mode,
     location,
     deadline,
+    // Not trimmed here, so a space typed in the search box is not eaten. It is trimmed before the request.
+    q: searchParams.get("q") ?? "",
+    saved: searchParams.get("saved") === "true",
   };
 }
 
@@ -68,8 +71,13 @@ function getFriendlyErrorMessage(err: unknown): { message: string; requestId?: s
   if (err instanceof ApiError) {
     switch (err.code) {
       case "VALIDATION_FAILED":
+        // 400 = the server rejected our filters. Anything else (the api-client uses 500 when the
+        // response does not match the contract) is not caused by the person's filter choice.
         return {
-          message: "The filter parameters were invalid. Please check your selection.",
+          message:
+            err.status === 400
+              ? "The filter parameters were invalid. Please check your selection."
+              : "We got an unexpected response from the server. Please try again.",
           requestId: err.requestId,
         };
       case "RATE_LIMITED":
@@ -79,7 +87,7 @@ function getFriendlyErrorMessage(err: unknown): { message: string; requestId?: s
         };
       case "FEATURE_DISABLED":
         return {
-          message: "Curated opportunities are not enabled for your college.",
+          message: "Career is not available for your college.",
           requestId: err.requestId,
         };
       case "MEMBERSHIP_NOT_ACTIVE":
@@ -130,17 +138,14 @@ export function OpportunitiesScreen({ slug, initialOpportunities }: Opportunitie
   const [nextCursor, setNextCursor] = React.useState<string | null>(null);
   const [error, setError] = React.useState<{ message: string; requestId?: string } | null>(null);
 
-  // Extract all unique skills from sample data and current opportunities
+  // Skill suggestions come from the listings loaded so far, plus any skill already selected.
   const allAvailableSkills = React.useMemo(() => {
-    const set = new Set<string>();
-    for (const item of sampleOpportunities) {
-      item.skills?.forEach((s) => set.add(s));
-    }
+    const set = new Set<string>(currentFilters.skills);
     for (const item of opportunities) {
       item.skills?.forEach((s) => set.add(s));
     }
     return Array.from(set).sort();
-  }, [opportunities]);
+  }, [opportunities, currentFilters.skills]);
 
   // Construct query params to send to OPP-01
   // UNKNOWN QUERY PARAMS RETURN 400 VALIDATION_FAILED, so omit empty filters and send only contract params
@@ -162,6 +167,12 @@ export function OpportunitiesScreen({ slug, initialOpportunities }: Opportunitie
       }
       if (filters.deadline && filters.deadline !== "any") {
         params.set("deadline", filters.deadline);
+      }
+      if (filters.q && filters.q.trim().length > 0) {
+        params.set("q", filters.q.trim().slice(0, 80));
+      }
+      if (filters.saved) {
+        params.set("saved", "true");
       }
       if (cursor) {
         params.set("cursor", cursor);
@@ -192,6 +203,12 @@ export function OpportunitiesScreen({ slug, initialOpportunities }: Opportunitie
       }
       if (newFilters.deadline && newFilters.deadline !== "any") {
         params.set("deadline", newFilters.deadline);
+      }
+      if (newFilters.q && newFilters.q.trim().length > 0) {
+        params.set("q", newFilters.q.slice(0, 80));
+      }
+      if (newFilters.saved) {
+        params.set("saved", "true");
       }
 
       const queryString = params.toString();
@@ -307,7 +324,11 @@ export function OpportunitiesScreen({ slug, initialOpportunities }: Opportunitie
           />
         ) : opportunities.length === 0 ? (
           activeCount > 0 ? (
-            <NoOpportunityResultsEmptyState onClearFilters={handleClearFilters} />
+            currentFilters.saved && activeCount === 1 ? (
+              <NoSavedOpportunitiesEmptyState />
+            ) : (
+              <NoOpportunityResultsEmptyState onClearFilters={handleClearFilters} />
+            )
           ) : (
             <NoOpportunitiesEmptyState />
           )
@@ -322,7 +343,9 @@ export function OpportunitiesScreen({ slug, initialOpportunities }: Opportunitie
                   onViewTracker={() => router.push(`/c/${slug}/career`)}
                   onSaveToggle={(id, saved) => {
                     setOpportunities((prev) =>
-                      prev.map((o) => (o.id === id ? { ...o, saved } : o)),
+                      currentFilters.saved && !saved
+                        ? prev.filter((o) => o.id !== id)
+                        : prev.map((o) => (o.id === id ? { ...o, saved } : o)),
                     );
                   }}
                   onAddToTracker={(opp) => {
