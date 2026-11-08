@@ -64,15 +64,19 @@ test("the tabs open their screens", async ({ page, isMobile }) => {
 });
 
 test("signing out ends the session", async ({ page, isMobile }) => {
-  // On a phone, sign out is in Settings (Day 3). On a desktop it is in the account menu of the sidebar.
-  test.skip(isMobile, "the phone sign out is in Settings, which comes with the Day 3 screens");
   await member(page, "SHL3");
-  await page
-    .getByRole("button", { name: /account menu/i })
-    .filter({ visible: true })
-    .first()
-    .click();
-  await page.getByRole("menuitem", { name: /sign out/i }).click();
+  if (isMobile) {
+    // On a phone, sign out is in Settings (Me tab, then Settings).
+    await page.goto("/c/alpha/me/settings");
+    await page.getByRole("button", { name: /^sign out/i }).click();
+  } else {
+    await page
+      .getByRole("button", { name: /account menu/i })
+      .filter({ visible: true })
+      .first()
+      .click();
+    await page.getByRole("menuitem", { name: /sign out/i }).click();
+  }
   await expect(page).toHaveURL(/localhost:\d+\/$/);
   await page.goto("/c/alpha/campus");
   await expect(page).toHaveURL(/\/signin/);
