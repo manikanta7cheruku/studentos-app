@@ -167,3 +167,73 @@ Where the design was silent, R2 chose the following. Change them by a new migrat
 - Lists use keyset paging on (`created_at`, `id`), never offsets, so pages do not skip or repeat rows.
 - Invite `status` is worked out in SQL: revoked, then expired, then exhausted, else active.
 - A member who is removed (`left`) can join again with a valid invite. To keep someone out, suspend them.
+
+## 14. Added on R2 Day 4 (migration 20261101000000)
+
+- `notifications` (RLS: own rows; a person can update only `read_at`), functions `notifications_list`, `notify_user` (internal), `notifications_purge`.
+- `announcements` (draft, published, removed; `publish_at`, `expires_at`, `moderation_hidden_at`; RLS: members see current published not hidden, moderators see all), functions `announcements_list`, `mod_create_announcement`, `mod_update_announcement`, `mod_list_announcements`.
+- `reports` (one open report per reporter and target), `moderation_actions`, functions `create_report`, `mod_list_reports`, `mod_act_on_report`, `mod_assert`.
+- `blocks`, `is_blocked_between`, `block_user`, `unblock_user`.
+- `waitlist_leads` (unique lowercase email), `join_waitlist`, `waitlist_purge`.
+- `memberships.profile_hidden_at`; `auth_shares_college_with` ignores hidden profiles.
+- `admin_decide_verification` now also notifies the applicant (same transaction).
+- Every server function is revoked from public, anon and authenticated, and granted to service_role (the read functions for members are `security invoker` and granted to authenticated). Each moderator function checks the actor again.
+
+## 15. Added on R2 Day 5 (migration 20261107000000)
+
+- `team_posts` (status open, closed, filled, expired, removed; `deadline`, `external_link`, `moderation_hidden_at`, full text `search`), `team_post_private` (the team link, separate on purpose), `team_post_roles` (`slots`, `filled`, `position`, check `filled <= slots`), `team_post_role_skills`, `join_requests` (statuses pending, accepted, declined, withdrawn, cancelled; partial unique index on (role, applicant) while pending or accepted).
+- All five tables: row level security on, a single "no" policy, all rights revoked from clients. The server reaches them through `tf_*` functions only (service role).
+- Functions: `tf_assert_member`, `tf_can_see`, `tf_shown_status`, `tf_post_json`, `tf_create_post`, `tf_list_posts`, `tf_get_post`, `tf_update_post`, `tf_close_post`, `tf_create_request`, `tf_list_requests`, `tf_list_my_requests`, `tf_decide_request`, `tf_withdraw_request`. Lock order is post, role, request in every function.
+- `notifications.type` accepts `team.request_received`, `team.request_accepted`, `team.request_declined`, `team.request_cancelled`, `team.request_withdrawn`.
+- `create_report`, `mod_list_reports`, `mod_act_on_report` now handle `team_post`.
+- Limits inside the database: 10 open posts per person, 10 waiting requests per person, 1 to 8 roles, 180 day deadlines.
+
+## 16. Added on R2 Day 6 (migration 20261108000000)
+
+- `idempotency_keys`: new `state` (`in_progress` or `done`) and `locked_until`; `response` and `status_code` may be empty while in progress. Functions `idem_claim`, `idem_complete`, `idem_release` (service role only).
+- `maintenance_run()` (service role only): expires team posts and join requests, deletes old idempotency keys, rate limit events, notifications and waitlist rows, and returns the counts.
+- `notifications.type` accepts `membership.expired` and `team.post_expired`.
+- View `public_college_branding` has a new column `modules` (three booleans from `college_settings.features`).
+
+## 17. Added on R2 Day 7 (migration 20261109000000)
+
+- `opportunities` (college, title, org, kind, location, mode, stipend range in paise, eligibility, up to 10 skills, deadline, https apply link, poster, status draft, published, expired or removed, `last_verified_at`), `saved_opportunities` (with `saved_at`), `user_prefs` (`reminders_enabled`), `reminders` (unique per person, kind, listing and date). All four tables: row level security on, one "no" policy, rights revoked from clients.
+- Functions (service role only): `opp_assert` (member, college active, Career tab on), `opp_shown_status`, `opp_json`, `opp_list`, `opp_get`, `opp_set_saved`, `mod_create_opportunity`, `mod_update_opportunity`, `mod_remove_opportunity`, `mod_list_opportunities`, `rem_get`, `rem_set`, `reminders_run`.
+- `notifications.type` accepts `opportunity.deadline_soon`.
+- `maintenance_run()` now also marks listings past their deadline `expired`, runs `reminders_run()` and deletes reminders older than 90 days. Its answer has `opportunities_expired`, `reminders_sent` and `reminders_deleted`.
+
+## 18. Added on R2 Day 8 (migration 20261110000000)
+
+- Storage: bucket `avatars` (public read, 2 MB, JPEG, PNG, WebP, GIF, AVIF) and three policies on `storage.objects`: insert, update and delete only inside the folder named after your own user id.
+- `set_my_skills(jsonb)` (security invoker, authenticated): replaces the signed-in person's skills in one transaction.
+- `tf_list_posts` rewritten with joins for visibility and an index friendly status test (same answers, about 5 times faster with 4000 posts).
+
+## 19. Migration list (what is built, in order)
+
+Applied by `pnpm db:reset` locally and by `supabase db push` on staging and production (docs/PRODUCTION_SETUP.md). Never edit a migration that was already pushed; add a new one.
+
+| Migration | What it adds |
+|---|---|
+| `20261031000000_tenancy_identity_audit.sql` | colleges, domains, settings, profiles, memberships, audit log, row level security, helper functions |
+| `20261031010000_rate_limits_and_membership_lookup.sql` | rate limit events and functions, membership lookup by slug |
+| `20261031020000_join_invites_manual_domain.sql` | invite codes, verification requests, idempotency keys, join functions, public branding view |
+| `20261031030000_admin_endpoints.sql` | the `admin_*` functions (settings, invites, queue, members, audit, stats) |
+| `20261031040000_skills_and_user_skills.sql` | skills catalog and user skills (R3, with seed skills) |
+| `20261101000000_notifications_announcements_reports_waitlist.sql` | notifications, announcements, reports and moderation, blocks, waitlist, applicant notification |
+| `20261105000000_people_directory.sql` | `directory_list` for the people directory |
+| `20261107000000_team_finder.sql` | Team Finder tables and `tf_*` functions, reports on team posts |
+| `20261108000000_expiry_and_safe_retries.sql` | idempotency claim functions, `maintenance_run`, `modules` in the public branding view |
+| `20261109000000_opportunities_reminders.sql` | opportunities, saved opportunities, preferences, reminders, `opp_*` and `mod_*_opportunity` functions |
+| `20261110000000_hardening.sql` | avatars bucket and storage rules, `set_my_skills`, faster `tf_list_posts` |
+| `20261111000000_account_leave_profile.sql` | `account_blockers`, `account_delete_prepare` (delete my account), `leave_college`, `profile_view` |
+| `20261112000000_global_open_join.sql` | the `open` join method (only for the Global college, enforced by a trigger), the seeded `global` college, `submit_open_join` (join Global at once, level 1) |
+
+The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
+
+## 20. Added on R2 Day 9 (migration 20261111000000)
+
+- `account_blockers(user)`: names of the colleges where the person is the only active admin (they must hand over first).
+- `account_delete_prepare(user, request id)`: writes one `account.deleted` audit row per college (user id only, no name, no email) just before the login account is removed. The account removal then cascades to the profile, memberships, posts, requests, notifications, saved items, skills and preferences. Reports the person filed and announcements they wrote stay without their name. The audit log keeps the user id as an anonymous number.
+- `leave_college(actor, slug, request id)`: sets the membership to `left`, gives back accepted team seats, withdraws waiting requests, closes open posts, cancels a waiting verification request, writes `member.left`. A suspended or rejected person cannot leave; the last admin cannot leave (the existing database rule).
+- `profile_view(actor, college, target)`: one classmate, under the same visibility rule as the people directory.
+

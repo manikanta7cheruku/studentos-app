@@ -1,0 +1,52 @@
+name: Maintenance
+
+# About once an hour, call POST /api/internal/maintenance on staging and on production. The call expires old team
+# posts, opportunities and join requests, sends the deadline reminders and deletes old rows. It is safe to run twice.
+# Why: docs/OBSERVABILITY.md section 11 and docs/BACKEND_STATUS.md section 3.
+# Setup (owner): add the secrets and variables below (docs/PRODUCTION_SETUP.md section 8). A target whose settings
+# are missing is skipped with a message, so this workflow never fails just because production does not exist yet.
+#   Staging:    variable STAGING_URL (already there), secret STAGING_CRON_SECRET
+#   Production: variable PRODUCTION_URL, secret PRODUCTION_CRON_SECRET
+# The secret must be the same value as the CRON_SECRET setting of that site (24 or more random characters).
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintenance
+  cancel-in-progress: false
+
+jobs:
+  call:
+    name: Call the maintenance endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [staging, production]
+    steps:
+      - name: Call it
+        env:
+          URL: ${{ matrix.target == 'production' && vars.PRODUCTION_URL || vars.STAGING_URL }}
+          SECRET: ${{ matrix.target == 'production' && secrets.PRODUCTION_CRON_SECRET || secrets.STAGING_CRON_SECRET }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$SECRET" ]; then
+            echo "Skipped: the address or the secret for ${{ matrix.target }} is not set yet (docs/PRODUCTION_SETUP.md section 8)."
+            exit 0
+          fi
+          status=$(curl --silent --show-error --output response.json --write-out '%{http_code}' \
+            --max-time 120 --retry 2 --retry-delay 10 \
+            -X POST -H "Authorization: Bearer $SECRET" "${URL%/}/api/internal/maintenance")
+          echo "HTTP $status"
+          cat response.json
+          echo
+          if [ "$status" != "200" ]; then
+            echo "::error::The maintenance call for ${{ matrix.target }} answered $status"
+            exit 1
+          fi

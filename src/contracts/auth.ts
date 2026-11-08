@@ -30,10 +30,19 @@ export const logoutQuery = z.strictObject({
 });
 export const logoutResponse = successEnvelope(z.object({ signed_out: z.literal(true) }));
 
-// AUTH-04 DELETE /api/v1/me (shape is an R2 proposal, confirm when it is built)
+// AUTH-04 DELETE /api/v1/me. Two steps with the same call:
+//   1. send {} : we email a code to the signed-in person's address, answer { deletion_requested: true, confirmation: "otp" }
+//   2. send { "code": "123456" } : the code is checked, the account is deleted for good, answer { deleted: true }
+// 409 CONFLICT when the person is the only admin of a college (make someone else admin first).
+export const deleteMeBody = z.strictObject({
+  code: z
+    .string()
+    .regex(/^\d{6}$/, "The code has 6 digits")
+    .optional(),
+});
 export const deleteMeResponse = successEnvelope(
-  z.object({
-    deletion_requested: z.literal(true),
-    confirmation: z.literal("otp"),
-  }),
+  z.union([
+    z.object({ deletion_requested: z.literal(true), confirmation: z.literal("otp") }),
+    z.object({ deleted: z.literal(true) }),
+  ]),
 );

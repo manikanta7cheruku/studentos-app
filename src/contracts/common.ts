@@ -17,7 +17,16 @@ export const httpsUrl = z
 export const membershipRole = z.enum(["student", "moderator", "college_admin"]);
 export const membershipStatus = z.enum(["pending", "active", "suspended", "rejected", "left"]);
 export const verificationLevel = z.number().int().min(0).max(3);
-export const verificationMethod = z.enum(["email_domain", "invite_code", "manual", "roster"]);
+// "open" is only for the Global college: anyone signed in can join it at once, unverified (level 1).
+export const verificationMethod = z.enum([
+  "email_domain",
+  "invite_code",
+  "manual",
+  "roster",
+  "open",
+]);
+// What a college admin may switch on. "open" is not on the list: only the Global college has it.
+export const selectableVerificationMethod = verificationMethod.exclude(["open"]);
 
 // Envelopes.
 export const responseMeta = z.object({

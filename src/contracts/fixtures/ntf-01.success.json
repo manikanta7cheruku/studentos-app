@@ -4,6 +4,8 @@
       "id": "99999999-9999-4999-8999-999999999999",
       "type": "membership.approved",
       "payload": {
+        "title": "You are in",
+        "message": "Your request to join Alpha College was approved.",
         "college_slug": "alpha"
       },
       "read_at": null,
@@ -12,6 +14,7 @@
   ],
   "meta": {
     "request_id": "req_7f3a9c2e41b8",
-    "next_cursor": null
+    "next_cursor": null,
+    "unread_count": 1
   }
 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { email, isoDateTime, paginationQuery, successEnvelope, uuid } from "./common";
+import { email, isoDateTime, paginationQuery, responseMeta, successEnvelope, uuid } from "./common";
 
 // ---------------------------------------------------------------------------
 // Notifications (NTF-01, NTF-02). payload holds ids and titles only, no personal data.
@@ -9,11 +9,26 @@ export const notificationType = z.enum([
   "membership.rejected",
   "announcement.published",
   "report.actioned",
+  "moderation.warned",
+  "moderation.hidden",
+  "team.request_received",
+  "team.request_accepted",
+  "team.request_declined",
+  "team.request_cancelled",
+  "team.request_withdrawn",
+  "team.post_expired",
+  "membership.expired",
+  "opportunity.deadline_soon",
 ]);
+// payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
+// announcement_id, report_id or college_slug that the screen can turn into a link.
+export const notificationPayload = z
+  .object({ title: z.string().min(1), message: z.string().min(1) })
+  .catchall(z.unknown());
 export const notification = z.object({
   id: uuid,
   type: notificationType,
-  payload: z.record(z.string(), z.unknown()),
+  payload: notificationPayload,
   read_at: isoDateTime.nullable(),
   created_at: isoDateTime,
 });
@@ -21,7 +36,11 @@ export const notification = z.object({
 export const notificationListQuery = paginationQuery.extend({
   unread: z.enum(["true", "false"]).optional(),
 });
-export const notificationListResponse = successEnvelope(z.array(notification));
+// meta.unread_count is the number of unread notifications of the person (not only on this page).
+export const notificationListResponse = z.object({
+  data: z.array(notification),
+  meta: responseMeta.extend({ unread_count: z.number().int().min(0) }),
+});
 // NTF-02 POST /api/v1/me/notifications/read
 export const notificationReadBody = z.union([
   z.strictObject({ ids: z.array(uuid).min(1).max(100) }),
@@ -37,7 +56,7 @@ export const notificationReadResponse = successEnvelope(
 export const announcementStatus = z.enum(["draft", "published", "expired", "removed"]);
 export const announcement = z.object({
   id: uuid,
-  author: z.object({ user_id: uuid, display_name: z.string() }),
+  author: z.object({ user_id: uuid.nullable(), display_name: z.string() }),
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(5000),
   pinned: z.boolean(),
@@ -68,6 +87,8 @@ export const announcementPatchBody = z
   .partial()
   .refine((body) => Object.keys(body).length > 0, "Send at least one field");
 export const announcementResponse = successEnvelope(announcement);
+// GET /api/v1/c/{slug}/admin/announcements: the management list for moderators (drafts and removed ones too).
+export const adminAnnouncementListResponse = successEnvelope(z.array(announcement));
 
 // ---------------------------------------------------------------------------
 // Reports (RPT-01 create, RPT-02 queue, RPT-03 action)
@@ -100,10 +121,12 @@ export const reportItem = z.object({
   id: uuid,
   target_type: reportTargetType,
   target_id: uuid,
+  // The title of the reported announcement or the name of the reported person, so the queue is readable.
+  target_title: z.string().nullable(),
   reason: reportReason,
   details: z.string().nullable(),
   status: reportStatus,
-  reporter: z.object({ user_id: uuid, display_name: z.string() }),
+  reporter: z.object({ user_id: uuid.nullable(), display_name: z.string() }),
   handled_by: uuid.nullable(),
   handled_at: isoDateTime.nullable(),
   created_at: isoDateTime,
@@ -131,6 +154,11 @@ export const reportActionResponse = successEnvelope(
     }),
   }),
 );
+
+// ---------------------------------------------------------------------------
+// Blocks (RPT-04): PUT and DELETE /api/v1/me/blocks/{user_id}
+// ---------------------------------------------------------------------------
+export const blockResponse = successEnvelope(z.object({ blocked: z.boolean() }));
 
 // ---------------------------------------------------------------------------
 // Waitlist (WL-01), used by the landing page. consent must be true. The server stamps consent_at.

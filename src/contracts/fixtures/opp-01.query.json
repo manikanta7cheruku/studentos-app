@@ -1,0 +1,10 @@
+{
+  "kind": "internship,job",
+  "skills": "TypeScript,SQL",
+  "mode": "hybrid",
+  "location": "Hyderabad",
+  "deadline": "30d",
+  "q": "acme",
+  "saved": "false",
+  "limit": 20
+}

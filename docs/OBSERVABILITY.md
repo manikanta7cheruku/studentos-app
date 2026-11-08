@@ -60,3 +60,21 @@ RB-01 Site down · RB-02 DB paused/unavailable · RB-03 OTP emails not arriving 
 
 ## 10. Capacity and cost monitoring
 Weekly review (10 min) of quota dashboards vs triggers in doc 12 §6; record in `OPS_LOG.md`.
+
+## 11. Scheduled jobs
+
+One job: call `POST /api/internal/maintenance` about once an hour. It expires team posts and old join requests, tells the people, and deletes old rows. It is safe to call twice. Set `CRON_SECRET` (at least 24 characters) in the hosting settings and in the scheduler.
+
+Example (GitHub Actions on staging, R5 owns it):
+
+```
+on:
+  schedule: [{ cron: "7 * * * *" }]
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl --fail -X POST -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ vars.STAGING_URL }}/api/internal/maintenance"
+```
+
+Alert when the call fails twice in a row. The answer has the counts (`team_posts_expired`, `join_requests_expired` and so on) for the log. See DECISIONS D-21.

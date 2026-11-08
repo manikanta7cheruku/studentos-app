@@ -57,6 +57,9 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `SUPABASE_SERVICE_ROLE_KEY` | `SERVICE_ROLE_KEY` (or `SECRET_KEY`). Server only, never in the browser |
 | `APP_HASH_SECRET` | 32 or more random characters: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `MAILPIT_URL` | `http://127.0.0.1:54324`, only used by the integration tests |
+| `NEXT_PUBLIC_GOOGLE_SIGNIN` | `disabled` (default). `enabled` shows Continue with Google on the sign in page; only after Google is set up in Supabase (`docs/PRODUCTION_SETUP.md`) |
+| `NEXT_PUBLIC_API_MOCKING` | `disabled` to use the real API, `enabled` to answer from the sample fixtures (R3 and R4 screens without a backend) |
+| `CRON_SECRET` | Leave empty locally. In staging and production: 24 or more random characters, the shared secret of the scheduler that calls `POST /api/internal/maintenance` (docs/OBSERVABILITY.md section 11) |
 
 4. Sign in codes sent by the local stack arrive in Mailpit at http://127.0.0.1:54324.
 5. The app refuses to answer an API call if a needed variable is missing. The error names the variable, never the value.

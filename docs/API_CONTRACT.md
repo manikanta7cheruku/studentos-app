@@ -7,7 +7,7 @@
 | Doc ID | DOC-14 |
 | Version / Date | 0.1.0 / 2026-10-15 |
 | Owner | R2 Tech Lead (contract owner). Change process: doc 26 §6 |
-| Status | Proposed. Machine-readable skeleton: `openapi.v1.yaml` (this folder). The Zod schemas in `src/contracts` become the source of truth once code exists; OpenAPI is generated from them. |
+| Status | Proposed. Machine-readable file: `openapi.v1.json` (this folder), generated from the Zod schemas in `src/contracts` with `pnpm docs:openapi`. A test fails when it is out of date. |
 
 ## 1. Conventions
 - **Base:** `/api/v1`. Tenant-scoped resources live under `/api/v1/c/{slug}/…`. Global resources under `/api/v1/me`, `/api/v1/auth`, `/api/v1/colleges/public`.
@@ -56,11 +56,14 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | AUTH-02 | POST `/auth/otp/verify` | Exchange code for session | pub | P0 | | TC-AUTH-05..08 |
 | AUTH-03 | POST `/auth/logout` | End session (`?all=true`) | ses | P0 | | TC-AUTH-09 |
 | AUTH-04 | DELETE `/me` | Request account deletion | ses | P0 | | TC-AUTH-10 |
+| AUTH-05 | GET `/auth/google` | Start Continue with Google | pub | P0 | | TC-AUTH-11 |
+| AUTH-06 | GET `/auth/google/callback` | Finish Continue with Google | pub | P0 | | TC-AUTH-12 |
 | TEN-01 | GET `/colleges/public/{slug}` | Public branding + enabled methods | pub | P0 | | TC-TEN-01 |
 | TEN-02 | GET `/c/{slug}/me/membership` | My status, level, method | ses | P0 | | TC-VER-01 |
 | TEN-03 | POST `/c/{slug}/join/invite` | Redeem invite code | ses | P0 | ✓ | TC-VER-02..05 |
 | TEN-04 | POST `/c/{slug}/join/manual` | Submit manual verification | ses | P0 | ✓ | TC-VER-06..08 |
 | TEN-05 | POST `/c/{slug}/join/email-domain` | Start/complete domain verification | ses | P0 | | TC-VER-09..12 |
+| TEN-09 | POST `/c/{slug}/join/open` | Join the Global space (unverified, level 1) | ses | P0 | ✓ | TC-VER-16 |
 | TEN-06 | POST `/c/{slug}/join/roster` | Claim roster row | ses | P1 | ✓ | TC-VER-13..15 |
 | TEN-07 | POST `/c/{slug}/me/leave` | Leave tenant | mem(0) | P1 | | TC-TEN-05 |
 | PRF-01 | GET / PATCH `/me/profile` | Read/update own profile | ses | P0 | | TC-PRF-01..04 |
@@ -207,7 +210,7 @@ Choices R2 made where this document was silent (change them in a contract PR, ta
 Rules the screens (R3) must follow:
 - Cookie session: call the API with `credentials: "include"`. The browser never sees the tokens. State changing calls from the browser carry the normal `Origin` header.
 - Tools and tests can send `Authorization: Bearer <access token>` instead.
-- IDEM endpoints (TEN-03, TEN-04) need an `Idempotency-Key` header with a new UUID for each new request. Send the same UUID when you retry the same request. A replay answers with the header `Idempotent-Replay: true`. The same key with another body gives 422 `IDEMPOTENCY_KEY_REUSED`.
+- IDEM endpoints (TEN-03, TEN-04, TEN-09) need an `Idempotency-Key` header with a new UUID for each new request. Send the same UUID when you retry the same request. A replay answers with the header `Idempotent-Replay: true`. The same key with another body gives 422 `IDEMPOTENCY_KEY_REUSED`.
 - Every answer has the header `X-Request-Id`. Show it when something goes wrong (`INTERNAL`).
 - 429 answers carry `Retry-After` (seconds) and `error.details.retry_after_seconds`.
 - A person who is `pending` can call join endpoints and TEN-02. Every other member endpoint answers 403 `MEMBERSHIP_NOT_ACTIVE`.
@@ -251,3 +254,122 @@ Rules for the screens (R4, R3):
 - Rate limit: 120 admin calls per minute per person, then 429 `RATE_LIMITED` with `Retry-After`.
 
 Not built yet (so keep sample data for these): notifications to the applicant after a decision (Day 4), the roster import (ADM-04), the data export (ADM-12), moderator tools.
+
+## 9. Built in R2 Day 4 (what is real now)
+
+Base `/api/v1`. All changes need a matching `Origin`. Writes are limited to 60 a minute per person (429 `RATE_LIMITED` with `Retry-After`). `IDEM` = send an `Idempotency-Key`.
+
+| ID | Call | What it does |
+|---|---|---|
+| NTF-01 | GET `/me/notifications?unread=true&limit=20&cursor=` | Your own notifications, newest first. `meta.unread_count` counts all unread, not only this page |
+| NTF-02 | POST `/me/notifications/read` | Body `{ "ids": [..] }` or `{ "all": true }`. Answer `{ "updated": n }`. Other people's ids change nothing |
+| ANN-01 | GET `/c/{slug}/announcements?limit=&cursor=` | Members. Pinned first, then newest. Only current, published, not hidden ones |
+| ANN-02 | GET `/c/{slug}/admin/announcements` | Moderators and admins. All statuses, hidden ones too |
+| ANN-02 | POST `/c/{slug}/admin/announcements` | IDEM. `title`, `body`, `pinned`, optional `publish_at`, `expires_at` (future). Published now = every active member except you gets a notification. Audit `announcement.created` |
+| ANN-02 | PATCH `/c/{slug}/admin/announcements/{id}` | Send only what changes (`title`, `body`, `pinned`, `status`, `publish_at`, `expires_at`). 409 if removed. Audit `announcement.updated` |
+| ANN-02 | DELETE `/c/{slug}/admin/announcements/{id}` | Sets `status` to `removed`. Audit `announcement.removed` |
+| RPT-01 | POST `/c/{slug}/reports` | IDEM. `target_type` (`announcement` or `profile` for now), `target_id`, `reason`, optional `details`. 409 if you already have an open report on it, 400 for yourself, 404 for another college |
+| RPT-02 | GET `/c/{slug}/admin/reports?status=open&limit=&cursor=` | Moderators and admins. Each item has `target_title`, `reporter`, `status` |
+| RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | IDEM. `action`: `dismiss`, `hide`, `warn`, `suspend`. `note` of 5 or more characters is needed except for dismiss. 409 if already handled. 403 if the report is about you, or you may not suspend that role (a moderator suspends students only, nobody suspends an admin here) |
+| RPT-04 | PUT / DELETE `/me/blocks/{userId}` | Block or unblock a classmate. Safe to repeat. 400 for yourself, 404 for someone not in a college you share |
+| WL-01 | POST `/waitlist` | Public. `college_name`, `contact_name`, `contact_email`, `role`, `consent: true`, optional `source`. Always answers `{ "joined": true }`, even for an email already there. 5 a hour per IP |
+
+Notification types and `payload` (always has `title` and `message`):
+
+| `type` | When | Extra payload |
+|---|---|---|
+| `membership.approved` / `membership.rejected` | An admin decided your join request (the reason is in `message`) | `college_slug` |
+| `announcement.published` | A new announcement | `announcement_id`, `college_slug` |
+| `report.actioned` | A moderator handled your report | `report_id` |
+| `moderation.warned` / `moderation.hidden` | A moderator warned you or hid your content (the note is in `message`) | `report_id` |
+
+For R4 and R3 (mapping from the sample screens): `verification_decision` is `membership.approved` or `membership.rejected`, `report_outcome` is `report.actioned`, notification `title` and `body` are `payload.title` and `payload.message`. Announcement `author` and report `reporter` have `user_id` (can be null after an account is deleted) and `display_name`. Fixtures: `src/contracts/fixtures/ntf-*`, `ann-*`, `rpt-*`, `wl-*`.
+
+Who may call each endpoint: docs/PERMISSIONS.md.
+
+## 10. Team Finder, built in R2 Day 5 (what is real now)
+
+Base `/api/v1/c/{slug}`. All calls need an active member (pending and suspended get 403, another college gets 404). Changes need a matching `Origin` and are limited to 60 a minute. `IDEM` = send an `Idempotency-Key`. Shapes: `src/contracts/teamfinder.ts`, samples: `src/contracts/fixtures/tmf-*`.
+
+| ID | Call | What it does |
+|---|---|---|
+| TMF-01 | POST `/team-posts` | IDEM. `kind`, `title` (5 to 120), `description` (up to 3000), optional `deadline` (future, up to 180 days), `external_link` and `team_link` (https), `roles` (1 to 8: `role_name`, `slots` 1 to 20, `skill_ids`). 201 with the post. 403 `VERIFICATION_LEVEL_TOO_LOW` if the college asks for more. 429 at 10 open posts |
+| TMF-02 | GET `/team-posts?kind=&status=open&skill=&q=&mine=true&limit=&cursor=` | Newest first. `status`: `open` (default), `closed`, `filled`, `expired`, `all`. `skill` is a skill id. `q` searches title and description. `mine=true` is my own posts ("My posts") |
+| TMF-03 | GET `/team-posts/{id}` | One post. `team_link` is null unless you are the author or an accepted member. `pending_requests` only for the author |
+| TMF-04 | PATCH `/team-posts/{id}` | Author only, open posts only. Send only what changes, `null` clears a link or the deadline. Roles cannot be edited |
+| TMF-05 | POST `/team-posts/{id}/close` | Author only. Waiting requests are cancelled and their people told. 409 if not open |
+| TMF-06 | POST `/team-posts/{id}/roles/{roleId}/requests` | IDEM. `{ "message": "up to 500" }`. 409 `ALREADY_REQUESTED`, 409 `SLOTS_FULL`, 409 `CONFLICT` (not open or past its deadline), 403 your own post, 404 hidden or blocked, 429 at 10 waiting requests. The author gets a notification |
+| TMF-07 | GET `/team-posts/{id}/requests?status=pending` | Author only (403 for others). Applicant name, headline and skills, never an email |
+| TMF-08 | POST `/join-requests/{id}/decision` | IDEM. `{ "decision": "accepted" or "declined", "note": "optional" }`. Author only. 409 `SLOTS_FULL`, 409 `CONFLICT` if already decided. Answer `{ request, role: { slots, filled } }`. When all roles are full the post becomes `filled` and the rest are cancelled. The applicant is told |
+| TMF-09 | DELETE `/join-requests/{id}` | Applicant only (404 for others). Pending or accepted. After an acceptance the slot is free again and the author is told. 409 if already withdrawn, declined or cancelled |
+| TMF-10 | GET `/me/join-requests?status=&limit=&cursor=` | New. My own requests with the post title, kind, status and the role. For the "My requests" screen |
+
+Rules for the screens:
+
+- A post has `status` open, closed, filled or expired. `expired` is worked out from the deadline, so it is right even before any clean up.
+- Each post carries `my_requests` (my request id, role id and status), so a screen can show Request, Requested or Accepted without another call.
+- A role chip is full when `filled >= slots`. A 409 `SLOTS_FULL` means somebody else was faster: reload the post.
+- Roles have `skills` (names, for chips) and `skill_ids` (for filters).
+- Notification types: `team.request_received` (to the author), `team.request_accepted`, `team.request_declined`, `team.request_cancelled` (post closed or full), `team.request_withdrawn` (to the author). `payload` has `title`, `message`, `post_id`, and `request_id` or `role_id`.
+- Reports: `target_type: "team_post"` works in RPT-01. A moderator `hide` removes the post from every list. The author still sees it.
+- Posts of people you blocked (or who blocked you) and of people who left the college never appear.
+
+## 11. Built in R2 Day 6 (what changed)
+
+- **Safe retries (all IDEM endpoints).** The `Idempotency-Key` is claimed before the work starts. Same key and same body: the first answer again with `Idempotent-Replay: true`. Same key, different body: 422 `IDEMPOTENCY_KEY_REUSED`. Same key while the first call is still running: 409 `CONFLICT` with `Retry-After: 1`, wait and send the same call again. A call that fails does not keep the key. Keys live 24 hours.
+- **TEN-01** also returns `modules: { campus, collaborate, career }` (true unless the college admin switched the tab off). Use it to hide a tab before sign in.
+- **SYS-02** `POST /api/internal/maintenance` is for the scheduler only (`Authorization: Bearer <CRON_SECRET>`, 401 for everyone else). Screens never call it.
+- **Expiry rules.** An open team post past its deadline is shown as `expired` immediately; the maintenance run then closes it, cancels the waiting requests and tells the author and the applicants (`team.post_expired`, `team.request_cancelled`). A join request that waited more than 30 days for an admin becomes `expired`, the membership goes to `left`, the person gets `membership.expired` and can apply again.
+- New notification types: `membership.expired`, `team.post_expired`.
+- Rules for R3: see docs/CONNECTING_THE_API.md.
+
+## 12. Opportunities and reminders, built in R2 Day 7 (what is real now)
+
+Base `/api/v1`. Shapes: `src/contracts/opportunities.ts`, samples: `src/contracts/fixtures/opp-*` and `rem-01`, mock answers: `src/mocks/handlers-day7.ts`. Changes need a matching `Origin` and are limited to 60 a minute. IDEM = send an `Idempotency-Key`.
+
+| ID | Call | What it does |
+|---|---|---|
+| OPP-01 | GET `/c/{slug}/opportunities?kind=job,internship&skills=React,SQL&mode=remote&location=hyd&deadline=7d&q=acme&saved=true&limit=&cursor=` | Members. Newest first. `kind` and `skills` take comma lists (skills match any, ignoring case). `deadline`: `any` (default), `7d`, `30d` (closing within), `hide_closed`. `saved=true` is "my saved". Drafts and removed listings never appear |
+| OPP-02 | GET `/c/{slug}/opportunities/{id}` | One listing. 404 for a draft, a removed one or another college |
+| OPP-03 | GET `/c/{slug}/admin/opportunities?status=draft` | Moderators and admins. Every listing, drafts and removed included. `raw_status` is the stored status |
+| OPP-03 | POST `/c/{slug}/admin/opportunities` | IDEM. `title`, `org`, `kind`, `location`, `mode`, `stipend_min`, `stipend_max` (paise a month), `eligibility`, `skills` (up to 10), `deadline`, `apply_url` (https), `status` (`draft` or `published`). 201. Audit `opportunity.created` |
+| OPP-03 | PATCH `/c/{slug}/admin/opportunities/{id}` | Send only what changes. `verified: true` moves `last_verified_at` to now. 409 if removed. Audit `opportunity.updated` |
+| OPP-03 | DELETE `/c/{slug}/admin/opportunities/{id}` | Sets status `removed`. 409 if already removed. Audit `opportunity.removed` |
+| OPP-04 | PUT or DELETE `/me/saved-opportunities/{id}` | Save or unsave. Safe to repeat. 404 for a draft, an unknown id or a college you are not an active member of |
+| REM-01 | GET or PUT `/me/reminder-settings` | `{ "enabled": true }`, on by default. When on, a saved listing closing within 48 hours sends one notification |
+
+Rules for the screens:
+
+- Each listing has `saved` (for me) and `changed_since_saved` (edited after I saved it: show a "changed" badge).
+- `status` can be `expired` even before any clean up runs. `last_verified_at` and `posted_by` (a display name) are always shown.
+- `location` can be an empty string. `stipend_min` and `stipend_max` can be null.
+- The Career tab: when a college switched it off (`modules.career` false in TEN-01), every call here answers 404 `FEATURE_DISABLED`.
+- Notification type `opportunity.deadline_soon` has `payload.opportunity_id`.
+- `in_tracker` (already added to the tracker) is not part of this API: the tracker is R3's (APP-01 to APP-04).
+
+## 13. Changes from R2 Day 8 (hardening)
+
+- **Reads are limited** to 300 a minute per person (429 `RATE_LIMITED`, read `Retry-After`). Changes stay at 60 a minute.
+- **Tabs switched off:** when a college sets a tab off (`modules.campus`, `modules.collaborate` or `modules.career` in TEN-01 is false), its calls answer 404 `FEATURE_DISABLED`: announcements (campus), Team Finder (collaborate), opportunities (career).
+- **Sign in** calls (AUTH-01, AUTH-02) now check the Origin like every other change: a call from another website is 403.
+- **Request size:** a body over its limit is 413 `PAYLOAD_TOO_LARGE` as soon as the limit is passed, also without a Content-Length. JSON is 100 KB, an avatar is 2 MB.
+- **Avatars (PRF-04):** JPEG, PNG, WebP, GIF or AVIF only (no SVG), 2 MB, stored under `<user id>/`. If the upload fails the answer is 503 and the profile is not changed. Use `POST /me/avatar` to attach an avatar; the signed upload link (`/me/avatar/upload-url`) only stores the file, and the storage rules refuse other types and sizes.
+- **Skills (PRF-02):** replaced in one step. An unknown skill id is 400 and the old list stays.
+
+## 14. Built in R2 Day 9 (what is real now)
+
+| ID | Call | What it does |
+|---|---|---|
+| AUTH-04 | DELETE `/me` | Delete my account for good, in two steps with the same call. Send `{}`: a 6 digit code is emailed to my address and the answer is `{ "deletion_requested": true, "confirmation": "otp" }`. Send `{ "code": "123456" }`: the code is checked, every session ends, my profile, memberships, posts, requests, notifications, skills and saved items are deleted, and the answer is `{ "deleted": true }`. 409 `CONFLICT` if I am the only admin of a college (the message names it). 400 `OTP_INVALID`, 410 `OTP_EXPIRED`. The audit log keeps my user id (an anonymous number) and no name or email |
+| AUTH-05 | GET `/auth/google?next=/path` | Starts Continue with Google. Answers 302 to Google and sets a short lived cookie that holds the one time proof (PKCE). `next` must be a path inside the app. If Google sign in is not switched on in the project, answers 302 to `/signin?error=google_unavailable`. Not a JSON endpoint: open it with a normal link or `window.location`, not `fetch` |
+| AUTH-06 | GET `/auth/google/callback?code=...&next=/path` | Where Google sends the person back. Exchanges the code for a session (cookies) and answers 302 to `next` (or `/`). A cancelled or failed sign in answers 302 to `/signin?error=google_cancelled` or `google_failed`. Not a JSON endpoint |
+| TEN-07 | POST `/c/{slug}/me/leave` | Leave this college. Answer `{ "membership": { "id", "status": "left" } }`. Active members and people waiting for approval only: 403 for a suspended or rejected person, 404 if I never joined, 409 if I already left or if I am the last admin. Closes my open team posts, withdraws my requests, gives back my team seats. I can join again later |
+| PRF-06 | GET `/c/{slug}/people/{userId}` | One classmate: `display_name`, `handle`, `headline`, `bio`, `avatar_url`, `interests`, `career_goal`, `program`, `grad_year`, `skills[{name, level}]`, `is_self`. 404 if hidden (by the person or a moderator), blocked either way, left, in another college or unknown. Never an email address |
+
+## 15. Added with the frontend takeover (R3 Days 1 to 3 upgrade)
+
+| ID | Call | What it does |
+|---|---|---|
+| TEN-08 | GET `/me/memberships` | Every college I belong to or asked to join, newest first, each as `{ college: { slug, name, short_name, city, accent_hex }, membership: { id, role, status, verification_level } }`. Any signed-in person, own rows only. Used right after sign in: no college sends the person to the college list, one college goes straight in, several show a chooser |
+| TEN-09 | POST `/c/{slug}/join/open` | IDEM. Only the Global college (`slug` `global`) allows it; every other college answers 403 FORBIDDEN. The person is active at once with `verification_level` 1 and `verification_method` "open" (signed in, not verified by any college). 10 tries per hour per person. Body is `{}` |
+

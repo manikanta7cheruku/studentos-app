@@ -7,6 +7,7 @@ import {
   successEnvelope,
   uuid,
   verificationLevel,
+  selectableVerificationMethod,
   verificationMethod,
 } from "./common";
 import { membershipSummary } from "./tenant";
@@ -32,7 +33,7 @@ export const adminSettings = z.object({
 export const adminSettingsResponse = successEnvelope(adminSettings);
 export const adminSettingsPatchBody = z
   .strictObject({
-    allowed_methods: z.array(verificationMethod).min(1),
+    allowed_methods: z.array(selectableVerificationMethod).min(1),
     require_admin_approval: z.boolean(),
     min_level_to_post: z.number().int().min(0).max(3),
     // Sharing between colleges is not built in v1, so the only value a college can set is "private".

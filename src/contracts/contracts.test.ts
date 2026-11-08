@@ -15,19 +15,25 @@ const operations: Record<string, Kinds> = {
   "auth-01": { request: c.otpRequestBody, success: c.otpRequestResponse },
   "auth-02": { request: c.otpVerifyBody, success: c.otpVerifyResponse },
   "auth-03": { query: c.logoutQuery, success: c.logoutResponse },
-  "auth-04": { success: c.deleteMeResponse },
+  "auth-04": { request: c.deleteMeBody, success: c.deleteMeResponse },
+  "auth-04-confirm": { request: c.deleteMeBody },
+  "auth-04-done": { success: c.deleteMeResponse },
+  "prf-06": { success: c.personProfileResponse },
   "ten-01": { success: c.publicCollegeResponse },
   "ten-02": { success: c.myMembershipResponse },
   "ten-02-none": { success: c.myMembershipResponse },
   "ten-03": { request: c.joinInviteBody, success: c.joinInviteResponse },
   "ten-04": { request: c.joinManualBody, success: c.joinManualResponse },
+  "ten-09": { request: c.joinOpenBody, success: c.joinOpenResponse },
   "ten-05-start": { request: c.joinEmailDomainBody, success: c.joinEmailDomainStartResponse },
   "ten-05-complete": { request: c.joinEmailDomainBody, success: c.joinEmailDomainCompleteResponse },
   "ten-07": { success: c.leaveResponse },
+  "ten-08": { success: c.myMembershipsResponse },
   "prf-01-get": { success: c.profileResponse },
   "prf-01-patch": { request: c.profilePatchBody, success: c.profileResponse },
   "prf-02": { request: c.skillsPutBody, success: c.skillsPutResponse },
   "prf-03": { query: c.skillSearchQuery, success: c.skillSearchResponse },
+  "prf-04": { request: c.avatarUploadUrlBody, success: c.avatarUploadUrlResponse },
   "adm-03-get": { success: c.adminSettingsResponse },
   "adm-03-patch": { request: c.adminSettingsPatchBody, success: c.adminSettingsResponse },
   "adm-05-create": { request: c.inviteCreateBody, success: c.inviteCreateResponse },
@@ -47,11 +53,34 @@ const operations: Record<string, Kinds> = {
   "ntf-02": { request: c.notificationReadBody, success: c.notificationReadResponse },
   "ntf-02-all": { request: c.notificationReadBody },
   "ann-01": { success: c.announcementListResponse },
+  "ann-02-list": { success: c.adminAnnouncementListResponse },
   "ann-02-create": { request: c.announcementCreateBody, success: c.announcementResponse },
   "ann-02-patch": { request: c.announcementPatchBody, success: c.announcementResponse },
   "rpt-01": { request: c.reportCreateBody, success: c.reportCreateResponse },
   "rpt-02": { query: c.reportQueueQuery, success: c.reportQueueResponse },
   "rpt-03": { request: c.reportActionBody, success: c.reportActionResponse },
+  "rpt-04-put": { success: c.blockResponse },
+  "rpt-04-delete": { success: c.blockResponse },
+  "tmf-01": { request: c.teamPostCreateBody, success: c.teamPostResponse },
+  "tmf-02": { query: c.teamPostListQuery, success: c.teamPostListResponse },
+  "tmf-03": { success: c.teamPostResponse },
+  "tmf-04": { request: c.teamPostPatchBody, success: c.teamPostResponse },
+  "tmf-05": { success: c.teamPostResponse },
+  "tmf-06": { request: c.joinRequestBody, success: c.joinRequestCreateResponse },
+  "tmf-07": { query: c.joinRequestListQuery, success: c.joinRequestListResponse },
+  "tmf-08-accept": { request: c.joinRequestDecisionBody, success: c.joinRequestDecisionResponse },
+  "tmf-08-decline": { request: c.joinRequestDecisionBody, success: c.joinRequestDecisionResponse },
+  "tmf-09": { success: c.joinRequestWithdrawResponse },
+  "tmf-10": { query: c.joinRequestListQuery, success: c.myJoinRequestListResponse },
+  "opp-01": { query: c.opportunityListQuery, success: c.opportunityListResponse },
+  "opp-02": { success: c.opportunityResponse },
+  "opp-03-create": { request: c.opportunityCreateBody, success: c.opportunityResponse },
+  "opp-03-patch": { request: c.opportunityPatchBody, success: c.opportunityResponse },
+  "opp-03-list": { query: c.adminOpportunityListQuery, success: c.adminOpportunityListResponse },
+  "opp-03-delete": { success: c.opportunityRemoveResponse },
+  "opp-04-put": { success: c.savedOpportunityResponse },
+  "opp-04-delete": { success: c.savedOpportunityResponse },
+  "rem-01": { request: c.reminderSettingsBody, success: c.reminderSettingsResponse },
   "wl-01": { request: c.waitlistBody, success: c.waitlistResponse },
 };
 
@@ -202,6 +231,27 @@ describe("bad input is rejected", () => {
         { skill_id: id, level: 4 },
       ],
     });
+  });
+
+  it("avatar upload: rejects wrong mime type, oversized file, or empty filename", () => {
+    reject(c.avatarUploadUrlBody, { file_name: "", content_type: "image/png", file_size: 1000 });
+    reject(c.avatarUploadUrlBody, {
+      file_name: "test.pdf",
+      content_type: "application/pdf",
+      file_size: 1000,
+    });
+    reject(c.avatarUploadUrlBody, {
+      file_name: "big.png",
+      content_type: "image/png",
+      file_size: 3 * 1024 * 1024,
+    });
+    expect(
+      c.avatarUploadUrlBody.safeParse({
+        file_name: "avatar.png",
+        content_type: "image/png",
+        file_size: 50000,
+      }).success,
+    ).toBe(true);
   });
 
   it("report action: everything except dismiss needs a note", () => {

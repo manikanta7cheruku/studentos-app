@@ -65,3 +65,60 @@ A new student or visitor enters through their college link (`/c/{slug}`) and nee
 - `pnpm test src/features/auth-and-join`: 12 component tests passed.
 - `pnpm verify`: 26 test files passed, 274 tests passed, format, lint, typecheck, and build ok.
 - Verified in browser with `pnpm dev` on port 3000 across all 5 routes.
+
+
+---
+
+## Upgrade (R3 takeover, 2026-11-08): sign in and join screens built on the real backend
+
+Branch: `r3/d2-upgrade-signin-join`. **Important correction:** the original Day 2 work (six screens behind a `useRealApi` switch) was never pushed to GitHub, so there were no sign in or join pages in the product. This upgrade builds them again, connected to the real API from the first line, with no switch.
+
+### U1. The screens
+
+| Address | What it does | Endpoints |
+|---|---|---|
+| `/signin` | Email, then a six digit code. Works for new and returning people. Goes to `?next=` or to your college | AUTH-01 `POST /auth/otp/request`, AUTH-02 `POST /auth/otp/verify`, TEN-08 |
+| `/find` | A signed in person with no college enters the college code or pastes its link | none (goes to `/c/{code}`) |
+| `/c/{slug}` | The college front door: name, place, what is inside, one button | TEN-01 `GET /colleges/public/{slug}` |
+| `/c/{slug}/join` | Only the join methods the college allows: invite code, college email (two steps), or ask to join (enrolment number, course, year) | TEN-03, TEN-04, TEN-05 |
+| `/c/{slug}/pending` | Waiting for approval (checks again every 30 seconds), or not accepted or paused, with the reason from the college | TEN-02 |
+
+### U2. Rules these screens follow
+
+- **One main action, left aligned, no template look**: `AuthFrame` is a plain top bar and two columns on a wide screen (what this step is, the step itself) and one column on a phone.
+- **Six boxes for the code, one real input behind them** (`OtpInput`): typing moves on, backspace moves back, paste fills all boxes, phones offer the code from the mail (`autocomplete="one-time-code"`), screen readers see one field.
+- **The resend button counts down** (`useCooldown`, starts from `retry_after_seconds`).
+- **Safe `next` address** (`safeNext`): only a path inside the app is accepted. `https://other.site`, `//other.site`, backslashes and control characters are dropped, so a crafted sign in link cannot send a person away.
+- **Idempotency**: the invite and manual join calls send an `Idempotency-Key`. One attempt keeps one key, so a double tap or a retry after a dropped connection cannot join twice. The key is renewed after a real answer from the server.
+- **Plain error words** for `INVITE_INVALID`, `INVITE_EXPIRED`, `INVITE_EXHAUSTED`, `OTP_INVALID`, `OTP_EXPIRED`, `RATE_LIMITED` (with the number of seconds), offline. Field errors from `VALIDATION_FAILED` are shown next to the field.
+- **No account enumeration**: the screens say the same thing whether or not the address exists, like the server.
+- **Full page load after sign in** (see D01 upgrade, U3): the college gate that saw you signed out would otherwise show the old answer.
+
+### U3. Edge cases covered
+
+Not signed in on a college page goes to sign in and comes back. A member who opens `/join` goes straight to the campus. A person who is waiting goes to `/pending`. A person who left can join again. A refused person can try again. Unknown college shows "We could not find that college". Offline shows a retry button with the request code.
+
+### U4. Tests
+
+```bash
+node node_modules/vitest/vitest.mjs run src/features/auth       # safeNext, looksLikeEmail, collegeCodeFrom
+pnpm test:e2e -- e2e/signin-join.ui.spec.ts e2e/shell.ui.spec.ts # real backend, desktop and phone
+```
+
+The browser tests sign in with a real code read from the local mailbox (Mailpit), join with real invite codes created in the database, and check: wrong email, wrong code, no college, signed out visitor, good invite, wrong invite, invite that needs approval, unknown college, and no sideways scrolling on every page.
+
+### U5. What a human verified
+
+Ran all browser tests on a desktop and a phone browser against the real local backend (18 sign in and join tests passed, 7 shell tests passed and 1 skipped because the phone sign out is in Settings, Day 3), and looked at the pages at 390px and 1280px wide.
+
+### U5b. Addendum (2026-11-08, decision D-25): Global and Continue with Google
+
+- **Global**: one special college (`global`) with the open join method (TEN-09, `POST /c/global/join/open`). Anyone signed in joins at once at level 1 (not verified by any college). `/find` and every college join page offer it ("Join Global instead"), for students whose college has no college email or is not on StudentOS. Global has no Campus tab, so its first screen is Collaborate (`homePath` in `src/lib/home-path.ts`).
+- **Only Global may use `open`**: a trigger in the database refuses it for any other college, and the admin settings body does not accept it.
+- **Continue with Google** (AUTH-05 start, AUTH-06 callback): server routes that redirect. The server asks Supabase Auth for the Google address, keeps the one time proof (PKCE) in a cookie, and on the way back exchanges the code for a session. The button shows only when `NEXT_PUBLIC_GOOGLE_SIGNIN=enabled`. A failed or cancelled attempt comes back to `/signin?error=...` with a plain message. `next` is checked with `safeNext` on the server too.
+- **What could not be tested here**: the round trip to Google itself needs a Google client. The tests check the redirect to Supabase (provider google, callback address, PKCE cookie), the unsafe `next` being dropped, and the failure paths. The real round trip is a manual check on staging (`docs/PRODUCTION_SETUP.md`).
+- **Tests**: `tests/integration/global-join.test.ts` (9 tests), `tests/integration/google-signin.test.ts` (6), `supabase/tests/database/013_global_open_join.test.sql`, matrix rows for TEN-09, AUTH-05, AUTH-06, and 3 browser journeys in `e2e/signin-join.ui.spec.ts`.
+
+### U6. Docs updated
+
+`docs/ROUTES_AND_NAVIGATION.md` (real sign in, find, join and waiting addresses), `docs/progress/R3_frontend/PROGRESS.md` (the old Day 2 row said the screens were ready, but they were never pushed; corrected).

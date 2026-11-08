@@ -74,11 +74,12 @@ describe("not signed in (only the anon key)", () => {
     const result = await rest("public_college_branding?select=*");
     expect(result.status).toBe(200);
     const data = rows(result.json);
-    expect(data.map((r) => r.slug).sort()).toEqual(["alpha", "beta"]);
+    expect(data.map((r) => r.slug).sort()).toEqual(["alpha", "beta", "global"]);
     expect(Object.keys(data[0]!).sort()).toEqual([
       "accent_hex",
       "allowed_methods",
       "city",
+      "modules",
       "name",
       "require_admin_approval",
       "short_name",
@@ -92,6 +93,12 @@ describe("not signed in (only the anon key)", () => {
       "redeem_invite",
       "rate_limit_consume",
       "write_audit_log",
+      "idem_claim",
+      "idem_complete",
+      "idem_release",
+      "maintenance_run",
+      "tf_create_post",
+      "tf_decide_request",
       "join_prepare",
       "my_membership_for_slug",
     ]) {

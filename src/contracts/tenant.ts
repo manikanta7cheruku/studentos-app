@@ -26,6 +26,8 @@ export const publicCollegeData = z.object({
   logo_url: z.url().nullable(),
   allowed_methods: z.array(verificationMethod).min(1),
   require_admin_approval: z.boolean(),
+  // Which tabs the college has switched on. A tab is on unless the admin turned it off (ADM-03 features).
+  modules: z.object({ campus: z.boolean(), collaborate: z.boolean(), career: z.boolean() }),
 });
 export const publicCollegeResponse = successEnvelope(publicCollegeData);
 
@@ -71,6 +73,10 @@ export const joinManualBody = z.strictObject({
 });
 export const joinManualResponse = membershipSummaryResponse;
 
+// TEN-09 POST /api/v1/c/{slug}/join/open (IDEM). Only the Global college allows it. Active at once, level 1 (not verified).
+export const joinOpenBody = z.strictObject({});
+export const joinOpenResponse = membershipSummaryResponse;
+
 // TEN-05 POST /api/v1/c/{slug}/join/email-domain. Two steps: send a code, then complete with it.
 export const joinEmailDomainBody = z.discriminatedUnion("step", [
   z.strictObject({ step: z.literal("start"), email }),
@@ -83,3 +89,22 @@ export const joinEmailDomainCompleteResponse = membershipSummaryResponse;
 export const leaveResponse = successEnvelope(
   z.object({ membership: z.object({ id: uuid, status: z.literal("left") }) }),
 );
+
+// TEN-08 GET /api/v1/me/memberships: every college I belong to or asked to join, newest first. Used after sign in
+// to decide where to go (no college: the college list, one: straight in, several: a chooser).
+export const myMembershipItem = z.object({
+  college: z.object({
+    slug,
+    name: z.string(),
+    short_name: z.string().nullable(),
+    city: z.string().nullable(),
+    accent_hex: z.string().nullable(),
+  }),
+  membership: z.object({
+    id: uuid,
+    role: membershipRole,
+    status: membershipStatus,
+    verification_level: verificationLevel,
+  }),
+});
+export const myMembershipsResponse = successEnvelope(z.array(myMembershipItem));
