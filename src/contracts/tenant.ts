@@ -73,6 +73,10 @@ export const joinManualBody = z.strictObject({
 });
 export const joinManualResponse = membershipSummaryResponse;
 
+// TEN-09 POST /api/v1/c/{slug}/join/open (IDEM). Only the Global college allows it. Active at once, level 1 (not verified).
+export const joinOpenBody = z.strictObject({});
+export const joinOpenResponse = membershipSummaryResponse;
+
 // TEN-05 POST /api/v1/c/{slug}/join/email-domain. Two steps: send a code, then complete with it.
 export const joinEmailDomainBody = z.discriminatedUnion("step", [
   z.strictObject({ step: z.literal("start"), email }),

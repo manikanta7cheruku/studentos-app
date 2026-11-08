@@ -5,6 +5,9 @@ import { POST as logout } from "@/app/api/v1/auth/logout/route";
 import { GET as myMembership } from "@/app/api/v1/c/[slug]/me/membership/route";
 import { GET as publicCollege } from "@/app/api/v1/colleges/public/[slug]/route";
 import { POST as joinInvite } from "@/app/api/v1/c/[slug]/join/invite/route";
+import { GET as googleStart } from "@/app/api/v1/auth/google/route";
+import { GET as googleCallback } from "@/app/api/v1/auth/google/callback/route";
+import { POST as joinOpen } from "@/app/api/v1/c/[slug]/join/open/route";
 import { POST as joinManual } from "@/app/api/v1/c/[slug]/join/manual/route";
 import { POST as joinEmailDomain } from "@/app/api/v1/c/[slug]/join/email-domain/route";
 import { GET as adminSettings } from "@/app/api/v1/c/[slug]/admin/settings/route";
@@ -287,6 +290,18 @@ const modOnly = (ok: number): Record<Principal, Expected> => ({
 });
 
 const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }[] = [
+  {
+    op: "AUTH-05 GET /auth/google (public: always a redirect, to Google or back to sign in)",
+    call: (cookie) =>
+      call(googleStart, { path: "/api/v1/auth/google", cookie }).then((r) => r.status),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 302])) as Record<Principal, Expected>,
+  },
+  {
+    op: "AUTH-06 GET /auth/google/callback (public: without a code it goes back to sign in)",
+    call: (cookie) =>
+      call(googleCallback, { path: "/api/v1/auth/google/callback", cookie }).then((r) => r.status),
+    expect: Object.fromEntries(allPrincipals.map((p) => [p, 302])) as Record<Principal, Expected>,
+  },
   {
     op: "TEN-01 GET /colleges/public/alpha (public)",
     call: (cookie) =>
@@ -826,6 +841,19 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "TEN-09 POST /c/alpha/join/open (the open method is only for Global: signed in people get 403 in Alpha)",
+    call: (cookie) =>
+      call(joinOpen, {
+        method: "POST",
+        path: "/api/v1/c/alpha/join/open",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: signedIn(403),
   },
   {
     op: "TEN-08 GET /me/memberships (any signed-in user, own rows only)",

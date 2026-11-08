@@ -65,6 +65,14 @@ export const api = {
         idempotent: key ?? true,
         schema: c.joinManualResponse.shape.data,
       }),
+    // Global only: join at once, unverified (level 1).
+    joinOpen: (slug: string, key?: string) =>
+      apiClient(j(`/c/${slug}/join/open`), {
+        method: "POST",
+        body: {},
+        idempotent: key ?? true,
+        schema: c.joinOpenResponse.shape.data,
+      }),
     emailStart: (slug: string, email: string) =>
       apiClient(j(`/c/${slug}/join/email-domain`), {
         method: "POST",

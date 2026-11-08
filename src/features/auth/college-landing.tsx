@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { accentVars } from "@/lib/color";
+import { homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
 import { AuthFrame } from "./auth-frame";
 import { PublicStates } from "./public-states";
@@ -20,7 +21,7 @@ export function CollegeLanding({ slug }: { slug: string }) {
   const status = context.state === "ready" ? context.entry?.membership.status : undefined;
   const target =
     status === "active"
-      ? `/c/${slug}/campus`
+      ? homePath(slug)
       : status === "pending" || status === "suspended"
         ? `/c/${slug}/pending`
         : null;

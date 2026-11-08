@@ -226,6 +226,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261109000000_opportunities_reminders.sql` | opportunities, saved opportunities, preferences, reminders, `opp_*` and `mod_*_opportunity` functions |
 | `20261110000000_hardening.sql` | avatars bucket and storage rules, `set_my_skills`, faster `tf_list_posts` |
 | `20261111000000_account_leave_profile.sql` | `account_blockers`, `account_delete_prepare` (delete my account), `leave_college`, `profile_view` |
+| `20261112000000_global_open_join.sql` | the `open` join method (only for the Global college, enforced by a trigger), the seeded `global` college, `submit_open_join` (join Global at once, level 1) |
 
 The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
 

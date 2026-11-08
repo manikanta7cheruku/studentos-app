@@ -35,6 +35,14 @@ Trust levels: **0** none · **1** self-claimed (manual request pending/or invite
 | V7 | **SSO / LMS / ERP / Google Workspace for Education** (future) | OIDC/SAML from the college IdP | 2–3 | High per college | Depends | Needs college IT; availability |
 | V8 | **Government/academic identity services** (e.g. India's student ID/DigiLocker-type options) | **Investigate** (pending, not verified) | TBD | TBD | TBD | Availability, terms, consent obligations - research task OQ-12 |
 | V9 | **Peer vouching** | N existing verified members vouch | 1→2 | Low | Social graph | Sybil/collusion; only as supplement |
+| V10 | **Open join (Global only)** (built, TEN-09) | A signed in person joins the special `global` college at once. No proof of any college | 1 | None | Minimal | Unverified people: keep posting limits, no marketplace or notes, show "not verified by a college" on the profile. The database allows `open` only for the Global college |
+
+**Sign in options (decision D-25, 2026-11-08).** Email code (AUTH-01/02) is always available. **Continue with Google** (AUTH-05/06) is added as the main button once Google is set up in Supabase (`docs/PRODUCTION_SETUP.md`, "Continue with Google"); a person who signs in with Google gets the same account as the same email address. Phone sign in is still not used.
+
+**Who comes in, and where they go.** 1. Sign in. 2. If the person has no college: `/find` offers "enter your college link or code" or "Join Global". 3. Joining a college uses the methods that college allows (V1 to V5). 4. People whose college has no college email, or is not on StudentOS, use Global, or an invite code from a college admin or ambassador. 5. A person may be in Global and in a college at the same time.
+
+**Audience of posts (decided, not built yet).** Each project, team post or event gets an `audience`: `college` or `global`. A college post is seen only by that college. A Global post is seen by Global members and by every college member, so students can team up across colleges. Built together with the Collaborate screens; it needs one new column and one visibility rule in RLS, with tests in `tests/integration/people.test.ts` style (hidden and cross college cases).
+
 **Tenant policy defaults (recommended):** allow V1 + V2 + V4; require admin approval for V2/V4; `min_level_to_post = 1` (Team Finder), `= 2` for marketplace/notes when enabled.
 
 ## 4. Roles and permission matrix

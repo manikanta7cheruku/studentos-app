@@ -11,6 +11,7 @@ How the work is split: **YOU** = the owner (admin). **R5** = QA and DevOps. **R3
 | ☐ | Supabase **staging** project (fake data) | `docs/STAGING_SETUP.md` sections 1 and 2 | YOU |
 | ☐ | Supabase **production** project on the Pro plan, daily backups checked | `docs/PRODUCTION_SETUP.md` section 1 | YOU |
 | ☐ | Sign in settings in both: Email on, **Confirm email ON**, code length 6, expiry 600, the two email templates pasted from `supabase/templates/otp.html` | `docs/PRODUCTION_SETUP.md` section 2 | YOU |
+| ☐ | Continue with Google: Google Cloud OAuth client, Google provider on in Supabase, `NEXT_PUBLIC_GOOGLE_SIGNIN=enabled` in Vercel (do staging first) | `docs/PRODUCTION_SETUP.md` section 3, "Continue with Google" | YOU |
 | ☐ | Email sender (SMTP) account, sending domain verified (SPF, DKIM, DMARC), pasted into Supabase | `docs/PRODUCTION_SETUP.md` section 3, choice in `docs/PROVIDER_CHECK.md` | YOU |
 | ☐ | Vercel staging project, and a separate paid Vercel production project with your domain | `docs/STAGING_SETUP.md` section 3, `docs/PRODUCTION_SETUP.md` section 4 | YOU |
 | ☐ | The settings in each Vercel project (new `APP_HASH_SECRET` and `CRON_SECRET` for each, never reused, never changed later for `APP_HASH_SECRET`) | `docs/PRODUCTION_SETUP.md` section 4 | YOU |

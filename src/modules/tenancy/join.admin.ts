@@ -90,6 +90,20 @@ export async function submitManualJoin(
   return toSummary(data as JoinRow[]);
 }
 
+export async function submitOpenJoin(
+  userId: string,
+  slug: string,
+  requestId: string,
+): Promise<MembershipSummary> {
+  const { data, error } = await adminClient().rpc("submit_open_join", {
+    p_user: userId,
+    p_slug: slug,
+    p_request_id: requestId,
+  });
+  if (error) throw mapDbError(error);
+  return toSummary(data as JoinRow[]);
+}
+
 export async function emailDomainAllowed(slug: string, domain: string): Promise<boolean> {
   const { data, error } = await adminClient().rpc("email_domain_allowed", {
     p_slug: slug,

@@ -71,6 +71,19 @@ export const endpoints: Endpoint[] = [
     "Delete my account in two steps (email a code, then confirm with it)",
     { body: auth.deleteMeBody, response: auth.deleteMeResponse },
   ),
+  e("AUTH-05", "GET", "/auth/google", "pub", "Start Continue with Google (redirects to Google)", {
+    status: 302,
+  }),
+  e(
+    "AUTH-06",
+    "GET",
+    "/auth/google/callback",
+    "pub",
+    "Google sends the person back here; sets the session cookies",
+    {
+      status: 302,
+    },
+  ),
   e("AUTH-03", "POST", "/auth/logout", "ses", "End this session, or all with ?all=true", {
     query: auth.logoutQuery,
     response: auth.logoutResponse,
@@ -93,6 +106,11 @@ export const endpoints: Endpoint[] = [
   e("TEN-03", "POST", "/c/{slug}/join/invite", "ses", "Redeem an invite code", {
     body: tenant.joinInviteBody,
     response: tenant.joinInviteResponse,
+    idem: true,
+  }),
+  e("TEN-09", "POST", "/c/{slug}/join/open", "ses", "Join the Global space (unverified, level 1)", {
+    body: tenant.joinOpenBody,
+    response: tenant.joinOpenResponse,
     idem: true,
   }),
   e("TEN-04", "POST", "/c/{slug}/join/manual", "ses", "Submit a manual verification request", {

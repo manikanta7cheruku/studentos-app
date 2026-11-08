@@ -1,8 +1,15 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, KeyRoundIcon, MailIcon, UserRoundCheckIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  GlobeIcon,
+  KeyRoundIcon,
+  MailIcon,
+  UserRoundCheckIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -13,6 +20,7 @@ import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage, newIdempotencyKey } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { accentVars } from "@/lib/color";
+import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
 import { AuthFrame } from "./auth-frame";
 import { PublicStates } from "./public-states";
@@ -20,7 +28,7 @@ import { looksLikeEmail } from "./safe-next";
 import { useCooldown } from "./use-cooldown";
 import { useJoinContext } from "./use-join-context";
 
-type Method = "invite_code" | "email_domain" | "manual";
+type Method = "invite_code" | "email_domain" | "manual" | "open";
 
 const METHOD_LABEL: Record<Method, { label: string; hint: string; icon: React.ReactNode }> = {
   invite_code: {
@@ -38,13 +46,18 @@ const METHOD_LABEL: Record<Method, { label: string; hint: string; icon: React.Re
     hint: "An admin checks your details",
     icon: <UserRoundCheckIcon aria-hidden="true" />,
   },
+  open: {
+    label: "Join Global",
+    hint: "Open to every student",
+    icon: <GlobeIcon aria-hidden="true" />,
+  },
 };
 
 const THIS_YEAR = new Date().getFullYear();
 
 /** Where a person goes once the join call answered: straight in when verified, to the status page when it needs a person. */
 function destination(slug: string, status: string): string {
-  return status === "active" ? `/c/${slug}/campus` : `/c/${slug}/pending`;
+  return status === "active" ? homePath(slug) : `/c/${slug}/pending`;
 }
 
 type FormProps = {
@@ -276,6 +289,56 @@ function EmailForm({ slug, onJoined }: FormProps) {
   );
 }
 
+function OpenForm({ slug, onJoined }: FormProps) {
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [requestId, setRequestId] = React.useState<string | undefined>();
+  const attempt = useAttempt();
+
+  async function join() {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await api.colleges.joinOpen(slug, attempt.get());
+      attempt.reset();
+      await onJoined(result.membership.status);
+    } catch (caught) {
+      if (!(caught instanceof ApiError && caught.isOffline)) attempt.reset();
+      setError(friendlyMessage(caught, "We could not join Global. Please try again."));
+      setRequestId(caught instanceof ApiError ? caught.requestId : undefined);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-5">
+      <ul className="divide-y divide-border border-y border-border text-[17px]">
+        <li className="py-3">Find teammates and join projects and events open to everyone.</li>
+        <li className="py-3">Track your own applications privately.</li>
+        <li className="py-3">
+          Your profile shows that you are{" "}
+          <strong className="font-semibold">not verified by a college</strong>.
+        </li>
+      </ul>
+      <ErrorBanner error={error} requestId={requestId} />
+      <div>
+        <Button size="lg" onClick={() => void join()} disabled={busy}>
+          {busy ? (
+            <>
+              <Spinner /> Joining
+            </>
+          ) : (
+            <>
+              Join Global <ArrowRightIcon aria-hidden="true" />
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function ManualForm({ slug, onJoined }: FormProps) {
   const [enrollment, setEnrollment] = React.useState("");
   const [program, setProgram] = React.useState("");
@@ -386,7 +449,7 @@ export function JoinScreen({ slug }: { slug: string }) {
   const college = context.state === "ready" ? context.college : null;
   const methods = React.useMemo<Method[]>(
     () =>
-      (["invite_code", "email_domain", "manual"] as Method[]).filter((m) =>
+      (["invite_code", "email_domain", "manual", "open"] as Method[]).filter((m) =>
         college?.allowed_methods.includes(m),
       ),
     [college],
@@ -409,9 +472,25 @@ export function JoinScreen({ slug }: { slug: string }) {
       eyebrow="Join"
       title={`Join ${college.name}.`}
       intro={
-        college.require_admin_approval
-          ? "Your college checks every new member. You will see your campus as soon as an admin says yes."
-          : "Pick the way your college gave you. You will see your campus as soon as it is checked."
+        slug === GLOBAL_SLUG
+          ? "Global is for every student, also if your college is not on StudentOS yet or has no college email. It is not checked by a college."
+          : college.require_admin_approval
+            ? "Your college checks every new member. You will see your campus as soon as an admin says yes."
+            : "Pick the way your college gave you. You will see your campus as soon as it is checked."
+      }
+      footer={
+        slug === GLOBAL_SLUG ? null : (
+          <p>
+            Your college is not here, or it has no college email?{" "}
+            <Link
+              href={`/c/${GLOBAL_SLUG}/join`}
+              className="font-medium text-primary underline underline-offset-4"
+            >
+              Join Global instead
+            </Link>
+            .
+          </p>
+        )
       }
       college={{
         name: college.name,
@@ -464,6 +543,7 @@ export function JoinScreen({ slug }: { slug: string }) {
             {active === "invite_code" ? <InviteForm slug={slug} onJoined={joined} /> : null}
             {active === "email_domain" ? <EmailForm slug={slug} onJoined={joined} /> : null}
             {active === "manual" ? <ManualForm slug={slug} onJoined={joined} /> : null}
+            {active === "open" ? <OpenForm slug={slug} onJoined={joined} /> : null}
           </div>
         </div>
       )}

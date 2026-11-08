@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/app/spinner";
 import { api } from "@/lib/api/endpoints";
 import { accentVars } from "@/lib/color";
+import { homePath } from "@/lib/home-path";
 import { useLoad } from "@/lib/use-load";
 import { useSession } from "@/features/session/session-provider";
 import { AuthFrame } from "./auth-frame";
@@ -39,7 +40,7 @@ export function PendingScreen({ slug }: { slug: string }) {
 
   React.useEffect(() => {
     if (context.state !== "ready") return;
-    if (status === "active") router.replace(`/c/${slug}/campus`);
+    if (status === "active") router.replace(homePath(slug));
     else if (!status || status === "left") router.replace(`/c/${slug}/join`);
   }, [context.state, status, slug, router]);
 

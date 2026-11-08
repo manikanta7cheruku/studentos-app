@@ -18,6 +18,8 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | SYS-02 | POST | /api/internal/maintenance | cron | secret in `Authorization: Bearer` (CRON_SECRET), never a cookie |
 | AUTH-01 | POST | /auth/otp/request | pub | 5/h per email, 20/h per IP |
 | AUTH-02 | POST | /auth/otp/verify | pub | lock after 5 wrong codes |
+| AUTH-05 | GET | /auth/google | pub | none (Google and Supabase limit it) |
+| AUTH-06 | GET | /auth/google/callback | pub | none (needs a one time code from Google) |
 | AUTH-03 | POST | /auth/logout | ses | write limit |
 | AUTH-04 | DELETE | /me | ses | write limit, code by email (sign in code limits) |
 | TEN-01 | GET | /colleges/public/{slug} | pub | none |
@@ -26,6 +28,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | TEN-03 | POST | /c/{slug}/join/invite | ses | write limit, 10/h |
 | TEN-04 | POST | /c/{slug}/join/manual | ses | write limit, 10/h |
 | TEN-05 | POST | /c/{slug}/join/email-domain | ses | write limit |
+| TEN-09 | POST | /c/{slug}/join/open | ses | write limit, 10/h |
 | TEN-07 | POST | /c/{slug}/me/leave | ses | write limit |
 | NTF-01 | GET | /me/notifications | ses | none |
 | NTF-02 | POST | /me/notifications/read | ses | write limit |

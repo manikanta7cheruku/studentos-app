@@ -529,6 +529,60 @@
         }
       }
     },
+    "/auth/google": {
+      "get": {
+        "operationId": "AUTH-05_get",
+        "tags": [
+          "AUTH"
+        ],
+        "summary": "AUTH-05: Start Continue with Google (redirects to Google)",
+        "x-who": "pub",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Success"
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "AUTH-06_get",
+        "tags": [
+          "AUTH"
+        ],
+        "summary": "AUTH-06: Google sends the person back here; sets the session cookies",
+        "x-who": "pub",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Success"
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/logout": {
       "post": {
         "operationId": "AUTH-03_post",
@@ -732,7 +786,8 @@
                               "email_domain",
                               "invite_code",
                               "manual",
-                              "roster"
+                              "roster",
+                              "open"
                             ]
                           }
                         },
@@ -1066,7 +1121,8 @@
                                         "email_domain",
                                         "invite_code",
                                         "manual",
-                                        "roster"
+                                        "roster",
+                                        "open"
                                       ]
                                     },
                                     {
@@ -1301,7 +1357,211 @@
                                     "email_domain",
                                     "invite_code",
                                     "manual",
-                                    "roster"
+                                    "roster",
+                                    "open"
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "status",
+                            "verification_level",
+                            "verification_method"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "membership"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONFLICT (also while the same Idempotency-Key is still running)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/join/open": {
+      "post": {
+        "operationId": "TEN-09_post",
+        "tags": [
+          "TEN"
+        ],
+        "summary": "TEN-09: Join the Global space (unverified, level 1)",
+        "x-who": "ses",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "A new UUID for each user action. Reuse it only to retry the same action.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "membership": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "pending",
+                                "active",
+                                "suspended",
+                                "rejected",
+                                "left"
+                              ]
+                            },
+                            "verification_level": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 3
+                            },
+                            "verification_method": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "email_domain",
+                                    "invite_code",
+                                    "manual",
+                                    "roster",
+                                    "open"
                                   ]
                                 },
                                 {
@@ -1524,7 +1784,8 @@
                                     "email_domain",
                                     "invite_code",
                                     "manual",
-                                    "roster"
+                                    "roster",
+                                    "open"
                                   ]
                                 },
                                 {
@@ -1754,7 +2015,8 @@
                                     "email_domain",
                                     "invite_code",
                                     "manual",
-                                    "roster"
+                                    "roster",
+                                    "open"
                                   ]
                                 },
                                 {
@@ -11105,7 +11367,8 @@
                               "email_domain",
                               "invite_code",
                               "manual",
-                              "roster"
+                              "roster",
+                              "open"
                             ]
                           }
                         },
@@ -11376,7 +11639,8 @@
                               "email_domain",
                               "invite_code",
                               "manual",
-                              "roster"
+                              "roster",
+                              "open"
                             ]
                           }
                         },
@@ -12446,7 +12710,8 @@
                               "email_domain",
                               "invite_code",
                               "manual",
-                              "roster"
+                              "roster",
+                              "open"
                             ]
                           },
                           "status": {
@@ -12829,7 +13094,8 @@
                                     "email_domain",
                                     "invite_code",
                                     "manual",
-                                    "roster"
+                                    "roster",
+                                    "open"
                                   ]
                                 },
                                 {
@@ -13094,7 +13360,8 @@
                                   "email_domain",
                                   "invite_code",
                                   "manual",
-                                  "roster"
+                                  "roster",
+                                  "open"
                                 ]
                               },
                               {
@@ -13354,7 +13621,8 @@
                                     "email_domain",
                                     "invite_code",
                                     "manual",
-                                    "roster"
+                                    "roster",
+                                    "open"
                                   ]
                                 },
                                 {
