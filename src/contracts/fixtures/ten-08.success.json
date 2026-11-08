@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "college": {
+        "slug": "alpha",
+        "name": "Alpha College",
+        "short_name": "Alpha",
+        "city": "Hyderabad",
+        "accent_hex": "#1D4ED8"
+      },
+      "membership": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "role": "student",
+        "status": "active",
+        "verification_level": 2
+      }
+    }
+  ],
+  "meta": {
+    "request_id": "req_7f3a9c2e41b8"
+  }
+}

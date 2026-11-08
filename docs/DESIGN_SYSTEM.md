@@ -33,6 +33,23 @@ Body 16px minimum, line height 1.5. Headings use Fraunces. Space scale: 4, 8, 12
 6. Never use color alone to show meaning. Add text or an icon.
 7. Words: short and clear. Say "your college", never "tenant".
 
+## App shell and shared parts (built in R3 takeover, Day 1)
+These live in `src/components/app` and `src/features/college`. Use them instead of making new ones.
+
+| Part | Use it for |
+|---|---|
+| `CollegeShell` | The frame of every college screen. Desktop and tablet (768px and up): a left sidebar with the college, the tabs, People and Admin, and the account menu. Phone: a slim top bar (college, people, bell) and a bottom tab bar with the college's tabs. Tabs the college switched off are removed, not greyed out |
+| `PageHeader` | The top of a screen: optional way back, small label, title in Fraunces, one sentence, the one main action |
+| `LoadError` | The error state of a data screen: plain words, a retry button, the request code |
+| `ScreenMessage` | A whole screen message (not found, offline, no access), left aligned on a narrow column |
+| `Avatar` | A picture, or initials on one of six quiet tones (`--tone-1` to `--tone-6`). The same name always gets the same tone |
+| `OtpInput` | A six digit code: six boxes, one real input behind them (paste, backspace, phone code suggestion) |
+| `Spinner` | Always next to a word, never alone |
+
+Tokens added: `--tone-1-bg` to `--tone-6-fg` (avatar tones), `--safe-bottom` (space under the home bar of a phone), class `.page-enter` (a 160ms fade of the page, switched off for people who prefer reduced motion), class `.tabular` (numbers of equal width).
+
+Layout rules for the shell: content column at most 56rem (3xl to 4xl) so lines stay readable, 20px side gutter on a phone and 32px from 768px, left aligned headings, thin borders instead of shadows, a dividing rule under the page header. College accent colour: set with `accentVars(hex)` in `src/lib/color.ts`, which falls back to the StudentOS blue when the colour has less than 4.5 to 1 contrast on white.
+
 ## Do not do (this is what makes UI look AI generated)
 Gradients and glowing blobs, glass effects, rows of three identical icon cards, fake numbers, fake reviews, emoji as icons, stock photos of smiling students, bouncing animations, huge shadows, centered everything.
 

@@ -360,3 +360,10 @@ Rules for the screens:
 | AUTH-04 | DELETE `/me` | Delete my account for good, in two steps with the same call. Send `{}`: a 6 digit code is emailed to my address and the answer is `{ "deletion_requested": true, "confirmation": "otp" }`. Send `{ "code": "123456" }`: the code is checked, every session ends, my profile, memberships, posts, requests, notifications, skills and saved items are deleted, and the answer is `{ "deleted": true }`. 409 `CONFLICT` if I am the only admin of a college (the message names it). 400 `OTP_INVALID`, 410 `OTP_EXPIRED`. The audit log keeps my user id (an anonymous number) and no name or email |
 | TEN-07 | POST `/c/{slug}/me/leave` | Leave this college. Answer `{ "membership": { "id", "status": "left" } }`. Active members and people waiting for approval only: 403 for a suspended or rejected person, 404 if I never joined, 409 if I already left or if I am the last admin. Closes my open team posts, withdraws my requests, gives back my team seats. I can join again later |
 | PRF-06 | GET `/c/{slug}/people/{userId}` | One classmate: `display_name`, `handle`, `headline`, `bio`, `avatar_url`, `interests`, `career_goal`, `program`, `grad_year`, `skills[{name, level}]`, `is_self`. 404 if hidden (by the person or a moderator), blocked either way, left, in another college or unknown. Never an email address |
+
+## 15. Added with the frontend takeover (R3 Days 1 to 3 upgrade)
+
+| ID | Call | What it does |
+|---|---|---|
+| TEN-08 | GET `/me/memberships` | Every college I belong to or asked to join, newest first, each as `{ college: { slug, name, short_name, city, accent_hex }, membership: { id, role, status, verification_level } }`. Any signed-in person, own rows only. Used right after sign in: no college sends the person to the college list, one college goes straight in, several show a chooser |
+

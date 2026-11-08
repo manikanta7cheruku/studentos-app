@@ -27,6 +27,7 @@ const operations: Record<string, Kinds> = {
   "ten-05-start": { request: c.joinEmailDomainBody, success: c.joinEmailDomainStartResponse },
   "ten-05-complete": { request: c.joinEmailDomainBody, success: c.joinEmailDomainCompleteResponse },
   "ten-07": { success: c.leaveResponse },
+  "ten-08": { success: c.myMembershipsResponse },
   "prf-01-get": { success: c.profileResponse },
   "prf-01-patch": { request: c.profilePatchBody, success: c.profileResponse },
   "prf-02": { request: c.skillsPutBody, success: c.skillsPutResponse },

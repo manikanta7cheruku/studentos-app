@@ -85,3 +85,22 @@ export const joinEmailDomainCompleteResponse = membershipSummaryResponse;
 export const leaveResponse = successEnvelope(
   z.object({ membership: z.object({ id: uuid, status: z.literal("left") }) }),
 );
+
+// TEN-08 GET /api/v1/me/memberships: every college I belong to or asked to join, newest first. Used after sign in
+// to decide where to go (no college: the college list, one: straight in, several: a chooser).
+export const myMembershipItem = z.object({
+  college: z.object({
+    slug,
+    name: z.string(),
+    short_name: z.string().nullable(),
+    city: z.string().nullable(),
+    accent_hex: z.string().nullable(),
+  }),
+  membership: z.object({
+    id: uuid,
+    role: membershipRole,
+    status: membershipStatus,
+    verification_level: verificationLevel,
+  }),
+});
+export const myMembershipsResponse = successEnvelope(z.array(myMembershipItem));

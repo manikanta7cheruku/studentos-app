@@ -70,6 +70,7 @@ import { GET as remGet, PUT as remPut } from "@/app/api/v1/me/reminder-settings/
 import { DELETE as deleteMe } from "@/app/api/v1/me/route";
 import { POST as leaveCollege } from "@/app/api/v1/c/[slug]/me/leave/route";
 import { GET as personProfile } from "@/app/api/v1/c/[slug]/people/[userId]/route";
+import { GET as myMemberships } from "@/app/api/v1/me/memberships/route";
 import { requireMember, type MembershipRow } from "@/modules/tenancy/require-member";
 import { CookieJar } from "@/lib/supabase/request-client";
 import { AppError } from "@/lib/errors";
@@ -825,6 +826,12 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "TEN-08 GET /me/memberships (any signed-in user, own rows only)",
+    call: (cookie) =>
+      call(myMemberships, { path: "/api/v1/me/memberships", cookie }).then((r) => r.status),
+    expect: signedIn(200),
   },
   {
     op: "RPT-03 POST /admin/reports/{id}/action (moderators; an unknown report is the probe -> 404)",

@@ -10,7 +10,7 @@
 | Status | Proposed |
 
 ## 1. Main navigation (source recommendation, SRC S1 p.9)
-Four top-level destinations: **Campus · Collaborate · Career · Me**. A fifth, **Admin**, appears only for admins/moderators. Mobile: bottom tab bar (4 + overflow). Desktop: left rail with the same four plus search and notifications. Disabled modules (flag off) are **removed from navigation**, not greyed out.
+Four top-level destinations: **Campus · Collaborate · Career · Me**. A fifth, **Admin**, appears only for admins/moderators. Mobile: bottom tab bar with the tabs the college switched on (up to 4), a slim top bar with People and the notification bell. Desktop and tablet (768px and up): left sidebar with the same tabs, a "Your college" group (People, and Admin for admins and moderators), the bell, and the account menu. Disabled modules (flag off) are **removed from navigation**, not greyed out.
 
 Layered growth (REC): new members see Campus + Collaborate + Me; Career is introduced after the student sets a career goal or taps "Career".
 
@@ -26,6 +26,8 @@ Member (all under `/c/{slug}`):
 | Me | `/me` · `/me/edit` · `/me/skills` · `/me/projects` `/[id]` · `/me/achievements` · `/me/privacy` · `/me/notifications` · `/people` `/people/[id]` |
 | Admin | `/admin` · `/admin/verification` · `/admin/members` · `/admin/invites` · `/admin/roster` · `/admin/content` · `/admin/reports` · `/admin/settings` · `/admin/audit` |
 Platform: `/platform` (staff only, separate auth role) · `/platform/colleges` · `/platform/colleges/[id]`.
+
+**How a college screen opens (built in R3 takeover, Day 1).** Every address under `/c/{slug}` in the `(app)` route group goes through the college gate (`src/features/college/college-gate.tsx`): not signed in goes to `/signin?next=...`, not a member goes to `/c/{slug}/join`, waiting or refused goes to `/c/{slug}/pending`, an active member sees the shell. Who is signed in comes from one call, `GET /api/v1/me/memberships` (TEN-08). The pages before a college (the front door, join, waiting) are in the `(public)` route group and do not need membership.
 
 ## 3. Module boundaries (frontend folders)
 `features/{tenancy,auth,verification,admin,profile,projects,team-finder,tracker,opportunities,announcements,events,lost-found,market,notes,activities,reports,notifications}`. Each owns its components, hooks, API client, and tests; cross-feature imports go through the feature's `index.ts` only.

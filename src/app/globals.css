@@ -20,6 +20,23 @@
   --radius-card: 8px;
   --radius-sheet: 12px;
 
+  /* Avatar tones: a quiet palette for initials (each pair is at least 6:1). Documented in docs/DESIGN_SYSTEM.md */
+  --tone-1-bg: #e6eafb;
+  --tone-1-fg: #1a2f94;
+  --tone-2-bg: #e1f0e7;
+  --tone-2-fg: #1b5a39;
+  --tone-3-bg: #f5e6d1;
+  --tone-3-fg: #6f4208;
+  --tone-4-bg: #f3e0e3;
+  --tone-4-fg: #86303c;
+  --tone-5-bg: #e8e3f3;
+  --tone-5-fg: #46368a;
+  --tone-6-bg: #e0edef;
+  --tone-6-fg: #1d5159;
+
+  /* Space for the phone home bar under the bottom navigation */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   /* shadcn color names mapped onto our tokens (components read these) */
   --background: var(--bg);
   --foreground: var(--ink);
@@ -92,6 +109,34 @@ body {
   font-family: var(--font-sans);
   font-size: 1rem; /* 16px minimum */
   line-height: 1.5;
+}
+
+/* Page content eases in. Off for people who asked for less motion (WCAG 2.3.3). */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter {
+  animation: page-enter 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Numbers in lists and counters line up */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 /* The focus ring must always be visible */

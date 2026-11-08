@@ -84,6 +84,9 @@ export const endpoints: Endpoint[] = [
     "Public branding, join methods and which tabs are on",
     { response: tenant.publicCollegeResponse },
   ),
+  e("TEN-08", "GET", "/me/memberships", "ses", "The colleges I belong to or asked to join", {
+    response: tenant.myMembershipsResponse,
+  }),
   e("TEN-02", "GET", "/c/{slug}/me/membership", "ses", "My membership status in this college", {
     response: tenant.myMembershipResponse,
   }),

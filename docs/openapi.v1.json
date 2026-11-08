@@ -826,6 +826,171 @@
         }
       }
     },
+    "/me/memberships": {
+      "get": {
+        "operationId": "TEN-08_get",
+        "tags": [
+          "TEN"
+        ],
+        "summary": "TEN-08: The colleges I belong to or asked to join",
+        "x-who": "ses",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "college": {
+                            "type": "object",
+                            "properties": {
+                              "slug": {
+                                "type": "string",
+                                "pattern": "^[a-z0-9-]{3,40}$"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "short_name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "city": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "accent_hex": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "slug",
+                              "name",
+                              "short_name",
+                              "city",
+                              "accent_hex"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "membership": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "role": {
+                                "type": "string",
+                                "enum": [
+                                  "student",
+                                  "moderator",
+                                  "college_admin"
+                                ]
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "active",
+                                  "suspended",
+                                  "rejected",
+                                  "left"
+                                ]
+                              },
+                              "verification_level": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "role",
+                              "status",
+                              "verification_level"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "college",
+                          "membership"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/c/{slug}/me/membership": {
       "get": {
         "operationId": "TEN-02_get",
