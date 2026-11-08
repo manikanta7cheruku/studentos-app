@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { CollegeGate } from "@/features/college";
+import { Toaster } from "@/components/ui/sonner";
 
 // Opt out of instant-navigation validation: these screens depend on the signed-in person, which cannot be prerendered.
 export const instant = false;
@@ -24,8 +25,11 @@ export default function CollegeAppLayout({
   params: Promise<{ slug: string }>;
 }) {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-bg" aria-busy="true" />}>
-      <Gate params={params}>{children}</Gate>
-    </Suspense>
+    <>
+      <Suspense fallback={<div className="min-h-dvh bg-bg" aria-busy="true" />}>
+        <Gate params={params}>{children}</Gate>
+      </Suspense>
+      <Toaster />
+    </>
   );
 }

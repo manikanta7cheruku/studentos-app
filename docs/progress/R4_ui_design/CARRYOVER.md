@@ -12,3 +12,10 @@ If you did not finish a task today, add a row. Continue it first thing next day.
 | 2026-10-30 | 3 | R4 | R4-D3-1 | Wire ADM-06 and ADM-07 to the real API, admin can approve a person on staging, E2E check with R5 | Screens use sample data. R2 admin API (R2-D3-1) not merged yet, staging and E2E depend on it | R2: admin endpoints. R5: E2E check. R3: review of PR 9 | |
 | 2026-11-05 | 5 | R4 | R4-D5-1 | R3 to use the parts in the Team Finder screens (done-when), then merge after review | R3 has not started using them yet | R3: review and use the parts | |
 | 2026-11-05 | 5 | R4 | R4-D5-1 | By-hand checks: Escape on the phone filter sheet, focus return to the Filters button, VoiceOver on the role picker | Not done yet | none | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Add to tracker against the real backend. The button posts to /me/applications, which is not on the backend. The 2 tracker tests pass only against a mock | Route does not exist, tracker is R3's | R3 and R2: tracker route | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Expired card still shows Apply, Save and Add to tracker. Decide if they should stay | Design decision | R3 and team | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | With Career switched off the screen still shows the filters and a Retry button that cannot help | Polish, not done | none | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Search sends a request on every keystroke (no debounce). Filter button label is cut to 'Filter opportuni...' at 360px | Polish, not done | none | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Career page text still says Opportunities is coming, although the screen exists. Wording is R3's | R3's file | R3 | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Server-side filtering has no automated test (the mock returns one fixed list). Checked by hand only, reported, no screenshots | Mock cannot filter | none | |
+| 2026-11-08 | 7 | R4 | R4-D7-1 | Checkpoint 4 on staging not confirmed. Many manual checks are reported without screenshots | Not done | R5 | |
