@@ -16,7 +16,7 @@ Layered growth (REC): new members see Campus + Collaborate + Me; Career is intro
 
 ## 2. Route inventory
 Public: `/` landing · `/c/{slug}` tenant landing · `/p/{handle}` public portfolio · `/legal/*` (privacy, terms) · `/status`.
-Auth: `/c/{slug}/sign-in` · `/c/{slug}/verify` · `/c/{slug}/pending`.
+Before a college: `/signin` (email, then a six digit code, `?next=` brings the person back) · `/find` (a signed in person with no college enters the college code or link) · `/c/{slug}` (the college front door) · `/c/{slug}/join` (invite code, college email, or ask to join, only the methods the college allows) · `/c/{slug}/pending` (waiting for approval, not accepted, or paused).
 Member (all under `/c/{slug}`):
 | Area | Routes |
 |---|---|

@@ -119,3 +119,16 @@ export async function cleanUp(): Promise<void> {
       await db.auth.admin.deleteUser(user.id);
   }
 }
+
+// Sign in through the real sign in page (email, then the code from the mail). Ends on the page `next` or the person's home.
+export async function signInThroughUi(
+  page: import("@playwright/test").Page,
+  email: string,
+  next?: string,
+): Promise<void> {
+  await page.goto(next ? `/signin?next=${encodeURIComponent(next)}` : "/signin");
+  await page.getByLabel(/email address/i).fill(email);
+  await page.getByRole("button", { name: /email me a code/i }).click();
+  await page.getByRole("heading", { name: /enter the code/i }).waitFor();
+  await page.getByLabel(/six digit code from your email/i).fill(await codeFor(email));
+}

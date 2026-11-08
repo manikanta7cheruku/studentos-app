@@ -1,8 +1,17 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { CollegeLanding } from "@/features/auth/college-landing";
 
 export const instant = false;
 
-export default async function TenantRootPage({ params }: { params: Promise<{ slug: string }> }) {
+async function Landing({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  redirect(`/c/${slug}/campus`);
+  return <CollegeLanding slug={slug} />;
+}
+
+export default function TenantRootPage({ params }: { params: Promise<{ slug: string }> }) {
+  return (
+    <Suspense fallback={null}>
+      <Landing params={params} />
+    </Suspense>
+  );
 }
