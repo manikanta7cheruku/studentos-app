@@ -35,7 +35,7 @@ In the repository: Settings, Secrets and variables, Actions.
 |---|---|---|
 | Secret | `SUPABASE_ACCESS_TOKEN` | the access token from step 1.5 |
 | Secret | `STAGING_DB_PASSWORD` | the database password from step 1.1 |
-| Secret | `STAGING_DB_URL` | the **Session pooler** connection string of the staging project (Supabase, Connect, Session pooler; replace `[YOUR-PASSWORD]` with the database password). Needed because GitHub's servers only have IPv4 and the direct database address is IPv6 only. Without it the migration step fails with "IPv6 is not supported" |
+| Variable (optional) | `STAGING_DB_HOST` | only if the Supabase "Session pooler" host of your project is not `aws-0-ap-northeast-1.pooler.supabase.com`. The workflow builds the IPv4 pooler connection string itself from `STAGING_DB_PASSWORD`, because GitHub's servers only have IPv4 and the direct database address is IPv6 only |
 | Variable | `STAGING_SUPABASE_PROJECT_REF` | the project reference from step 1.2 |
 | Variable | `STAGING_URL` | the staging site address from step 3 (add it after step 3) |
 
