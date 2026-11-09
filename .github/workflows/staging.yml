@@ -68,6 +68,35 @@ jobs:
           STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
           STAGING_PROJECT_REF: ${{ vars.STAGING_SUPABASE_PROJECT_REF }}
         run: pnpm supabase link --project-ref "$STAGING_PROJECT_REF" --password "$STAGING_DB_PASSWORD"
+      - name: Check the shape of the connection string (prints no secret)
+        if: steps.config.outputs.configured == 'true'
+        env:
+          STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
+          STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+          STAGING_PROJECT_REF: ${{ vars.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          if [ -z "$STAGING_DB_URL" ]; then echo "STAGING_DB_URL is not set"; exit 0; fi
+          node -e '
+            const raw = process.env.STAGING_DB_URL;
+            const pw = process.env.STAGING_DB_PASSWORD ?? "";
+            let u;
+            try { u = new URL(raw); } catch { console.log("The connection string is not a valid URL"); process.exit(0); }
+            const decoded = decodeURIComponent(u.password);
+            console.log(JSON.stringify({
+              scheme: u.protocol,
+              user_is_postgres_dot_ref: u.username === "postgres." + process.env.STAGING_PROJECT_REF,
+              host: u.hostname,
+              port: u.port,
+              database: u.pathname,
+              password_length: decoded.length,
+              password_has_brackets: /[\[\]]/.test(decoded),
+              password_has_whitespace: /\s/.test(raw),
+              password_is_the_placeholder: decoded.toUpperCase().includes("YOUR-PASSWORD"),
+              password_matches_the_password_secret: decoded === pw,
+              password_secret_length: pw.length,
+              password_secret_has_whitespace: /\s/.test(pw),
+            }, null, 2));
+          '
       - name: Show what will be applied
         if: steps.config.outputs.configured == 'true'
         env:
