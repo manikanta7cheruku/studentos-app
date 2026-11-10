@@ -53,6 +53,8 @@ Never put the production password or token here. Production gets its own, with f
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | the anon (public) key of the staging project |
 | `SUPABASE_SERVICE_ROLE_KEY` | the service role key of the staging project. Mark it as sensitive. Server only |
 | `APP_HASH_SECRET` | a new random secret of 32 or more characters: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Different from local and from production |
+| `NEXT_PUBLIC_EMAIL_SIGNIN` | `disabled` until an email sender (SMTP) and the email template are set up. The sign in page then shows the email form disabled with "Coming soon" and Google is the way in. Set to `enabled` (or remove) when email codes work |
+| `NEXT_PUBLIC_GOOGLE_SIGNIN` | `enabled` once Google is set up in Supabase (docs/PRODUCTION_SETUP.md, Continue with Google) |
 
 3. The free Hobby plan is for non-commercial use (decision D-11). Staging has fake data only, so this is allowed. Real students need a paid plan.
 4. Deploy. If a setting is missing the server exits at start and the Vercel logs say which one.
