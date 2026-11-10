@@ -65,7 +65,8 @@ export const invite = z.object({
   grants_status: inviteGrantsStatus,
   // Worked out by the server: revoked, then expired, then exhausted (all uses taken), else active.
   status: inviteStatus,
-  created_by: uuid,
+  // null when the admin who made it deleted their account.
+  created_by: uuid.nullable(),
   created_at: isoDateTime,
 });
 // The plain code is shown once, at creation. Only a hash is stored.

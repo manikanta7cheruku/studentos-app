@@ -27,6 +27,15 @@ export type ApplicationDetail = Data<typeof c.applicationResponse>;
 export type ApplicationStatus = z.infer<typeof c.applicationStatus>;
 export type Opportunity = Data<typeof c.opportunityResponse>;
 export type OpportunityKind = z.infer<typeof c.opportunityKind>;
+export type AdminSettings = Data<typeof c.adminSettingsResponse>;
+export type AdminStats = Data<typeof c.adminStatsResponse>;
+export type AdminInvite = Data<typeof c.inviteListResponse>[number];
+export type VerificationRequest = Data<typeof c.verificationRequestListResponse>[number];
+export type AdminMember = Data<typeof c.memberListResponse>[number];
+export type AuditEntry = Data<typeof c.auditLogListResponse>[number];
+export type AdminAnnouncement = Data<typeof c.adminAnnouncementListResponse>[number];
+export type AdminOpportunity = Data<typeof c.adminOpportunityListResponse>[number];
+export type Report = Data<typeof c.reportQueueResponse>[number];
 
 const j = (path: string) => path;
 
@@ -325,6 +334,176 @@ export const api = {
       apiClient(j(`/me/saved-opportunities/${id}`), {
         method: "DELETE",
         schema: c.savedOpportunityResponse.shape.data,
+      }),
+  },
+
+  // The college console. Moderators may use announcements, opportunities and reports; the rest is for admins.
+  admin: {
+    stats: (slug: string) =>
+      apiClient(j(`/c/${slug}/admin/stats`), { schema: c.adminStatsResponse.shape.data }),
+    settings: (slug: string) =>
+      apiClient(j(`/c/${slug}/admin/settings`), { schema: c.adminSettingsResponse.shape.data }),
+    patchSettings: (slug: string, body: z.input<typeof c.adminSettingsPatchBody>) =>
+      apiClient(j(`/c/${slug}/admin/settings`), {
+        method: "PATCH",
+        body,
+        schema: c.adminSettingsResponse.shape.data,
+      }),
+
+    invites: (slug: string) =>
+      apiClient(j(`/c/${slug}/admin/invites`), { schema: c.inviteListResponse.shape.data }),
+    createInvite: (slug: string, body: z.input<typeof c.inviteCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/admin/invites`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.inviteCreateResponse.shape.data,
+      }),
+    revokeInvite: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/admin/invites/${id}`), {
+        method: "DELETE",
+        schema: c.inviteRevokeResponse.shape.data,
+      }),
+
+    verification: (slug: string, status?: string, cursor?: string) => {
+      const query = new URLSearchParams({ limit: "20" });
+      if (status) query.set("status", status);
+      if (cursor) query.set("cursor", cursor);
+      return apiFetchEnvelope(j(`/c/${slug}/admin/verification-requests?${query}`), {
+        schema: c.verificationRequestListResponse.shape.data,
+      });
+    },
+    decide: (
+      slug: string,
+      id: string,
+      body: z.input<typeof c.verificationDecisionBody>,
+      key?: string,
+    ) =>
+      apiClient(j(`/c/${slug}/admin/verification-requests/${id}/decision`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.verificationDecisionResponse.shape.data,
+      }),
+
+    members: (
+      slug: string,
+      filters: { q?: string; status?: string; role?: string; cursor?: string } = {},
+    ) => {
+      const query = new URLSearchParams({ limit: "20" });
+      if (filters.q) query.set("q", filters.q);
+      if (filters.status) query.set("status", filters.status);
+      if (filters.role) query.set("role", filters.role);
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      return apiFetchEnvelope(j(`/c/${slug}/admin/members?${query}`), {
+        schema: c.memberListResponse.shape.data,
+      });
+    },
+    patchMember: (slug: string, membershipId: string, body: z.input<typeof c.memberPatchBody>) =>
+      apiClient(j(`/c/${slug}/admin/members/${membershipId}`), {
+        method: "PATCH",
+        body,
+        schema: c.memberPatchResponse.shape.data,
+      }),
+
+    audit: (slug: string, filters: { action?: string; cursor?: string } = {}) => {
+      const query = new URLSearchParams({ limit: "30" });
+      if (filters.action) query.set("action", filters.action);
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      return apiFetchEnvelope(j(`/c/${slug}/admin/audit-logs?${query}`), {
+        schema: c.auditLogListResponse.shape.data,
+      });
+    },
+
+    announcements: (slug: string, cursor?: string) =>
+      apiFetchEnvelope(
+        j(`/c/${slug}/admin/announcements?limit=20${cursor ? `&cursor=${cursor}` : ""}`),
+        { schema: c.adminAnnouncementListResponse.shape.data },
+      ),
+    createAnnouncement: (
+      slug: string,
+      body: z.input<typeof c.announcementCreateBody>,
+      key?: string,
+    ) =>
+      apiClient(j(`/c/${slug}/admin/announcements`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.announcementResponse.shape.data,
+      }),
+    patchAnnouncement: (slug: string, id: string, body: z.input<typeof c.announcementPatchBody>) =>
+      apiClient(j(`/c/${slug}/admin/announcements/${id}`), {
+        method: "PATCH",
+        body,
+        schema: c.announcementResponse.shape.data,
+      }),
+    removeAnnouncement: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/admin/announcements/${id}`), {
+        method: "DELETE",
+        schema: c.announcementResponse.shape.data,
+      }),
+
+    opportunities: (slug: string, status?: string, cursor?: string) => {
+      const query = new URLSearchParams({ limit: "20" });
+      if (status) query.set("status", status);
+      if (cursor) query.set("cursor", cursor);
+      return apiFetchEnvelope(j(`/c/${slug}/admin/opportunities?${query}`), {
+        schema: c.adminOpportunityListResponse.shape.data,
+      });
+    },
+    createOpportunity: (
+      slug: string,
+      body: z.input<typeof c.opportunityCreateBody>,
+      key?: string,
+    ) =>
+      apiClient(j(`/c/${slug}/admin/opportunities`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.opportunityResponse.shape.data,
+      }),
+    patchOpportunity: (slug: string, id: string, body: z.input<typeof c.opportunityPatchBody>) =>
+      apiClient(j(`/c/${slug}/admin/opportunities/${id}`), {
+        method: "PATCH",
+        body,
+        schema: c.opportunityResponse.shape.data,
+      }),
+    removeOpportunity: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/admin/opportunities/${id}`), {
+        method: "DELETE",
+        schema: c.opportunityRemoveResponse.shape.data,
+      }),
+
+    reports: (slug: string, status: string | undefined, cursor?: string) => {
+      const query = new URLSearchParams({ limit: "20" });
+      if (status) query.set("status", status);
+      if (cursor) query.set("cursor", cursor);
+      return apiFetchEnvelope(j(`/c/${slug}/admin/reports?${query}`), {
+        schema: c.reportQueueResponse.shape.data,
+      });
+    },
+    actOnReport: (
+      slug: string,
+      id: string,
+      body: z.input<typeof c.reportActionBody>,
+      key?: string,
+    ) =>
+      apiClient(j(`/c/${slug}/admin/reports/${id}/action`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.reportActionResponse.shape.data,
+      }),
+  },
+
+  // Any member can report a profile, a team post or an announcement (RPT-01).
+  reports: {
+    create: (slug: string, body: z.input<typeof c.reportCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/reports`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.reportCreateResponse.shape.data,
       }),
   },
 

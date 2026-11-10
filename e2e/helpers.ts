@@ -147,6 +147,7 @@ export async function createOpportunity(label: string): Promise<{ id: string; ti
 export async function cleanUp(): Promise<void> {
   const db = admin();
   await db.from("opportunities").delete().like("title", "E2E %");
+  await db.from("announcements").delete().like("title", "E2E %");
   await db.from("invite_codes").delete().like("label", "e2e %");
   const { data } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
   for (const user of data?.users ?? []) {
@@ -190,4 +191,22 @@ export async function joinGlobalThroughUi(page: import("@playwright/test").Page)
   await page.goto("/c/global/join");
   await page.getByRole("button", { name: /join global/i }).click();
   await page.waitForURL(/\/c\/global\/collaborate$/);
+}
+
+// Gives an existing Alpha member a different role (admin or moderator), as the owner would in the database.
+export async function setAlphaRole(
+  email: string,
+  role: "student" | "moderator" | "college_admin",
+): Promise<void> {
+  const db = admin();
+  const { data } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const user = data?.users.find((u) => u.email === email);
+  if (!user) throw new Error(`No user ${email}`);
+  const { data: college } = await db.from("colleges").select("id").eq("slug", "alpha").single();
+  const { error } = await db
+    .from("memberships")
+    .update({ role })
+    .eq("user_id", user.id)
+    .eq("college_id", college!.id);
+  if (error) throw error;
 }

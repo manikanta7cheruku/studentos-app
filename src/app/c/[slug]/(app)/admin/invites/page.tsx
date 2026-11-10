@@ -1,5 +1,9 @@
-import { InvitesScreen } from "@/features/admin/components/invites-screen";
+import type { Metadata } from "next";
+import { InvitesScreen } from "@/features/admin-console";
 
-export default function InvitesPage() {
+export const metadata: Metadata = { title: "Invite codes | StudentOS admin" };
+export const instant = false;
+
+export default function Page() {
   return <InvitesScreen />;
 }

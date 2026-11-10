@@ -2,8 +2,6 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import AnnouncementsPage from "@/app/campus/announcements/page";
-import ReportsAdminPage from "@/app/admin/reports/page";
 import Home from "@/app/page";
 
 beforeAll(() => {
@@ -38,20 +36,6 @@ afterEach(() => {
 });
 
 describe("DesktopRail route mounting", () => {
-  it("mounts DesktopRail and NotificationBell on /campus/announcements", () => {
-    render(<AnnouncementsPage />);
-    const rail = screen.getByRole("navigation", { name: "Desktop primary" });
-    expect(rail).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Notifications/i })).toBeTruthy();
-  });
-
-  it("mounts DesktopRail and NotificationBell on /admin/reports", () => {
-    render(<ReportsAdminPage />);
-    const rail = screen.getByRole("navigation", { name: "Desktop primary" });
-    expect(rail).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Notifications/i })).toBeTruthy();
-  });
-
   it("does NOT mount DesktopRail on landing page /", () => {
     render(<Home />);
     expect(screen.queryByRole("navigation", { name: "Desktop primary" })).toBeNull();

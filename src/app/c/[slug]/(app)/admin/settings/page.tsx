@@ -1,5 +1,9 @@
-import { SettingsScreen } from "@/features/admin/components/settings-screen";
+import type { Metadata } from "next";
+import { SettingsAdminScreen } from "@/features/admin-console";
 
-export default function SettingsPage() {
-  return <SettingsScreen />;
+export const metadata: Metadata = { title: "Settings | StudentOS admin" };
+export const instant = false;
+
+export default function Page() {
+  return <SettingsAdminScreen />;
 }
