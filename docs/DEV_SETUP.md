@@ -86,6 +86,38 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `pnpm test:e2e` | Playwright journeys (sign in, join) and browser smoke tests. Needs `pnpm db:start`, `pnpm db:reset`, `pnpm env:local`. First time: `pnpm exec playwright install chromium`. CI runs it as the E2E workflow |
 | `node scripts/smoke.mjs <url>` | read-only smoke test of a deployed copy, for example staging (docs/STAGING_SETUP.md) |
 
+## Where the data is saved and how to look at it
+
+Everything a student does is saved in the **Supabase Postgres database**. The app keeps nothing in the browser except small conveniences (the college you used last). Which database you look at depends on where the app runs:
+
+| Where the app runs | Which database | How to open it |
+|---|---|---|
+| Your computer (`pnpm dev`) | the local stack in Docker (`pnpm db:start`) | **Studio** at http://127.0.0.1:54323, then **Table Editor**. Sign in codes: Mailpit at http://127.0.0.1:54324 |
+| Staging (studentos-staging.vercel.app) | the Supabase project `studentos-staging` | supabase.com/dashboard, the project, then **Table Editor**, or **SQL Editor** to run a query |
+| Production | the Supabase project `studentos-production` | the same, with the production project. Look only, never edit by hand without a reason written in `OPS_LOG.md` |
+
+In the Table Editor you see the real rows. The tables are closed to normal clients on purpose (a browser can never read them directly), so the Table Editor works because it uses the project owner's rights. Never paste the service key or the database password anywhere to "look at data".
+
+| What a student does | Table(s) |
+|---|---|
+| Sign in, account | `auth.users` (Authentication, Users in the dashboard), `profiles` |
+| Join a college or Global | `memberships` (status, level, method), `invite_codes`, `verification_requests` |
+| Profile, skills, photo | `profiles`, `user_skills`, `skills`, the `avatars` storage bucket |
+| Team Finder (Day 5 and 6) | `team_posts`, `team_post_roles`, `team_post_private` (the team chat link), `join_requests`, `notifications` |
+| Application tracker (Day 7, private) | `job_applications`, `application_events` |
+| Opportunities and reminders | `opportunities`, `saved_opportunities`, `user_prefs`, `reminders` |
+| Announcements, reports, audit | `announcements`, `reports`, `moderation_actions`, `blocks`, `audit_logs` |
+
+A quick look at who posted what (SQL Editor):
+
+```sql
+select c.slug as space, p.title, p.status, p.created_at
+from public.team_posts p join public.colleges c on c.id = p.college_id
+order by p.created_at desc limit 20;
+```
+
+The meaning of every table is in docs/DATABASE.md, and the rules for who may see which rows are in docs/PERMISSIONS.md.
+
 ## 4. Every task
 
 1. `git checkout main`, `git pull origin main`, then `git checkout -b r2/d1-short-name` (use your own role and day).

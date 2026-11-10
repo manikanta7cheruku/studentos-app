@@ -256,6 +256,8 @@ const FRIENDLY: Partial<Record<string, string>> = {
   CONFLICT: "That changed while you were looking. Reload and try again.",
   RATE_LIMITED: "Too many tries. Please wait a moment.",
   UPSTREAM_UNAVAILABLE: "We could not reach the server. Check your connection and try again.",
+  VERIFICATION_LEVEL_TOO_LOW: "Your college has to verify you before you can do that.",
+  SLOTS_FULL: "That role is already full.",
   INVITE_INVALID: "That invite code is not right. Check it and try again.",
   INVITE_EXHAUSTED: "That invite code has been used up. Ask for a new one.",
   INVITE_EXPIRED: "That invite code has expired. Ask for a new one.",

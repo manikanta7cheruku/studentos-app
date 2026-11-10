@@ -17,6 +17,11 @@ export type SkillHit = Data<typeof c.skillSearchResponse>[number];
 export type Person = Data<typeof c.personProfileResponse>;
 export type NotificationItem = Data<typeof c.notificationListResponse>[number];
 export type Announcement = Data<typeof c.announcementListResponse>[number];
+export type TeamPost = Data<typeof c.teamPostListResponse>[number];
+export type TeamPostDetail = Data<typeof c.teamPostResponse>;
+export type JoinRequestItem = Data<typeof c.joinRequestListResponse>[number];
+export type MyJoinRequest = Data<typeof c.myJoinRequestListResponse>[number];
+export type TeamPostKind = z.infer<typeof c.teamPostKind>;
 
 const j = (path: string) => path;
 
@@ -160,6 +165,85 @@ export const api = {
     list: (slug: string, cursor?: string) =>
       apiFetchEnvelope(j(`/c/${slug}/announcements?limit=20${cursor ? `&cursor=${cursor}` : ""}`), {
         schema: c.announcementListResponse.shape.data,
+      }),
+  },
+
+  teamPosts: {
+    list: (
+      slug: string,
+      filters: {
+        kind?: TeamPostKind;
+        status?: "open" | "closed" | "filled" | "expired" | "all";
+        q?: string;
+        mine?: boolean;
+        cursor?: string;
+        limit?: number;
+      } = {},
+    ) => {
+      const query = new URLSearchParams();
+      if (filters.kind) query.set("kind", filters.kind);
+      if (filters.status) query.set("status", filters.status);
+      if (filters.q) query.set("q", filters.q);
+      if (filters.mine) query.set("mine", "true");
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      query.set("limit", String(filters.limit ?? 20));
+      return apiFetchEnvelope(j(`/c/${slug}/team-posts?${query}`), {
+        schema: c.teamPostListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}`), { schema: c.teamPostResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.teamPostCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/team-posts`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.teamPostResponse.shape.data,
+      }),
+    patch: (slug: string, id: string, body: z.input<typeof c.teamPostPatchBody>) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}`), {
+        method: "PATCH",
+        body,
+        schema: c.teamPostResponse.shape.data,
+      }),
+    close: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}/close`), {
+        method: "POST",
+        body: {},
+        schema: c.teamPostResponse.shape.data,
+      }),
+    request: (slug: string, id: string, roleId: string, message: string, key?: string) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}/roles/${roleId}/requests`), {
+        method: "POST",
+        body: { message },
+        idempotent: key ?? true,
+        schema: c.joinRequestCreateResponse.shape.data,
+      }),
+    requests: (slug: string, id: string, status?: "pending" | "accepted" | "declined") =>
+      apiClient(j(`/c/${slug}/team-posts/${id}/requests${status ? `?status=${status}` : ""}`), {
+        schema: c.joinRequestListResponse.shape.data,
+      }),
+    decide: (
+      slug: string,
+      requestId: string,
+      decision: "accepted" | "declined",
+      note?: string,
+      key?: string,
+    ) =>
+      apiClient(j(`/c/${slug}/join-requests/${requestId}/decision`), {
+        method: "POST",
+        body: note ? { decision, note } : { decision },
+        idempotent: key ?? true,
+        schema: c.joinRequestDecisionResponse.shape.data,
+      }),
+    withdraw: (slug: string, requestId: string) =>
+      apiClient(j(`/c/${slug}/join-requests/${requestId}`), {
+        method: "DELETE",
+        schema: c.joinRequestWithdrawResponse.shape.data,
+      }),
+    myRequests: (slug: string, status?: string) =>
+      apiClient(j(`/c/${slug}/me/join-requests${status ? `?status=${status}` : ""}`), {
+        schema: c.myJoinRequestListResponse.shape.data,
       }),
   },
 

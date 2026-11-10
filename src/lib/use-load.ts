@@ -25,7 +25,7 @@ function sameDeps(a: React.DependencyList, b: React.DependencyList): boolean {
 export function useLoad<T>(
   fn: (signal: AbortSignal) => Promise<T>,
   deps: React.DependencyList,
-): LoadState<T> & { reload: () => void } {
+): LoadState<T> & { reload: () => void; refreshing: boolean } {
   const [tick, setTick] = React.useState(0);
   const [settled, setSettled] = React.useState<Settled<T> | null>(null);
   const fnRef = React.useRef(fn);
@@ -59,9 +59,16 @@ export function useLoad<T>(
   }, [tick, ...deps]);
 
   const reload = React.useCallback(() => setTick((n) => n + 1), []);
+  const sameInputs = settled ? sameDeps(settled.deps, deps) : false;
+  // After `reload` the screen keeps showing the data it already has (and `refreshing` is true) instead of falling
+  // back to a skeleton: an answer to "Accept" must not make the whole page flash. A failed answer still shows the
+  // error, and a retry after an error shows loading.
   const state: LoadState<T> =
-    settled && settled.tick === tick && sameDeps(settled.deps, deps)
+    settled && sameInputs && (settled.tick === tick || settled.state.status === "ready")
       ? settled.state
       : { status: "loading", data: null, error: null };
-  return { ...state, reload };
+  const refreshing = Boolean(
+    settled && sameInputs && settled.tick !== tick && settled.state.status === "ready",
+  );
+  return { ...state, reload, refreshing };
 }

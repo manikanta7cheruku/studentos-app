@@ -21,7 +21,7 @@ Member (all under `/c/{slug}`):
 | Area | Routes |
 |---|---|
 | Campus | `/campus` (feed: announcements first) · `/campus/announcements/[id]` · `/campus/events` `/events/[id]` · `/campus/lost-found` `/[id]` `/new` · `/campus/market` `/[id]` `/new` · `/campus/notes` `/[id]` `/new` · `/campus/activities` |
-| Collaborate | `/collaborate` · `/collaborate/posts/[id]` · `/collaborate/new` · `/collaborate/mine` · `/collaborate/requests` · `/collaborate/skills` |
+| Collaborate | `/collaborate` (Team Finder: all posts or mine, search, kind filter, show more) · `/collaborate/new` (post to your college or Global) · `/collaborate/[id]` (the post and its roles) · `/collaborate/[id]/edit` · `/collaborate/requests` (posts with requests waiting for my answer, and the requests I sent) |
 | Career | `/career` · `/career/tracker` `/tracker/[id]` · `/career/opportunities` `/[id]` · `/career/roadmap` `/plan` `/resume` `/practice` `/review` (flagged) |
 | Me | `/me` (my profile) · `/me/edit` (profile and photo) · `/me/skills` · `/me/settings` (privacy, reminders, sign out, leave the college, delete the account) · `/notifications` · `/people` (directory with search) · `/people/[userId]` · later: `/me/projects` `/[id]` · `/me/achievements` |
 | Admin | `/admin` · `/admin/verification` · `/admin/members` · `/admin/invites` · `/admin/roster` · `/admin/content` · `/admin/reports` · `/admin/settings` · `/admin/audit` |
