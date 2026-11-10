@@ -1,5 +1,6 @@
 import type { ZodType } from "zod";
 import * as admin from "./admin";
+import * as applications from "./applications";
 import * as auth from "./auth";
 import * as common from "./common";
 import * as engagement from "./engagement";
@@ -271,6 +272,37 @@ export const endpoints: Endpoint[] = [
   e("OPP-04", "DELETE", "/me/saved-opportunities/{id}", "ses", "Unsave an opportunity", {
     response: opportunities.savedOpportunityResponse,
   }),
+  e("APP-01", "POST", "/me/applications", "ses", "Add an application to my tracker", {
+    body: applications.applicationCreateBody,
+    response: applications.applicationResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("APP-02", "GET", "/me/applications", "ses", "My applications (status, sort, search)", {
+    query: applications.applicationListQuery,
+    response: applications.applicationListResponse,
+  }),
+  e("APP-03", "GET", "/me/applications/{id}", "ses", "One application with its history", {
+    response: applications.applicationResponse,
+  }),
+  e("APP-03", "PATCH", "/me/applications/{id}", "ses", "Edit an application (If-Match: version)", {
+    body: applications.applicationPatchBody,
+    response: applications.applicationResponse,
+  }),
+  e("APP-03", "DELETE", "/me/applications/{id}", "ses", "Delete an application", {
+    response: applications.applicationDeleteResponse,
+  }),
+  e(
+    "APP-04",
+    "POST",
+    "/me/applications/{id}/status",
+    "ses",
+    "Change the status (writes an event)",
+    {
+      body: applications.applicationStatusBody,
+      response: applications.applicationResponse,
+    },
+  ),
   e("REM-01", "GET", "/me/reminder-settings", "ses", "Are deadline reminders on?", {
     response: opportunities.reminderSettingsResponse,
   }),

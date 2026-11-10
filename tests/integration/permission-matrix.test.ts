@@ -5,6 +5,16 @@ import { POST as logout } from "@/app/api/v1/auth/logout/route";
 import { GET as myMembership } from "@/app/api/v1/c/[slug]/me/membership/route";
 import { GET as publicCollege } from "@/app/api/v1/colleges/public/[slug]/route";
 import { POST as joinInvite } from "@/app/api/v1/c/[slug]/join/invite/route";
+import {
+  GET as listApplications,
+  POST as createApplication,
+} from "@/app/api/v1/me/applications/route";
+import {
+  DELETE as deleteApplication,
+  GET as getApplication,
+  PATCH as patchApplication,
+} from "@/app/api/v1/me/applications/[id]/route";
+import { POST as changeApplicationStatus } from "@/app/api/v1/me/applications/[id]/status/route";
 import { GET as googleStart } from "@/app/api/v1/auth/google/route";
 import { GET as googleCallback } from "@/app/api/v1/auth/google/callback/route";
 import { POST as joinOpen } from "@/app/api/v1/c/[slug]/join/open/route";
@@ -290,6 +300,77 @@ const modOnly = (ok: number): Record<Principal, Expected> => ({
 });
 
 const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }[] = [
+  {
+    op: "APP-01 POST /me/applications (any signed in person, private)",
+    call: (cookie) =>
+      call(createApplication, {
+        method: "POST",
+        path: "/api/v1/me/applications",
+        json: { company: "Matrix Co", role_title: "Tester" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: signedIn(201),
+  },
+  {
+    op: "APP-02 GET /me/applications (any signed in person, own rows only)",
+    call: (cookie) =>
+      call(listApplications, { path: "/api/v1/me/applications", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "APP-03 GET /me/applications/{id} (someone else's or unknown id is 404)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(getApplication, {
+        path: `/api/v1/me/applications/${id}`,
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "APP-03 PATCH /me/applications/{id} (someone else's or unknown id is 404)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(patchApplication, {
+        method: "PATCH",
+        path: `/api/v1/me/applications/${id}`,
+        json: { notes: "x" },
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "APP-03 DELETE /me/applications/{id} (someone else's or unknown id is 404)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(deleteApplication, {
+        method: "DELETE",
+        path: `/api/v1/me/applications/${id}`,
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "APP-04 POST /me/applications/{id}/status (someone else's or unknown id is 404)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(changeApplicationStatus, {
+        method: "POST",
+        path: `/api/v1/me/applications/${id}/status`,
+        json: { status: "applied" },
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
   {
     op: "AUTH-05 GET /auth/google (public: always a redirect, to Google or back to sign in)",
     call: (cookie) =>

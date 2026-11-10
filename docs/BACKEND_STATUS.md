@@ -16,6 +16,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Notifications and moderation | NTF-01, NTF-02, ANN-01, ANN-02, RPT-01, RPT-02, RPT-03, RPT-04, WL-01 | notifications, announcements, reports, blocks, waitlist |
 | Team Finder | TMF-01, TMF-02, TMF-03, TMF-04, TMF-05, TMF-06, TMF-07, TMF-08, TMF-09, TMF-10 | posts, roles, requests, decisions |
 | Career | OPP-01, OPP-02, OPP-03, OPP-04, REM-01 | curated opportunities, saved, reminders |
+| Application tracker | APP-01, APP-02, APP-03, APP-04 | my applications, edit with a version check, status changes with a history (built by R3 in Day 7, private to the person) |
 
 ## 2. Not built
 
@@ -26,7 +27,6 @@ These ids are in `docs/API_CONTRACT.md` but have no route yet. "Needs" says what
 | TEN-06 | Claim a roster row | a decision on roster import (ADM-04) first |
 | PRF-07 | Achievements | a product decision (P1, not needed for the first release) |
 | PRJ-01, PRJ-02, PRJ-03, PRJ-04, PRJ-05, PRJ-06 | Projects and the public portfolio | a product decision and an owner (not in the roadmap for R2); the public portfolio also needs a privacy review |
-| APP-01, APP-02, APP-03, APP-04 | Application tracker | R3 builds it (R3-D7-1); R2 reviews it (R2-D7-2) when it is pushed |
 | ADM-01, ADM-02 | Platform admin: create or suspend a college | a "platform admin" role does not exist yet. The first colleges are created with `supabase/production/create-college.sql` (docs/PRODUCTION_SETUP.md section 6) |
 | ADM-04 | Roster import | a decision (P1) |
 | ADM-12 | College data export | a decision (P1) and a privacy review |
