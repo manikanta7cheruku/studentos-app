@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { MSWProvider } from "@/mocks";
+import { OfflineBanner } from "@/components/app/offline-banner";
 
 const fraunces = localFont({
   src: "../../public/fonts/fraunces/fraunces-variable.ttf",
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${publicSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <OfflineBanner />
         <MSWProvider>{children}</MSWProvider>
       </body>
     </html>

@@ -1,5 +1,9 @@
-import { MembersScreen } from "@/features/admin/components/members-screen";
+import type { Metadata } from "next";
+import { MembersScreen } from "@/features/admin-console";
 
-export default function MembersPage() {
+export const metadata: Metadata = { title: "Members | StudentOS admin" };
+export const instant = false;
+
+export default function Page() {
   return <MembersScreen />;
 }

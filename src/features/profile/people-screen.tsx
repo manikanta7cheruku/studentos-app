@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { ReportButton } from "@/features/admin-console/report-button";
 import { ProfileView } from "./profile-view";
 
 /** The people of this college who chose to be visible, with a search by name or interest. */
@@ -135,7 +136,18 @@ export function PersonScreen({ userId }: { userId: string }) {
           <LoadError error={state.error} onRetry={state.reload} what="this profile" />
         )
       ) : (
-        <ProfileView person={state.data} />
+        <ProfileView
+          person={state.data}
+          actions={
+            state.data.is_self ? undefined : (
+              <ReportButton
+                targetType="profile"
+                targetId={state.data.user_id}
+                what="this profile"
+              />
+            )
+          }
+        />
       )}
     </div>
   );

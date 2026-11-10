@@ -23,6 +23,7 @@ import { useCollege } from "@/features/college";
 import { KIND_LABEL, formatDeadline } from "./labels";
 import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
+import { ReportButton } from "@/features/admin-console/report-button";
 import { RoleList } from "./role-list";
 
 function CloseDialog({
@@ -113,6 +114,11 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
             {formatDeadline(post.deadline)}
           </span>
         </p>
+        {!post.is_owner ? (
+          <div>
+            <ReportButton targetType="team_post" targetId={post.id} what="this post" />
+          </div>
+        ) : null}
         {post.is_owner && post.status === "open" ? (
           <div className="flex flex-wrap gap-3">
             <Button asChild variant="outline">
