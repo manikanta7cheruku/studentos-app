@@ -30,7 +30,7 @@ export function ScreenMessage({
       className={cn("mx-auto flex w-full max-w-xl flex-col gap-4 px-5 py-16 sm:py-24", className)}
     >
       {eyebrow ? (
-        <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
           {eyebrow}
         </p>
       ) : null}
@@ -38,13 +38,13 @@ export function ScreenMessage({
         {title}
       </h1>
       {children ? (
-        <div className="text-pretty text-[17px] leading-relaxed text-ink-muted">{children}</div>
+        <div className="text-pretty text-[15px] leading-relaxed text-ink-muted">{children}</div>
       ) : null}
       {actions ? <div className="mt-2 flex flex-wrap items-center gap-3">{actions}</div> : null}
       {requestId ? (
         <p className="mt-4 text-sm text-ink-muted">
           If this keeps happening, tell us this code:{" "}
-          <code className="rounded bg-border/60 px-1.5 py-0.5 font-mono text-[13px] text-ink">
+          <code className="rounded bg-border/60 px-1.5 py-0.5 font-mono text-[12px] text-ink">
             {requestId}
           </code>
         </p>

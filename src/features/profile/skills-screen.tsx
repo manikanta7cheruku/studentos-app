@@ -82,11 +82,11 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
       {trimmed ? (
         <div aria-live="polite">
           {failed ? (
-            <p className="text-[15px] text-danger">We could not search just now. Try again.</p>
+            <p className="text-[13.5px] text-danger">We could not search just now. Try again.</p>
           ) : !settled ? (
-            <p className="text-[15px] text-ink-muted">Searching…</p>
+            <p className="text-[13.5px] text-ink-muted">Searching…</p>
           ) : results.length === 0 ? (
-            <p className="text-[15px] text-ink-muted">
+            <p className="text-[13.5px] text-ink-muted">
               No skill found for &ldquo;{trimmed}&rdquo;. Try another word.
             </p>
           ) : (
@@ -102,12 +102,12 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
                     className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span>
-                      <span className="text-[16px] font-medium">{hit.name}</span>
+                      <span className="text-[14px] font-medium">{hit.name}</span>
                       {hit.category ? (
-                        <span className="ml-2 text-[14px] text-ink-muted">{hit.category}</span>
+                        <span className="ml-2 text-[13px] text-ink-muted">{hit.category}</span>
                       ) : null}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[14px] font-semibold text-primary">
+                    <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
                       <PlusIcon aria-hidden="true" className="size-4" /> Add
                     </span>
                   </button>
@@ -187,12 +187,12 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
       <section aria-labelledby="my-skills" className="flex flex-col gap-3">
         <h2
           id="my-skills"
-          className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
         >
           Your skills ({rows.length})
         </h2>
         {rows.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-6 text-[17px] text-ink-muted">
+          <p className="rounded-card border border-dashed border-border-strong p-6 text-[15px] text-ink-muted">
             No skills yet. Search above and add the ones you want classmates to find you by.
           </p>
         ) : (
@@ -203,7 +203,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
                 className="grid gap-3 py-4 sm:grid-cols-[1fr_12rem] sm:items-start"
               >
                 <div className="flex flex-col gap-3">
-                  <p className="text-[17px] font-semibold">{row.name}</p>
+                  <p className="text-[15px] font-semibold">{row.name}</p>
                   <FormField
                     label="Link to your work"
                     help="Optional. A link starting with https://"
@@ -223,7 +223,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
                   </FormField>
                 </div>
                 <div className="flex items-end gap-2 sm:flex-col sm:items-stretch">
-                  <label className="flex flex-1 flex-col gap-1.5 text-[15px] font-medium">
+                  <label className="flex flex-1 flex-col gap-1.5 text-[13.5px] font-medium">
                     Level
                     <select
                       value={row.level}
@@ -275,7 +275,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
         <Button variant="ghost" size="lg" onClick={() => router.push(`/c/${slug}/me`)}>
           {dirty ? "Cancel" : "Back"}
         </Button>
-        <span role="status" className="text-[15px] text-ink-muted">
+        <span role="status" className="text-[13.5px] text-ink-muted">
           {saved ? "Saved." : dirty ? "You have changes that are not saved." : ""}
         </span>
       </div>

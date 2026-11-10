@@ -60,8 +60,8 @@ export function FindCollegeScreen() {
         </div>
       </form>
       <div className="mt-10 border-t border-border pt-6">
-        <h2 className="text-[18px] font-semibold">Your college is not on StudentOS yet?</h2>
-        <p className="mt-1 max-w-prose text-[16px] leading-relaxed text-ink-muted">
+        <h2 className="text-[16px] font-semibold">Your college is not on StudentOS yet?</h2>
+        <p className="mt-1 max-w-prose text-[14px] leading-relaxed text-ink-muted">
           No problem, and no college email needed. Global is open to every student. Your profile
           shows that no college has verified you.
         </p>

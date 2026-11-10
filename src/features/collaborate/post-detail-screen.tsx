@@ -90,7 +90,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-4 border-b border-border pb-6">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px]">
           <span className="font-semibold uppercase tracking-[0.06em] text-ink">
             {KIND_LABEL[post.kind]}
           </span>
@@ -99,7 +99,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
         <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           {post.title}
         </h1>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-ink-muted">
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-ink-muted">
           <span>
             by{" "}
             <Link
@@ -153,7 +153,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           <h2 id="about" className="sr-only">
             About
           </h2>
-          <p className="whitespace-pre-line text-[17px] leading-relaxed">{post.description}</p>
+          <p className="whitespace-pre-line text-[15px] leading-relaxed">{post.description}</p>
         </section>
       ) : null}
 
@@ -199,7 +199,7 @@ export function PostDetailScreen({ postId }: { postId: string }) {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
       <Link
         href={`/c/${slug}/collaborate`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         ← All posts
       </Link>

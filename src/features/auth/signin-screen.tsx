@@ -156,7 +156,7 @@ export function SigninScreen() {
           noValidate
         >
           <div className="flex flex-col gap-3">
-            <span id="code-label" className="text-[15px] font-medium text-ink">
+            <span id="code-label" className="text-[13.5px] font-medium text-ink">
               Six digit code
             </span>
             <OtpInput
@@ -237,7 +237,7 @@ export function SigninScreen() {
               <GoogleMark /> Continue with Google
             </a>
           </Button>
-          <p className="flex items-center gap-3 text-[14px] text-ink-muted">
+          <p className="flex items-center gap-3 text-[13px] text-ink-muted">
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
             {EMAIL_ON ? "or use your email" : "or"}
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
@@ -256,9 +256,9 @@ export function SigninScreen() {
           aria-disabled="true"
           className="flex flex-col gap-4 rounded-card border border-dashed border-border-strong p-5"
         >
-          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold text-ink">
+          <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold text-ink">
             Sign in with an email code
-            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[13px] font-semibold text-ink-muted">
+            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[12px] font-semibold text-ink-muted">
               Coming soon
             </span>
           </p>

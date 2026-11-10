@@ -35,7 +35,7 @@ export function LoadError({
       </Button>
       {api?.requestId ? (
         <p className="text-sm text-ink-muted">
-          Code for support: <code className="font-mono text-[13px] text-ink">{api.requestId}</code>
+          Code for support: <code className="font-mono text-[12px] text-ink">{api.requestId}</code>
         </p>
       ) : null}
     </div>

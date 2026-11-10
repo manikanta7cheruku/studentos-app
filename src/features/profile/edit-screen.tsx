@@ -111,7 +111,7 @@ function InterestsField({
         <ul className="flex flex-wrap gap-2">
           {value.map((interest) => (
             <li key={interest}>
-              <span className="inline-flex min-h-9 items-center gap-1 rounded-full border border-border bg-surface pl-3 text-[15px]">
+              <span className="inline-flex min-h-9 items-center gap-1 rounded-full border border-border bg-surface pl-3 text-[13.5px]">
                 {interest}
                 <button
                   type="button"
@@ -183,9 +183,9 @@ function PhotoField({ profile, onChanged }: { profile: Profile; onChanged: () =>
           {busy ? <Spinner /> : <CameraIcon aria-hidden="true" />}
           {busy ? "Uploading" : url ? "Change photo" : "Add a photo"}
         </Button>
-        <p className="text-[14px] text-ink-muted">JPEG, PNG, WebP, GIF or AVIF, up to 2 MB.</p>
+        <p className="text-[13px] text-ink-muted">JPEG, PNG, WebP, GIF or AVIF, up to 2 MB.</p>
         {error ? (
-          <p role="alert" className="text-[15px] font-medium text-danger">
+          <p role="alert" className="text-[13.5px] font-medium text-danger">
             {error}
           </p>
         ) : null}

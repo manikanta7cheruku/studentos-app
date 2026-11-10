@@ -41,10 +41,10 @@ export function AuthFrame({
             StudentOS
           </Link>
           {college ? (
-            <span className="flex min-w-0 items-center gap-2.5 text-[15px] font-medium text-ink">
+            <span className="flex min-w-0 items-center gap-2.5 text-[13.5px] font-medium text-ink">
               <span
                 aria-hidden="true"
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-primary font-heading text-[14px] font-bold text-primary-foreground"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-primary font-heading text-[13px] font-bold text-primary-foreground"
               >
                 {initials}
               </span>
@@ -62,7 +62,7 @@ export function AuthFrame({
       >
         <div className="max-w-md">
           {eyebrow ? (
-            <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
               {eyebrow}
             </p>
           ) : null}
@@ -70,14 +70,14 @@ export function AuthFrame({
             {title}
           </h1>
           {intro ? (
-            <div className="mt-4 text-pretty text-[17px] leading-relaxed text-ink-muted">
+            <div className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-muted">
               {intro}
             </div>
           ) : null}
         </div>
         <div className="min-w-0 max-w-md">
           {children}
-          {footer ? <div className="mt-6 text-[15px] text-ink-muted">{footer}</div> : null}
+          {footer ? <div className="mt-6 text-[13.5px] text-ink-muted">{footer}</div> : null}
         </div>
       </main>
     </div>

@@ -140,7 +140,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
     <form onSubmit={submit} className="flex max-w-2xl flex-col gap-7" noValidate>
       {!editing ? (
         <fieldset className="flex flex-col gap-3">
-          <legend className="text-[15px] font-medium text-ink">Post to</legend>
+          <legend className="text-[13.5px] font-medium text-ink">Post to</legend>
           <div className="flex flex-col gap-2 sm:flex-row">
             {spaces.map((item) => {
               const selected = space === item.college.slug;
@@ -163,13 +163,13 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                     className="size-5 accent-[var(--primary)]"
                   />
                   <span className="flex flex-col">
-                    <span className="flex items-center gap-2 text-[16px] font-semibold text-ink">
+                    <span className="flex items-center gap-2 text-[14px] font-semibold text-ink">
                       {item.college.slug === GLOBAL_SLUG ? (
                         <GlobeIcon aria-hidden="true" className="size-4" />
                       ) : null}
                       {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
                     </span>
-                    <span className="text-[14px] text-ink-muted">
+                    <span className="text-[13px] text-ink-muted">
                       {item.college.slug === GLOBAL_SLUG
                         ? "Open to every student"
                         : "Only members of this college"}
@@ -180,7 +180,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
             })}
           </div>
           {!inGlobal ? (
-            <p className="text-[15px] text-ink-muted">
+            <p className="text-[13.5px] text-ink-muted">
               Want students from other colleges to see it too?{" "}
               <Link
                 href={`/c/${GLOBAL_SLUG}/join`}
@@ -279,10 +279,10 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
 
       <section aria-labelledby="roles" className="flex flex-col gap-4">
         <div>
-          <h2 id="roles" className="text-[18px] font-semibold">
+          <h2 id="roles" className="text-[16px] font-semibold">
             Roles you need
           </h2>
-          <p className="text-[15px] text-ink-muted">
+          <p className="text-[13.5px] text-ink-muted">
             {editing
               ? "Roles cannot be changed after posting. Close this post and make a new one to change them."
               : "Add one or more roles. Classmates ask to join a role."}
@@ -293,7 +293,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
             {editing.roles.map((role) => (
               <li key={role.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
                 <span className="font-medium">{role.role_name}</span>
-                <span className="tabular text-[15px] text-ink-muted">
+                <span className="tabular text-[13.5px] text-ink-muted">
                   {role.filled} of {role.slots} filled
                   {role.skills.length ? ` · ${role.skills.join(", ")}` : ""}
                 </span>
@@ -308,7 +308,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                 className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4 sm:p-5"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-[14px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
                     Role {index + 1}
                   </p>
                   {roles.length > 1 ? (
@@ -317,7 +317,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                       onClick={() =>
                         setRoles((current) => current.filter((r) => r.key !== role.key))
                       }
-                      className="inline-flex min-h-11 items-center gap-1.5 rounded-input px-2 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-input px-2 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Trash2Icon aria-hidden="true" className="size-4" /> Remove role {index + 1}
                     </button>
@@ -345,7 +345,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                   </FormField>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-[15px] font-medium text-ink">
+                  <span className="text-[13.5px] font-medium text-ink">
                     Skills that help (optional)
                   </span>
                   <SkillPicker

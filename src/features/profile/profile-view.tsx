@@ -18,7 +18,7 @@ export type ProfileViewData = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="grid gap-3 border-t border-border py-6 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-8">
-      <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted md:pt-1">
+      <h2 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted md:pt-1">
         {title}
       </h2>
       <div className="min-w-0">{children}</div>
@@ -45,12 +45,12 @@ export function ProfileView({
           <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
             {person.display_name}
           </h1>
-          {person.handle ? <p className="text-[16px] text-ink-muted">@{person.handle}</p> : null}
+          {person.handle ? <p className="text-[14px] text-ink-muted">@{person.handle}</p> : null}
           {person.headline ? (
-            <p className="mt-2 text-pretty text-[18px] leading-snug text-ink">{person.headline}</p>
+            <p className="mt-2 text-pretty text-[16px] leading-snug text-ink">{person.headline}</p>
           ) : null}
           {meta.length ? (
-            <p className="mt-1 text-[15px] text-ink-muted">{meta.join(" · ")}</p>
+            <p className="mt-1 text-[13.5px] text-ink-muted">{meta.join(" · ")}</p>
           ) : null}
         </div>
         {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
@@ -58,14 +58,14 @@ export function ProfileView({
 
       {person.bio ? (
         <Section title="About">
-          <p className="max-w-prose whitespace-pre-line text-[17px] leading-relaxed">
+          <p className="max-w-prose whitespace-pre-line text-[15px] leading-relaxed">
             {person.bio}
           </p>
         </Section>
       ) : null}
       {person.career_goal ? (
         <Section title="Career goal">
-          <p className="max-w-prose text-[17px] leading-relaxed">{person.career_goal}</p>
+          <p className="max-w-prose text-[15px] leading-relaxed">{person.career_goal}</p>
         </Section>
       ) : null}
       {person.interests.length ? (
@@ -88,13 +88,13 @@ export function ProfileView({
                 className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3"
               >
                 <span className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="text-[17px] font-medium">{skill.name}</span>
+                  <span className="text-[15px] font-medium">{skill.name}</span>
                   {skill.evidence_url ? (
                     <a
                       href={skill.evidence_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[14px] font-medium text-primary underline underline-offset-4"
+                      className="text-[13px] font-medium text-primary underline underline-offset-4"
                     >
                       See my work
                     </a>

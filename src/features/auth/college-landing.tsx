@@ -59,13 +59,13 @@ export function CollegeLanding({ slug }: { slug: string }) {
           <section aria-labelledby="inside">
             <h2
               id="inside"
-              className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+              className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
             >
               Inside
             </h2>
             <ul className="mt-3 divide-y divide-border border-y border-border">
               {tabs.map((tab) => (
-                <li key={tab} className="py-3 text-[17px] text-ink">
+                <li key={tab} className="py-3 text-[15px] text-ink">
                   {tab}
                 </li>
               ))}

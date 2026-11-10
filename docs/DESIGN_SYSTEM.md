@@ -22,7 +22,7 @@ Tailwind CSS with design tokens in CSS variables, shadcn/ui (built on Radix) cop
 A college can pick its own accent color, but it must have at least 4.5 to 1 contrast on white and on bg. The admin screen blocks bad colors.
 
 ## Type and space
-Body 16px minimum, line height 1.5. Headings use Fraunces. Space scale: 4, 8, 12, 16, 24, 32, 48, 64. Radius: 4 inputs, 8 cards, 12 sheets. Almost no shadows. Use thin borders.
+Compact scale (decision D-28): the page base is 14px (14.5px on phones) and every rem size follows it; body text is 14px, line height 1.5, touch targets stay at least 40px. Headings use Fraunces. Space scale: 4, 8, 12, 16, 24, 32, 48, 64. Radius: 4 inputs, 8 cards, 12 sheets. Almost no shadows. Use thin borders.
 
 ## Rules for every screen
 1. One main action per screen.

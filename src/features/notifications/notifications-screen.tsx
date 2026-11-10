@@ -157,15 +157,15 @@ export function NotificationsScreen() {
                   />
                   <span className="min-w-0 flex-1">
                     <span
-                      className={`block text-[17px] leading-snug ${read ? "text-ink" : "font-semibold text-ink"}`}
+                      className={`block text-[15px] leading-snug ${read ? "text-ink" : "font-semibold text-ink"}`}
                     >
                       {read ? null : <span className="sr-only">Unread: </span>}
                       {item.payload.title}
                     </span>
-                    <span className="mt-1 block text-[16px] leading-relaxed text-ink-muted">
+                    <span className="mt-1 block text-[14px] leading-relaxed text-ink-muted">
                       {item.payload.message}
                     </span>
-                    <span className="mt-1.5 block text-[14px] text-ink-muted">
+                    <span className="mt-1.5 block text-[13px] text-ink-muted">
                       {timeAgo(item.created_at)}
                     </span>
                   </span>

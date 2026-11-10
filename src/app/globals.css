@@ -103,11 +103,21 @@
   --font-heading: var(--font-fraunces), Georgia, serif;
 }
 
+/* A compact scale: every rem size (spacing, buttons, headings) follows this one number. */
+html {
+  font-size: 14px;
+}
+@media (max-width: 640px) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 1rem; /* 16px minimum */
+  font-size: 1rem;
   line-height: 1.5;
 }
 

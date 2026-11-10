@@ -37,8 +37,8 @@ function Row({
   return (
     <div className="flex flex-col gap-4 border-t border-border py-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
       <div className="max-w-prose">
-        <h3 className="text-[18px] font-semibold">{title}</h3>
-        <div className="mt-1 text-[16px] leading-relaxed text-ink-muted">{children}</div>
+        <h3 className="text-[16px] font-semibold">{title}</h3>
+        <div className="mt-1 text-[14px] leading-relaxed text-ink-muted">{children}</div>
       </div>
       <div className="shrink-0">{action}</div>
     </div>
@@ -68,9 +68,9 @@ function Choice({
         onCheckedChange={(value) => onChange(value === true)}
         className="mt-2.5"
       />
-      <label htmlFor={id} className="py-2 text-[16px] leading-snug">
+      <label htmlFor={id} className="py-2 text-[14px] leading-snug">
         <span className="block font-medium text-ink">{label}</span>
-        <span className="block text-[15px] text-ink-muted">{help}</span>
+        <span className="block text-[13.5px] text-ink-muted">{help}</span>
       </label>
     </div>
   );
@@ -123,7 +123,7 @@ function PrivacySection() {
     <section aria-labelledby="privacy" className="flex flex-col">
       <h2
         id="privacy"
-        className="mb-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="mb-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Privacy and reminders
       </h2>
@@ -174,7 +174,7 @@ function PrivacySection() {
           }}
         />
       </div>
-      <p role="status" className="mt-3 min-h-6 text-[15px] text-ink-muted">
+      <p role="status" className="mt-3 min-h-6 text-[13.5px] text-ink-muted">
         {message}
       </p>
       {error ? (
@@ -407,7 +407,7 @@ function SpacesSection() {
     <section aria-labelledby="spaces" className="flex flex-col gap-3">
       <h2
         id="spaces"
-        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Your spaces
       </h2>
@@ -419,10 +419,10 @@ function SpacesSection() {
               key={item.college.slug}
               className="flex min-h-14 items-center justify-between gap-4 py-2"
             >
-              <span className="text-[17px] font-medium">
+              <span className="text-[15px] font-medium">
                 {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
                 {current ? (
-                  <span className="ml-2 text-[14px] font-normal text-ink-muted">you are here</span>
+                  <span className="ml-2 text-[13px] font-normal text-ink-muted">you are here</span>
                 ) : null}
               </span>
               {current ? null : (
@@ -435,7 +435,7 @@ function SpacesSection() {
         })}
       </ul>
       {inGlobal ? null : (
-        <p className="text-[15px] text-ink-muted">
+        <p className="text-[13.5px] text-ink-muted">
           Not in Global yet. It is open to every student, with no college email needed.{" "}
           <Link
             href={`/c/${GLOBAL_SLUG}/join`}
@@ -461,7 +461,7 @@ export function SettingsScreen() {
       <SpacesSection />
       <PrivacySection />
       <div className="flex flex-col">
-        <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+        <h2 className="mb-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
           Account
         </h2>
         <SignOutRow />
