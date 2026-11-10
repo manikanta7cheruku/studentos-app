@@ -23,12 +23,15 @@ import { useCooldown } from "./use-cooldown";
 type Step = "email" | "code";
 
 const GOOGLE_ON = process.env.NEXT_PUBLIC_GOOGLE_SIGNIN === "enabled";
+// Email codes are on unless an environment switches them off (until an email sender is set up). Then the email form
+// is shown disabled with "Coming soon".
+const EMAIL_ON = process.env.NEXT_PUBLIC_EMAIL_SIGNIN !== "disabled";
 
 // What the server tells us in `?error=` after a Continue with Google that did not work.
 const GOOGLE_ERRORS: Record<string, string> = {
-  google_unavailable: "Google sign in is not available right now. Use your email instead.",
-  google_cancelled: "You cancelled the Google sign in. You can try again or use your email.",
-  google_failed: "Google sign in did not work. Try again, or use your email.",
+  google_unavailable: "Google sign in is not available right now. Please try again later.",
+  google_cancelled: "You cancelled the Google sign in. You can try again.",
+  google_failed: "Google sign in did not work. Please try again.",
 };
 
 function GoogleMark() {
@@ -208,7 +211,11 @@ export function SigninScreen() {
     <AuthFrame
       eyebrow="Sign in"
       title="Sign in to your college."
-      intro="Use your email address. We will send you a code, so there is no password to remember. New here? The same steps create your account."
+      intro={
+        EMAIL_ON
+          ? "Use your email address. We will send you a code, so there is no password to remember. New here? The same steps create your account."
+          : "Sign in with your Google account. There is no password to remember. New here? The same step creates your account."
+      }
       footer={
         <p>
           By continuing you agree to the{" "}
@@ -232,7 +239,7 @@ export function SigninScreen() {
           </Button>
           <p className="flex items-center gap-3 text-[14px] text-ink-muted">
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
-            or use your email
+            {EMAIL_ON ? "or use your email" : "or"}
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
           </p>
         </div>
@@ -244,50 +251,73 @@ export function SigninScreen() {
           </Banner>
         </div>
       ) : null}
-      <form onSubmit={sendCode} className="flex flex-col gap-5" noValidate>
-        <FormField
-          label="Email address"
-          help="Your college email works best. Any email you can open is fine."
-          error={emailError ?? undefined}
-          required
+      {EMAIL_ON ? null : (
+        <div
+          aria-disabled="true"
+          className="flex flex-col gap-4 rounded-card border border-dashed border-border-strong p-5"
         >
-          <Input
-            type="email"
-            name="email"
-            inputMode="email"
-            autoComplete="email"
-            autoCapitalize="none"
-            spellCheck={false}
-            autoFocus
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="name@college.edu"
-          />
-        </FormField>
-        {error ? (
+          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold text-ink">
+            Sign in with an email code
+            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[13px] font-semibold text-ink-muted">
+              Coming soon
+            </span>
+          </p>
+          <FormField label="Email address" help="Not available yet. Please use Google for now.">
+            <Input type="email" disabled placeholder="name@college.edu" />
+          </FormField>
           <div>
-            <Banner variant="error">
-              <p>{error}</p>
-              {requestId ? (
-                <p className="mt-1 text-sm text-ink-muted">Support code: {requestId}</p>
-              ) : null}
-            </Banner>
+            <Button type="button" size="lg" disabled className="w-full sm:w-auto">
+              <MailIcon aria-hidden="true" /> Email me a code
+            </Button>
           </div>
-        ) : null}
-        <div>
-          <Button type="submit" size="lg" disabled={busy} className="w-full sm:w-auto">
-            {busy ? (
-              <>
-                <Spinner /> Sending
-              </>
-            ) : (
-              <>
-                <MailIcon aria-hidden="true" /> Email me a code
-              </>
-            )}
-          </Button>
         </div>
-      </form>
+      )}
+      {EMAIL_ON ? (
+        <form onSubmit={sendCode} className="flex flex-col gap-5" noValidate>
+          <FormField
+            label="Email address"
+            help="Your college email works best. Any email you can open is fine."
+            error={emailError ?? undefined}
+            required
+          >
+            <Input
+              type="email"
+              name="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              autoFocus
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@college.edu"
+            />
+          </FormField>
+          {error ? (
+            <div>
+              <Banner variant="error">
+                <p>{error}</p>
+                {requestId ? (
+                  <p className="mt-1 text-sm text-ink-muted">Support code: {requestId}</p>
+                ) : null}
+              </Banner>
+            </div>
+          ) : null}
+          <div>
+            <Button type="submit" size="lg" disabled={busy} className="w-full sm:w-auto">
+              {busy ? (
+                <>
+                  <Spinner /> Sending
+                </>
+              ) : (
+                <>
+                  <MailIcon aria-hidden="true" /> Email me a code
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      ) : null}
     </AuthFrame>
   );
 }
