@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { GET as googleStart } from "@/app/api/v1/auth/google/route";
 import { GET as googleCallback } from "@/app/api/v1/auth/google/callback/route";
-import { call } from "./helpers";
+import { GET as profileGet } from "@/app/api/v1/me/profile/route";
+import { POST as otpRequest } from "@/app/api/v1/auth/otp/request/route";
+import { POST as otpVerify } from "@/app/api/v1/auth/otp/verify/route";
+import { adminClient } from "@/server/admin/supabase-admin";
+import { call, deleteTestUsers, randomEmail, signIn } from "./helpers";
 
 // AUTH-05 and AUTH-06: Continue with Google. The local stack has Google switched off (it needs a Google client), so
 // these tests check what the server does around Google: where it sends people, and that it never follows an unsafe
@@ -66,5 +70,20 @@ describe("AUTH-06 callback", () => {
     expect(result.status).toBe(302);
     expect(result.headers.get("location")).toBe(`${APP}/signin?error=google_failed`);
     expect(result.headers.get("set-cookie") ?? "").not.toContain("sb-");
+  });
+});
+
+describe("a Google user whose profile row is missing", () => {
+  it("gets a profile made on the first read of GET /me/profile, so Me and Settings open", async () => {
+    const email = randomEmail("goog");
+    const session = await signIn({ request: otpRequest, verify: otpVerify }, email);
+    await adminClient().from("profiles").delete().eq("user_id", session.userId);
+
+    const result = await call(profileGet, { path: "/api/v1/me/profile", cookie: session.cookie });
+    expect(result.status).toBe(200);
+    expect((result.body as { data: { display_name: string } }).data.display_name).toBe(
+      email.split("@")[0],
+    );
+    await deleteTestUsers();
   });
 });
