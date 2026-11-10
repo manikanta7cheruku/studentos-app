@@ -77,7 +77,7 @@ Checkpoint 1 (end of Day 2): sign in, join with invite code and college email, p
 - **R1-D4-3** Write the usability test plan for staging. Branch: `r1/d4-usability-plan`
 - **R2-D4-1** Notifications, announcements, reports, waitlist. Branch: `r2/d4-notify-announce-report`
 - **R2-D4-2** Security check 1. Branch: `r2/d4-security-pass-1`
-- **R3-D4-1** Projects and portfolio. Branch: `r3/d4-projects-portfolio`
+- **R3-D4-1** Projects and portfolio. Branch: `r3/d4-projects-portfolio`. **Deferred on 2026-11-10 (decision D-26):** the project and portfolio endpoints (PRJ-01 to PRJ-06) do not exist, nobody owns them, and a public portfolio page needs a privacy review. R3 went on with Days 5, 6 and 7 (Team Finder and the tracker, whose backend is ready or built in the same task). Day 4 comes back after the first release.
 - **R4-D4-1** Notifications, announcements and report screens. Branch: `r4/d4-notify-report-ui`
 - **R4-D4-2** Build the landing page. Branch: `r4/d4-landing-build`
 - **R5-D4-1** Tests for admin, profile and projects. Branch: `r5/d4-admin-profile-tests`

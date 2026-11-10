@@ -50,6 +50,9 @@ Tokens added: `--tone-1-bg` to `--tone-6-fg` (avatar tones), `--safe-bottom` (sp
 
 Layout rules for the shell: content column at most 56rem (3xl to 4xl) so lines stay readable, 20px side gutter on a phone and 32px from 768px, left aligned headings, thin borders instead of shadows, a dividing rule under the page header. College accent colour: set with `accentVars(hex)` in `src/lib/color.ts`, which falls back to the StudentOS blue when the colour has less than 4.5 to 1 contrast on white.
 
+### Lists of posts (Team Finder)
+A list is rows separated by thin rules, not a grid of cards. Each row: a small caps kind label, a status pill (words, not colour alone), the title as the only link (stretched over the row with `after:absolute after:inset-0`, so a screen reader hears just the title and a finger can use the whole row), two lines of text, role chips with how many places are free, then who and when. Filters are pressed buttons (`aria-pressed`) 44px high, a search box, and one checkbox. "Show more" loads the next page; there is no endless scroll. Roles are chips; a form with repeated parts (roles) uses one bordered block per part with a clear "Remove role 2" button.
+
 ## Do not do (this is what makes UI look AI generated)
 Gradients and glowing blobs, glass effects, rows of three identical icon cards, fake numbers, fake reviews, emoji as icons, stock photos of smiling students, bouncing animations, huge shadows, centered everything.
 

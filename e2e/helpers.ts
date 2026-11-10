@@ -132,3 +132,27 @@ export async function signInThroughUi(
   await page.getByRole("heading", { name: /enter the code/i }).waitFor();
   await page.getByLabel(/six digit code from your email/i).fill(await codeFor(email));
 }
+
+// A new student who has joined Alpha College with a fresh invite code, through the real screens. Returns the email.
+export async function memberOfAlpha(
+  page: import("@playwright/test").Page,
+  label: string,
+): Promise<string> {
+  const email = uniqueEmail();
+  const invite = await createInvite(label);
+  await signInThroughUi(page, email, "/c/alpha/join");
+  await page
+    .getByLabel(/invite code/i)
+    .last()
+    .fill(invite);
+  await page.getByRole("button", { name: /join with this code/i }).click();
+  await page.waitForURL(/\/c\/alpha\/campus$/);
+  return email;
+}
+
+// The same person joins Global (open to every student).
+export async function joinGlobalThroughUi(page: import("@playwright/test").Page): Promise<void> {
+  await page.goto("/c/global/join");
+  await page.getByRole("button", { name: /join global/i }).click();
+  await page.waitForURL(/\/c\/global\/collaborate$/);
+}

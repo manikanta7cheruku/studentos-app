@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +21,7 @@ import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
+import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useCollege } from "@/features/college";
 import { useSession } from "@/features/session/session-provider";
 
@@ -396,6 +398,57 @@ function SignOutRow() {
   );
 }
 
+function SpacesSection() {
+  const { slug } = useCollege();
+  const session = useSession();
+  const spaces = session.colleges.filter((item) => item.membership.status === "active");
+  const inGlobal = spaces.some((item) => item.college.slug === GLOBAL_SLUG);
+  return (
+    <section aria-labelledby="spaces" className="flex flex-col gap-3">
+      <h2
+        id="spaces"
+        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+      >
+        Your spaces
+      </h2>
+      <ul className="divide-y divide-border border-y border-border">
+        {spaces.map((item) => {
+          const current = item.college.slug === slug;
+          return (
+            <li
+              key={item.college.slug}
+              className="flex min-h-14 items-center justify-between gap-4 py-2"
+            >
+              <span className="text-[17px] font-medium">
+                {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
+                {current ? (
+                  <span className="ml-2 text-[14px] font-normal text-ink-muted">you are here</span>
+                ) : null}
+              </span>
+              {current ? null : (
+                <Button asChild variant="outline">
+                  <Link href={homePath(item.college.slug)}>Open</Link>
+                </Button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {inGlobal ? null : (
+        <p className="text-[15px] text-ink-muted">
+          Not in Global yet. It is open to every student, with no college email needed.{" "}
+          <Link
+            href={`/c/${GLOBAL_SLUG}/join`}
+            className="font-medium text-primary underline underline-offset-4"
+          >
+            Join Global
+          </Link>
+        </p>
+      )}
+    </section>
+  );
+}
+
 export function SettingsScreen() {
   const { slug } = useCollege();
   return (
@@ -405,6 +458,7 @@ export function SettingsScreen() {
         description="Who sees you, what we remind you about, and your account."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
+      <SpacesSection />
       <PrivacySection />
       <div className="flex flex-col">
         <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
