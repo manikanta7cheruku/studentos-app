@@ -58,10 +58,14 @@ const fail = (detail) => ({ status: "FAIL", detail });
 const warn = (detail) => ({ status: "WARN", detail });
 
 const get = (url, init) => fetch(url, { redirect: "manual", ...init });
+// Old style keys are JWTs and go in both headers. New style keys (sb_publishable_..., sb_secret_...) are not JWTs:
+// Supabase wants them in the apikey header only.
+const keyHeaders = (key) =>
+  /^eyJ/.test(key) ? { apikey: key, authorization: `Bearer ${key}` } : { apikey: key };
 const rest = (path, key, init = {}) =>
   get(`${supabaseUrl}/rest/v1/${path}`, {
     ...init,
-    headers: { apikey: key, authorization: `Bearer ${key}`, ...(init.headers ?? {}) },
+    headers: { ...keyHeaders(key), ...(init.headers ?? {}) },
   });
 
 console.log(`\nStudentOS environment check: ${app}${production ? "  [production rules]" : ""}\n`);
@@ -142,6 +146,15 @@ if (!supabaseUrl || !anonKey) {
     "database checks",
     "NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY not given, skipped",
   );
+} else if (
+  (await get(`${supabaseUrl}/auth/v1/settings`, { headers: { apikey: anonKey } })).status !== 200
+) {
+  // A key Supabase rejects makes every "anon cannot read" line pass for the wrong reason (401), so stop here.
+  record(
+    "FAIL",
+    "Supabase accepts NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "it was rejected: use the publishable key (starts with sb_publishable_) or the old anon key, with no quotes, spaces or angle brackets in the --env file. The database checks were skipped because they would prove nothing",
+  );
 } else {
   console.log("\n-- The database, as a visitor who is not signed in (anon key)");
   const privateTables = [
@@ -217,6 +230,12 @@ if (!supabaseUrl || !anonKey) {
       "database checks with the service key",
       "SUPABASE_SERVICE_ROLE_KEY not given, skipped",
     );
+  } else if ((await rest("colleges?select=id&limit=1", serviceKey)).status >= 300) {
+    record(
+      "FAIL",
+      "Supabase accepts SUPABASE_SERVICE_ROLE_KEY",
+      "it was rejected: use the secret key (starts with sb_secret_) or the old service_role key, with no quotes, spaces or angle brackets in the --env file. The checks with the service key were skipped",
+    );
   } else {
     console.log("\n-- The database, with the service key (read only)");
     if (production && serviceKey.includes("service_role") && supabaseUrl.includes("127.0.0.1")) {
@@ -261,7 +280,7 @@ if (!supabaseUrl || !anonKey) {
     });
     await check("the avatars bucket exists with the image types and the 2 MB limit", async () => {
       const response = await get(`${supabaseUrl}/storage/v1/bucket/avatars`, {
-        headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+        headers: keyHeaders(serviceKey),
       });
       if (response.status !== 200)
         return fail(`status ${response.status}: push migration 20261110000000`);
@@ -303,7 +322,7 @@ if (!supabaseUrl || !anonKey) {
       await check("no sample (seed) people or colleges in production", async () => {
         const users = await (
           await get(`${supabaseUrl}/auth/v1/admin/users?per_page=1000`, {
-            headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+            headers: keyHeaders(serviceKey),
           })
         ).json();
         const seed = (users.users ?? []).filter((u) => /@(alpha|beta)\.test$/.test(u.email ?? ""));
