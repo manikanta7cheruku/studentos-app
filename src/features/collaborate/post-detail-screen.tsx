@@ -22,6 +22,7 @@ import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { KIND_LABEL, formatDeadline } from "./labels";
 import { StatusPill } from "./post-row";
+import { PostRequests } from "./post-requests";
 import { RoleList } from "./role-list";
 
 function CloseDialog({
@@ -175,7 +176,9 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
         </section>
       ) : null}
 
-      <RoleList post={post} />
+      <RoleList post={post} onChanged={reload} />
+
+      {post.is_owner ? <PostRequests post={post} onChanged={reload} /> : null}
 
       <CloseDialog post={post} open={closing} onOpenChange={setClosing} onClosed={reload} />
     </article>

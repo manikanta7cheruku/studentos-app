@@ -185,11 +185,16 @@ export function TeamFinderScreen() {
         title="Find your team"
         description="Projects, hackathons and startups looking for people. Ask to join a role, or post your own."
         actions={
-          <Button asChild size="lg">
-            <Link href={`/c/${slug}/collaborate/new`}>
-              <PlusIcon aria-hidden="true" /> New post
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline" size="lg">
+              <Link href={`/c/${slug}/collaborate/requests`}>Requests</Link>
+            </Button>
+            <Button asChild size="lg">
+              <Link href={`/c/${slug}/collaborate/new`}>
+                <PlusIcon aria-hidden="true" /> New post
+              </Link>
+            </Button>
+          </>
         }
       />
 
