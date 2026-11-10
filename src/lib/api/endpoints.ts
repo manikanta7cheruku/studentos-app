@@ -22,6 +22,11 @@ export type TeamPostDetail = Data<typeof c.teamPostResponse>;
 export type JoinRequestItem = Data<typeof c.joinRequestListResponse>[number];
 export type MyJoinRequest = Data<typeof c.myJoinRequestListResponse>[number];
 export type TeamPostKind = z.infer<typeof c.teamPostKind>;
+export type Application = Data<typeof c.applicationListResponse>[number];
+export type ApplicationDetail = Data<typeof c.applicationResponse>;
+export type ApplicationStatus = z.infer<typeof c.applicationStatus>;
+export type Opportunity = Data<typeof c.opportunityResponse>;
+export type OpportunityKind = z.infer<typeof c.opportunityKind>;
 
 const j = (path: string) => path;
 
@@ -244,6 +249,82 @@ export const api = {
     myRequests: (slug: string, status?: string) =>
       apiClient(j(`/c/${slug}/me/join-requests${status ? `?status=${status}` : ""}`), {
         schema: c.myJoinRequestListResponse.shape.data,
+      }),
+  },
+
+  applications: {
+    list: () =>
+      apiClient(j("/me/applications?sort=updated"), {
+        schema: c.applicationListResponse.shape.data,
+      }),
+    one: (id: string) =>
+      apiClient(j(`/me/applications/${id}`), { schema: c.applicationResponse.shape.data }),
+    create: (body: z.input<typeof c.applicationCreateBody>, key?: string) =>
+      apiClient(j("/me/applications"), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.applicationResponse.shape.data,
+      }),
+    // `version` is the number the screen last saw. A stale one is refused with VERSION_CONFLICT.
+    patch: (id: string, body: z.input<typeof c.applicationPatchBody>, version: number) =>
+      apiClient(j(`/me/applications/${id}`), {
+        method: "PATCH",
+        body,
+        headers: { "If-Match": String(version) },
+        schema: c.applicationResponse.shape.data,
+      }),
+    status: (id: string, status: ApplicationStatus, note: string, version: number) =>
+      apiClient(j(`/me/applications/${id}/status`), {
+        method: "POST",
+        body: note ? { status, note } : { status },
+        headers: { "If-Match": String(version) },
+        schema: c.applicationResponse.shape.data,
+      }),
+    remove: (id: string) =>
+      apiClient(j(`/me/applications/${id}`), {
+        method: "DELETE",
+        schema: c.applicationDeleteResponse.shape.data,
+      }),
+  },
+
+  opportunities: {
+    list: (
+      slug: string,
+      filters: {
+        kinds?: OpportunityKind[];
+        mode?: "onsite" | "remote" | "hybrid";
+        q?: string;
+        saved?: boolean;
+        deadline?: "any" | "7d" | "30d" | "hide_closed";
+        cursor?: string;
+      } = {},
+    ) => {
+      const query = new URLSearchParams();
+      if (filters.kinds?.length) query.set("kind", filters.kinds.join(","));
+      if (filters.mode) query.set("mode", filters.mode);
+      if (filters.q) query.set("q", filters.q);
+      if (filters.saved) query.set("saved", "true");
+      if (filters.deadline) query.set("deadline", filters.deadline);
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      query.set("limit", "20");
+      return apiFetchEnvelope(j(`/c/${slug}/opportunities?${query}`), {
+        schema: c.opportunityListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/opportunities/${id}`), {
+        schema: c.opportunityResponse.shape.data,
+      }),
+    save: (id: string) =>
+      apiClient(j(`/me/saved-opportunities/${id}`), {
+        method: "PUT",
+        schema: c.savedOpportunityResponse.shape.data,
+      }),
+    unsave: (id: string) =>
+      apiClient(j(`/me/saved-opportunities/${id}`), {
+        method: "DELETE",
+        schema: c.savedOpportunityResponse.shape.data,
       }),
   },
 
