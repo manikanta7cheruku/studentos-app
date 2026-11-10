@@ -9,6 +9,7 @@ import {
   BriefcaseIcon,
   Building2Icon,
   ChevronsUpDownIcon,
+  GlobeIcon,
   LogOutIcon,
   SettingsIcon,
   ShieldCheckIcon,
@@ -19,7 +20,7 @@ import {
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { accentVars } from "@/lib/color";
-import { homePath } from "@/lib/home-path";
+import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
 import { useCollege } from "./college-provider";
 
@@ -91,6 +92,9 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
   const { slug, profile, membership } = useCollege();
   const session = useSession();
   const name = profile?.display_name ?? "You";
+  const spaces = session.colleges.filter((item) => item.membership.status === "active");
+  const others = spaces.filter((item) => item.college.slug !== slug);
+  const inGlobal = spaces.some((item) => item.college.slug === GLOBAL_SLUG);
   const roleLabel =
     membership.role === "college_admin"
       ? "College admin"
@@ -125,6 +129,36 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           sideOffset={8}
           className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[15px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
         >
+          {others.length || !inGlobal ? (
+            <>
+              <DropdownMenu.Label className="px-3 pb-1 pt-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                Switch space
+              </DropdownMenu.Label>
+              {others.map((item) => (
+                <DropdownMenu.Item key={item.college.slug} asChild>
+                  <Link
+                    href={homePath(item.college.slug)}
+                    className="flex min-h-11 items-center gap-3 rounded-md px-3 outline-none data-[highlighted]:bg-accent-soft"
+                  >
+                    <GlobeIcon aria-hidden="true" className="size-[18px] text-ink-muted" />
+                    {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
+                  </Link>
+                </DropdownMenu.Item>
+              ))}
+              {!inGlobal ? (
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href={`/c/${GLOBAL_SLUG}/join`}
+                    className="flex min-h-11 items-center gap-3 rounded-md px-3 outline-none data-[highlighted]:bg-accent-soft"
+                  >
+                    <GlobeIcon aria-hidden="true" className="size-[18px] text-ink-muted" />
+                    Join Global
+                  </Link>
+                </DropdownMenu.Item>
+              ) : null}
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+            </>
+          ) : null}
           <DropdownMenu.Item asChild>
             <Link
               href={`/c/${slug}/me/settings`}
