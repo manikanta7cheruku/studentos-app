@@ -110,8 +110,43 @@ export async function createInvite(
   return code;
 }
 
+// A published opportunity of Alpha College, posted by the seeded Alpha admin. Removed again by cleanUp.
+export async function createOpportunity(label: string): Promise<{ id: string; title: string }> {
+  const db = admin();
+  const { data: college, error: collegeError } = await db
+    .from("colleges")
+    .select("id")
+    .eq("slug", "alpha")
+    .single();
+  if (collegeError) throw collegeError;
+  const title = `E2E ${label} internship`;
+  const { data, error } = await db
+    .from("opportunities")
+    .insert({
+      college_id: college.id,
+      title,
+      org: `E2E Org ${label}`,
+      kind: "internship",
+      location: "Hyderabad",
+      mode: "hybrid",
+      stipend_min: 1500000,
+      stipend_max: 2000000,
+      eligibility: "Third year students of any branch.",
+      skills: ["React", "SQL"],
+      deadline: new Date(Date.now() + 20 * 24 * 3600 * 1000).toISOString(),
+      apply_url: "https://careers.example.test/apply",
+      posted_by: "aaaaaaaa-1000-4000-8000-000000000001",
+      status: "published",
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return { id: data.id, title };
+}
+
 export async function cleanUp(): Promise<void> {
   const db = admin();
+  await db.from("opportunities").delete().like("title", "E2E %");
   await db.from("invite_codes").delete().like("label", "e2e %");
   const { data } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
   for (const user of data?.users ?? []) {

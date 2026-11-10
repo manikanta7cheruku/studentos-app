@@ -373,3 +373,16 @@ Rules for the screens:
 | TEN-08 | GET `/me/memberships` | Every college I belong to or asked to join, newest first, each as `{ college: { slug, name, short_name, city, accent_hex }, membership: { id, role, status, verification_level } }`. Any signed-in person, own rows only. Used right after sign in: no college sends the person to the college list, one college goes straight in, several show a chooser |
 | TEN-09 | POST `/c/{slug}/join/open` | IDEM. Only the Global college (`slug` `global`) allows it; every other college answers 403 FORBIDDEN. The person is active at once with `verification_level` 1 and `verification_method` "open" (signed in, not verified by any college). 10 tries per hour per person. Body is `{}` |
 
+## 16. Application tracker, built in R3 Day 7 (what is real now)
+
+Private to the person. No college is involved, nothing is shared, not even with admins. Statuses: `saved`, `applied`, `assessment`, `interview`, `offer`, `rejected`, `withdrawn`. Dates are `YYYY-MM-DD`.
+
+| ID | Call | Rules |
+|---|---|---|
+| APP-01 | POST `/api/v1/me/applications` | IDEM. `company` and `role_title` (1 to 120), optional `source_url` (https), `status` (default `saved`), `deadline` and `applied_on` (a deadline in the past is allowed), `notes` (up to 4000), `opportunity_id` (a listing of a college you are an active member of, else 404). 201 with the application and its first event. 429 `RATE_LIMITED` at 200 applications. Setting `applied` fills `applied_on` with today when you gave none |
+| APP-02 | GET `/api/v1/me/applications?status=&sort=updated|deadline&q=` | My applications, at most 200, in one answer (no cursor). `sort=deadline` puts the nearest deadline first and applications without a deadline last. `q` searches company and role |
+| APP-03 | GET `/api/v1/me/applications/{id}` | One application with its `events` (newest first). 404 for anyone else's |
+| APP-03 | PATCH `/api/v1/me/applications/{id}` | `If-Match: <version>` (optional but recommended). Only the keys you send change, `null` clears a link or a date. The status is changed with APP-04. 409 `VERSION_CONFLICT` when the version is old: reload and try again. Raises `version` by 1 |
+| APP-03 | DELETE `/api/v1/me/applications/{id}` | Gone for good, with its history. `{ "deleted": true }` |
+| APP-04 | POST `/api/v1/me/applications/{id}/status` | `{ "status": "interview", "note": "optional" }`, `If-Match` optional. Changes the status and writes one event (from, to, time, note) in one step. 409 `CONFLICT` if it already has that status, 409 `VERSION_CONFLICT` for an old version |
+

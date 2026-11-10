@@ -62,6 +62,12 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | OPP-03 | DELETE | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
 | OPP-04 | PUT | /me/saved-opportunities/{id} | ses | write limit |
 | OPP-04 | DELETE | /me/saved-opportunities/{id} | ses | write limit |
+| APP-01 | POST | /me/applications | ses | write limit, 200 per person |
+| APP-02 | GET | /me/applications | ses | read limit |
+| APP-03 | GET | /me/applications/{id} | ses | read limit |
+| APP-03 | PATCH | /me/applications/{id} | ses | write limit |
+| APP-03 | DELETE | /me/applications/{id} | ses | write limit |
+| APP-04 | POST | /me/applications/{id}/status | ses | write limit |
 | REM-01 | GET | /me/reminder-settings | ses | none |
 | REM-01 | PUT | /me/reminder-settings | ses | write limit |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
