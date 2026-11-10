@@ -1,6 +1,7 @@
 import { route } from "@/lib/api";
 import { safeNext } from "@/lib/safe-next";
 import { serverEnv } from "@/lib/env";
+import { ensureProfile } from "@/modules/auth/otp";
 import { CookieJar, createUserClient } from "@/lib/supabase/request-client";
 
 // AUTH-06 GET /api/v1/auth/google/callback?code=...&next=/path
@@ -19,6 +20,15 @@ export const GET = route(async ({ request }) => {
   const supabase = createUserClient(request, jar);
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return back("google_failed");
+
+  // Google sign in must leave the same thing behind as the email code: a profile row.
+  const { data: who } = await supabase.auth.getUser();
+  if (!who.user) return back("google_failed");
+  try {
+    await ensureProfile(supabase, who.user.id, who.user.email ?? "");
+  } catch {
+    return back("google_failed");
+  }
 
   // No page to go back to: /start finds the right place (college, Global, or find your college).
   const next = safeNext(url.searchParams.get("next")) ?? "/start";

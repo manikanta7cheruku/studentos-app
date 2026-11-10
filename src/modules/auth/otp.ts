@@ -122,7 +122,7 @@ export async function verifyOtp(
 
 // First sign in creates the profile (docs/AUTH_AND_TENANCY.md section 2). The display name starts
 // as the part of the email before the @, and the person can change it later.
-async function ensureProfile(
+export async function ensureProfile(
   supabase: SupabaseClient,
   userId: string,
   email: string,
