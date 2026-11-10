@@ -5,7 +5,7 @@ import { CookieJar, createUserClient } from "@/lib/supabase/request-client";
 
 // AUTH-06 GET /api/v1/auth/google/callback?code=...&next=/path
 // Where Google sends the person back. The one time code is exchanged for a session (cookies), then the person goes
-// to `next`, or to the home page when there is none. Any problem sends them to the sign in page with a plain reason.
+// to `next`, or to /start when there is none. Any problem sends them to the sign in page with a plain reason.
 export const GET = route(async ({ request }) => {
   const appUrl = serverEnv().NEXT_PUBLIC_APP_URL;
   const url = new URL(request.url);
@@ -20,7 +20,8 @@ export const GET = route(async ({ request }) => {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return back("google_failed");
 
-  const next = safeNext(url.searchParams.get("next")) ?? "/";
+  // No page to go back to: /start finds the right place (college, Global, or find your college).
+  const next = safeNext(url.searchParams.get("next")) ?? "/start";
   return jar.applyTo(
     new Response(null, { status: 302, headers: { Location: `${appUrl}${next}` } }),
   );

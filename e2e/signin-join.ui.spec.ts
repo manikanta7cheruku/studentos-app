@@ -146,3 +146,15 @@ test("Continue with Google stays hidden until Google sign in is switched on", as
   await page.goto("/signin?error=google_cancelled");
   await expect(page.getByText(/cancelled the google sign in/i)).toBeVisible();
 });
+
+test("/start sends a signed out visitor to sign in", async ({ page }) => {
+  await page.goto("/start");
+  await expect(page).toHaveURL(/\/signin$/);
+});
+
+test("/start sends a signed in person with no college to find a college", async ({ page }) => {
+  await signIn(page, uniqueEmail());
+  await expect(page).toHaveURL(/\/find$/);
+  await page.goto("/start");
+  await expect(page).toHaveURL(/\/find$/);
+});
