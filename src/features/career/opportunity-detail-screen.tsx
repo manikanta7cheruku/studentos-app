@@ -118,7 +118,7 @@ function Body({ op }: { op: Opportunity }) {
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-3 border-b border-border pb-6">
-        <p className="text-[14px] font-semibold uppercase tracking-[0.06em] text-ink">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink">
           {KIND_LABEL[op.kind] ?? op.kind}
           {op.status === "expired" ? (
             <span className="ml-3 font-normal text-ink-muted">Closed</span>
@@ -127,11 +127,11 @@ function Body({ op }: { op: Opportunity }) {
         <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           {op.title}
         </h1>
-        <p className="text-[18px] text-ink-muted">
+        <p className="text-[16px] text-ink-muted">
           {op.org}
           {place ? ` · ${place}` : ""}
         </p>
-        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-ink-muted">
+        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[13.5px] text-ink-muted">
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" /> {deadlineLabel(op)}
           </span>
@@ -150,18 +150,18 @@ function Body({ op }: { op: Opportunity }) {
         <section aria-labelledby="eligibility" className="max-w-prose">
           <h2
             id="eligibility"
-            className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+            className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
           >
             Who can apply
           </h2>
-          <p className="mt-2 whitespace-pre-line text-[17px] leading-relaxed">{op.eligibility}</p>
+          <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{op.eligibility}</p>
         </section>
       ) : null}
       {op.skills.length ? (
         <section aria-labelledby="skills" className="flex flex-col gap-2">
           <h2
             id="skills"
-            className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+            className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
           >
             Skills
           </h2>
@@ -169,7 +169,7 @@ function Body({ op }: { op: Opportunity }) {
             {op.skills.map((skill) => (
               <li
                 key={skill}
-                className="inline-flex min-h-8 items-center rounded-full border border-border bg-surface px-3 text-[15px]"
+                className="inline-flex min-h-8 items-center rounded-full border border-border bg-surface px-3 text-[13.5px]"
               >
                 {skill}
               </li>
@@ -177,7 +177,7 @@ function Body({ op }: { op: Opportunity }) {
           </ul>
         </section>
       ) : null}
-      <p className="text-[14px] text-ink-muted">
+      <p className="text-[13px] text-ink-muted">
         Posted by {op.posted_by}. Last checked{" "}
         {new Date(op.last_verified_at).toLocaleDateString(undefined, {
           day: "numeric",
@@ -197,7 +197,7 @@ export function OpportunityDetailScreen({ id }: { id: string }) {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
       <Link
         href={`/c/${slug}/career/opportunities`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         ← Opportunities
       </Link>

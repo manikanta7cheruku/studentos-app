@@ -9,7 +9,7 @@ export function StatusPill({ status }: { status: TeamPost["status"] }) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-6 items-center rounded-full px-2.5 text-[13px] font-semibold",
+        "inline-flex min-h-6 items-center rounded-full px-2.5 text-[12px] font-semibold",
         status === "open" ? "bg-accent-soft text-primary" : "bg-border/70 text-ink-muted",
       )}
     >
@@ -27,7 +27,7 @@ export function RoleChips({ roles }: { roles: TeamPost["roles"] }) {
         return (
           <li
             key={role.id}
-            className="inline-flex min-h-8 items-center gap-2 rounded-full border border-border bg-surface px-3 text-[14px] text-ink"
+            className="inline-flex min-h-8 items-center gap-2 rounded-full border border-border bg-surface px-3 text-[13px] text-ink"
           >
             <span className="font-medium">{role.role_name}</span>
             <span className="tabular text-ink-muted">
@@ -49,7 +49,7 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
   return (
     <li className="group relative py-5 transition-colors focus-within:bg-accent-soft/40 hover:bg-accent-soft/40 sm:px-3">
       <article className="flex flex-col gap-3">
-        <header className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px] text-ink-muted">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-ink-muted">
           <span className="font-semibold uppercase tracking-[0.06em] text-ink">
             {KIND_LABEL[post.kind]}
           </span>
@@ -65,12 +65,12 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
           </Link>
         </h2>
         {post.description ? (
-          <p className="line-clamp-2 max-w-prose text-[16px] leading-relaxed text-ink-muted">
+          <p className="line-clamp-2 max-w-prose text-[14px] leading-relaxed text-ink-muted">
             {post.description}
           </p>
         ) : null}
         <RoleChips roles={post.roles} />
-        <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-ink-muted">
+        <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-muted">
           <span>by {post.author.display_name}</span>
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" />

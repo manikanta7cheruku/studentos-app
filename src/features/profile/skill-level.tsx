@@ -24,7 +24,7 @@ export function LevelDots({ level, className }: { level: number; className?: str
           />
         ))}
       </span>
-      <span className="text-[14px] text-ink-muted">{levelLabel(level)}</span>
+      <span className="text-[13px] text-ink-muted">{levelLabel(level)}</span>
     </span>
   );
 }
@@ -33,7 +33,7 @@ export function Chip({ children, className }: { children: React.ReactNode; class
   return (
     <span
       className={cn(
-        "inline-flex min-h-8 items-center rounded-full border border-border bg-surface px-3 text-[15px] text-ink",
+        "inline-flex min-h-8 items-center rounded-full border border-border bg-surface px-3 text-[13.5px] text-ink",
         className,
       )}
     >

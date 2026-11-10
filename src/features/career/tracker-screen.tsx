@@ -27,7 +27,7 @@ export function StatusPill({ status }: { status: ApplicationStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex min-h-6 items-center rounded-full px-2.5 text-[13px] font-semibold",
+        "inline-flex min-h-6 items-center rounded-full px-2.5 text-[12px] font-semibold",
         status === "offer"
           ? "bg-success/15 text-success"
           : status === "rejected" || status === "withdrawn"
@@ -55,7 +55,7 @@ function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         pressed
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-surface text-ink hover:border-border-strong",
@@ -81,14 +81,14 @@ function Row({ item, slug }: { item: Application; slug: string }) {
               {item.company}
             </Link>
           </h2>
-          <p className="text-[16px] text-ink-muted">{item.role_title}</p>
+          <p className="text-[14px] text-ink-muted">{item.role_title}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:flex-col sm:items-end sm:gap-1">
           <StatusPill status={item.status} />
           {item.deadline ? (
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 text-[14px]",
+                "inline-flex items-center gap-1.5 text-[13px]",
                 overdue ? "font-semibold text-danger" : "text-ink-muted",
               )}
             >
@@ -196,7 +196,7 @@ function Loaded({
   return (
     <>
       {attention > 0 ? (
-        <p className="rounded-card border border-danger/40 bg-danger/5 px-4 py-3 text-[16px] text-ink">
+        <p className="rounded-card border border-danger/40 bg-danger/5 px-4 py-3 text-[14px] text-ink">
           <strong className="font-semibold">
             {attention} {attention === 1 ? "application is" : "applications are"} past the deadline
           </strong>{" "}
@@ -230,7 +230,7 @@ function Loaded({
               autoComplete="off"
             />
           </div>
-          <label className="flex items-center gap-2 text-[15px] text-ink-muted">
+          <label className="flex items-center gap-2 text-[13.5px] text-ink-muted">
             Sort
             <select
               value={sort}
@@ -245,7 +245,7 @@ function Loaded({
       </div>
       <div aria-live="polite">
         {shown.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-6 text-[16px] text-ink-muted">
+          <p className="rounded-card border border-dashed border-border-strong p-6 text-[14px] text-ink-muted">
             No applications match. Try another status or word.
           </p>
         ) : (

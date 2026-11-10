@@ -84,15 +84,15 @@ export function PeopleScreen() {
                 >
                   <Avatar name={person.display_name} src={person.avatar_url} size="md" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[17px] font-semibold">
+                    <span className="block truncate text-[15px] font-semibold">
                       {person.display_name}
                       {person.handle ? (
-                        <span className="ml-2 text-[15px] font-normal text-ink-muted">
+                        <span className="ml-2 text-[13.5px] font-normal text-ink-muted">
                           @{person.handle}
                         </span>
                       ) : null}
                     </span>
-                    <span className="block truncate text-[15px] text-ink-muted">
+                    <span className="block truncate text-[13.5px] text-ink-muted">
                       {person.headline ??
                         (person.interests.slice(0, 3).join(", ") || "No headline yet")}
                     </span>
@@ -114,7 +114,7 @@ export function PersonScreen({ userId }: { userId: string }) {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
       <Link
         href={`/c/${slug}/people`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         ← People
       </Link>

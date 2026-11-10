@@ -29,7 +29,7 @@ export function CareerNav() {
           href={item.href}
           aria-current={item.active ? "page" : undefined}
           className={cn(
-            "-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-[16px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+            "-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
             item.active
               ? "border-primary font-semibold text-ink"
               : "border-transparent text-ink-muted hover:text-ink",

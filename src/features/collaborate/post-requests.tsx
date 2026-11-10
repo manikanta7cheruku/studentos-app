@@ -57,7 +57,7 @@ function RequestCard({ item, onDecided }: { item: JoinRequestItem; onDecided: ()
   return (
     <li className="flex flex-col gap-3 py-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p className="text-[17px] font-semibold">
+        <p className="text-[15px] font-semibold">
           <Link
             href={`/c/${slug}/people/${item.applicant.user_id}`}
             className="underline-offset-4 hover:underline"
@@ -66,23 +66,23 @@ function RequestCard({ item, onDecided }: { item: JoinRequestItem; onDecided: ()
           </Link>{" "}
           <span className="font-normal text-ink-muted">wants to be {item.role_name}</span>
         </p>
-        <span className="text-[14px] font-semibold text-ink-muted">
+        <span className="text-[13px] font-semibold text-ink-muted">
           {STATUS_WORDS[item.status] ?? item.status}
         </span>
       </div>
       {item.applicant.headline ? (
-        <p className="text-[15px] text-ink-muted">{item.applicant.headline}</p>
+        <p className="text-[13.5px] text-ink-muted">{item.applicant.headline}</p>
       ) : null}
       {item.applicant.skills.length ? (
-        <p className="text-[15px] text-ink-muted">Skills: {item.applicant.skills.join(", ")}</p>
+        <p className="text-[13.5px] text-ink-muted">Skills: {item.applicant.skills.join(", ")}</p>
       ) : null}
       {item.message ? (
-        <blockquote className="max-w-prose border-l-2 border-border-strong pl-4 text-[16px] leading-relaxed text-ink">
+        <blockquote className="max-w-prose border-l-2 border-border-strong pl-4 text-[14px] leading-relaxed text-ink">
           {item.message}
         </blockquote>
       ) : null}
       {item.decision_note ? (
-        <p className="text-[15px] text-ink-muted">Your note: {item.decision_note}</p>
+        <p className="text-[13.5px] text-ink-muted">Your note: {item.decision_note}</p>
       ) : null}
       {error ? (
         <Banner variant="error">
@@ -137,7 +137,7 @@ export function PostRequests({ post, onChanged }: { post: TeamPostDetail; onChan
     <section aria-labelledby="requests" className="flex flex-col gap-3">
       <h2
         id="requests"
-        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Requests{" "}
         {post.pending_requests ? (
@@ -151,7 +151,7 @@ export function PostRequests({ post, onChanged }: { post: TeamPostDetail; onChan
       ) : state.status === "error" ? (
         <LoadError error={state.error} onRetry={state.reload} what="the requests" />
       ) : state.data.length === 0 ? (
-        <p className="rounded-card border border-dashed border-border-strong p-5 text-[16px] text-ink-muted">
+        <p className="rounded-card border border-dashed border-border-strong p-5 text-[14px] text-ink-muted">
           Nobody has asked yet. Share the post with your classmates.
         </p>
       ) : (

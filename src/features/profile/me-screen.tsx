@@ -64,7 +64,7 @@ export function MeScreen() {
               </>
             }
           />
-          <p className="mt-2 border-t border-border pt-4 text-[15px] text-ink-muted">
+          <p className="mt-2 border-t border-border pt-4 text-[13.5px] text-ink-muted">
             {state.data.profile.visibility === "hidden"
               ? "Your profile is hidden. Only you can see it."
               : "Verified members of your college can see this page."}{" "}

@@ -54,7 +54,7 @@ function CollegeMark({ className }: { className?: string }) {
     <span
       aria-hidden="true"
       className={cn(
-        "inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary font-heading text-[17px] font-bold text-primary-foreground",
+        "inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary font-heading text-[15px] font-bold text-primary-foreground",
         className,
       )}
     >
@@ -116,8 +116,8 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
         >
           <Avatar name={name} src={profile?.avatar_url} size="sm" />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[15px] font-semibold text-ink">{name}</span>
-            <span className="block truncate text-[13px] text-ink-muted">{roleLabel}</span>
+            <span className="block truncate text-[13.5px] font-semibold text-ink">{name}</span>
+            <span className="block truncate text-[12px] text-ink-muted">{roleLabel}</span>
           </span>
           <ChevronsUpDownIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
         </button>
@@ -127,7 +127,7 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           align={align}
           side="top"
           sideOffset={8}
-          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[15px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
+          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[13.5px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
         >
           {others.length || !inGlobal ? (
             <>
@@ -189,7 +189,7 @@ function SideNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
       href={item.href}
       aria-current={current ? "page" : undefined}
       className={cn(
-        "relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-[16px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-5 [&_svg]:shrink-0",
+        "relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-[14px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-5 [&_svg]:shrink-0",
         current
           ? "bg-accent-soft font-semibold text-ink before:absolute before:inset-y-2 before:-left-1.5 before:w-[3px] before:rounded-full before:bg-primary"
           : "text-ink-muted hover:bg-accent-soft/70 hover:text-ink",
@@ -229,11 +229,11 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           >
             <CollegeMark />
             <span className="min-w-0">
-              <span className="block truncate font-heading text-[18px] font-semibold leading-tight">
+              <span className="block truncate font-heading text-[16px] font-semibold leading-tight">
                 {college.name}
               </span>
               {college.city ? (
-                <span className="block truncate text-[13px] text-ink-muted">{college.city}</span>
+                <span className="block truncate text-[12px] text-ink-muted">{college.city}</span>
               ) : null}
             </span>
           </Link>
@@ -274,8 +274,8 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
             href={homePath(slug)}
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <CollegeMark className="size-8 text-[14px]" />
-            <span className="truncate font-heading text-[17px] font-semibold">{college.name}</span>
+            <CollegeMark className="size-8 text-[13px]" />
+            <span className="truncate font-heading text-[15px] font-semibold">{college.name}</span>
           </Link>
           <Link
             href={`/c/${slug}/people`}
@@ -310,7 +310,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-[13px] leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-[22px]",
+                    "relative flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-[12px] leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&_svg]:size-[22px]",
                     current ? "font-semibold text-primary" : "text-ink-muted",
                   )}
                 >
