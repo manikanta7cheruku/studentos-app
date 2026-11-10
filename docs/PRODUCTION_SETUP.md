@@ -20,7 +20,7 @@ What I (R2) cannot do for you: create accounts, pay for plans, paste secrets, cl
 1. Create a new project named `studentos-production`. Region: closest to the students (for India, Mumbai). Set a strong database password and keep it in the password manager only.
 2. Note the **project reference** (Project Settings, General).
 3. Choose the **Pro plan** and check that daily backups are on (Project Settings, Database, Backups). Write the retention you see into `OPS_LOG.md`.
-4. Do not enable any other sign in provider than Email. Switch **off** phone sign in and anonymous sign ins.
+4. The only sign in providers are Email and (once you set it up, section 3) Google. Switch **off** phone sign in and anonymous sign ins, and every other provider.
 
 ## 2. Sign in settings (YOU, checked by `pnpm env:check`)
 
@@ -30,7 +30,7 @@ Authentication, then Sign In / Providers, then Email:
 - **Confirm email: ON.** (Reason: with it off, anyone can create an account with an email they do not own, using the public sign up address. Since Day 9 the local stack runs with it on, and the sign in and join tests pass.)
 - Email OTP length **6**, expiry **600** seconds.
 - Email templates: open "Magic Link" and "Confirm signup" and paste the content of `supabase/templates/otp.html` into both (the code is `{{ .Token }}`).
-- URL configuration: Site URL = the production address (step 5). Add no other redirect addresses.
+- URL configuration: Site URL = the production address (step 5). The only redirect address to add is `https://<your address>/**`, and only for Continue with Google (section 3).
 - Rate limits: keep the defaults, then raise "emails sent per hour" only after the custom sender (section 3) works.
 - Do **not** turn on CAPTCHA protection yet: the app does not send the CAPTCHA token (decision for later, see `docs/R2_MANUAL_STEPS.md`).
 
@@ -81,7 +81,7 @@ The migrations are in `supabase/migrations` and are the only way the database ch
    pnpm supabase db push --dry-run
    pnpm supabase db push
    ```
-   The dry run lists the migrations that will be applied (all of `supabase/migrations`, 12 at the moment). Read the list, then run the real push. It asks for the database password.
+   The dry run lists the migrations that will be applied (all of `supabase/migrations`, 13 at the moment; the last one also creates the Global college, so there is nothing to do for Global). Read the list, then run the real push. It asks for the database password.
 3. In the Supabase dashboard open Storage and check that a bucket `avatars` exists (migration `20261110000000`).
 4. Deploy the Vercel project (Deployments, Redeploy). The server refuses to start if a setting is missing and the log names the setting.
 
@@ -92,7 +92,16 @@ There is no "create college" screen yet (ADM-01 is not built, see `docs/BACKEND_
 1. The person who will run the college signs in once on the production site with their real email (the college email if they have one). That creates their account.
 2. Open `supabase/production/create-college.sql`, copy it into the Supabase SQL editor (production project) and change only the values between the lines `EDIT` and `END EDIT`: slug (the address part), name, short name, city, state, colour, the college email domain(s), and the admin's email.
 3. Run it. It stops with a clear message if the admin has not signed in yet or if the slug is taken. A test runs this exact script against a local database on every pull request (`tests/integration/production-scripts.test.ts`).
-4. Open `https://<your address>/c/<slug>` and sign in as the admin. Create an invite code in the admin console or with `POST /api/v1/c/<slug>/admin/invites`.
+4. **Global needs an admin too** (`pnpm env:check` fails with "no active admin: global" otherwise, so that reports in Global have someone to handle them). Join Global once with your own account (sign in, then `/find`, then Join Global), then run this in the Supabase SQL editor with your email:
+   ```sql
+   update public.memberships
+   set role = 'college_admin'
+   where college_id = (select id from public.colleges where slug = 'global')
+     and user_id = (select id from auth.users where email = 'you@example.com')
+     and status = 'active';
+   ```
+   It must say `UPDATE 1`. Do the same on staging.
+5. Open `https://<your address>/c/<slug>` and sign in as the admin. Create an invite code in the admin console or with `POST /api/v1/c/<slug>/admin/invites`.
 
 ## 7. Check it (R2 prepared, YOU run)
 
