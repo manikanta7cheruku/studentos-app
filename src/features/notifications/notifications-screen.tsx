@@ -20,7 +20,10 @@ import { useCollege } from "@/features/college";
 export function notificationHref(item: NotificationItem, slug: string): string | null {
   const base = `/c/${slug}`;
   if (item.type === "announcement.published") return `${base}/campus`;
-  if (item.type.startsWith("team.")) return `${base}/collaborate`;
+  if (item.type.startsWith("team.")) {
+    const postId = item.payload.post_id;
+    return typeof postId === "string" ? `${base}/collaborate/${postId}` : `${base}/collaborate`;
+  }
   if (item.type === "opportunity.deadline_soon") return `${base}/career`;
   if (item.type.startsWith("membership.")) return `${base}/me`;
   return null;
