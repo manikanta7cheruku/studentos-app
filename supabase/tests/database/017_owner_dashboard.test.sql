@@ -58,7 +58,7 @@ select is((select suspended from public.owner_users('student1@alpha', 10) limit 
 select cmp_ok((select jsonb_array_length(spaces) from public.owner_users('student1@alpha', 10) limit 1), '>=', 1, 'with the spaces they belong to');
 select is((select count(*)::int from public.owner_users('%', 10)), 0, 'a percent sign in a search is not a wildcard');
 select lives_ok($$select * from public.owner_reports(10)$$, 'the reports list works');
-select cmp_ok((public.owner_health() ->> 'database_bytes')::bigint, '>', 0, 'health reports the database size');
+select cmp_ok((public.owner_health() ->> 'database_bytes')::bigint, '>', 0::bigint, 'health reports the database size');
 select lives_ok($$select public.owner_user_audit('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'owner.user_suspended')$$, 'an account change is written to the audit trail');
 select cmp_ok((select count(*)::int from public.owner_audit(50)), '>=', 5, 'the audit list shows the owner actions');
 select is((select count(*)::int from public.owner_audit(50) where action = 'unrelated.college.action'), 0, 'and only the owner actions');
