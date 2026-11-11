@@ -70,6 +70,7 @@ erDiagram
 **ideas**: `id` · `college_id` · `author_id` · `title` (5 to 140) · `body` (≤2000) · `topic` (`campus`,`study`,`sports`,`tech`,`food`,`other`) · `status` (`published`,`removed`) · `score` int · `comment_count` int · timestamps · IDX(`college_id`,`status`,`created_at`) and (`college_id`,`status`,`score`). Closed to clients, reached through `idea_*` functions.
 **idea_votes**: PK(`idea_id`,`user_id`) · `value` (-1 or 1). **idea_comments**: `id` · `idea_id` · `college_id` · `author_id` · `parent_id` (one level) · `body` (1 to 800) · `status` · `created_at`.
 **college_setup_codes**: `id` · `code_hash` (sha256, unique) · `label` · `expires_at` · `used_at` · `used_by` · `college_id`. The owner makes a code with `make_college_setup_code`; it works once.
+**platform_admins**: `user_id` PK · `pin_hash` (`scrypt$...` only) · `pin_set_at`. The accounts allowed into the owner dashboard. Closed to clients; read only by the server.
 **events**: `id` · `college_id` · `author_id` · `title` (5 to 120) · `description` (≤2000) · `starts_at` · `place` · `capacity` (1 to 5000, null = no limit) · `status` (`published`,`cancelled`). **event_rsvps**: PK(`event_id`,`user_id`). Closed to clients, reached through `event_*` functions.
 **board_posts**: `id` · `college_id` · `author_id` · `board` (`lostfound`,`market`) · `kind` (`lost`,`found`,`sell`,`rent`,`free`,`wanted`) · `title` · `description` (≤1500) · `place` · `price_inr` (whole rupees, market only) · `status` (`open`,`resolved`,`removed`). **board_messages**: `id` · `post_id` · `college_id` · `from_user` · `to_user` · `body` (1 to 500). Private threads: the author sees all, others only their own.
 **opportunities**: `id` · `college_id` null (null = platform-curated, visible to tenants that enable it) · `title` · `org` · `kind` (`internship`,`job`,`hackathon`,`competition`,`scholarship`) · `location` · `mode` (`onsite`,`remote`,`hybrid`) · `stipend_min`,`stipend_max` int (paise/month, nullable) · `eligibility` text · `skills` text[] · `deadline` · `apply_url` (https) · `posted_by` · `status` (`draft`,`published`,`expired`,`removed`) · `last_verified_at`.
@@ -235,6 +236,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261112000000_global_open_join.sql` | the `open` join method (only for the Global college, enforced by a trigger), the seeded `global` college, `submit_open_join` (join Global at once, level 1) |
 | `20261114000000_ideas_plans_college_codes.sql` | `ideas`, `idea_votes`, `idea_comments`, `idea_*` functions, `college_setup_codes`, `make_college_setup_code`, `college_setup_create`, Team Finder kinds `sport`, `event` and `hangout`, `team_posts.place`, `tf_set_place` |
 | `20261115000000_events_board.sql` | `events`, `event_rsvps`, `board_posts`, `board_messages`, `event_*` and `board_*` functions |
+| `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 
 The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
 
