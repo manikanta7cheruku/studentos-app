@@ -52,6 +52,13 @@ jobs:
       - name: Build the app
         run: pnpm build
       - name: Install the browser
-        run: pnpm exec playwright install --with-deps chromium
+        # The runner's package mirror sometimes cannot be reached for a few minutes. Try a few times before giving up.
+        run: |
+          for attempt in 1 2 3; do
+            pnpm exec playwright install --with-deps chromium && exit 0
+            echo "Install failed (try $attempt). Waiting before the next try."
+            sleep 45
+          done
+          exit 1
       - name: Run the journeys
         run: pnpm test:e2e --shard=${{ matrix.shard }}/3
