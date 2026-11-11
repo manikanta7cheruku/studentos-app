@@ -22,9 +22,15 @@ env:
 
 jobs:
   e2e:
-    name: Playwright journeys
+    # The journeys are split over three runners. Each runner has its own database and mailbox, so the tests that share
+    # one database inside a runner still run one after the other, and the whole run takes about a third of the time.
+    name: Playwright journeys (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,4 +54,4 @@ jobs:
       - name: Install the browser
         run: pnpm exec playwright install --with-deps chromium
       - name: Run the journeys
-        run: pnpm test:e2e
+        run: pnpm test:e2e --shard=${{ matrix.shard }}/3

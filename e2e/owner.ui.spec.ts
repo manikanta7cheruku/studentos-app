@@ -14,7 +14,7 @@ test.afterAll(async () => {
 
 test("a visitor who is not signed in is sent to sign in", async ({ page }) => {
   await page.goto("/owner");
-  await expect(page).toHaveURL(/\/signin\?next=%2Fowner/);
+  await expect(page).toHaveURL(/\/signin\?next=(%2F|\/)owner$/);
 });
 
 test("a signed in student gets the same page as for an address that does not exist", async ({
