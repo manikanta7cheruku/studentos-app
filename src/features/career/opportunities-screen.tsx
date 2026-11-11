@@ -36,7 +36,7 @@ function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        "inline-flex min-h-11 items-center rounded-full border px-4 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex min-h-11 items-center rounded-full border px-4 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         pressed
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-surface text-ink hover:border-border-strong",
@@ -59,7 +59,7 @@ function OpportunityRow({ op, slug }: { op: Opportunity; slug: string }) {
   return (
     <li className="group relative py-5 transition-colors focus-within:bg-accent-soft/40 hover:bg-accent-soft/40 sm:px-3">
       <article className="flex flex-col gap-2.5">
-        <header className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-ink-muted">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-muted">
           <span className="font-semibold uppercase tracking-[0.06em] text-ink">
             {KIND_LABEL[op.kind] ?? op.kind}
           </span>
@@ -81,11 +81,11 @@ function OpportunityRow({ op, slug }: { op: Opportunity; slug: string }) {
             {op.title}
           </Link>
         </h2>
-        <p className="text-[16px] text-ink-muted">
+        <p className="text-[14px] text-ink-muted">
           {op.org}
           {place ? ` · ${place}` : ""}
         </p>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-ink-muted">
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-muted">
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" /> {deadlineLabel(op)}
           </span>
@@ -184,10 +184,10 @@ function Results({ filters }: { filters: Filters }) {
           >
             {loadingMore ? <Spinner /> : null} Show more
           </Button>
-          {moreError ? <p className="text-[15px] text-danger">{moreError}</p> : null}
+          {moreError ? <p className="text-[13.5px] text-danger">{moreError}</p> : null}
         </div>
       ) : (
-        <p className="mt-6 text-[15px] text-ink-muted">That is everything for now.</p>
+        <p className="mt-6 text-[13.5px] text-ink-muted">That is everything for now.</p>
       )}
     </div>
   );
@@ -252,7 +252,7 @@ export function OpportunitiesScreen() {
             </Chip>
           ))}
         </div>
-        <label className="flex min-h-11 w-fit items-center gap-3 text-[15px] text-ink">
+        <label className="flex min-h-11 w-fit items-center gap-3 text-[13.5px] text-ink">
           <input
             type="checkbox"
             className="size-5 accent-[var(--primary)]"

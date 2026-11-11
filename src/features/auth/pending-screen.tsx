@@ -107,7 +107,7 @@ export function PendingScreen({ slug }: { slug: string }) {
             <p>{reason}</p>
           </Banner>
         ) : null}
-        <p className="text-[17px] text-ink-muted">
+        <p className="text-[15px] text-ink-muted">
           {suspended
             ? "Contact your college admin if you think this is a mistake."
             : "If you think this is a mistake, contact your college admin."}

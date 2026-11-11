@@ -73,7 +73,7 @@ function StatusChanger({
     <section aria-labelledby="move" className="flex flex-col gap-3">
       <h2
         id="move"
-        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Where is it now?
       </h2>
@@ -89,7 +89,7 @@ function StatusChanger({
               disabled={current}
               onClick={() => setNext(picked ? null : status)}
               className={
-                "inline-flex min-h-11 items-center rounded-full border px-4 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background " +
+                "inline-flex min-h-11 items-center rounded-full border px-4 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background " +
                 (current
                   ? "border-primary bg-primary text-primary-foreground"
                   : picked
@@ -213,7 +213,7 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
           {app.opportunity_id ? (
             <Link
               href={`/c/${slug}/career/opportunities/${app.opportunity_id}`}
-              className="text-[14px] font-medium text-primary underline underline-offset-4"
+              className="text-[13px] font-medium text-primary underline underline-offset-4"
             >
               From an opportunity
             </Link>
@@ -222,8 +222,8 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
         <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           {app.company}
         </h1>
-        <p className="text-[18px] text-ink-muted">{app.role_title}</p>
-        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-ink-muted">
+        <p className="text-[16px] text-ink-muted">{app.role_title}</p>
+        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[13.5px] text-ink-muted">
           {app.deadline ? (
             <span
               className={
@@ -264,18 +264,18 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
         <section aria-labelledby="notes" className="max-w-prose">
           <h2
             id="notes"
-            className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+            className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
           >
             Notes
           </h2>
-          <p className="mt-2 whitespace-pre-line text-[17px] leading-relaxed">{app.notes}</p>
+          <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{app.notes}</p>
         </section>
       ) : null}
 
       <section aria-labelledby="history" className="flex flex-col gap-3">
         <h2
           id="history"
-          className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
         >
           History
         </h2>
@@ -285,7 +285,7 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
               key={event.id}
               className="flex flex-col gap-0.5 py-3 sm:flex-row sm:justify-between sm:gap-6"
             >
-              <p className="text-[16px]">
+              <p className="text-[14px]">
                 {event.from_status ? (
                   <>
                     {STATUS_LABEL[event.from_status]} <span aria-hidden="true">→</span>
@@ -300,7 +300,7 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
                 )}
                 {event.note ? <span className="text-ink-muted"> · {event.note}</span> : null}
               </p>
-              <time dateTime={event.at} className="text-[14px] text-ink-muted">
+              <time dateTime={event.at} className="text-[13px] text-ink-muted">
                 {whenWords(event.at)}
               </time>
             </li>
@@ -320,7 +320,7 @@ export function ApplicationDetailScreen({ id }: { id: string }) {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
       <Link
         href={`/c/${slug}/career`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         ← My applications
       </Link>

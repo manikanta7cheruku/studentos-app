@@ -85,6 +85,16 @@ The migrations are in `supabase/migrations` and are the only way the database ch
 3. In the Supabase dashboard open Storage and check that a bucket `avatars` exists (migration `20261110000000`).
 4. Deploy the Vercel project (Deployments, Redeploy). The server refuses to start if a setting is missing and the log names the setting.
 
+## 6a. Giving a college its setup code (the normal way)
+
+A college admin can create their own college with a one-time code (decision D-30). To make one:
+
+1. Open `supabase/production/create-setup-code.sql`, paste it in the Supabase SQL editor (production project) and run it. Change the name and the days if you like.
+2. The answer is an 8 digit code. Send it to the college contact. It works once.
+3. They sign in and open `https://<your site>/setup`. After they finish, the code shows as used in table `college_setup_codes`.
+
+The script in section 6 below still works for the very first college or for rescue.
+
 ## 6. First college and first admin (YOU run, R2 prepared)
 
 There is no "create college" screen yet (ADM-01 is not built, see `docs/BACKEND_STATUS.md`). A college is created by a script:

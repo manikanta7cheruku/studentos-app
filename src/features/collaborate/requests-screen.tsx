@@ -43,10 +43,10 @@ function MyRequestRow({ item, onChanged }: { item: MyJoinRequest; onChanged: () 
   return (
     <li className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div className="min-w-0">
-        <p className="text-[14px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
           {KIND_LABEL[item.post.kind]} · {item.role.role_name}
         </p>
-        <h3 className="text-[18px] font-semibold leading-snug">
+        <h3 className="text-[16px] font-semibold leading-snug">
           <Link
             href={`/c/${slug}/collaborate/${item.post.id}`}
             className="underline-offset-4 hover:underline"
@@ -54,13 +54,13 @@ function MyRequestRow({ item, onChanged }: { item: MyJoinRequest; onChanged: () 
             {item.post.title}
           </Link>
         </h3>
-        <p className="mt-1 text-[15px] text-ink-muted">
+        <p className="mt-1 text-[13.5px] text-ink-muted">
           {STATUS_WORDS[item.status] ?? item.status}
         </p>
         {item.decision_note ? (
-          <p className="mt-1 text-[15px] text-ink">Note from the author: {item.decision_note}</p>
+          <p className="mt-1 text-[13.5px] text-ink">Note from the author: {item.decision_note}</p>
         ) : null}
-        {error ? <p className="mt-1 text-[15px] text-danger">{error}</p> : null}
+        {error ? <p className="mt-1 text-[13.5px] text-danger">{error}</p> : null}
       </div>
       {live ? (
         <Button variant="outline" onClick={() => void withdraw()} disabled={busy}>
@@ -86,13 +86,13 @@ export function RequestsScreen() {
       <PageHeader
         title="Requests"
         description="People who asked to join your posts, and the requests you sent."
-        back={{ href: `/c/${slug}/collaborate`, label: "All posts" }}
+        back={{ href: `/c/${slug}/collaborate`, label: "Plans" }}
       />
 
       <section aria-labelledby="received" className="flex flex-col gap-3">
         <h2
           id="received"
-          className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
         >
           Waiting for your answer
         </h2>
@@ -101,7 +101,7 @@ export function RequestsScreen() {
         ) : received.status === "error" ? (
           <LoadError error={received.error} onRetry={received.reload} what="your posts" />
         ) : received.data.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-5 text-[16px] text-ink-muted">
+          <p className="rounded-card border border-dashed border-border-strong p-5 text-[14px] text-ink-muted">
             Nothing is waiting. When someone asks to join one of your open posts, it shows up here
             and in your notifications.
           </p>
@@ -110,7 +110,7 @@ export function RequestsScreen() {
             {received.data.map((post) => (
               <li key={post.id} className="flex items-center justify-between gap-4 py-4">
                 <div className="min-w-0">
-                  <h3 className="text-[18px] font-semibold leading-snug">
+                  <h3 className="text-[16px] font-semibold leading-snug">
                     <Link
                       href={`/c/${slug}/collaborate/${post.id}`}
                       className="underline-offset-4 hover:underline"
@@ -118,7 +118,7 @@ export function RequestsScreen() {
                       {post.title}
                     </Link>
                   </h3>
-                  <p className="tabular text-[15px] text-ink-muted">
+                  <p className="tabular text-[13.5px] text-ink-muted">
                     {post.pending_requests} {post.pending_requests === 1 ? "request" : "requests"}{" "}
                     waiting
                   </p>
@@ -135,7 +135,7 @@ export function RequestsScreen() {
       <section aria-labelledby="sent" className="flex flex-col gap-3">
         <h2
           id="sent"
-          className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
         >
           Requests I sent
         </h2>

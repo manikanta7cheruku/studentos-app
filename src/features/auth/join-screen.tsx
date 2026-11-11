@@ -212,7 +212,7 @@ function EmailForm({ slug, onJoined }: FormProps) {
         className="flex flex-col gap-5"
         noValidate
       >
-        <p className="text-[17px] text-ink-muted">
+        <p className="text-[15px] text-ink-muted">
           We sent a six digit code to{" "}
           <strong className="font-semibold text-ink">{email.trim()}</strong>.
         </p>
@@ -313,7 +313,7 @@ function OpenForm({ slug, onJoined }: FormProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <ul className="divide-y divide-border border-y border-border text-[17px]">
+      <ul className="divide-y divide-border border-y border-border text-[15px]">
         <li className="py-3">Find teammates and join projects and events open to everyone.</li>
         <li className="py-3">Track your own applications privately.</li>
         <li className="py-3">
@@ -531,8 +531,8 @@ export function JoinScreen({ slug }: { slug: string }) {
                       {info.icon}
                     </span>
                     <span className="flex flex-col">
-                      <span className="text-[16px] font-semibold text-ink">{info.label}</span>
-                      <span className="text-[14px] text-ink-muted">{info.hint}</span>
+                      <span className="text-[14px] font-semibold text-ink">{info.label}</span>
+                      <span className="text-[13px] text-ink-muted">{info.hint}</span>
                     </span>
                   </button>
                 );

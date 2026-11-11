@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, GlobeIcon } from "lucide-react";
+import { ArrowRightIcon, GraduationCapIcon, GlobeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChoiceCard } from "@/components/app/choice-card";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { GLOBAL_SLUG } from "@/lib/home-path";
@@ -18,14 +18,21 @@ export function collegeCodeFrom(input: string): string | null {
   return code && /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(code) ? code : null;
 }
 
-/** For a person who is signed in but belongs to no college yet: enter the college code or paste its link. */
+type Choice = "global" | "college";
+
+/** For a person who is signed in but belongs to no space yet: Global now, or a college by its link or code. */
 export function FindCollegeScreen() {
   const router = useRouter();
+  const [choice, setChoice] = React.useState<Choice>("global");
   const [value, setValue] = React.useState("");
   const [error, setError] = React.useState<string | undefined>();
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (choice === "global") {
+      router.push(`/c/${GLOBAL_SLUG}/join`);
+      return;
+    }
     const code = collegeCodeFrom(value);
     if (!code) {
       setError("Enter the college code or paste the link your college sent you.");
@@ -36,41 +43,51 @@ export function FindCollegeScreen() {
 
   return (
     <AuthFrame
-      eyebrow="Your college"
-      title="Which college are you at?"
-      intro="Every college has its own private space with its own link. Paste the link your college sent you, or type its short code."
+      title="Where do you want to be?"
+      intro="Start on Global now. You can add your college any time, and switch from the top of the app."
     >
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
-        <FormField label="College link or code" error={error} required>
-          <Input
-            name="college"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            autoCapitalize="none"
-            autoComplete="off"
-            spellCheck={false}
-            autoFocus
-            placeholder="studentos.app/c/your-college"
+      <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
+        <div role="radiogroup" aria-label="Where do you want to be" className="flex flex-col gap-3">
+          <ChoiceCard
+            selected={choice === "global"}
+            onSelect={() => setChoice("global")}
+            icon={<GlobeIcon aria-hidden="true" />}
+            title="Global"
+            text="Open to every student. Plans and ideas from everywhere. No college email needed."
           />
-        </FormField>
-        <div>
-          <Button type="submit" size="lg">
-            Continue <ArrowRightIcon aria-hidden="true" />
-          </Button>
+          <ChoiceCard
+            selected={choice === "college"}
+            onSelect={() => setChoice("college")}
+            icon={<GraduationCapIcon aria-hidden="true" />}
+            title="My college"
+            text="A private space for your campus. You join with your college email."
+          />
         </div>
-      </form>
-      <div className="mt-10 border-t border-border pt-6">
-        <h2 className="text-[18px] font-semibold">Your college is not on StudentOS yet?</h2>
-        <p className="mt-1 max-w-prose text-[16px] leading-relaxed text-ink-muted">
-          No problem, and no college email needed. Global is open to every student. Your profile
-          shows that no college has verified you.
-        </p>
-        <Button asChild variant="outline" size="lg" className="mt-4">
-          <Link href={`/c/${GLOBAL_SLUG}/join`}>
-            <GlobeIcon aria-hidden="true" /> Join Global
-          </Link>
+
+        {choice === "college" ? (
+          <div className="page-enter pt-2">
+            <FormField label="College link or code" error={error} required>
+              <Input
+                name="college"
+                value={value}
+                onChange={(event) => setValue(event.target.value)}
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                autoFocus
+                placeholder="studentos.app/c/your-college"
+              />
+            </FormField>
+          </div>
+        ) : null}
+
+        <Button type="submit" size="lg" className="mt-3 h-12 w-full text-[15px]">
+          Continue <ArrowRightIcon aria-hidden="true" />
         </Button>
-      </div>
+        <p className="text-center text-[12.5px] text-ink-muted">
+          You can change this any time from the top of the app.
+        </p>
+      </form>
     </AuthFrame>
   );
 }

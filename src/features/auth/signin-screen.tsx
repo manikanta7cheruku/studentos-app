@@ -14,6 +14,7 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { homeFor } from "@/features/session/session-provider";
 import { AuthFrame } from "./auth-frame";
+import { WelcomeHero } from "./welcome-hero";
 import { looksLikeEmail, safeNext } from "./safe-next";
 import { useCooldown } from "./use-cooldown";
 
@@ -156,7 +157,7 @@ export function SigninScreen() {
           noValidate
         >
           <div className="flex flex-col gap-3">
-            <span id="code-label" className="text-[15px] font-medium text-ink">
+            <span id="code-label" className="text-[13.5px] font-medium text-ink">
               Six digit code
             </span>
             <OtpInput
@@ -209,35 +210,50 @@ export function SigninScreen() {
 
   return (
     <AuthFrame
-      eyebrow="Sign in"
-      title="Sign in to your college."
+      hero={<WelcomeHero />}
+      title="Make a plan. Find your team."
       intro={
         EMAIL_ON
-          ? "Use your email address. We will send you a code, so there is no password to remember. New here? The same steps create your account."
-          : "Sign in with your Google account. There is no password to remember. New here? The same step creates your account."
+          ? "Matches, hackathons and ideas from students like you. Use your email, no password to remember. New here? The same steps create your account."
+          : "Matches, hackathons and ideas from students like you. Sign in with Google. New here? The same step creates your account."
       }
       footer={
-        <p>
-          By continuing you agree to the{" "}
-          <Link href="/terms" className="font-medium text-primary underline underline-offset-4">
-            terms
-          </Link>{" "}
-          and the{" "}
-          <Link href="/privacy" className="font-medium text-primary underline underline-offset-4">
-            privacy policy
-          </Link>
-          .
-        </p>
+        <div className="flex flex-col gap-4">
+          <p>
+            By continuing you agree to the{" "}
+            <Link href="/terms" className="font-medium text-primary underline underline-offset-4">
+              terms
+            </Link>{" "}
+            and the{" "}
+            <Link href="/privacy" className="font-medium text-primary underline underline-offset-4">
+              privacy policy
+            </Link>
+            .
+          </p>
+          <p>
+            Running a college?{" "}
+            <Link
+              href="/setup"
+              className="font-semibold text-ink underline underline-offset-4 hover:no-underline"
+            >
+              Set up your campus
+            </Link>
+          </p>
+        </div>
       }
     >
       {GOOGLE_ON ? (
         <div className="mb-6 flex flex-col gap-5">
-          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+          <Button
+            asChild
+            size="lg"
+            className="h-12 w-full border-transparent bg-white bg-none text-[15px] text-neutral-900 shadow-[0_8px_24px_-12px_rgba(255,255,255,0.5)] hover:bg-white hover:brightness-95"
+          >
             <a href={`/api/v1/auth/google${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
               <GoogleMark /> Continue with Google
             </a>
           </Button>
-          <p className="flex items-center gap-3 text-[14px] text-ink-muted">
+          <p className="flex items-center gap-3 text-[13px] text-ink-muted">
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
             {EMAIL_ON ? "or use your email" : "or"}
             <span aria-hidden="true" className="h-px flex-1 bg-border" />
@@ -254,11 +270,11 @@ export function SigninScreen() {
       {EMAIL_ON ? null : (
         <div
           aria-disabled="true"
-          className="flex flex-col gap-4 rounded-card border border-dashed border-border-strong p-5"
+          className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
         >
-          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold text-ink">
+          <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold text-ink">
             Sign in with an email code
-            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[13px] font-semibold text-ink-muted">
+            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[12px] font-semibold text-ink-muted">
               Coming soon
             </span>
           </p>

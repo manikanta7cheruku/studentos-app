@@ -46,7 +46,7 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
     <section aria-labelledby="roles" className="flex flex-col gap-3">
       <h2
         id="roles"
-        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Roles
       </h2>
@@ -72,20 +72,20 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
               className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
             >
               <div className="min-w-0">
-                <h3 className="text-[18px] font-semibold">{role.role_name}</h3>
+                <h3 className="text-[16px] font-semibold">{role.role_name}</h3>
                 {role.skills.length ? (
-                  <p className="mt-1 text-[15px] text-ink-muted">
+                  <p className="mt-1 text-[13.5px] text-ink-muted">
                     Helps if you know: {role.skills.join(", ")}
                   </p>
                 ) : null}
                 {latest ? (
-                  <p className="mt-2 text-[15px] font-medium text-ink">
+                  <p className="mt-2 text-[13.5px] font-medium text-ink">
                     {REQUEST_WORDS[latest.status] ?? latest.status}
                   </p>
                 ) : null}
               </div>
               <div className="flex flex-col items-start gap-2 sm:items-end">
-                <p className="tabular text-[15px] text-ink-muted">
+                <p className="tabular text-[13.5px] text-ink-muted">
                   {free === 0 ? "No places left" : `${free} of ${role.slots} places free`}
                 </p>
                 {canAsk ? <Button onClick={() => setAsking(role)}>Ask to join</Button> : null}

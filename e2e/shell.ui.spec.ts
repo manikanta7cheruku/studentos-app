@@ -29,12 +29,14 @@ async function member(page: Page, label: string) {
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await expect(page).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(page).toHaveURL(/\/c\/alpha\/home$/);
 }
 
 test("a member sees the campus inside the college shell", async ({ page }) => {
   await member(page, "SHL1");
-  await expect(page.getByRole("heading", { name: "Campus", level: 1 })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /good (morning|afternoon|evening)|up late/i, level: 1 }),
+  ).toBeVisible();
   await expect(page.getByRole("link", { name: /^skip to content/i })).toBeAttached();
   await expectNoSidewaysScroll(page);
 });
@@ -42,10 +44,7 @@ test("a member sees the campus inside the college shell", async ({ page }) => {
 test("the tabs open their screens", async ({ page, isMobile }) => {
   await member(page, "SHL2");
   const nav = page.getByRole("navigation").filter({ visible: true });
-  await nav
-    .getByRole("link", { name: /collaborate/i })
-    .first()
-    .click();
+  await nav.getByRole("link", { name: /plans/i }).first().click();
   await expect(page).toHaveURL(/\/c\/alpha\/collaborate$/);
   await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
   await expectNoSidewaysScroll(page);

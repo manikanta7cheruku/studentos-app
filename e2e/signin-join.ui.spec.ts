@@ -27,7 +27,7 @@ const signIn = signInThroughUi;
 
 test("the sign in page asks for an email and does not scroll sideways", async ({ page }) => {
   await page.goto("/signin");
-  await expect(page.getByRole("heading", { name: /sign in to your college/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /make a plan/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
 
@@ -54,7 +54,7 @@ test("signing in with no college leads to the find college page", async ({ page 
   const email = uniqueEmail();
   await signIn(page, email);
   await expect(page).toHaveURL(/\/find$/);
-  await expect(page.getByRole("heading", { name: /which college/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /where do you want to be/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
 
@@ -81,7 +81,7 @@ test("joining with a good invite code opens the campus", async ({ page }) => {
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await expect(page).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(page).toHaveURL(/\/c\/alpha\/home$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
@@ -117,16 +117,16 @@ test("an unknown college says so", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /could not find that college/i })).toBeVisible();
 });
 
-test("a student with no college joins Global and lands in Collaborate", async ({ page }) => {
+test("a student with no college joins Global and lands on Home", async ({ page }) => {
   const email = uniqueEmail();
   await signIn(page, email);
   await expect(page).toHaveURL(/\/find$/);
-  await page.getByRole("link", { name: /join global/i }).click();
+  await page.getByRole("button", { name: /^continue/i }).click();
   await expect(page).toHaveURL(/\/c\/global\/join$/);
   await expect(page.getByRole("heading", { name: /join studentos global/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
   await page.getByRole("button", { name: /join global/i }).click();
-  await expect(page).toHaveURL(/\/c\/global\/collaborate$/);
+  await expect(page).toHaveURL(/\/c\/global\/home$/);
   await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });

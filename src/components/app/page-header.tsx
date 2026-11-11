@@ -27,28 +27,31 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <header className={cn("flex flex-col gap-4 border-b border-border pb-6", className)}>
+    <header className={cn("flex flex-col gap-4 pb-2", className)}>
       {back ? (
         <Link
           href={back.href}
-          className="-ml-1 inline-flex min-h-11 w-fit items-center gap-1 rounded-input px-1 text-[15px] font-medium text-ink-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="group -ml-1 inline-flex h-10 w-fit items-center gap-1 rounded-input px-1 text-[13.5px] font-medium text-ink-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronLeftIcon aria-hidden="true" className="size-5" />
+          <ChevronLeftIcon
+            aria-hidden="true"
+            className="size-5 transition-transform duration-200 group-hover:-translate-x-0.5"
+          />
           {back.label}
         </Link>
       ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="mt-1 text-balance text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-[2.25rem]">
+          <h1 className="mt-1 text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight text-ink sm:text-[2rem]">
             {title}
           </h1>
           {description ? (
-            <p className="mt-2 max-w-prose text-pretty text-[17px] leading-relaxed text-ink-muted">
+            <p className="mt-2 max-w-prose text-pretty text-[14.5px] leading-relaxed text-ink-muted">
               {description}
             </p>
           ) : null}

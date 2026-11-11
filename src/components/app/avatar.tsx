@@ -19,7 +19,7 @@ export function initialsOf(name: string): string {
 
 const SIZES = {
   xs: "size-7 text-[11px]",
-  sm: "size-9 text-[13px]",
+  sm: "size-9 text-[12px]",
   md: "size-11 text-base",
   lg: "size-16 text-xl",
   xl: "size-24 text-3xl",

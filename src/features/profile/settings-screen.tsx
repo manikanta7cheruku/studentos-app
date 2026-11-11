@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -37,8 +37,8 @@ function Row({
   return (
     <div className="flex flex-col gap-4 border-t border-border py-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
       <div className="max-w-prose">
-        <h3 className="text-[18px] font-semibold">{title}</h3>
-        <div className="mt-1 text-[16px] leading-relaxed text-ink-muted">{children}</div>
+        <h3 className="text-[16px] font-semibold">{title}</h3>
+        <div className="mt-1 text-[14px] leading-relaxed text-ink-muted">{children}</div>
       </div>
       <div className="shrink-0">{action}</div>
     </div>
@@ -60,18 +60,17 @@ function Choice({
 }) {
   const id = React.useId();
   return (
-    <div className="flex min-h-11 items-start gap-3">
-      <Checkbox
+    <div className="flex min-h-11 items-center justify-between gap-4 py-1.5">
+      <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
+        <span className="block font-medium text-ink">{label}</span>
+        <span className="block text-[13px] text-ink-muted">{help}</span>
+      </label>
+      <Switch
         id={id}
         checked={checked}
         disabled={disabled}
         onCheckedChange={(value) => onChange(value === true)}
-        className="mt-2.5"
       />
-      <label htmlFor={id} className="py-2 text-[16px] leading-snug">
-        <span className="block font-medium text-ink">{label}</span>
-        <span className="block text-[15px] text-ink-muted">{help}</span>
-      </label>
     </div>
   );
 }
@@ -86,7 +85,7 @@ function PrivacySection() {
     portfolio?: boolean;
     reminders?: boolean;
   }>({});
-  const [busy, setBusy] = React.useState<string | null>(null);
+  const [, setBusy] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<string>("");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -123,14 +122,13 @@ function PrivacySection() {
     <section aria-labelledby="privacy" className="flex flex-col">
       <h2
         id="privacy"
-        className="mb-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="mb-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Privacy and reminders
       </h2>
       <div className="flex max-w-xl flex-col gap-1">
         <Choice
           checked={visible}
-          disabled={busy === "visible"}
           label="Show my profile to my college"
           help="Verified members can find you in People. Turn it off to hide your profile from everyone."
           onChange={(next) => {
@@ -145,7 +143,6 @@ function PrivacySection() {
         />
         <Choice
           checked={portfolio}
-          disabled={busy === "portfolio"}
           label="Let my portfolio be public"
           help="Anyone with the link can see the portfolio you build later. Off by default."
           onChange={(next) => {
@@ -160,7 +157,6 @@ function PrivacySection() {
         />
         <Choice
           checked={reminders}
-          disabled={busy === "reminders"}
           label="Remind me before a saved deadline"
           help="A notification 48 hours before the deadline of an opportunity you saved."
           onChange={(next) => {
@@ -174,7 +170,7 @@ function PrivacySection() {
           }}
         />
       </div>
-      <p role="status" className="mt-3 min-h-6 text-[15px] text-ink-muted">
+      <p role="status" className="mt-3 min-h-6 text-[13.5px] text-ink-muted">
         {message}
       </p>
       {error ? (
@@ -407,7 +403,7 @@ function SpacesSection() {
     <section aria-labelledby="spaces" className="flex flex-col gap-3">
       <h2
         id="spaces"
-        className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
       >
         Your spaces
       </h2>
@@ -419,10 +415,10 @@ function SpacesSection() {
               key={item.college.slug}
               className="flex min-h-14 items-center justify-between gap-4 py-2"
             >
-              <span className="text-[17px] font-medium">
+              <span className="text-[15px] font-medium">
                 {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
                 {current ? (
-                  <span className="ml-2 text-[14px] font-normal text-ink-muted">you are here</span>
+                  <span className="ml-2 text-[13px] font-normal text-ink-muted">you are here</span>
                 ) : null}
               </span>
               {current ? null : (
@@ -435,7 +431,7 @@ function SpacesSection() {
         })}
       </ul>
       {inGlobal ? null : (
-        <p className="text-[15px] text-ink-muted">
+        <p className="text-[13.5px] text-ink-muted">
           Not in Global yet. It is open to every student, with no college email needed.{" "}
           <Link
             href={`/c/${GLOBAL_SLUG}/join`}
@@ -461,7 +457,7 @@ export function SettingsScreen() {
       <SpacesSection />
       <PrivacySection />
       <div className="flex flex-col">
-        <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+        <h2 className="mb-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
           Account
         </h2>
         <SignOutRow />

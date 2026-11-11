@@ -4,6 +4,7 @@ import * as React from "react";
 import { PinIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
+import { ExploreTiles } from "@/components/app/explore-tiles";
 import { PageHeader } from "@/components/app/page-header";
 import { api, type Announcement } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
@@ -23,13 +24,13 @@ function AnnouncementCard({ item }: { item: Announcement }) {
   return (
     <article className="rounded-card border border-border bg-surface p-5 sm:p-6">
       {item.pinned ? (
-        <p className="mb-2 inline-flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.08em] text-primary">
+        <p className="mb-2 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-primary">
           <PinIcon aria-hidden="true" className="size-3.5" /> Pinned
         </p>
       ) : null}
       <h2 className="text-xl font-semibold leading-snug">{item.title}</h2>
       <p
-        className={`mt-2 whitespace-pre-line text-[17px] leading-relaxed text-ink ${long && !open ? "line-clamp-4" : ""}`}
+        className={`mt-2 whitespace-pre-line text-[15px] leading-relaxed text-ink ${long && !open ? "line-clamp-4" : ""}`}
       >
         {item.body}
       </p>
@@ -37,12 +38,12 @@ function AnnouncementCard({ item }: { item: Announcement }) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="mt-2 inline-flex min-h-11 items-center rounded-input text-[15px] font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-2 inline-flex min-h-11 items-center rounded-input text-[13.5px] font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {open ? "Show less" : "Read more"}
         </button>
       ) : null}
-      <p className="mt-3 text-[14px] text-ink-muted">
+      <p className="mt-3 text-[13px] text-ink-muted">
         {item.author.display_name} · <time dateTime={item.publish_at}>{when(item.publish_at)}</time>
       </p>
     </article>
@@ -60,6 +61,7 @@ export function CampusScreen() {
         title="Campus"
         description="Notices from your college. Pinned ones stay at the top."
       />
+      <ExploreTiles slug={slug} />
       {state.status === "loading" ? (
         <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading announcements">
           {[0, 1, 2].map((n) => (

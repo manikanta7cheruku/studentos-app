@@ -117,7 +117,7 @@ test("create an invite code, show it once, and a new student joins with it", asy
     .last()
     .fill(code);
   await student.getByRole("button", { name: /join with this code/i }).click();
-  await expect(student).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(student).toHaveURL(/\/c\/alpha\/home$/);
   await student.context().close();
 
   // Revoke
@@ -153,7 +153,7 @@ test("a manual join request is approved by the admin", async ({
 
   // The student is in
   await student.getByRole("button", { name: /check now/i }).click();
-  await expect(student).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(student).toHaveURL(/\/c\/alpha\/home$/);
   await student.context().close();
 });
 
@@ -218,7 +218,7 @@ test("a member reports a team post and the admin dismisses the report", async ({
   await student.goto("/c/alpha/collaborate/new");
   await student.getByLabel(/^title/i).fill("Suspicious team post for reporting");
   await student.getByPlaceholder("Frontend developer").first().fill("Anyone");
-  await student.getByRole("button", { name: /post to the team finder/i }).click();
+  await student.getByRole("button", { name: /^post plan$/i }).click();
   await expect(student).toHaveURL(/\/c\/alpha\/collaborate\/[0-9a-f-]{36}$/);
   const postPath = new URL(student.url()).pathname;
 
@@ -248,11 +248,11 @@ test("settings are saved and the audit log shows the change", async ({ page }) =
   await adminPage(page, "ADM7");
   await page.goto("/c/alpha/admin/settings");
   await expect(page.getByRole("heading", { name: "Settings", level: 1 })).toBeVisible();
-  await page.getByLabel("Campus").uncheck();
+  await page.getByRole("switch", { name: /^campus/i }).click();
   await page.getByRole("button", { name: /save settings/i }).click();
   await expect(page.getByRole("status").filter({ hasText: /saved/i })).toBeVisible();
   // Put it back, so other tests are not affected
-  await page.getByLabel("Campus").check();
+  await page.getByRole("switch", { name: /^campus/i }).click();
   await page.getByRole("button", { name: /save settings/i }).click();
   await expect(page.getByRole("status").filter({ hasText: /saved/i })).toBeVisible();
   await page.goto("/c/alpha/admin/audit");
@@ -299,7 +299,7 @@ test("when the connection drops the app says so, and comes back by itself", asyn
 }) => {
   await memberOfAlpha(page, "ADM9");
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByRole("heading", { name: /find your team/i, level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^plans$/i, level: 1 })).toBeVisible();
   await context.setOffline(true);
   await expect(page.getByText(/you are offline/i)).toBeVisible();
   await context.setOffline(false);
@@ -318,7 +318,7 @@ test("a screen that cannot load shows a retry, and works after it", async ({ pag
   await expect(page.getByText(/we could not load the team posts/i)).toBeVisible();
   broken = false;
   await page.getByRole("button", { name: /try again/i }).click();
-  await expect(page.getByText(/no team posts yet|team post/i).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^plans$/i, level: 1 })).toBeVisible();
   await expect(page.getByText(/we could not load the team posts/i)).toHaveCount(0);
 });
 

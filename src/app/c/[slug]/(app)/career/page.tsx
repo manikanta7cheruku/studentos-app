@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { TrackerScreen } from "@/features/career";
+import { CareersComingSoon } from "@/features/career/coming-soon";
 
-export const metadata: Metadata = { title: "My applications | StudentOS" };
+export const metadata: Metadata = { title: "Careers | StudentOS" };
 export const instant = false;
 
 export default function Page() {
-  return <TrackerScreen />;
+  return <CareersComingSoon />;
 }

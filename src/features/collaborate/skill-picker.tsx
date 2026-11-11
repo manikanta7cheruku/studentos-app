@@ -47,7 +47,7 @@ export function SkillPicker({
         <ul className="flex flex-wrap gap-2" aria-label={`${label}, chosen`}>
           {value.map((skill) => (
             <li key={skill.id}>
-              <span className="inline-flex min-h-9 items-center gap-1 rounded-full border border-border bg-surface pl-3 text-[15px]">
+              <span className="inline-flex min-h-9 items-center gap-1 rounded-full border border-border bg-surface pl-3 text-[13.5px]">
                 {skill.name}
                 <button
                   type="button"
@@ -85,7 +85,7 @@ export function SkillPicker({
                     }}
                     className="flex min-h-11 w-full items-center justify-between gap-3 px-4 text-left hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
-                    <span className="text-[15px] font-medium">{hit.name}</span>
+                    <span className="text-[13.5px] font-medium">{hit.name}</span>
                     <PlusIcon aria-hidden="true" className="size-4 text-primary" />
                   </button>
                 </li>
@@ -94,7 +94,7 @@ export function SkillPicker({
           ) : null}
         </>
       ) : (
-        <p className="text-[14px] text-ink-muted">That is the most skills for one role.</p>
+        <p className="text-[13px] text-ink-muted">That is the most skills for one role.</p>
       )}
     </div>
   );

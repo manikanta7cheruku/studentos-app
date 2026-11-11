@@ -386,3 +386,40 @@ Private to the person. No college is involved, nothing is shared, not even with 
 | APP-03 | DELETE `/api/v1/me/applications/{id}` | Gone for good, with its history. `{ "deleted": true }` |
 | APP-04 | POST `/api/v1/me/applications/{id}/status` | `{ "status": "interview", "note": "optional" }`, `If-Match` optional. Changes the status and writes one event (from, to, time, note) in one step. 409 `CONFLICT` if it already has that status, 409 `VERSION_CONFLICT` for an old version |
 
+## 15. Ideas and college setup (R3-D11)
+
+Ideas are short text posts inside one space (a college or Global). People vote and reply. Everything is private to the space: another space's idea is a 404. Decision D-29 (feed of plans and ideas) and D-30 (setup codes).
+
+| ID | Request | Notes |
+|---|---|---|
+| IDE-01 | POST `/api/v1/c/{slug}/ideas` | IDEM. `title` 5 to 140, `body` up to 2000, `topic` campus, study, sports, tech, food or other. 201 with the idea. The author's own up vote is counted, so it starts at score 1. 429 `RATE_LIMITED` at 20 ideas a day |
+| IDE-02 | GET `/api/v1/c/{slug}/ideas?sort=new|top&topic=&mine=true&limit=&cursor=` | `new` is newest first with a cursor. `top` is the best of the last 30 days, one page. Removed ideas, people who left and blocked people never appear |
+| IDE-03 | GET `/api/v1/c/{slug}/ideas/{id}` | One idea with `my_vote` (1, -1 or 0) and `is_owner`. 404 when removed, hidden or in another space |
+| IDE-04 | PUT `/api/v1/c/{slug}/ideas/{id}/vote` | `{ "value": 1 }`, -1, or 0 to take the vote back. Safe to repeat. Answers with the idea and the new score |
+| IDE-05 | DELETE `/api/v1/c/{slug}/ideas/{id}` | The author, or a moderator or admin (written to the audit log). `{ "deleted": true }`. 403 for anyone else |
+| IDE-06 | POST `/api/v1/c/{slug}/ideas/{id}/comments` | IDEM. `body` 1 to 800, optional `parent_id` of a top level comment of the same idea (one level of replies). 429 at 40 an hour |
+| IDE-07 | GET `/api/v1/c/{slug}/ideas/{id}/comments` | Oldest first, all in one answer |
+| IDE-08 | DELETE `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}` | The author of the comment, or a moderator or admin |
+| COL-01 | POST `/api/v1/colleges/setup` | Needs sign in. `{ code (8 digits), slug, name, short_name?, city, state, domains[], join_method: email | invite | approval }`. Makes the college and its first admin in one step. 403 for a wrong, used or expired code (never says which), 409 when the address is taken, 429 after 5 tries an hour |
+
+Team Finder (TMF-01, TMF-04) also accepts three new kinds, `sport`, `event` and `hangout`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
+
+## 16. Events and the board (R3-D12, decision D-33)
+
+Events have a start time, a place, an optional capacity and RSVPs. The board is two lists in one: Lost and found (kind `lost` or `found`) and the Marketplace (kind `sell`, `rent`, `free` or `wanted`, price in whole rupees). Contact is private and in the app: messages between the person who posted and each person who wrote to them. No phone number or email is shown on a post. Payments are not part of this.
+
+| ID | Request | Notes |
+|---|---|---|
+| EVT-01 | POST `/api/v1/c/{slug}/events` | IDEM. `title` 5 to 120, `description` up to 2000, `starts_at` in the future within a year, optional `place` (120) and `capacity` (1 to 5000). 201. The author goes by default. 429 at 10 upcoming events per person |
+| EVT-02 | GET `/api/v1/c/{slug}/events?when=upcoming|past&mine=true&limit=50` | Upcoming is soonest first and includes events that started less than 3 hours ago. One page, at most 100. Each event has `going_count`, `going` and `is_owner` |
+| EVT-03 | GET `/api/v1/c/{slug}/events/{id}` | 404 for another college or a hidden event |
+| EVT-04 | PUT `/api/v1/c/{slug}/events/{id}/rsvp` | `{ "going": true }` or false. Safe to repeat. 409 `SLOTS_FULL` when full, 409 `CONFLICT` for a cancelled or long over event |
+| EVT-05 | DELETE `/api/v1/c/{slug}/events/{id}` | Cancels it (it stays visible as cancelled). The author, or a moderator or admin (audit logged) |
+| BRD-01 | POST `/api/v1/c/{slug}/board` | IDEM. `board` lostfound or market, `kind` for that board, `title` 5 to 120, `description` up to 1500, optional `place`, `price_inr` only for sell, rent or wanted. 201. 429 at 15 a day |
+| BRD-02 | GET `/api/v1/c/{slug}/board?board=&kind=&status=open|resolved|all&mine=true&limit=&cursor=` | `board` is required. Newest first with a cursor |
+| BRD-03 | GET `/api/v1/c/{slug}/board/{id}` | 404 when removed, hidden or in another college |
+| BRD-04 | POST `/api/v1/c/{slug}/board/{id}/status` | `{ "status": "open" | "resolved" }`. Only the author (404 for anyone else) |
+| BRD-05 | DELETE `/api/v1/c/{slug}/board/{id}` | The author, or a moderator or admin (audit logged). `{ "deleted": true }` |
+| BRD-06 | GET `/api/v1/c/{slug}/board/{id}/messages` | Private. The author sees every thread (`with_user` says who), anyone else only their own |
+| BRD-07 | POST `/api/v1/c/{slug}/board/{id}/messages` | IDEM. `{ "body": "...", "to_user": "only for the author, a person who wrote before" }`. 409 `CONFLICT` when the post is resolved. 429 at 30 an hour |
+

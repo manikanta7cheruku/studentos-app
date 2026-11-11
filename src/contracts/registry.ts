@@ -3,9 +3,13 @@ import * as admin from "./admin";
 import * as applications from "./applications";
 import * as auth from "./auth";
 import * as common from "./common";
+import * as board from "./board";
 import * as engagement from "./engagement";
+import * as events from "./events";
+import * as ideas from "./ideas";
 import * as opportunities from "./opportunities";
 import * as profile from "./profile";
+import * as setup from "./setup";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 
@@ -271,6 +275,104 @@ export const endpoints: Endpoint[] = [
   }),
   e("OPP-04", "DELETE", "/me/saved-opportunities/{id}", "ses", "Unsave an opportunity", {
     response: opportunities.savedOpportunityResponse,
+  }),
+  e("EVT-01", "POST", "/c/{slug}/events", "mem", "Create an event", {
+    body: events.eventCreateBody,
+    response: events.eventResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("EVT-02", "GET", "/c/{slug}/events", "mem", "List events (upcoming or past)", {
+    query: events.eventListQuery,
+    response: events.eventListResponse,
+  }),
+  e("EVT-03", "GET", "/c/{slug}/events/{id}", "mem", "One event", {
+    response: events.eventResponse,
+  }),
+  e("EVT-04", "PUT", "/c/{slug}/events/{id}/rsvp", "mem", "Say I am going, or not", {
+    body: events.eventRsvpBody,
+    response: events.eventResponse,
+  }),
+  e("EVT-05", "DELETE", "/c/{slug}/events/{id}", "mem", "Cancel an event (author or moderator)", {
+    response: events.eventResponse,
+  }),
+  e("BRD-01", "POST", "/c/{slug}/board", "mem", "Post to Lost and found or the Marketplace", {
+    body: board.boardCreateBody,
+    response: board.boardResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("BRD-02", "GET", "/c/{slug}/board", "mem", "List board posts", {
+    query: board.boardListQuery,
+    response: board.boardListResponse,
+  }),
+  e("BRD-03", "GET", "/c/{slug}/board/{id}", "mem", "One board post", {
+    response: board.boardResponse,
+  }),
+  e("BRD-04", "POST", "/c/{slug}/board/{id}/status", "mem", "Mark my post open or resolved", {
+    body: board.boardStatusBody,
+    response: board.boardResponse,
+  }),
+  e(
+    "BRD-05",
+    "DELETE",
+    "/c/{slug}/board/{id}",
+    "mem",
+    "Remove a board post (author or moderator)",
+    {
+      response: board.boardDeleteResponse,
+    },
+  ),
+  e("BRD-06", "GET", "/c/{slug}/board/{id}/messages", "mem", "Private messages of a post", {
+    response: board.boardMessageListResponse,
+  }),
+  e("BRD-07", "POST", "/c/{slug}/board/{id}/messages", "mem", "Send a private message on a post", {
+    body: board.boardMessageBody,
+    response: board.boardMessageResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("IDE-01", "POST", "/c/{slug}/ideas", "mem", "Post an idea", {
+    body: ideas.ideaCreateBody,
+    response: ideas.ideaResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("IDE-02", "GET", "/c/{slug}/ideas", "mem", "List ideas (new or top, by topic)", {
+    query: ideas.ideaListQuery,
+    response: ideas.ideaListResponse,
+  }),
+  e("IDE-03", "GET", "/c/{slug}/ideas/{id}", "mem", "One idea", {
+    response: ideas.ideaResponse,
+  }),
+  e("IDE-04", "PUT", "/c/{slug}/ideas/{id}/vote", "mem", "Vote on an idea (1, -1 or 0)", {
+    body: ideas.ideaVoteBody,
+    response: ideas.ideaResponse,
+  }),
+  e("IDE-05", "DELETE", "/c/{slug}/ideas/{id}", "mem", "Remove an idea (author or moderator)", {
+    response: ideas.ideaDeleteResponse,
+  }),
+  e("IDE-06", "POST", "/c/{slug}/ideas/{id}/comments", "mem", "Comment on an idea", {
+    body: ideas.ideaCommentCreateBody,
+    response: ideas.ideaCommentResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("IDE-07", "GET", "/c/{slug}/ideas/{id}/comments", "mem", "Comments of an idea", {
+    response: ideas.ideaCommentListResponse,
+  }),
+  e(
+    "IDE-08",
+    "DELETE",
+    "/c/{slug}/ideas/{id}/comments/{commentId}",
+    "mem",
+    "Remove a comment (author or moderator)",
+    { response: ideas.ideaDeleteResponse },
+  ),
+  e("COL-01", "POST", "/colleges/setup", "ses", "Create my college with a setup code", {
+    body: setup.collegeSetupBody,
+    response: setup.collegeSetupResponse,
+    status: 201,
   }),
   e("APP-01", "POST", "/me/applications", "ses", "Add an application to my tracker", {
     body: applications.applicationCreateBody,

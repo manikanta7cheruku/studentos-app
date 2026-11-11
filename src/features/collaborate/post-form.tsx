@@ -17,7 +17,15 @@ import { GLOBAL_SLUG } from "@/lib/home-path";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
 import { useSession } from "@/features/session/session-provider";
-import { KINDS, KIND_LABEL, dateInputOffset, dateInputValue, deadlineFromDate } from "./labels";
+import {
+  KIND_LABEL,
+  PLAN_KINDS,
+  isTimedKind,
+  dateInputOffset,
+  dateInputValue,
+  dateTimeInputValue,
+  deadlineFromDate,
+} from "./labels";
 import { SkillPicker, type PickedSkill } from "./skill-picker";
 
 type RoleDraft = { key: string; name: string; slots: string; skills: PickedSkill[] };
@@ -50,6 +58,15 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   const [title, setTitle] = React.useState(editing?.title ?? "");
   const [description, setDescription] = React.useState(editing?.description ?? "");
   const [deadline, setDeadline] = React.useState(dateInputValue(editing?.deadline ?? null));
+  // A sport or an event has a start time and a place instead of a deadline and a list of roles.
+  const [when, setWhen] = React.useState(dateTimeInputValue(editing?.deadline ?? null));
+  const [place, setPlace] = React.useState(editing?.place ?? "");
+  const [players, setPlayers] = React.useState(
+    String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
+  );
+  const timed = isTimedKind(kind);
+  // The earliest start the picker allows: this minute (computed once when the form opens).
+  const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
   const [externalLink, setExternalLink] = React.useState(editing?.external_link ?? "");
   const [teamLink, setTeamLink] = React.useState(editing?.team_link ?? "");
   const [roles, setRoles] = React.useState<RoleDraft[]>(() => [newRole()]);
@@ -63,14 +80,23 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   function validate(): Record<string, string> {
     const problems: Record<string, string> = {};
     if (title.trim().length < 5) problems.title = "Give it a title of at least 5 characters.";
-    if (deadline) {
+    if (timed) {
+      const start = new Date(when);
+      if (!when || Number.isNaN(start.getTime())) problems.when = "Pick the date and time.";
+      else if (start.getTime() <= Date.now()) problems.when = "It has to start in the future.";
+      else if (start.getTime() > Date.now() + 180 * 86_400_000)
+        problems.when = "It can start at most 180 days from now.";
+      const count = Number(players);
+      if (!Number.isInteger(count) || count < 1 || count > 20)
+        problems.players = "Between 1 and 20 people.";
+    } else if (deadline) {
       if (deadline < dateInputOffset(0)) problems.deadline = "The deadline must be in the future.";
       else if (deadline > dateInputOffset(180))
         problems.deadline = "The deadline can be at most 180 days away.";
     }
     if (!httpsOk(externalLink)) problems.external_link = "The link must start with https://";
     if (!httpsOk(teamLink)) problems.team_link = "The link must start with https://";
-    if (!editing) {
+    if (!editing && !timed) {
       roles.forEach((role, index) => {
         if (!role.name.trim())
           problems[`role-${index}-name`] = "Name the role, for example Designer.";
@@ -97,8 +123,13 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
         if (kind !== editing.kind) patch.kind = kind;
         if (title.trim() !== editing.title) patch.title = title.trim();
         if (description.trim() !== editing.description) patch.description = description.trim();
-        const newDeadline = deadlineFromDate(deadline);
-        if (dateInputValue(editing.deadline) !== deadline) patch.deadline = newDeadline;
+        if (timed) {
+          const start = new Date(when).toISOString();
+          if (dateTimeInputValue(editing.deadline) !== when) patch.deadline = start;
+          if ((place.trim() || null) !== editing.place) patch.place = place.trim() || null;
+        } else if (dateInputValue(editing.deadline) !== deadline) {
+          patch.deadline = deadlineFromDate(deadline);
+        }
         if ((externalLink.trim() || null) !== editing.external_link)
           patch.external_link = externalLink.trim() || null;
         if ((teamLink.trim() || null) !== editing.team_link)
@@ -113,14 +144,23 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           kind,
           title: title.trim(),
           description: description.trim(),
-          deadline: deadlineFromDate(deadline),
+          deadline: timed ? new Date(when).toISOString() : deadlineFromDate(deadline),
+          ...(timed && place.trim() ? { place: place.trim() } : {}),
           ...(externalLink.trim() ? { external_link: externalLink.trim() } : {}),
           ...(teamLink.trim() ? { team_link: teamLink.trim() } : {}),
-          roles: roles.map((role) => ({
-            role_name: role.name.trim(),
-            slots: Number(role.slots),
-            skill_ids: role.skills.map((s) => s.id),
-          })),
+          roles: timed
+            ? [
+                {
+                  role_name: kind === "sport" ? "Player" : kind === "hangout" ? "Friend" : "Guest",
+                  slots: Number(players),
+                  skill_ids: [],
+                },
+              ]
+            : roles.map((role) => ({
+                role_name: role.name.trim(),
+                slots: Number(role.slots),
+                skill_ids: role.skills.map((s) => s.id),
+              })),
         },
         attempt.get(),
       );
@@ -140,7 +180,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
     <form onSubmit={submit} className="flex max-w-2xl flex-col gap-7" noValidate>
       {!editing ? (
         <fieldset className="flex flex-col gap-3">
-          <legend className="text-[15px] font-medium text-ink">Post to</legend>
+          <legend className="text-[13.5px] font-medium text-ink">Post to</legend>
           <div className="flex flex-col gap-2 sm:flex-row">
             {spaces.map((item) => {
               const selected = space === item.college.slug;
@@ -163,13 +203,13 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                     className="size-5 accent-[var(--primary)]"
                   />
                   <span className="flex flex-col">
-                    <span className="flex items-center gap-2 text-[16px] font-semibold text-ink">
+                    <span className="flex items-center gap-2 text-[14px] font-semibold text-ink">
                       {item.college.slug === GLOBAL_SLUG ? (
                         <GlobeIcon aria-hidden="true" className="size-4" />
                       ) : null}
                       {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
                     </span>
-                    <span className="text-[14px] text-ink-muted">
+                    <span className="text-[13px] text-ink-muted">
                       {item.college.slug === GLOBAL_SLUG
                         ? "Open to every student"
                         : "Only members of this college"}
@@ -180,7 +220,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
             })}
           </div>
           {!inGlobal ? (
-            <p className="text-[15px] text-ink-muted">
+            <p className="text-[13.5px] text-ink-muted">
               Want students from other colleges to see it too?{" "}
               <Link
                 href={`/c/${GLOBAL_SLUG}/join`}
@@ -200,7 +240,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           onChange={(event) => setKind(event.target.value as TeamPostKind)}
           className="h-11 w-full rounded-input border border-border-strong bg-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
         >
-          {KINDS.map((k) => (
+          {(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => (
             <option key={k} value={k}>
               {KIND_LABEL[k]}
             </option>
@@ -230,20 +270,63 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
         />
       </FormField>
 
-      <FormField
-        label="Deadline"
-        help="Optional. After this date the post closes by itself. Up to 180 days from today."
-        error={fields.deadline}
-      >
-        <Input
-          type="date"
-          value={deadline}
-          onChange={(event) => setDeadline(event.target.value)}
-          min={dateInputOffset(1)}
-          max={dateInputOffset(180)}
-          className="sm:w-56"
-        />
-      </FormField>
+      {timed ? (
+        <>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField label="When does it start?" error={fields.when} required>
+              <Input
+                type="datetime-local"
+                value={when}
+                onChange={(event) => setWhen(event.target.value)}
+                min={minStart}
+              />
+            </FormField>
+            <FormField label="Where?" help="Optional. The turf, hall or room." error={fields.place}>
+              <Input
+                value={place}
+                onChange={(event) => setPlace(event.target.value)}
+                maxLength={120}
+                placeholder="Greenfield Turf"
+              />
+            </FormField>
+          </div>
+          {!editing ? (
+            <FormField
+              label={
+                kind === "sport"
+                  ? "Players needed"
+                  : kind === "hangout"
+                    ? "How many people?"
+                    : "How many can come?"
+              }
+              error={fields.players}
+              required
+            >
+              <Input
+                inputMode="numeric"
+                value={players}
+                onChange={(event) => setPlayers(event.target.value.replace(/\D/g, "").slice(0, 2))}
+                className="sm:w-32"
+              />
+            </FormField>
+          ) : null}
+        </>
+      ) : (
+        <FormField
+          label="Deadline"
+          help="Optional. After this date the post closes by itself. Up to 180 days from today."
+          error={fields.deadline}
+        >
+          <Input
+            type="date"
+            value={deadline}
+            onChange={(event) => setDeadline(event.target.value)}
+            min={dateInputOffset(1)}
+            max={dateInputOffset(180)}
+            className="sm:w-56"
+          />
+        </FormField>
+      )}
 
       <FormField
         label="Link with more details"
@@ -277,99 +360,104 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
         />
       </FormField>
 
-      <section aria-labelledby="roles" className="flex flex-col gap-4">
-        <div>
-          <h2 id="roles" className="text-[18px] font-semibold">
-            Roles you need
-          </h2>
-          <p className="text-[15px] text-ink-muted">
-            {editing
-              ? "Roles cannot be changed after posting. Close this post and make a new one to change them."
-              : "Add one or more roles. Classmates ask to join a role."}
-          </p>
-        </div>
-        {editing ? (
-          <ul className="divide-y divide-border border-y border-border">
-            {editing.roles.map((role) => (
-              <li key={role.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                <span className="font-medium">{role.role_name}</span>
-                <span className="tabular text-[15px] text-ink-muted">
-                  {role.filled} of {role.slots} filled
-                  {role.skills.length ? ` · ${role.skills.join(", ")}` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <>
-            {roles.map((role, index) => (
-              <div
-                key={role.key}
-                className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4 sm:p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-[14px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
-                    Role {index + 1}
-                  </p>
-                  {roles.length > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setRoles((current) => current.filter((r) => r.key !== role.key))
-                      }
-                      className="inline-flex min-h-11 items-center gap-1.5 rounded-input px-2 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <Trash2Icon aria-hidden="true" className="size-4" /> Remove role {index + 1}
-                    </button>
-                  ) : null}
-                </div>
-                <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
-                  <FormField label="Role" error={fields[`role-${index}-name`]} required>
-                    <Input
-                      value={role.name}
-                      onChange={(event) => updateRole(role.key, { name: event.target.value })}
-                      maxLength={60}
-                      placeholder="Frontend developer"
-                    />
-                  </FormField>
-                  <FormField label="Places" error={fields[`role-${index}-slots`]} required>
-                    <Input
-                      inputMode="numeric"
-                      value={role.slots}
-                      onChange={(event) =>
-                        updateRole(role.key, {
-                          slots: event.target.value.replace(/\D/g, "").slice(0, 2),
-                        })
-                      }
-                    />
-                  </FormField>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-[15px] font-medium text-ink">
-                    Skills that help (optional)
-                  </span>
-                  <SkillPicker
-                    label={`Skills for role ${index + 1}`}
-                    value={role.skills}
-                    onChange={(skills) => updateRole(role.key, { skills })}
-                  />
-                </div>
-              </div>
-            ))}
-            {roles.length < 8 ? (
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setRoles((current) => [...current, newRole()])}
+      {timed ? null : (
+        <section aria-labelledby="roles" className="flex flex-col gap-4">
+          <div>
+            <h2 id="roles" className="text-[16px] font-semibold">
+              Roles you need
+            </h2>
+            <p className="text-[13.5px] text-ink-muted">
+              {editing
+                ? "Roles cannot be changed after posting. Close this post and make a new one to change them."
+                : "Add one or more roles. Classmates ask to join a role."}
+            </p>
+          </div>
+          {editing ? (
+            <ul className="divide-y divide-border border-y border-border">
+              {editing.roles.map((role) => (
+                <li
+                  key={role.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-3"
                 >
-                  <PlusIcon aria-hidden="true" /> Add another role
-                </Button>
-              </div>
-            ) : null}
-          </>
-        )}
-      </section>
+                  <span className="font-medium">{role.role_name}</span>
+                  <span className="tabular text-[13.5px] text-ink-muted">
+                    {role.filled} of {role.slots} filled
+                    {role.skills.length ? ` · ${role.skills.join(", ")}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <>
+              {roles.map((role, index) => (
+                <div
+                  key={role.key}
+                  className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4 sm:p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
+                      Role {index + 1}
+                    </p>
+                    {roles.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRoles((current) => current.filter((r) => r.key !== role.key))
+                        }
+                        className="inline-flex min-h-11 items-center gap-1.5 rounded-input px-2 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Trash2Icon aria-hidden="true" className="size-4" /> Remove role {index + 1}
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+                    <FormField label="Role" error={fields[`role-${index}-name`]} required>
+                      <Input
+                        value={role.name}
+                        onChange={(event) => updateRole(role.key, { name: event.target.value })}
+                        maxLength={60}
+                        placeholder="Frontend developer"
+                      />
+                    </FormField>
+                    <FormField label="Places" error={fields[`role-${index}-slots`]} required>
+                      <Input
+                        inputMode="numeric"
+                        value={role.slots}
+                        onChange={(event) =>
+                          updateRole(role.key, {
+                            slots: event.target.value.replace(/\D/g, "").slice(0, 2),
+                          })
+                        }
+                      />
+                    </FormField>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[13.5px] font-medium text-ink">
+                      Skills that help (optional)
+                    </span>
+                    <SkillPicker
+                      label={`Skills for role ${index + 1}`}
+                      value={role.skills}
+                      onChange={(skills) => updateRole(role.key, { skills })}
+                    />
+                  </div>
+                </div>
+              ))}
+              {roles.length < 8 ? (
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setRoles((current) => [...current, newRole()])}
+                  >
+                    <PlusIcon aria-hidden="true" /> Add another role
+                  </Button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </section>
+      )}
 
       {error ? (
         <Banner variant="error">
@@ -386,7 +474,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           ) : editing ? (
             "Save changes"
           ) : (
-            "Post to the team finder"
+            "Post plan"
           )}
         </Button>
         <Button

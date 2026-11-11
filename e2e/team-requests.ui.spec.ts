@@ -50,7 +50,7 @@ async function makePost(page: Page, title: string, teamLink = "https://chat.exam
   await page.getByLabel(/what are you building/i).fill("We need one designer for the weekend.");
   await page.getByLabel(/team chat link/i).fill(teamLink);
   await page.getByPlaceholder("Frontend developer").first().fill("Designer");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page).toHaveURL(/\/c\/alpha\/collaborate\/[0-9a-f-]{36}$/);
   return new URL(page.url()).pathname;
 }

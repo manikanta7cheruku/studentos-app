@@ -36,8 +36,8 @@ async function fillPost(page: Page, title: string) {
 test("the empty team finder invites the first post", async ({ page }) => {
   await memberOfAlpha(page, "TF0");
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByRole("heading", { name: /find your team/i, level: 1 })).toBeVisible();
-  await expect(page.getByText(/no team posts yet/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^plans$/i, level: 1 })).toBeVisible();
+  await expect(page.getByText(/no plans yet/i)).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
 
@@ -45,7 +45,7 @@ test("a short title is explained before sending", async ({ page }) => {
   await memberOfAlpha(page, "TF1");
   await page.goto("/c/alpha/collaborate/new");
   await page.getByLabel(/^title/i).fill("Hi");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page.getByText(/at least 5 characters/i)).toBeVisible();
   await expect(page.getByText(/name the role/i)).toBeVisible();
   await expectNoSidewaysScroll(page);
@@ -60,7 +60,7 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await page.getByRole("button", { name: /python/i }).click();
   await page.getByRole("button", { name: /add another role/i }).click();
   await page.getByPlaceholder("Frontend developer").nth(1).fill("Designer");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
 
   // The post page
   await expect(page).toHaveURL(/\/c\/alpha\/collaborate\/[0-9a-f-]{36}$/);
@@ -74,17 +74,17 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await page.goto("/c/alpha/collaborate");
   const row = page.getByRole("link", { name: /campus bus tracker/i });
   await expect(row).toBeVisible();
-  await expect(page.getByText("Your post").first()).toBeVisible();
+  await expect(page.getByText("Yours").first()).toBeVisible();
   await expectNoSidewaysScroll(page);
   await page.getByRole("button", { name: "Hackathon" }).click();
-  await expect(page.getByText(/no posts match these filters/i)).toBeVisible();
+  await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
   await page.getByRole("button", { name: "Project" }).click();
   await expect(row).toBeVisible();
-  await page.getByLabel(/search posts/i).fill("zzzz-nothing");
-  await expect(page.getByText(/no posts match these filters/i)).toBeVisible();
-  await page.getByLabel(/search posts/i).fill("bus tracker");
+  await page.getByLabel(/search plans/i).fill("zzzz-nothing");
+  await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
+  await page.getByLabel(/search plans/i).fill("bus tracker");
   await expect(row).toBeVisible();
-  await page.getByRole("button", { name: "My posts" }).click();
+  await page.getByRole("button", { name: "Mine" }).click();
   await expect(row).toBeVisible();
 
   // Edit
@@ -103,8 +103,9 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await expect(page.getByText(/the author closed this post/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /^edit/i })).toHaveCount(0);
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByText(/no team posts yet|no posts match/i).first()).toBeVisible();
-  await page.getByLabel(/also show closed and full posts/i).check();
+  await expect(page.getByText(/no plans yet/i)).toBeVisible();
+  // My own posts still show what I closed.
+  await page.getByRole("button", { name: "Mine" }).click();
   await expect(page.getByRole("link", { name: /now with a map/i })).toBeVisible();
 });
 
@@ -116,7 +117,7 @@ test("a student in a college and in Global can post to Global", async ({ page })
   await expect(page.getByRole("radio", { name: /alpha college/i })).toBeChecked();
   await page.getByRole("radio", { name: /global/i }).check();
   await fillPost(page, "Open source note taking app, all colleges welcome");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page).toHaveURL(/\/c\/global\/collaborate\/[0-9a-f-]{36}$/);
   await expect(
     page.getByRole("heading", { name: /open source note taking/i, level: 1 }),
@@ -140,6 +141,6 @@ test("Your spaces in Settings lets a phone switch to Global", async ({ page }) =
   await page.goto("/c/alpha/me/settings");
   await expect(page.getByRole("heading", { name: /your spaces/i })).toBeVisible();
   await page.getByRole("link", { name: "Open" }).click();
-  await expect(page).toHaveURL(/\/c\/global\/collaborate$/);
+  await expect(page).toHaveURL(/\/c\/global\/home$/);
   await expectNoSidewaysScroll(page);
 });

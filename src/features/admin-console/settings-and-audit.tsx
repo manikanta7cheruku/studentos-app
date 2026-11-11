@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Switch } from "@/components/ui/switch";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { LoadError } from "@/components/app/load-error";
@@ -43,20 +44,20 @@ function Check({
   help: string;
   disabled?: boolean;
 }) {
+  const id = React.useId();
   return (
-    <label className="flex min-h-11 items-start gap-3 py-1.5">
-      <input
-        type="checkbox"
-        className="mt-1.5 size-5 accent-[var(--primary)]"
+    <div className="flex min-h-11 items-center justify-between gap-4 py-1.5">
+      <label htmlFor={id} className="min-w-0 flex-1">
+        <span className="block text-[14px] font-medium text-ink">{label}</span>
+        <span className="block text-[13px] text-ink-muted">{help}</span>
+      </label>
+      <Switch
+        id={id}
         checked={checked}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
+        onCheckedChange={(v) => onChange(v === true)}
       />
-      <span>
-        <span className="block text-[16px] font-medium text-ink">{label}</span>
-        <span className="block text-[14px] text-ink-muted">{help}</span>
-      </span>
-    </label>
+    </div>
   );
 }
 

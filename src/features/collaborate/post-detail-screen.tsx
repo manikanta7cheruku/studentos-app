@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CalendarIcon, ExternalLinkIcon, MessageCircleIcon, PencilIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  ExternalLinkIcon,
+  MapPinIcon,
+  MessageCircleIcon,
+  PencilIcon,
+} from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,11 +26,24 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type TeamPostDetail } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { KIND_LABEL, formatDeadline } from "./labels";
+import { KIND_LABEL, formatDeadline, isTimedKind } from "./labels";
 import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
 import { ReportButton } from "@/features/admin-console/report-button";
 import { RoleList } from "./role-list";
+
+function startLabel(deadline: string | null): string {
+  if (!deadline) return "No time set";
+  const date = new Date(deadline);
+  if (Number.isNaN(date.getTime())) return "No time set";
+  return date.toLocaleString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 function CloseDialog({
   post,
@@ -90,16 +109,16 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-4 border-b border-border pb-6">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px]">
           <span className="font-semibold uppercase tracking-[0.06em] text-ink">
             {KIND_LABEL[post.kind]}
           </span>
           <StatusPill status={post.status} />
         </div>
-        <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+        <h1 className="text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight sm:text-[2.1rem]">
           {post.title}
         </h1>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-ink-muted">
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-ink-muted">
           <span>
             by{" "}
             <Link
@@ -111,8 +130,14 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           </span>
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" />
-            {formatDeadline(post.deadline)}
+            {isTimedKind(post.kind) ? startLabel(post.deadline) : formatDeadline(post.deadline)}
           </span>
+          {post.place ? (
+            <span className="inline-flex items-center gap-1.5">
+              <MapPinIcon aria-hidden="true" className="size-4" />
+              {post.place}
+            </span>
+          ) : null}
         </p>
         {!post.is_owner ? (
           <div>
@@ -153,7 +178,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           <h2 id="about" className="sr-only">
             About
           </h2>
-          <p className="whitespace-pre-line text-[17px] leading-relaxed">{post.description}</p>
+          <p className="whitespace-pre-line text-[15px] leading-relaxed">{post.description}</p>
         </section>
       ) : null}
 
@@ -196,12 +221,12 @@ export function PostDetailScreen({ postId }: { postId: string }) {
   const state = useLoad(() => api.teamPosts.one(slug, postId), [slug, postId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
       <Link
         href={`/c/${slug}/collaborate`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[15px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        ← All posts
+        ← All plans
       </Link>
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-4">

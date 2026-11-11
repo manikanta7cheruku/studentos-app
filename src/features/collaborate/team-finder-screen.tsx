@@ -14,7 +14,7 @@ import { api, type TeamPost, type TeamPostKind } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { KINDS, KIND_LABEL } from "./labels";
+import { KIND_LABEL, PLAN_KINDS } from "./labels";
 import { PostRow } from "./post-row";
 
 type Filters = {
@@ -41,10 +41,10 @@ function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        "inline-flex min-h-11 items-center rounded-full border px-4 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex h-9 items-center rounded-full border px-4 text-[13px] font-semibold transition-[background-color,border-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
         pressed
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-surface text-ink hover:border-border-strong",
+          ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(8,6,30,0.55)]"
+          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
       )}
     >
       {children}
@@ -60,7 +60,8 @@ function Results({ filters }: { filters: Filters }) {
         kind: filters.kind === "all" ? undefined : filters.kind,
         q: filters.q || undefined,
         mine: filters.scope === "mine",
-        status: filters.status,
+        // My own posts include the closed ones, so I can still find what I closed.
+        status: filters.scope === "mine" ? "all" : filters.status,
       }),
     [slug],
   );
@@ -98,7 +99,8 @@ function Results({ filters }: { filters: Filters }) {
         kind: filters.kind === "all" ? undefined : filters.kind,
         q: filters.q || undefined,
         mine: filters.scope === "mine",
-        status: filters.status,
+        // My own posts include the closed ones, so I can still find what I closed.
+        status: filters.scope === "mine" ? "all" : filters.status,
         cursor,
       });
       setMore({
@@ -120,19 +122,19 @@ function Results({ filters }: { filters: Filters }) {
           {filters.scope === "mine"
             ? "You have not posted yet."
             : filtered
-              ? "No posts match these filters."
-              : "No team posts yet."}
+              ? "No plans match these filters."
+              : "No plans yet."}
         </p>
         <p className="mt-1 max-w-prose text-ink-muted">
           {filters.scope === "mine"
             ? "Describe what you are building and the roles you need. Classmates with the right skills can ask to join."
             : filtered
               ? "Try another kind or a different word."
-              : "Be the first: post a project, a hackathon team or a startup idea."}
+              : "Be the first: post a match, an event or a project."}
         </p>
         <Button asChild className="mt-4">
           <Link href={`/c/${slug}/collaborate/new`}>
-            <PlusIcon aria-hidden="true" /> New post
+            <PlusIcon aria-hidden="true" /> New plan
           </Link>
         </Button>
       </div>
@@ -141,7 +143,7 @@ function Results({ filters }: { filters: Filters }) {
 
   return (
     <div>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="stagger flex flex-col gap-4">
         {items.map((post) => (
           <PostRow key={post.id} post={post} slug={slug} />
         ))}
@@ -156,10 +158,10 @@ function Results({ filters }: { filters: Filters }) {
           >
             {loadingMore ? <Spinner /> : null} Show more
           </Button>
-          {moreError ? <p className="text-[15px] text-danger">{moreError}</p> : null}
+          {moreError ? <p className="text-[13.5px] text-danger">{moreError}</p> : null}
         </div>
       ) : (
-        <p className="mt-6 text-[15px] text-ink-muted">That is everything for now.</p>
+        <p className="mt-6 text-[13.5px] text-ink-muted">That is everything for now.</p>
       )}
     </div>
   );
@@ -179,68 +181,68 @@ export function TeamFinderScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
       <PageHeader
         eyebrow={college.name}
-        title="Find your team"
-        description="Projects, hackathons and startups looking for people. Ask to join a role, or post your own."
+        title="Plans"
+        description="Matches, events, hackathons and projects looking for people. Join one, or start your own."
         actions={
           <>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline">
               <Link href={`/c/${slug}/collaborate/requests`}>Requests</Link>
             </Button>
-            <Button asChild size="lg">
+            <Button asChild>
               <Link href={`/c/${slug}/collaborate/new`}>
-                <PlusIcon aria-hidden="true" /> New post
+                <PlusIcon aria-hidden="true" /> New plan
               </Link>
             </Button>
           </>
         }
       />
 
-      <div className="flex flex-col gap-4">
-        <div role="group" aria-label="Which posts" className="flex flex-wrap gap-2">
-          <Chip pressed={filters.scope === "all"} onClick={() => set({ scope: "all" })}>
-            All posts
+      <div className="flex flex-col gap-3">
+        <div
+          role="group"
+          aria-label="Filter plans"
+          className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+        >
+          <Chip
+            pressed={filters.scope === "all" && filters.kind === "all"}
+            onClick={() => set({ scope: "all", kind: "all" })}
+          >
+            All
           </Chip>
-          <Chip pressed={filters.scope === "mine"} onClick={() => set({ scope: "mine" })}>
-            My posts
+          {PLAN_KINDS.map((kind) => (
+            <Chip
+              key={kind}
+              pressed={filters.scope === "all" && filters.kind === kind}
+              onClick={() => set({ scope: "all", kind })}
+            >
+              {KIND_LABEL[kind]}
+            </Chip>
+          ))}
+          <Chip
+            pressed={filters.scope === "mine"}
+            onClick={() => set({ scope: "mine", kind: "all" })}
+          >
+            Mine
           </Chip>
         </div>
         <div className="relative">
           <SearchIcon
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted"
           />
           <Input
             type="search"
-            aria-label="Search posts"
+            aria-label="Search plans"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Search by title or description"
-            className="pl-11"
+            placeholder="Search plans"
+            className="h-11 pl-10"
             autoComplete="off"
           />
         </div>
-        <div role="group" aria-label="Kind of post" className="flex flex-wrap gap-2">
-          <Chip pressed={filters.kind === "all"} onClick={() => set({ kind: "all" })}>
-            Everything
-          </Chip>
-          {KINDS.map((kind) => (
-            <Chip key={kind} pressed={filters.kind === kind} onClick={() => set({ kind })}>
-              {KIND_LABEL[kind]}
-            </Chip>
-          ))}
-        </div>
-        <label className="flex min-h-11 w-fit items-center gap-3 text-[15px] text-ink">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--primary)]"
-            checked={filters.status === "all"}
-            onChange={(event) => set({ status: event.target.checked ? "all" : "open" })}
-          />
-          Also show closed and full posts
-        </label>
       </div>
 
       <div aria-live="polite">

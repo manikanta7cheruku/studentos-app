@@ -34,6 +34,7 @@ export async function createTeamPost(
     title: string;
     description: string;
     deadline?: string | null;
+    place?: string;
     external_link?: string;
     team_link?: string;
     roles: { role_name: string; slots: number; skill_ids: string[] }[];
@@ -50,6 +51,9 @@ export async function createTeamPost(
     p_team_link: input.team_link ?? null,
     p_roles: input.roles,
   });
+  if (input.place) {
+    await rpc("tf_set_place", { p_actor: actor, p_post: post.id, p_place: input.place });
+  }
   // The creator is the owner, so the detail shape (team link, pending count) applies.
   return getTeamPost(actor, college, post.id as string);
 }
@@ -90,12 +94,19 @@ export async function getTeamPost(actor: string, college: string, post: string) 
 }
 
 export async function updateTeamPost(actor: string, college: string, post: string, patch: object) {
-  await rpc("tf_update_post", {
-    p_actor: actor,
-    p_college: college,
-    p_post: post,
-    p_patch: patch,
-  });
+  const { place, ...rest } = patch as { place?: string | null };
+  // The place lives in its own column and its own function. The other keys go through the edit function as before.
+  if (Object.keys(rest).length > 0) {
+    await rpc("tf_update_post", {
+      p_actor: actor,
+      p_college: college,
+      p_post: post,
+      p_patch: rest,
+    });
+  }
+  if (place !== undefined) {
+    await rpc("tf_set_place", { p_actor: actor, p_post: post, p_place: place ?? "" });
+  }
   return getTeamPost(actor, college, post);
 }
 
