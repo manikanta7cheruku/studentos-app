@@ -26,7 +26,7 @@ export function BoardCard({ post, slug }: { post: BoardItem; slug: string }) {
   return (
     <li
       className={cn(
-        "lift relative flex flex-col gap-2.5 rounded-[20px] border border-white/[0.08] bg-surface p-4 focus-within:ring-2 focus-within:ring-ring",
+        "lift glass-card relative flex flex-col gap-2.5 rounded-[24px] p-4 focus-within:ring-2 focus-within:ring-ring",
         done && "opacity-60",
       )}
     >

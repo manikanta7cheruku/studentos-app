@@ -528,7 +528,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           type="button"
           aria-label="Create"
           onClick={() => setCreating(true)}
-          className="bg-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_26px_-6px_rgba(8,6,30,0.55)] outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
+          className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
         >
           <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
         </button>

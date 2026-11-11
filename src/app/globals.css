@@ -410,7 +410,7 @@ select option {
   }
 }
 .sheet-scrim {
-  background: rgba(6, 6, 12, 0.6);
+  background: rgba(6, 6, 12, 0.38);
 }
 .sheet-scrim[data-state="open"] {
   animation: scrim-in 220ms ease-out both;
@@ -454,13 +454,29 @@ select option {
 
 /* The sheet's glass: frosted and bright at the edge, light enough that the page shows through it. */
 .glass-sheet {
-  background: linear-gradient(160deg, rgba(60, 56, 100, 0.55), rgba(24, 24, 36, 0.72) 55%);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  backdrop-filter: blur(24px) saturate(1.6);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(160deg, rgba(120, 110, 220, 0.3), rgba(40, 36, 70, 0.34) 55%),
+    rgba(18, 18, 28, 0.28);
+  -webkit-backdrop-filter: blur(34px) saturate(1.8) brightness(1.05);
+  backdrop-filter: blur(34px) saturate(1.8) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 -20px 60px -20px rgba(0, 0, 0, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 -20px 60px -20px rgba(0, 0, 0, 0.55);
+}
+/* The + button: brand colour as tinted glass, with the same bright edge as the dock beside it. */
+.glass-brand {
+  background:
+    linear-gradient(135deg, rgba(122, 110, 235, 0.78), rgba(150, 88, 175, 0.7)),
+    rgba(30, 28, 60, 0.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.7);
+  backdrop-filter: blur(12px) saturate(1.7);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -8px 16px rgba(60, 40, 120, 0.25),
+    0 12px 28px -8px rgba(40, 30, 110, 0.7);
 }
 
 @layer components {
