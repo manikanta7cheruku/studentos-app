@@ -60,9 +60,9 @@ export function CreateSheet({
       tint: "from-[#2f9fd0] to-[#4f6fe0]",
     },
     {
-      href: `/c/${slug}/turf`,
-      title: "Book a turf",
-      text: "Pick a free hour",
+      href: `/c/${slug}/turf/new`,
+      title: "Turf or court",
+      text: "List a ground to book",
       icon: <MapPinnedIcon aria-hidden="true" />,
       tint: "from-[#7a5fd6] to-[#4f6fe0]",
     },

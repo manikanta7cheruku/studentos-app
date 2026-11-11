@@ -13,7 +13,7 @@ export const GET = route<{ slug: string }>(async ({ request, requestId, params }
 });
 
 // VEN-02 POST /api/v1/c/{slug}/venues (IDEM)
-// Inside a college only its admins and moderators add a venue (403 FORBIDDEN for a student). In Global anyone can.
+// Any active member can add a venue, in a college or in Global. The person who adds it answers its booking requests.
 // `name` 3 to 80, 1 to 5 `sports`, optional `area`, `price_inr_per_hour`, `open_hour` and `close_hour`. 201 with the venue.
 // 429 at 20 venues per person.
 export const POST = route<{ slug: string }>(async ({ request, requestId, params }) => {

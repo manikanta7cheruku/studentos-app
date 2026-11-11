@@ -12,11 +12,9 @@ import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
-import { GLOBAL_SLUG } from "@/lib/home-path";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
 import { SpacePicker } from "@/features/college/space-picker";
-import { useSession } from "@/features/session/session-provider";
 import { SPORTS, hourLabel, titleCase } from "./format";
 
 const HOURS = Array.from({ length: 25 }, (_, hour) => hour);
@@ -24,7 +22,6 @@ const HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 /** Add a turf, a court or a ground: its name, sports, where, the price and the hours it can be booked. */
 export function VenueNewScreen() {
   const { slug } = useCollege();
-  const session = useSession();
   const router = useRouter();
   const attempt = useAttempt();
   const [space, setSpace] = React.useState(slug);
@@ -38,12 +35,6 @@ export function VenueNewScreen() {
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-
-  const mine = session.colleges.find((item) => item.college.slug === space);
-  const canAdd =
-    space === GLOBAL_SLUG ||
-    mine?.membership.role === "college_admin" ||
-    mine?.membership.role === "moderator";
 
   function toggle(sport: string) {
     setSports((current) =>
@@ -101,18 +92,9 @@ export function VenueNewScreen() {
       />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <SpacePicker value={space} onChange={setSpace} label="Where should it appear" />
-        {!canAdd ? (
-          <Banner variant="info" title="Venues are added by your college admins">
-            <p>
-              Only admins and moderators add venues inside a college. Ask one, or switch to Global
-              above.
-            </p>
-          </Banner>
-        ) : (
-          <p className="text-[13px] text-ink-muted">
-            You will answer the booking requests for this venue. College admins can too.
-          </p>
-        )}
+        <p className="text-[13px] text-ink-muted">
+          You will answer the booking requests for this venue. College admins can too.
+        </p>
         <FormField label="Name" error={fields.name} required>
           <Input
             value={name}
@@ -213,7 +195,7 @@ export function VenueNewScreen() {
           </Banner>
         ) : null}
         <div className="flex items-center gap-3">
-          <Button type="submit" size="lg" disabled={busy || !canAdd}>
+          <Button type="submit" size="lg" disabled={busy}>
             {busy ? (
               <>
                 <Spinner /> Saving

@@ -72,7 +72,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | EVT-04 | PUT | /c/{slug}/events/{id}/rsvp | mem | write limit |
 | EVT-05 | DELETE | /c/{slug}/events/{id} | mem | author, or moderator and admin (audit logged) |
 | VEN-01 | GET | /c/{slug}/venues | mem | read limit |
-| VEN-02 | POST | /c/{slug}/venues | mem | write limit, college admins and moderators (anyone in Global), 20 per person |
+| VEN-02 | POST | /c/{slug}/venues | mem | write limit, any member, 20 per person |
 | VEN-03 | GET | /c/{slug}/venues/{id} | mem | read limit |
 | VEN-04 | DELETE | /c/{slug}/venues/{id} | mem | write limit, the venue's manager only |
 | VEN-05 | GET | /c/{slug}/venues/{id}/slots | mem | read limit |

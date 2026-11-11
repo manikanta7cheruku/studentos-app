@@ -242,6 +242,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261115000000_events_board.sql` | `events`, `event_rsvps`, `board_posts`, `board_messages`, `event_*` and `board_*` functions |
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
+| `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
 | `20261119000000_comment_votes.sql` | `idea_comment_votes`, `idea_comments.score`, `idea_comment_vote` |
 | `20261118000000_turf_booking.sql` | `venues`, `venue_bookings`, `venue_*` and `booking_*` functions, notification types `venue.booking_requested`, `venue.booking_confirmed`, `venue.booking_declined`, `venue.booking_cancelled` |
 

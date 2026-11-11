@@ -443,12 +443,12 @@ Events have a start time, a place, an optional capacity and RSVPs. The board is 
 
 ## 18. Turf and court booking (R3 Day 16, decision D-36)
 
-A venue is a turf, a court or a ground. Students ask for some hours on a day, and the venue's manager confirms or declines by hand. There are no payments yet. The manager of a venue is the person who added it, plus the admins and moderators of that college.
+A venue is a turf, a court or a ground. Students ask for some hours on a day, and the venue's manager confirms or declines by hand. There are no payments yet. Any member can add a venue. The manager of a venue is the person who added it, plus the admins and moderators of that college, who can also hide it.
 
 | ID | Request | Notes |
 |---|---|---|
 | VEN-01 | GET `/api/v1/c/{slug}/venues?sport=&limit=50` | The active venues of the space, by name. `sport` filters (for example `football`) |
-| VEN-02 | POST `/api/v1/c/{slug}/venues` | IDEM. `name` 3 to 80, `description` up to 600, `sports` 1 to 5 words, optional `area`, `price_inr_per_hour`, `open_hour` (default 6) and `close_hour` (default 23). Inside a college only its admins and moderators (403 `FORBIDDEN` for a student), in Global anyone. 429 at 20 venues per person |
+| VEN-02 | POST `/api/v1/c/{slug}/venues` | IDEM. `name` 3 to 80, `description` up to 600, `sports` 1 to 5 words, optional `area`, `price_inr_per_hour`, `open_hour` (default 6) and `close_hour` (default 23). Any active member, in a college or in Global. 429 at 20 venues per person |
 | VEN-03 | GET `/api/v1/c/{slug}/venues/{id}` | `is_manager` says whether I answer the requests. `pending_count` is real only for a manager. 404 for a hidden venue |
 | VEN-04 | DELETE `/api/v1/c/{slug}/venues/{id}` | Hides the venue. Only its manager (403 `FORBIDDEN`). Waiting requests are declined and those people are told |
 | VEN-05 | GET `/api/v1/c/{slug}/venues/{id}/slots?date=2026-11-20` | One entry per bookable hour: `state` (`free` or `booked`), `requests` waiting, `mine`. 400 for a day more than 60 days away |

@@ -18,7 +18,8 @@ select throws_ok($$select public.booking_cancel('aaaaaaaa-1000-4000-8000-0000000
 reset role;
 
 -- ===== adding a venue ========================================================
-select throws_ok($$select public.venue_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'Student turf', 'x', array['football'], null, 500, 6::smallint, 23::smallint)$$, 'P0001', 'FORBIDDEN', 'a student cannot add a venue inside a college');
+select lives_ok($$select public.venue_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'Student turf', 'x', array['football'], null, 500, 6::smallint, 23::smallint)$$, 'a student can add a venue inside a college');
+select throws_ok($$select public.venue_create('bbbbbbbb-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'Not my college', 'x', array['football'], null, 500, 6::smallint, 23::smallint)$$, 'P0001', 'FORBIDDEN', 'a person of another college cannot add one');
 select throws_ok($$select public.venue_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'Backwards hours', 'x', array['football'], null, 500, 20::smallint, 8::smallint)$$, '23514', null, 'a venue that closes before it opens is refused');
 select throws_ok($$select public.venue_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'No sports', 'x', array[]::text[], null, 500, 6::smallint, 23::smallint)$$, '23514', null, 'a venue with no sport is refused');
 insert into t select 'venue', (public.venue_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', '  Greenfield Turf  ', 'Five a side, floodlights.', array['football', 'cricket'], 'Near gate 2', 800, 6::smallint, 23::smallint) ->> 'id');

@@ -43,11 +43,9 @@ function Chip({
 
 /** Turf and courts: the venues of this space, with a sport filter. Tap one to see its free hours and ask to book. */
 export function VenuesScreen() {
-  const { slug, college, isModerator } = useCollege();
+  const { slug, college } = useCollege();
   const [sport, setSport] = React.useState<string | null>(null);
   const state = useLoad(() => api.venues.list(slug, sport ?? undefined), [slug, sport]);
-  // Inside a college only its admins and moderators add venues. In Global anyone can.
-  const canAdd = slug === GLOBAL_SLUG || isModerator;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
@@ -61,16 +59,25 @@ export function VenuesScreen() {
             <Button asChild variant="outline">
               <Link href={`/c/${slug}/turf/bookings`}>My bookings</Link>
             </Button>
-            {canAdd ? (
-              <Button asChild>
-                <Link href={`/c/${slug}/turf/new`}>
-                  <PlusIcon aria-hidden="true" /> Add a venue
-                </Link>
-              </Button>
-            ) : null}
+            <Button asChild>
+              <Link href={`/c/${slug}/turf/new`}>
+                <PlusIcon aria-hidden="true" /> Add a venue
+              </Link>
+            </Button>
           </>
         }
       />
+
+      <div className="flex gap-2 sm:hidden">
+        <Button asChild className="flex-1">
+          <Link href={`/c/${slug}/turf/new`}>
+            <PlusIcon aria-hidden="true" /> Add a venue
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="flex-1">
+          <Link href={`/c/${slug}/turf/bookings`}>My bookings</Link>
+        </Button>
+      </div>
 
       <div>
         <div
@@ -107,15 +114,11 @@ export function VenuesScreen() {
               {sport ? "No venue for this sport yet" : "No venues yet"}
             </p>
             <p className="max-w-[32ch] text-[14px] text-ink-muted">
-              {canAdd
-                ? "Add the turf or court you know, so people can ask to book it."
-                : "Your college admins add the grounds here. Ask them to add yours."}
+              Add the turf or court you know, so people can ask to book it.
             </p>
-            {canAdd ? (
-              <Button asChild className="mt-1">
-                <Link href={`/c/${slug}/turf/new`}>Add a venue</Link>
-              </Button>
-            ) : null}
+            <Button asChild className="mt-1">
+              <Link href={`/c/${slug}/turf/new`}>Add a venue</Link>
+            </Button>
           </div>
         ) : (
           <ul className="stagger flex flex-col gap-3">
