@@ -99,7 +99,7 @@ export function IdeaNewScreen() {
             maxLength={BODY_MAX}
             rows={7}
             placeholder="Say it simply. What would you build or change, and why would people want it?"
-            className="min-h-40 w-full resize-y rounded-2xl border border-white/[0.13] bg-white/[0.04] p-4 text-[15px] leading-relaxed outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-muted/70 hover:border-white/25 focus-visible:border-[#8a6bff] focus-visible:ring-4 focus-visible:ring-[#8a6bff]/20"
+            className="min-h-40 w-full resize-y rounded-[14px] border border-white/10 bg-white/[0.045] p-4 text-[15px] leading-relaxed outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-muted/70 hover:border-white/25 focus-visible:border-[#7d74e0] focus-visible:ring-4 focus-visible:ring-[#7d74e0]/20"
           />
           <p className="tabular self-end text-[12.5px] text-ink-muted" aria-live="polite">
             {body.length} / {BODY_MAX}

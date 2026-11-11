@@ -13,18 +13,18 @@ function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimi
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "group/switch relative inline-flex h-[26px] w-[46px] shrink-0 cursor-pointer items-center rounded-full border border-white/10 bg-white/[0.09] p-[2px] outline-none transition-[background-color,border-color,box-shadow] duration-300 ease-[var(--ease)] hover:border-white/25 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-45 data-[state=checked]:border-transparent data-[state=checked]:shadow-[0_0_18px_-4px_rgba(154,63,230,0.9)]",
+        "group/switch relative inline-flex h-[26px] w-[46px] shrink-0 cursor-pointer items-center rounded-full border border-white/10 bg-white/[0.09] p-[2px] outline-none transition-[border-color] duration-200 hover:border-white/25 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-45 data-[state=checked]:border-transparent",
         className,
       )}
       {...props}
     >
       <span
         aria-hidden="true"
-        className="bg-brand absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-data-[state=checked]/switch:opacity-100"
+        className="bg-brand absolute inset-0 rounded-full opacity-0 transition-opacity duration-200 group-data-[state=checked]/switch:opacity-100"
       />
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="relative z-10 flex h-[20px] w-[20px] items-center justify-center rounded-full bg-white text-[#5b4cf5] shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-[transform,width] duration-300 ease-[var(--spring)] data-[state=checked]:translate-x-[20px] group-active/switch:w-[26px] group-active/switch:data-[state=checked]:translate-x-[14px]"
+        className="relative z-10 flex h-[20px] w-[20px] items-center justify-center rounded-full bg-white text-[#3f3d9e] shadow-[0_2px_6px_rgba(0,0,0,0.4)] will-change-transform transition-[transform,width] duration-[260ms] ease-[var(--spring)] data-[state=checked]:translate-x-[20px] group-active/switch:w-[26px] group-active/switch:data-[state=checked]:translate-x-[14px]"
       >
         <svg
           viewBox="0 0 12 12"

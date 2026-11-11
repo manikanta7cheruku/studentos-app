@@ -85,7 +85,7 @@ function PrivacySection() {
     portfolio?: boolean;
     reminders?: boolean;
   }>({});
-  const [busy, setBusy] = React.useState<string | null>(null);
+  const [, setBusy] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<string>("");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -129,7 +129,6 @@ function PrivacySection() {
       <div className="flex max-w-xl flex-col gap-1">
         <Choice
           checked={visible}
-          disabled={busy === "visible"}
           label="Show my profile to my college"
           help="Verified members can find you in People. Turn it off to hide your profile from everyone."
           onChange={(next) => {
@@ -144,7 +143,6 @@ function PrivacySection() {
         />
         <Choice
           checked={portfolio}
-          disabled={busy === "portfolio"}
           label="Let my portfolio be public"
           help="Anyone with the link can see the portfolio you build later. Off by default."
           onChange={(next) => {
@@ -159,7 +157,6 @@ function PrivacySection() {
         />
         <Choice
           checked={reminders}
-          disabled={busy === "reminders"}
           label="Remind me before a saved deadline"
           help="A notification 48 hours before the deadline of an opportunity you saved."
           onChange={(next) => {

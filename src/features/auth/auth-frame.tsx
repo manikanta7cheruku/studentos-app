@@ -55,7 +55,7 @@ export function AuthFrame({
     <div className="relative min-h-dvh overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(118,86,255,0.28),transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(111,102,214,0.28),transparent_70%)]"
       />
       <header>
         <div className="mx-auto flex h-16 max-w-md items-center justify-between px-6">

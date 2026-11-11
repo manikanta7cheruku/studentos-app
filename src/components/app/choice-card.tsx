@@ -27,9 +27,9 @@ export function ChoiceCard({
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "group flex w-full items-center gap-3.5 rounded-[22px] border p-4 text-left outline-none backdrop-blur-md transition-[background-color,border-color,box-shadow,transform] duration-300 ease-[var(--ease)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.985]",
+        "group flex w-full items-center gap-3.5 rounded-[22px] border p-4 text-left outline-none transition-[background-color,border-color,box-shadow,transform] duration-300 ease-[var(--ease)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.985]",
         selected
-          ? "border-[#8a6bff]/70 bg-[linear-gradient(135deg,rgba(118,86,255,0.18),rgba(224,54,143,0.06)_70%)] shadow-[0_0_0_4px_rgba(138,107,255,0.1),0_18px_40px_-20px_rgba(0,0,0,0.8)]"
+          ? "border-[#7d74e0]/70 bg-[linear-gradient(135deg,rgba(111,102,214,0.18),rgba(122,81,152,0.06)_70%)] shadow-[0_0_0_4px_rgba(125,116,224,0.1),0_18px_40px_-20px_rgba(0,0,0,0.8)]"
           : "border-white/10 bg-white/[0.04] hover:border-white/25 hover:bg-white/[0.07]",
       )}
     >
@@ -51,7 +51,7 @@ export function ChoiceCard({
         aria-hidden="true"
         className={cn(
           "flex size-[22px] shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-300",
-          selected ? "border-[#8a6bff]" : "border-white/30",
+          selected ? "border-[#7d74e0]" : "border-white/30",
         )}
       >
         <span

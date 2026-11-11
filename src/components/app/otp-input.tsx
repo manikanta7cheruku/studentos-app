@@ -83,7 +83,7 @@ export function OtpInput({
               className={cn(
                 "tabular flex h-14 items-center justify-center rounded-xl border bg-white/[0.04] font-heading text-xl font-bold text-ink transition-[border-color,box-shadow,background-color] duration-200 sm:text-2xl",
                 invalid ? "border-destructive" : "border-white/[0.15]",
-                isActive && "border-[#8a6bff] bg-white/[0.07] ring-4 ring-[#8a6bff]/20",
+                isActive && "border-[#7d74e0] bg-white/[0.07] ring-4 ring-[#7d74e0]/20",
                 disabled && "opacity-50",
               )}
             >

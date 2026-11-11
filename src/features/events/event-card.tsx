@@ -79,8 +79,8 @@ export function RsvpButton({
           "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold outline-none transition-[transform,background-color,color,border-color,filter] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-50",
           size === "lg" ? "h-12 w-full text-[15px]" : "h-9 px-4 text-[13px]",
           going
-            ? "border border-[#8a6bff]/50 bg-[#8a6bff]/15 text-[#d4c9ff] hover:bg-[#8a6bff]/25"
-            : "bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(154,63,230,0.8)] hover:brightness-110",
+            ? "border border-[#7d74e0]/50 bg-[#7d74e0]/15 text-[#cfcbf5] hover:bg-[#7d74e0]/25"
+            : "bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] hover:brightness-110",
         )}
       >
         {going ? <CheckIcon aria-hidden="true" className="size-4" /> : null}

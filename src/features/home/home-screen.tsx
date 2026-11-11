@@ -76,7 +76,7 @@ export function HomeScreen() {
       <div
         role="tablist"
         aria-label="What to show"
-        className="sticky top-14 z-20 -mx-1 flex gap-1 rounded-2xl bg-white/[0.05] p-1 backdrop-blur-md md:top-3"
+        className="sticky top-14 z-20 -mx-1 flex gap-1 rounded-2xl bg-[#1a1a23] p-1 shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)] md:top-3"
       >
         {TABS.map((item) => (
           <button

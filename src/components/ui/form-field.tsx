@@ -36,20 +36,25 @@ function FormField({ label, help, error, required, id, className, children }: Fo
   });
 
   return (
-    <div data-slot="form-field" className={cn("flex flex-col gap-2", className)}>
+    <div data-slot="form-field" className={cn("flex flex-col gap-1.5", className)}>
       <Label htmlFor={fieldId}>
         {label}
-        {required ? <span className="font-normal text-muted-foreground">(required)</span> : null}
+        {required ? (
+          <span className="text-[12px] font-normal text-muted-foreground">(required)</span>
+        ) : null}
       </Label>
+      {control}
       {help ? (
-        <p id={helpId} className="text-base text-muted-foreground">
+        <p id={helpId} className="text-[12.5px] leading-snug text-muted-foreground">
           {help}
         </p>
       ) : null}
-      {control}
       {error ? (
-        <p id={errorId} className="flex items-start gap-2 text-base font-medium text-destructive">
-          <OctagonXIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+        <p
+          id={errorId}
+          className="flex items-start gap-1.5 text-[12.5px] font-medium text-destructive"
+        >
+          <OctagonXIcon aria-hidden="true" className="mt-px size-4 shrink-0" />
           <span>{error}</span>
         </p>
       ) : null}

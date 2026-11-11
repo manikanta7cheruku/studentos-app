@@ -57,7 +57,7 @@ export function VoteButtons({ idea, onChange }: { idea: Idea; onChange?: (next: 
       className={cn(
         "inline-flex h-9 items-center rounded-full border p-0.5 transition-colors duration-200",
         mine === 1
-          ? "border-[#8a6bff]/50 bg-[#8a6bff]/15"
+          ? "border-[#7d74e0]/50 bg-[#7d74e0]/15"
           : mine === -1
             ? "border-white/20 bg-white/[0.08]"
             : "border-white/10 bg-white/[0.05]",
@@ -87,7 +87,7 @@ export function VoteButtons({ idea, onChange }: { idea: Idea; onChange?: (next: 
       <span
         className={cn(
           "tabular min-w-8 px-0.5 text-center text-[13.5px] font-bold",
-          mine === 1 && "text-[#c3b6ff]",
+          mine === 1 && "text-[#b9b4ee]",
         )}
         aria-live="polite"
       >

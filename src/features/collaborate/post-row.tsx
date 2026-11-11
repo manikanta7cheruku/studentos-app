@@ -12,7 +12,7 @@ export function StatusPill({ status }: { status: TeamPost["status"] }) {
     <span
       className={cn(
         "inline-flex h-6 items-center rounded-full px-2.5 text-[12px] font-semibold",
-        status === "open" ? "bg-accent-soft text-[#c3b6ff]" : "bg-white/[0.07] text-ink-muted",
+        status === "open" ? "bg-accent-soft text-[#b9b4ee]" : "bg-white/[0.07] text-ink-muted",
       )}
     >
       {statusLabel(status)}
@@ -126,11 +126,11 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
               <span className="truncate">{post.author.display_name}</span>
             </span>
             {post.my_requests.length ? (
-              <span className="shrink-0 font-semibold text-[#c3b6ff]">
+              <span className="shrink-0 font-semibold text-[#b9b4ee]">
                 {post.my_requests[0]!.status === "accepted" ? "You are in" : "Requested"}
               </span>
             ) : post.status === "open" && free > 0 ? (
-              <span className="tabular shrink-0 font-semibold text-[#c3b6ff]">
+              <span className="tabular shrink-0 font-semibold text-[#b9b4ee]">
                 {free} {free === 1 ? "spot" : "spots"} left
               </span>
             ) : (

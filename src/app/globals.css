@@ -13,18 +13,18 @@
   --ink-muted: #a3a3b2;
   --border: #272733;
   --border-strong: #62627a;
-  --accent: #7656ff;
-  --accent-soft: rgba(118, 86, 255, 0.16);
+  --accent: #6f66d6;
+  --accent-soft: rgba(111, 102, 214, 0.16);
   --success: #42d392;
   --warning: #f5b83d;
   --danger: #ff7070;
 
   /* The brand: one gradient, used for the main action, the logo mark and a few highlights. Nothing else is coloured. */
-  --brand-1: #5b4cf5;
-  --brand-2: #9a3fe6;
-  --brand-3: #e0368f;
+  --brand-1: #3f3d9e;
+  --brand-2: #5a4aae;
+  --brand-3: #7a5198;
   --grad: linear-gradient(135deg, var(--brand-1) 0%, var(--brand-2) 55%, var(--brand-3) 100%);
-  --grad-soft: linear-gradient(135deg, rgba(91, 76, 245, 0.2), rgba(224, 54, 143, 0.14));
+  --grad-soft: linear-gradient(135deg, rgba(63, 61, 158, 0.22), rgba(122, 81, 152, 0.14));
 
   --radius-input: 12px;
   --radius-card: 18px;
@@ -67,7 +67,7 @@
   --accent-foreground: var(--ink);
   --destructive: var(--danger);
   --input: var(--border-strong);
-  --ring: #a894ff;
+  --ring: #8e87e6;
   --radius: 0.75rem;
 }
 
@@ -144,8 +144,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 40% at 90% -5%, rgba(118, 86, 255, 0.22), transparent 70%),
-    radial-gradient(50% 35% at -5% 35%, rgba(224, 54, 143, 0.1), transparent 70%);
+    radial-gradient(60% 38% at 90% -5%, rgba(80, 74, 170, 0.2), transparent 70%),
+    radial-gradient(50% 32% at -5% 40%, rgba(110, 72, 140, 0.08), transparent 70%);
 }
 
 /* Page content eases in. Off for people who asked for less motion (WCAG 2.3.3). */
@@ -248,22 +248,22 @@ body::before {
   outline-offset: 2px;
 }
 
-/* Glass: a blurred, lightly lit surface for the dock, sheets and floating bits. */
-@utility glass {
-  background: rgba(28, 28, 37, 0.72);
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+/* Glass: a frosted, lightly lit surface for the dock, menus and sheets. Real blur, and opaque enough to read on. */
+.glass {
+  background: rgba(24, 24, 33, 0.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  backdrop-filter: blur(28px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 18px 40px -18px rgba(0, 0, 0, 0.7);
 }
-/* The brand gradient as a fill and as text. */
+/* The brand gradient as a fill, and a soft lavender for emphasised words. */
 @utility bg-brand {
   background-image: var(--grad);
 }
 @utility text-brand {
-  background-image: var(--grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #b9b4ee;
 }
 /* A card that lifts a little when you point at it. */
 @utility lift {
@@ -276,7 +276,7 @@ body::before {
     &:hover {
       transform: translateY(-2px);
       border-color: rgba(255, 255, 255, 0.18);
-      box-shadow: 0 14px 36px -18px rgba(118, 86, 255, 0.55);
+      box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.8);
     }
   }
   &:active {
@@ -306,8 +306,7 @@ body::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.2;
-  mix-blend-mode: overlay;
+  opacity: 0.07;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
@@ -315,4 +314,32 @@ body::before {
   to {
     translate: 0 -10px;
   }
+}
+
+/* Native controls follow the theme: date pickers, selects, scrollbars. */
+input,
+select,
+textarea {
+  color-scheme: dark;
+  font-family: inherit;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+}
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 40px #1c1c25 inset;
+  caret-color: var(--ink);
+}
+select option {
+  background: #1c1c25;
+  color: var(--ink);
 }

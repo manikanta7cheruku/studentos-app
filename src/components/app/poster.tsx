@@ -4,9 +4,9 @@ import { cn } from "cn";
 // Three gradient sets, all inside the brand colours (violet, magenta, blue). Plans differ a little from each other, but
 // the screen never turns into a rainbow. The same seed always gets the same set.
 const SETS = [
-  [262, 320, 232],
-  [248, 300, 215],
-  [276, 334, 250],
+  [238, 272, 216],
+  [226, 262, 250],
+  [252, 290, 226],
 ] as const;
 
 function pick(seed: string): (typeof SETS)[number] {
@@ -33,15 +33,15 @@ export function Poster({
   const [a, b, c] = pick(seed);
   return (
     <div
-      className={cn("grain relative isolate overflow-hidden bg-[#0e0e14]", className)}
+      className={cn("grain relative isolate overflow-hidden bg-[#12121a]", className)}
       style={{
-        backgroundImage: `radial-gradient(70% 90% at 12% 0%, hsl(${a} 90% 56%), transparent 62%), radial-gradient(60% 80% at 100% 25%, hsl(${b} 85% 50%), transparent 60%), radial-gradient(90% 70% at 40% 115%, hsl(${c} 80% 38%), transparent 65%)`,
+        backgroundImage: `radial-gradient(70% 90% at 12% 0%, hsl(${a} 46% 40%), transparent 62%), radial-gradient(60% 80% at 100% 25%, hsl(${b} 38% 34%), transparent 60%), radial-gradient(90% 70% at 40% 115%, hsl(${c} 44% 24%), transparent 65%)`,
       }}
     >
       {big ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-5 -right-1 -z-0 select-none font-heading text-[5.5rem] font-extrabold leading-[0.8] tracking-tighter text-white/90 mix-blend-overlay"
+          className="pointer-events-none absolute -bottom-5 -right-1 -z-0 select-none font-heading text-[5.5rem] font-extrabold leading-[0.8] tracking-tighter text-white/20"
         >
           {big}
         </span>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DropdownMenu } from "radix-ui";
 import {
   BellIcon,
@@ -211,7 +211,7 @@ function SideNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
         aria-hidden="true"
         className={cn(
           "transition-colors duration-200",
-          current ? "text-[#b9a8ff]" : "group-hover:text-ink",
+          current ? "text-[#b9b4ee]" : "group-hover:text-ink",
         )}
       >
         {item.icon}
@@ -254,7 +254,7 @@ function SpaceMenu() {
         <DropdownMenu.Content
           align="start"
           sideOffset={8}
-          className="glass z-50 w-64 rounded-2xl p-1.5 text-[14px] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+          className="glass z-50 w-64 rounded-2xl bg-[rgba(28,28,38,0.94)] p-1.5 text-[14px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           <DropdownMenu.Label className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
             Your spaces
@@ -311,6 +311,103 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { tabs, more } = useNav();
   const [creating, setCreating] = React.useState(false);
+  const router = useRouter();
+  const mainRef = React.useRef<HTMLElement>(null);
+  // Which way the last move between tabs went (1 forward, -1 back), so the next page slides in from that side.
+  const direction = React.useRef<1 | -1 | 0>(0);
+  const tabIndex = tabs.findIndex((item) => pathname === item.href);
+  const swipe = React.useRef<{
+    x: number;
+    y: number;
+    t: number;
+    mode: "idle" | "horizontal" | "ignore";
+  } | null>(null);
+
+  // The new page eases in: from the side after a swipe or a tab tap, otherwise from below.
+  React.useEffect(() => {
+    const node = mainRef.current;
+    if (!node) return;
+    node.style.transition = "";
+    node.style.transform = "";
+    node.style.opacity = "";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const dir = direction.current;
+    direction.current = 0;
+    node.animate(
+      [
+        { opacity: 0, transform: dir ? `translateX(${dir * 36}px)` : "translateY(10px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: dir ? 280 : 320, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+    );
+  }, [pathname]);
+
+  function startsInsideScroller(target: EventTarget | null): boolean {
+    let node = target instanceof Element ? target : null;
+    while (node && node !== mainRef.current) {
+      if (node.matches("input, textarea, select, [data-no-swipe], [role=dialog]")) return true;
+      const style = window.getComputedStyle(node);
+      if (/(auto|scroll)/.test(style.overflowX) && node.scrollWidth > node.clientWidth + 2)
+        return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function onTouchStart(event: React.TouchEvent) {
+    const touch = event.touches[0];
+    if (!touch || tabIndex < 0 || event.touches.length > 1) {
+      swipe.current = null;
+      return;
+    }
+    swipe.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      t: Date.now(),
+      mode: startsInsideScroller(event.target) ? "ignore" : "idle",
+    };
+  }
+
+  function onTouchMove(event: React.TouchEvent) {
+    const gesture = swipe.current;
+    const touch = event.touches[0];
+    const node = mainRef.current;
+    if (!gesture || !touch || !node || gesture.mode === "ignore") return;
+    const dx = touch.clientX - gesture.x;
+    const dy = touch.clientY - gesture.y;
+    if (gesture.mode === "idle") {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) gesture.mode = "ignore";
+      else if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.4) gesture.mode = "horizontal";
+      return;
+    }
+    const neighbour = tabs[tabIndex + (dx < 0 ? 1 : -1)];
+    // The page follows the finger, and pulls back harder when there is no page that way.
+    node.style.transition = "none";
+    node.style.transform = `translateX(${dx * (neighbour ? 0.45 : 0.12)}px)`;
+    node.style.opacity = String(Math.max(0.5, 1 - Math.abs(dx) / 500));
+  }
+
+  function onTouchEnd(event: React.TouchEvent) {
+    const gesture = swipe.current;
+    const node = mainRef.current;
+    swipe.current = null;
+    if (!gesture || !node || gesture.mode !== "horizontal") return;
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - gesture.x;
+    const speed = Math.abs(dx) / Math.max(1, Date.now() - gesture.t);
+    const neighbour = tabs[tabIndex + (dx < 0 ? 1 : -1)];
+    node.style.transition = "transform 200ms cubic-bezier(0.2,0.8,0.2,1), opacity 200ms";
+    if (neighbour && (Math.abs(dx) > 70 || speed > 0.5)) {
+      direction.current = dx < 0 ? 1 : -1;
+      node.style.transform = `translateX(${dx < 0 ? -48 : 48}px)`;
+      node.style.opacity = "0.4";
+      router.push(neighbour.href);
+    } else {
+      node.style.transform = "";
+      node.style.opacity = "";
+    }
+  }
 
   return (
     <div className="min-h-dvh text-ink md:grid md:grid-cols-[15.5rem_minmax(0,1fr)]">
@@ -330,7 +427,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(154,63,230,0.8)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
+          className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
         >
           <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
         </button>
@@ -374,8 +471,13 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
         <main
           id="main"
+          ref={mainRef}
           tabIndex={-1}
-          className="page-enter flex-1 pb-[calc(6.5rem+var(--safe-bottom))] outline-none md:pb-16"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
+          className="flex-1 touch-pan-y pb-[calc(6.5rem+var(--safe-bottom))] outline-none md:pb-16"
         >
           {children}
         </main>
@@ -385,14 +487,18 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 flex gap-2.5 md:hidden">
         <nav
           aria-label="College"
-          className="glass pointer-events-auto flex h-16 flex-1 items-center justify-between rounded-[22px] p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.5)]"
+          className="glass pointer-events-auto flex h-16 flex-1 items-center justify-between rounded-[22px] p-1.5"
         >
-          {tabs.map((item) => {
+          {tabs.map((item, index) => {
             const current = isCurrent(pathname, item);
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => {
+                  if (tabIndex >= 0 && index !== tabIndex)
+                    direction.current = index > tabIndex ? 1 : -1;
+                }}
                 aria-current={current ? "page" : undefined}
                 aria-label={item.label}
                 className={cn(
@@ -400,7 +506,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                   current ? "bg-white/[0.12] text-white" : "text-ink-muted hover:text-ink",
                 )}
               >
-                <span aria-hidden="true" className={current ? "text-[#c8b9ff]" : undefined}>
+                <span aria-hidden="true" className={current ? "text-[#b9b4ee]" : undefined}>
                   {item.icon}
                 </span>
                 <span
@@ -419,7 +525,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           type="button"
           aria-label="Create"
           onClick={() => setCreating(true)}
-          className="bg-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_26px_-6px_rgba(154,63,230,0.85)] outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 active:rotate-90"
+          className="bg-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_26px_-6px_rgba(8,6,30,0.55)] outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 active:rotate-90"
         >
           <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
         </button>

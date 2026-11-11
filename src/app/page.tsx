@@ -35,7 +35,7 @@ export default function Home() {
     <div className="relative min-h-dvh overflow-hidden">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(118,86,255,0.3),transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(111,102,214,0.3),transparent_70%)]"
       />
       <a
         href="#main-content"

@@ -79,7 +79,7 @@ function MessageBox({
   }
   return (
     <form onSubmit={submit} className="flex flex-col gap-1.5">
-      <div className="flex items-end gap-2 rounded-[20px] border border-white/10 bg-white/[0.05] p-1.5 pl-3.5 focus-within:border-[#8a6bff]/60">
+      <div className="flex items-end gap-2 rounded-[20px] border border-white/10 bg-white/[0.05] p-1.5 pl-3.5 focus-within:border-[#7d74e0]/60">
         <label htmlFor={`msg-${toUser ?? "author"}`} className="sr-only">
           {placeholder}
         </label>
