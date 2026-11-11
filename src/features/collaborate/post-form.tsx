@@ -1,22 +1,25 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GlobeIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { ChoiceChips } from "@/components/ui/choice-chips";
+import { Stepper } from "@/components/ui/stepper";
 import { Textarea } from "@/components/ui/textarea";
+import { QuickTimes } from "@/components/app/quick-times";
+import { ToggleRow } from "@/components/app/toggle-row";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type TeamPostDetail, type TeamPostKind } from "@/lib/api/endpoints";
-import { GLOBAL_SLUG } from "@/lib/home-path";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
-import { useSession } from "@/features/session/session-provider";
+import { SpacePicker } from "@/features/college/space-picker";
+import { useLoad } from "@/lib/use-load";
 import {
   KIND_LABEL,
   PLAN_KINDS,
@@ -59,12 +62,8 @@ const httpsOk = (value: string) => !value.trim() || value.trim().startsWith("htt
  */
 export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   const { slug: currentSlug } = useCollege();
-  const session = useSession();
   const router = useRouter();
   const attempt = useAttempt();
-
-  const spaces = session.colleges.filter((item) => item.membership.status === "active");
-  const inGlobal = spaces.some((item) => item.college.slug === GLOBAL_SLUG);
 
   const [preset] = React.useState(readPreset);
   const [space, setSpace] = React.useState(currentSlug);
@@ -81,6 +80,15 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
     String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
   );
   const timed = isTimedKind(kind);
+  // The venues of the space, so the place can be picked with one tap (new plans with a time and a place only).
+  const venues = useLoad(
+    () => (timed && !editing ? api.venues.list(space) : Promise.resolve([])),
+    [space, timed, Boolean(editing)],
+  );
+  const venueNames = venues.status === "ready" ? venues.data.slice(0, 4).map((v) => v.name) : [];
+  const [showLinks, setShowLinks] = React.useState(
+    Boolean(editing?.external_link || editing?.team_link),
+  );
   // Open join: one tap and you are in, no asking. On by default for plans with a time and a place.
   const [openJoin, setOpenJoin] = React.useState(true);
   // The earliest start the picker allows: this minute (computed once when the form opens).
@@ -196,76 +204,21 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-2xl flex-col gap-7" noValidate>
-      {!editing ? (
-        <fieldset className="flex flex-col gap-3">
-          <legend className="text-[13.5px] font-medium text-ink">Post to</legend>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {spaces.map((item) => {
-              const selected = space === item.college.slug;
-              return (
-                <label
-                  key={item.college.slug}
-                  className={cn(
-                    "flex min-h-14 flex-1 cursor-pointer items-center gap-3 rounded-card border px-4 py-2.5 transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
-                    selected
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-surface hover:border-border-strong",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="space"
-                    value={item.college.slug}
-                    checked={selected}
-                    onChange={() => setSpace(item.college.slug)}
-                    className="size-5 accent-[var(--primary)]"
-                  />
-                  <span className="flex flex-col">
-                    <span className="flex items-center gap-2 text-[14px] font-semibold text-ink">
-                      {item.college.slug === GLOBAL_SLUG ? (
-                        <GlobeIcon aria-hidden="true" className="size-4" />
-                      ) : null}
-                      {item.college.slug === GLOBAL_SLUG ? "Public, everyone" : item.college.name}
-                    </span>
-                    <span className="text-[13px] text-ink-muted">
-                      {item.college.slug === GLOBAL_SLUG
-                        ? "Shown to every student, in every college"
-                        : "Only members of this college see it"}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-          {!inGlobal ? (
-            <p className="text-[13.5px] text-ink-muted">
-              Want students from other colleges to see it too?{" "}
-              <Link
-                href={`/c/${GLOBAL_SLUG}/join`}
-                className="font-medium text-primary underline underline-offset-4"
-              >
-                Join Global
-              </Link>{" "}
-              to post there.
-            </p>
-          ) : null}
-        </fieldset>
-      ) : null}
+    <form onSubmit={submit} className="flex max-w-2xl flex-col gap-5" noValidate>
+      {!editing ? <SpacePicker value={space} onChange={setSpace} label="Post to" /> : null}
 
-      <FormField label="What kind of team is it?" required>
-        <select
+      <div className="flex flex-col gap-2">
+        <p className="text-[13px] font-semibold text-ink/90">What is it?</p>
+        <ChoiceChips
+          label="What kind of plan is it"
           value={kind}
-          onChange={(event) => setKind(event.target.value as TeamPostKind)}
-          className="h-11 w-full rounded-input border border-border-strong bg-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
-        >
-          {(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => (
-            <option key={k} value={k}>
-              {KIND_LABEL[k]}
-            </option>
-          ))}
-        </select>
-      </FormField>
+          onChange={setKind}
+          options={(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => ({
+            value: k,
+            label: KIND_LABEL[k],
+          }))}
+        />
+      </div>
 
       <FormField label="Title" error={fields.title} required>
         <Input
@@ -277,21 +230,25 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
       </FormField>
 
       <FormField
-        label="What are you building?"
-        help="The idea, what you need help with, how you will work."
+        label={timed ? "Anything to add?" : "What are you building?"}
+        help={
+          timed
+            ? "Optional. Level, what to bring, how to find you."
+            : "The idea, what you need help with, how you will work."
+        }
         error={fields.description}
       >
         <Textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           maxLength={3000}
-          rows={6}
+          rows={timed ? 3 : 5}
         />
       </FormField>
 
       {timed ? (
         <>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
             <FormField label="When does it start?" error={fields.when} required>
               <Input
                 type="datetime-local"
@@ -300,6 +257,9 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                 min={minStart}
               />
             </FormField>
+            {!editing ? <QuickTimes value={when} onPick={setWhen} /> : null}
+          </div>
+          <div className="flex flex-col gap-2">
             <FormField label="Where?" help="Optional. The turf, hall or room." error={fields.place}>
               <Input
                 value={place}
@@ -308,6 +268,26 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                 placeholder="Greenfield Turf"
               />
             </FormField>
+            {venueNames.length ? (
+              <div role="group" aria-label="Venues" className="flex flex-wrap gap-2">
+                {venueNames.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    aria-pressed={place === name}
+                    onClick={() => setPlace(name)}
+                    className={cn(
+                      "inline-flex h-8 items-center rounded-full border px-3 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
+                      place === name
+                        ? "border-[#7d74e0]/60 bg-[#7d74e0]/20 text-[#e3e0fb]"
+                        : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+                    )}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
           {!editing ? (
             <FormField
@@ -321,32 +301,16 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
               error={fields.players}
               required
             >
-              <Input
-                inputMode="numeric"
-                value={players}
-                onChange={(event) => setPlayers(event.target.value.replace(/\D/g, "").slice(0, 2))}
-                className="sm:w-32"
-              />
+              <Stepper value={players} onChange={setPlayers} min={1} max={20} />
             </FormField>
           ) : null}
           {!editing ? (
-            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
-              <input
-                type="checkbox"
-                checked={openJoin}
-                onChange={(event) => setOpenJoin(event.target.checked)}
-                className="mt-0.5 size-5 accent-[var(--primary)]"
-              />
-              <span>
-                <span className="block text-[14px] font-semibold">
-                  Anyone can join with one tap
-                </span>
-                <span className="block text-[13px] text-ink-muted">
-                  No asking and no waiting. You are told who joins, and everyone who joins sees who
-                  is in.
-                </span>
-              </span>
-            </label>
+            <ToggleRow
+              checked={openJoin}
+              onChange={setOpenJoin}
+              title="Anyone can join with one tap"
+              text="No asking and no waiting. You are told who joins, and joiners see who is in."
+            />
           ) : null}
         </>
       ) : (
@@ -366,37 +330,51 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
         </FormField>
       )}
 
-      <FormField
-        label="Link with more details"
-        help="Optional. For example the hackathon page. Starts with https://"
-        error={fields.external_link}
-      >
-        <Input
-          type="url"
-          value={externalLink}
-          onChange={(event) => setExternalLink(event.target.value)}
-          autoCapitalize="none"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="https://"
-        />
-      </FormField>
+      <div className="flex flex-col gap-4">
+        {showLinks || fields.external_link || fields.team_link ? (
+          <>
+            <FormField
+              label="Link with more details"
+              help="Optional. For example the hackathon page. Starts with https://"
+              error={fields.external_link}
+            >
+              <Input
+                type="url"
+                value={externalLink}
+                onChange={(event) => setExternalLink(event.target.value)}
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="https://"
+              />
+            </FormField>
 
-      <FormField
-        label="Team chat link"
-        help="Optional. A WhatsApp or Discord invite. Only you and people you accept can see it."
-        error={fields.team_link}
-      >
-        <Input
-          type="url"
-          value={teamLink}
-          onChange={(event) => setTeamLink(event.target.value)}
-          autoCapitalize="none"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="https://"
-        />
-      </FormField>
+            <FormField
+              label="Team chat link"
+              help="Optional. A WhatsApp or Discord invite. Only you and people you accept can see it."
+              error={fields.team_link}
+            >
+              <Input
+                type="url"
+                value={teamLink}
+                onChange={(event) => setTeamLink(event.target.value)}
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="https://"
+              />
+            </FormField>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowLinks(true)}
+            className="inline-flex min-h-9 w-fit items-center gap-1.5 text-[13.5px] font-semibold text-[#b9b4ee] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <PlusIcon aria-hidden="true" className="size-4" /> Add links (optional)
+          </button>
+        )}
+      </div>
 
       {timed ? null : (
         <section aria-labelledby="roles" className="flex flex-col gap-4">

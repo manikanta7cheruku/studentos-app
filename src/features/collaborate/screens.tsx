@@ -13,8 +13,8 @@ export function NewPostScreen() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
-        title="Post plan"
-        description="Say what you are building and which roles you need. Classmates ask to join a role, and you decide."
+        title="New plan"
+        description="Pick what it is, say when and where, and people join. Games and hangouts open with one tap."
         back={{ href: `/c/${slug}/collaborate`, label: "Plans" }}
       />
       <PostForm />

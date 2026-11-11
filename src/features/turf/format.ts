@@ -56,16 +56,8 @@ export function dayLabel(dayKey: string): string {
   });
 }
 
-export const SPORTS = [
-  "football",
-  "cricket",
-  "badminton",
-  "basketball",
-  "tennis",
-  "volleyball",
-  "table tennis",
-  "pickleball",
-] as const;
+/** The sports offered as chips. Anything else is typed in as a custom name. */
+export const SPORTS = ["football", "cricket", "badminton", "basketball"] as const;
 
 export function titleCase(value: string): string {
   return value.replace(/\b\w/g, (char) => char.toUpperCase());

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { QuickTimes } from "@/components/app/quick-times";
+import { ToggleRow } from "@/components/app/toggle-row";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
@@ -125,14 +127,17 @@ export function EventNewScreen() {
           />
         </FormField>
         <div className="grid gap-5 sm:grid-cols-2">
-          <FormField label="When does it start?" error={fields.starts_at} required>
-            <Input
-              type="datetime-local"
-              value={when}
-              min={minStart}
-              onChange={(event) => setWhen(event.target.value)}
-            />
-          </FormField>
+          <div className="flex flex-col gap-2">
+            <FormField label="When does it start?" error={fields.starts_at} required>
+              <Input
+                type="datetime-local"
+                value={when}
+                min={minStart}
+                onChange={(event) => setWhen(event.target.value)}
+              />
+            </FormField>
+            <QuickTimes value={when} onPick={setWhen} />
+          </div>
           <FormField label="Where?" help="Optional." error={fields.place}>
             <Input
               value={place}
@@ -166,21 +171,12 @@ export function EventNewScreen() {
             className="sm:w-40"
           />
         </FormField>
-        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
-          <input
-            type="checkbox"
-            checked={inviteOnly}
-            onChange={(event) => setInviteOnly(event.target.checked)}
-            className="mt-0.5 size-5 accent-[var(--primary)]"
-          />
-          <span>
-            <span className="block text-[14px] font-semibold">Invite only</span>
-            <span className="block text-[13px] text-ink-muted">
-              It stays out of the lists. Only people with your link can open it and say they are
-              going.
-            </span>
-          </span>
-        </label>
+        <ToggleRow
+          checked={inviteOnly}
+          onChange={setInviteOnly}
+          title="Invite only"
+          text="Kept out of the lists. Only people with your link can open it and say they are going."
+        />
         {error ? (
           <Banner variant="error">
             <p>{error}</p>
@@ -193,7 +189,7 @@ export function EventNewScreen() {
                 <Spinner /> Saving
               </>
             ) : (
-              "Create event"
+              "Post event"
             )}
           </Button>
           <Button type="button" variant="ghost" size="lg" onClick={() => router.back()}>

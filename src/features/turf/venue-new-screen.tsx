@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
+import { ToggleChips } from "@/components/ui/choice-chips";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -27,6 +27,9 @@ export function VenueNewScreen() {
   const [space, setSpace] = React.useState(slug);
   const [name, setName] = React.useState("");
   const [sports, setSports] = React.useState<string[]>([]);
+  // A sport that is not in the chips: "Other" opens a box for its name.
+  const [otherOn, setOtherOn] = React.useState(false);
+  const [other, setOther] = React.useState("");
   const [area, setArea] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [open, setOpen] = React.useState(6);
@@ -51,7 +54,12 @@ export function VenueNewScreen() {
     if (busy) return;
     const problems: Record<string, string> = {};
     if (name.trim().length < 3) problems.name = "Give it a name of at least 3 characters.";
-    if (sports.length === 0) problems.sports = "Pick at least one sport.";
+    const custom = otherOn ? other.trim().toLowerCase().replace(/\s+/g, " ") : "";
+    const all = custom && !sports.includes(custom) ? [...sports, custom] : sports;
+    if (otherOn && other.trim() && custom.length < 2)
+      problems.sports = "A sport name needs at least 2 letters.";
+    else if (all.length === 0) problems.sports = "Pick at least one sport, or name your own.";
+    else if (all.length > 5) problems.sports = "Up to 5 sports.";
     if (price && Number(price) > 100000) problems.price = "That price is too high.";
     if (open >= close) problems.hours = "It has to close after it opens.";
     setFields(problems);
@@ -65,7 +73,7 @@ export function VenueNewScreen() {
         {
           name: name.trim(),
           description: description.trim(),
-          sports,
+          sports: all,
           ...(area.trim() ? { area: area.trim() } : {}),
           ...(price ? { price_inr_per_hour: Number(price) } : {}),
           open_hour: open,
@@ -86,10 +94,7 @@ export function VenueNewScreen() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader
-        title="Add a venue"
-        back={{ href: `/c/${slug}/turf`, label: "Turf and courts" }}
-      />
+      <PageHeader title="New venue" back={{ href: `/c/${slug}/turf`, label: "Turf and courts" }} />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <SpacePicker value={space} onChange={setSpace} label="Where should it appear" />
         <p className="text-[13px] text-ink-muted">
@@ -105,30 +110,36 @@ export function VenueNewScreen() {
           />
         </FormField>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-[13px] font-semibold text-ink-muted">
-            Sports (up to 5) <span aria-hidden="true">*</span>
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {SPORTS.map((sport) => (
-              <button
-                key={sport}
-                type="button"
-                aria-pressed={sports.includes(sport)}
-                onClick={() => toggle(sport)}
-                className={cn(
-                  "inline-flex h-9 items-center rounded-full border px-4 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
-                  sports.includes(sport)
-                    ? "bg-brand border-transparent text-white"
-                    : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-                )}
-              >
-                {titleCase(sport)}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">
+            Sports <span className="font-normal text-ink-muted">(up to 5)</span>
+          </p>
+          <ToggleChips
+            label="Sports"
+            options={[
+              ...SPORTS.map((sport) => ({ value: sport, label: titleCase(sport) })),
+              { value: "__other", label: "Other" },
+            ]}
+            values={[
+              ...sports.filter((sport) => SPORTS.includes(sport as never)),
+              ...(otherOn ? ["__other"] : []),
+            ]}
+            onToggle={(value) =>
+              value === "__other" ? setOtherOn((current) => !current) : toggle(value)
+            }
+          />
+          {otherOn ? (
+            <Input
+              aria-label="Name of the sport"
+              value={other}
+              onChange={(event) => setOther(event.target.value)}
+              maxLength={24}
+              placeholder="Name the sport, for example squash"
+              autoFocus
+            />
+          ) : null}
           {fields.sports ? <p className="text-[13px] text-danger">{fields.sports}</p> : null}
-        </fieldset>
+        </div>
 
         <FormField label="Where?" help="Optional. The area or landmark." error={fields.area}>
           <Input
@@ -201,7 +212,7 @@ export function VenueNewScreen() {
                 <Spinner /> Saving
               </>
             ) : (
-              "Add the venue"
+              "Post venue"
             )}
           </Button>
           <Button type="button" variant="ghost" size="lg" onClick={() => router.back()}>
