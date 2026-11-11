@@ -4,7 +4,14 @@ import { httpsUrl, isoDateTime, paginationQuery, successEnvelope, uuid } from ".
 // ---------------------------------------------------------------------------
 // Team Finder (TMF-01 to TMF-10). Rules: docs/API_CONTRACT.md section 10.
 // ---------------------------------------------------------------------------
-export const teamPostKind = z.enum(["project", "startup", "hackathon", "competition"]);
+export const teamPostKind = z.enum([
+  "project",
+  "startup",
+  "hackathon",
+  "competition",
+  "sport",
+  "event",
+]);
 // `expired` is worked out from the deadline: an open post past its deadline is shown as expired.
 export const teamPostStatus = z.enum(["open", "closed", "filled", "expired"]);
 export const joinRequestStatus = z.enum([
@@ -25,8 +32,10 @@ export const teamPostCreateBody = z.strictObject({
   kind: teamPostKind,
   title: z.string().trim().min(5).max(120),
   description: z.string().trim().max(3000).default(""),
-  // A future date within 180 days. Leave out for no deadline.
+  // A future date within 180 days. Leave out for no deadline. For a sport or an event this is when it starts.
   deadline: isoDateTime.nullable().optional(),
+  // Where it happens (sport, event). Up to 120 characters.
+  place: z.string().trim().min(1).max(120).optional(),
   external_link: httpsUrl.optional(),
   // Shown only to the author and to accepted members.
   team_link: httpsUrl.optional(),
@@ -40,6 +49,7 @@ export const teamPostPatchBody = z
     title: z.string().trim().min(5).max(120).optional(),
     description: z.string().trim().max(3000).optional(),
     deadline: isoDateTime.nullable().optional(),
+    place: z.string().trim().max(120).nullable().optional(),
     external_link: httpsUrl.nullable().optional(),
     team_link: httpsUrl.nullable().optional(),
   })
@@ -62,6 +72,7 @@ export const teamPost = z.object({
   description: z.string(),
   status: teamPostStatus,
   deadline: isoDateTime.nullable(),
+  place: z.string().nullable().default(null),
   external_link: z.string().nullable(),
   created_at: isoDateTime,
   is_owner: z.boolean(),

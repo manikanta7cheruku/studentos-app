@@ -7,6 +7,7 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -41,10 +42,10 @@ function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        "inline-flex min-h-11 items-center rounded-full border px-4 text-[13.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "inline-flex h-9 items-center rounded-full border px-4 text-[13px] font-semibold transition-[background-color,border-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
         pressed
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-surface text-ink hover:border-border-strong",
+          ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(154,63,230,0.9)]"
+          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
       )}
     >
       {children}
@@ -120,19 +121,19 @@ function Results({ filters }: { filters: Filters }) {
           {filters.scope === "mine"
             ? "You have not posted yet."
             : filtered
-              ? "No posts match these filters."
-              : "No team posts yet."}
+              ? "No plans match these filters."
+              : "No plans yet."}
         </p>
         <p className="mt-1 max-w-prose text-ink-muted">
           {filters.scope === "mine"
             ? "Describe what you are building and the roles you need. Classmates with the right skills can ask to join."
             : filtered
               ? "Try another kind or a different word."
-              : "Be the first: post a project, a hackathon team or a startup idea."}
+              : "Be the first: post a match, an event or a project."}
         </p>
         <Button asChild className="mt-4">
           <Link href={`/c/${slug}/collaborate/new`}>
-            <PlusIcon aria-hidden="true" /> New post
+            <PlusIcon aria-hidden="true" /> New plan
           </Link>
         </Button>
       </div>
@@ -141,7 +142,7 @@ function Results({ filters }: { filters: Filters }) {
 
   return (
     <div>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="stagger flex flex-col gap-4">
         {items.map((post) => (
           <PostRow key={post.id} post={post} slug={slug} />
         ))}
@@ -179,19 +180,19 @@ export function TeamFinderScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
       <PageHeader
         eyebrow={college.name}
-        title="Find your team"
-        description="Projects, hackathons and startups looking for people. Ask to join a role, or post your own."
+        title="Plans"
+        description="Matches, events, hackathons and projects looking for people. Join one, or start your own."
         actions={
           <>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline">
               <Link href={`/c/${slug}/collaborate/requests`}>Requests</Link>
             </Button>
-            <Button asChild size="lg">
+            <Button asChild>
               <Link href={`/c/${slug}/collaborate/new`}>
-                <PlusIcon aria-hidden="true" /> New post
+                <PlusIcon aria-hidden="true" /> New plan
               </Link>
             </Button>
           </>
@@ -232,15 +233,14 @@ export function TeamFinderScreen() {
             </Chip>
           ))}
         </div>
-        <label className="flex min-h-11 w-fit items-center gap-3 text-[13.5px] text-ink">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--primary)]"
+        <div className="flex min-h-10 w-fit items-center gap-3 text-[13.5px] text-ink">
+          <Switch
+            id="show-closed"
             checked={filters.status === "all"}
-            onChange={(event) => set({ status: event.target.checked ? "all" : "open" })}
+            onCheckedChange={(checked) => set({ status: checked ? "all" : "open" })}
           />
-          Also show closed and full posts
-        </label>
+          <label htmlFor="show-closed">Also show closed and full plans</label>
+        </div>
       </div>
 
       <div aria-live="polite">

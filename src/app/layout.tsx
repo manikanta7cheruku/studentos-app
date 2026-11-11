@@ -1,20 +1,18 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
+import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { MSWProvider } from "@/mocks";
 import { OfflineBanner } from "@/components/app/offline-banner";
 
-const fraunces = localFont({
-  src: "../../public/fonts/fraunces/fraunces-variable.ttf",
-  variable: "--font-fraunces",
-  weight: "100 900",
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
-const publicSans = localFont({
-  src: "../../public/fonts/public-sans/public-sans-variable.ttf",
-  variable: "--font-public-sans",
-  weight: "100 900",
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
@@ -23,13 +21,18 @@ export const metadata: Metadata = {
   description: "A private student platform for your college.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#0b0b10",
+  colorScheme: "dark",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${publicSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${bricolage.variable} ${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <OfflineBanner />
         <MSWProvider>{children}</MSWProvider>

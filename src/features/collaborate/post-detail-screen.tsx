@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CalendarIcon, ExternalLinkIcon, MessageCircleIcon, PencilIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  ExternalLinkIcon,
+  MapPinIcon,
+  MessageCircleIcon,
+  PencilIcon,
+} from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +31,19 @@ import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
 import { ReportButton } from "@/features/admin-console/report-button";
 import { RoleList } from "./role-list";
+
+function startLabel(deadline: string | null): string {
+  if (!deadline) return "No time set";
+  const date = new Date(deadline);
+  if (Number.isNaN(date.getTime())) return "No time set";
+  return date.toLocaleString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 function CloseDialog({
   post,
@@ -96,7 +115,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           </span>
           <StatusPill status={post.status} />
         </div>
-        <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+        <h1 className="text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight sm:text-[2.1rem]">
           {post.title}
         </h1>
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-ink-muted">
@@ -111,8 +130,16 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           </span>
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" />
-            {formatDeadline(post.deadline)}
+            {post.kind === "sport" || post.kind === "event"
+              ? startLabel(post.deadline)
+              : formatDeadline(post.deadline)}
           </span>
+          {post.place ? (
+            <span className="inline-flex items-center gap-1.5">
+              <MapPinIcon aria-hidden="true" className="size-4" />
+              {post.place}
+            </span>
+          ) : null}
         </p>
         {!post.is_owner ? (
           <div>
@@ -196,7 +223,7 @@ export function PostDetailScreen({ postId }: { postId: string }) {
   const state = useLoad(() => api.teamPosts.one(slug, postId), [slug, postId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
       <Link
         href={`/c/${slug}/collaborate`}
         className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

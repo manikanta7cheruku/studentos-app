@@ -5,6 +5,8 @@ export const KIND_LABEL: Record<TeamPostKind, string> = {
   startup: "Startup",
   hackathon: "Hackathon",
   competition: "Competition",
+  sport: "Sport",
+  event: "Event",
 };
 
 export const KINDS = Object.keys(KIND_LABEL) as TeamPostKind[];
@@ -55,4 +57,13 @@ export function dateInputOffset(days: number, now = new Date()): string {
   date.setDate(date.getDate() + days);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** The YYYY-MM-DDTHH:mm part for a datetime-local input, in the viewer's own time. */
+export function dateTimeInputValue(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

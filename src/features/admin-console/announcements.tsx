@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Switch } from "@/components/ui/switch";
 import { PinIcon, PlusIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -109,24 +110,14 @@ function Editor({
             rows={6}
           />
         </FormField>
-        <label className="flex min-h-11 items-center gap-3 text-[16px]">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--primary)]"
-            checked={pinned}
-            onChange={(e) => setPinned(e.target.checked)}
-          />
-          Pin it to the top of Campus
-        </label>
-        <label className="flex min-h-11 items-center gap-3 text-[16px]">
-          <input
-            type="checkbox"
-            className="size-5 accent-[var(--primary)]"
-            checked={draft}
-            onChange={(e) => setDraft(e.target.checked)}
-          />
-          Keep it as a draft (students do not see it yet)
-        </label>
+        <div className="flex min-h-11 items-center justify-between gap-4 text-[14px]">
+          <span id="pinned-label">Pin it to the top of Campus</span>
+          <Switch aria-labelledby="pinned-label" checked={pinned} onCheckedChange={setPinned} />
+        </div>
+        <div className="flex min-h-11 items-center justify-between gap-4 text-[14px]">
+          <span id="draft-label">Keep it as a draft (students do not see it yet)</span>
+          <Switch aria-labelledby="draft-label" checked={draft} onCheckedChange={setDraft} />
+        </div>
         {error ? (
           <Banner variant="error">
             <p>{error}</p>

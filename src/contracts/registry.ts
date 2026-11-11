@@ -4,8 +4,10 @@ import * as applications from "./applications";
 import * as auth from "./auth";
 import * as common from "./common";
 import * as engagement from "./engagement";
+import * as ideas from "./ideas";
 import * as opportunities from "./opportunities";
 import * as profile from "./profile";
+import * as setup from "./setup";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 
@@ -271,6 +273,48 @@ export const endpoints: Endpoint[] = [
   }),
   e("OPP-04", "DELETE", "/me/saved-opportunities/{id}", "ses", "Unsave an opportunity", {
     response: opportunities.savedOpportunityResponse,
+  }),
+  e("IDE-01", "POST", "/c/{slug}/ideas", "mem", "Post an idea", {
+    body: ideas.ideaCreateBody,
+    response: ideas.ideaResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("IDE-02", "GET", "/c/{slug}/ideas", "mem", "List ideas (new or top, by topic)", {
+    query: ideas.ideaListQuery,
+    response: ideas.ideaListResponse,
+  }),
+  e("IDE-03", "GET", "/c/{slug}/ideas/{id}", "mem", "One idea", {
+    response: ideas.ideaResponse,
+  }),
+  e("IDE-04", "PUT", "/c/{slug}/ideas/{id}/vote", "mem", "Vote on an idea (1, -1 or 0)", {
+    body: ideas.ideaVoteBody,
+    response: ideas.ideaResponse,
+  }),
+  e("IDE-05", "DELETE", "/c/{slug}/ideas/{id}", "mem", "Remove an idea (author or moderator)", {
+    response: ideas.ideaDeleteResponse,
+  }),
+  e("IDE-06", "POST", "/c/{slug}/ideas/{id}/comments", "mem", "Comment on an idea", {
+    body: ideas.ideaCommentCreateBody,
+    response: ideas.ideaCommentResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("IDE-07", "GET", "/c/{slug}/ideas/{id}/comments", "mem", "Comments of an idea", {
+    response: ideas.ideaCommentListResponse,
+  }),
+  e(
+    "IDE-08",
+    "DELETE",
+    "/c/{slug}/ideas/{id}/comments/{commentId}",
+    "mem",
+    "Remove a comment (author or moderator)",
+    { response: ideas.ideaDeleteResponse },
+  ),
+  e("COL-01", "POST", "/colleges/setup", "ses", "Create my college with a setup code", {
+    body: setup.collegeSetupBody,
+    response: setup.collegeSetupResponse,
+    status: 201,
   }),
   e("APP-01", "POST", "/me/applications", "ses", "Add an application to my tracker", {
     body: applications.applicationCreateBody,

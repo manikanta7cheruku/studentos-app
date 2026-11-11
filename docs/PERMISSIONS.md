@@ -62,6 +62,15 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | OPP-03 | DELETE | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
 | OPP-04 | PUT | /me/saved-opportunities/{id} | ses | write limit |
 | OPP-04 | DELETE | /me/saved-opportunities/{id} | ses | write limit |
+| IDE-01 | POST | /c/{slug}/ideas | mem | write limit, 20 a day |
+| IDE-02 | GET | /c/{slug}/ideas | mem | read limit |
+| IDE-03 | GET | /c/{slug}/ideas/{id} | mem | read limit |
+| IDE-04 | PUT | /c/{slug}/ideas/{id}/vote | mem | write limit |
+| IDE-05 | DELETE | /c/{slug}/ideas/{id} | mem | author, or moderator and admin (audit logged) |
+| IDE-06 | POST | /c/{slug}/ideas/{id}/comments | mem | write limit, 40 an hour |
+| IDE-07 | GET | /c/{slug}/ideas/{id}/comments | mem | read limit |
+| IDE-08 | DELETE | /c/{slug}/ideas/{id}/comments/{commentId} | mem | author, or moderator and admin |
+| COL-01 | POST | /colleges/setup | ses | needs a one-time setup code, 5 tries an hour |
 | APP-01 | POST | /me/applications | ses | write limit, 200 per person |
 | APP-02 | GET | /me/applications | ses | read limit |
 | APP-03 | GET | /me/applications/{id} | ses | read limit |

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -60,18 +60,17 @@ function Choice({
 }) {
   const id = React.useId();
   return (
-    <div className="flex min-h-11 items-start gap-3">
-      <Checkbox
+    <div className="flex min-h-11 items-center justify-between gap-4 py-1.5">
+      <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
+        <span className="block font-medium text-ink">{label}</span>
+        <span className="block text-[13px] text-ink-muted">{help}</span>
+      </label>
+      <Switch
         id={id}
         checked={checked}
         disabled={disabled}
         onCheckedChange={(value) => onChange(value === true)}
-        className="mt-2.5"
       />
-      <label htmlFor={id} className="py-2 text-[14px] leading-snug">
-        <span className="block font-medium text-ink">{label}</span>
-        <span className="block text-[13.5px] text-ink-muted">{help}</span>
-      </label>
     </div>
   );
 }
