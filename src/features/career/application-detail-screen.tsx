@@ -279,7 +279,7 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
         >
           History
         </h2>
-        <ol className="divide-y divide-border border-y border-border">
+        <ol className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {app.events.map((event) => (
             <li
               key={event.id}
@@ -317,7 +317,7 @@ export function ApplicationDetailScreen({ id }: { id: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.applications.one(id), [id]);
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <Link
         href={`/c/${slug}/career`}
         className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

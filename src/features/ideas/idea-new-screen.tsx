@@ -51,18 +51,18 @@ export function IdeaNewScreen() {
       router.push(`/c/${space}/ideas/${idea.id}`);
     } catch (caught) {
       if (!(caught instanceof ApiError && caught.isOffline)) attempt.reset();
-      setError(friendlyMessage(caught, "We could not post your thought. Please try again."));
+      setError(friendlyMessage(caught, "We could not post your buzz. Please try again."));
       setBusy(false);
     }
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
-      <PageHeader title="New thought" back={{ href: `/c/${slug}/ideas`, label: "Thoughts" }} />
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
+      <PageHeader title="New buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <div className="flex flex-col gap-2">
           <label htmlFor="thought-body" className="sr-only">
-            Your thought
+            Your buzz
           </label>
           <textarea
             id="thought-body"

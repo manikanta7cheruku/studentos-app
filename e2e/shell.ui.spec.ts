@@ -54,9 +54,7 @@ test("the tabs open their screens", async ({ page, isMobile }) => {
 
   await page.goto("/c/alpha/notifications");
   await expect(
-    page
-      .getByRole("heading", { name: /what needs your attention/i, level: 1 })
-      .filter({ visible: true }),
+    page.getByRole("heading", { name: /updates/i, level: 1 }).filter({ visible: true }),
   ).toBeVisible();
   await expectNoSidewaysScroll(page);
   void isMobile;

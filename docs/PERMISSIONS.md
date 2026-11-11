@@ -71,6 +71,16 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | EVT-03 | GET | /c/{slug}/events/{id} | mem | read limit |
 | EVT-04 | PUT | /c/{slug}/events/{id}/rsvp | mem | write limit |
 | EVT-05 | DELETE | /c/{slug}/events/{id} | mem | author, or moderator and admin (audit logged) |
+| VEN-01 | GET | /c/{slug}/venues | mem | read limit |
+| VEN-02 | POST | /c/{slug}/venues | mem | write limit, any member, 20 per person |
+| VEN-03 | GET | /c/{slug}/venues/{id} | mem | read limit |
+| VEN-04 | DELETE | /c/{slug}/venues/{id} | mem | write limit, the venue's manager only |
+| VEN-05 | GET | /c/{slug}/venues/{id}/slots | mem | read limit |
+| VEN-06 | POST | /c/{slug}/venues/{id}/bookings | mem | write limit, 6 waiting requests per person |
+| VEN-07 | GET | /c/{slug}/venues/{id}/bookings | mem | read limit, the venue's manager only |
+| VEN-08 | GET | /c/{slug}/me/bookings | mem | read limit, my own requests |
+| VEN-09 | POST | /c/{slug}/bookings/{id}/decision | mem | write limit, the venue's manager only |
+| VEN-10 | DELETE | /c/{slug}/bookings/{id} | mem | write limit, the person who asked only |
 | BRD-01 | POST | /c/{slug}/board | mem | write limit, 15 a day |
 | BRD-02 | GET | /c/{slug}/board | mem | read limit |
 | BRD-03 | GET | /c/{slug}/board/{id} | mem | read limit |
@@ -86,6 +96,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | IDE-06 | POST | /c/{slug}/ideas/{id}/comments | mem | write limit, 40 an hour |
 | IDE-07 | GET | /c/{slug}/ideas/{id}/comments | mem | read limit |
 | IDE-08 | DELETE | /c/{slug}/ideas/{id}/comments/{commentId} | mem | author, or moderator and admin |
+| IDE-09 | PUT | /c/{slug}/ideas/{id}/comments/{commentId}/vote | mem | write limit |
 | COL-01 | POST | /colleges/setup | ses | needs a one-time setup code, 5 tries an hour |
 | APP-01 | POST | /me/applications | ses | write limit, 200 per person |
 | APP-02 | GET | /me/applications | ses | read limit |

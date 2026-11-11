@@ -98,7 +98,7 @@ function NewInvite({ onCreated }: { onCreated: (code: string | null) => void }) 
   return (
     <form
       onSubmit={submit}
-      className="flex max-w-xl flex-col gap-5 rounded-card border border-border bg-surface p-5"
+      className="flex max-w-xl flex-col gap-5 glass-card rounded-[22px] p-5"
       noValidate
     >
       <h2 className="text-[18px] font-semibold">New invite code</h2>
@@ -267,7 +267,7 @@ export function InvitesScreen() {
       ) : state.data.length === 0 ? (
         <EmptyNote>No invite codes yet. Make one above and share it with your students.</EmptyNote>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {state.data.map((item) => (
             <InviteRow key={item.id} item={item} onChanged={state.reload} />
           ))}

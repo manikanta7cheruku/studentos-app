@@ -67,6 +67,9 @@ export const ideaComment = z.object({
   body: z.string(),
   created_at: isoDateTime,
   is_owner: z.boolean(),
+  // Likes minus dislikes, and my own vote (1, -1 or 0).
+  score: z.number().int().default(0),
+  my_vote: z.number().int().min(-1).max(1).default(0),
   author: z.object({ user_id: uuid, display_name: z.string() }),
 });
 export const ideaCommentResponse = successEnvelope(ideaComment);

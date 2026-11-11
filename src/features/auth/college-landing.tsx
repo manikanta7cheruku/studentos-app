@@ -63,7 +63,7 @@ export function CollegeLanding({ slug }: { slug: string }) {
             >
               Inside
             </h2>
-            <ul className="mt-3 divide-y divide-border border-y border-border">
+            <ul className="mt-3 glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
               {tabs.map((tab) => (
                 <li key={tab} className="py-3 text-[15px] text-ink">
                   {tab}

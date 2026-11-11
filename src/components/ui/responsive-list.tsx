@@ -66,7 +66,7 @@ function ResponsiveList<T extends Record<string, unknown>>({
 
       <ul aria-label={caption} className={cn("flex flex-col gap-3 md:hidden")}>
         {rows.map((row) => (
-          <li key={getRowKey(row)} className="rounded-card border border-border bg-surface p-4">
+          <li key={getRowKey(row)} className="glass-card rounded-[22px] p-4">
             <dl className="flex flex-col gap-2">
               {columns.map((column) => (
                 <div key={column.key} className="flex flex-col">

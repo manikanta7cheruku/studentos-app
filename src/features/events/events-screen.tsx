@@ -11,7 +11,8 @@ import { PageHeader } from "@/components/app/page-header";
 import { api } from "@/lib/api/endpoints";
 import { dayLabel } from "@/lib/format";
 import { useLoad } from "@/lib/use-load";
-import { useCollege } from "@/features/college";
+import { useCollege, usePublicLoad } from "@/features/college";
+import { GLOBAL_SLUG } from "@/lib/home-path";
 import { EventCard } from "./event-card";
 
 type View = "upcoming" | "going" | "past";
@@ -51,9 +52,27 @@ export function EventsScreen() {
     [slug, view],
   );
 
+  // Events posted for everyone are part of the list too (upcoming), with a Public tag.
+  const publicEvents = usePublicLoad(
+    () =>
+      view === "upcoming"
+        ? api.events.list(GLOBAL_SLUG, { when: "upcoming" })
+        : Promise.resolve(null),
+    [view],
+  );
+  const publicIds = new Set((publicEvents ?? []).map((event) => event.id));
+
   const groups: { label: string; items: NonNullable<typeof state.data> }[] = [];
   if (state.status === "ready") {
-    for (const event of state.data) {
+    const all = [
+      ...state.data,
+      ...(publicEvents ?? []).filter((event) => !state.data.some((item) => item.id === event.id)),
+    ].sort((a, b) =>
+      view === "past"
+        ? b.starts_at.localeCompare(a.starts_at)
+        : a.starts_at.localeCompare(b.starts_at),
+    );
+    for (const event of all) {
       const label =
         view === "past"
           ? new Date(event.starts_at).toLocaleDateString(undefined, {
@@ -68,8 +87,9 @@ export function EventsScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
+        app
         eyebrow={slug === "global" ? "Global" : college.name}
         title="Events"
         description="Fests, talks, meetups and matches. Say you are going and see who else is."
@@ -81,26 +101,28 @@ export function EventsScreen() {
           </Button>
         }
       />
-      <div
-        role="tablist"
-        aria-label="Which events"
-        className="flex gap-1 rounded-2xl bg-white/[0.05] p-1"
-      >
-        {VIEWS.map((item) => (
-          <button
-            key={item.value}
-            role="tab"
-            type="button"
-            aria-selected={view === item.value}
-            onClick={() => setView(item.value)}
-            className={cn(
-              "h-9 flex-1 rounded-xl text-[13.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-              view === item.value ? "bg-white/[0.12] text-ink" : "text-ink-muted hover:text-ink",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
+      <div>
+        <div
+          role="tablist"
+          aria-label="Which events"
+          className="grid grid-cols-3 gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-1"
+        >
+          {VIEWS.map((item) => (
+            <button
+              key={item.value}
+              role="tab"
+              type="button"
+              aria-selected={view === item.value}
+              onClick={() => setView(item.value)}
+              className={cn(
+                "h-9 rounded-xl text-[13.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+                view === item.value ? "bg-white/[0.14] text-ink" : "text-ink-muted hover:text-ink",
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div aria-live="polite">
@@ -140,7 +162,12 @@ export function EventsScreen() {
                 </h2>
                 <ul className="stagger flex flex-col gap-3">
                   {group.items.map((event) => (
-                    <EventCard key={event.id} event={event} onChange={() => state.reload()} />
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      space={publicIds.has(event.id) ? GLOBAL_SLUG : undefined}
+                      onChange={() => state.reload()}
+                    />
                   ))}
                 </ul>
               </section>

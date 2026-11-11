@@ -26,7 +26,7 @@ export function FaqAccordion({ items, className }: FaqAccordionProps) {
   }
 
   return (
-    <div className={cn("divide-y divide-border border-y border-border", className)}>
+    <div className={cn("glass-card divide-y divide-white/[0.07] rounded-[22px] px-4", className)}>
       {items.map((item) => {
         const isOpen = Boolean(openIds[item.id]);
         const triggerId = `faq-trigger-${item.id}`;

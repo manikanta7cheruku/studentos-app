@@ -3,7 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCheckIcon } from "lucide-react";
+import {
+  BellIcon,
+  CalendarCheckIcon,
+  MapPinnedIcon,
+  CheckCheckIcon,
+  MegaphoneIcon,
+  ShieldAlertIcon,
+  UserCheckIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
@@ -24,9 +34,34 @@ export function notificationHref(item: NotificationItem, slug: string): string |
     const postId = item.payload.post_id;
     return typeof postId === "string" ? `${base}/collaborate/${postId}` : `${base}/collaborate`;
   }
+  if (item.type.startsWith("venue.")) {
+    const venueId = item.payload.venue_id;
+    // The manager answers on the venue page, the person who asked sees it in My bookings.
+    if (item.type === "venue.booking_requested" || item.type === "venue.booking_cancelled")
+      return typeof venueId === "string" ? `${base}/turf/${venueId}` : `${base}/turf`;
+    return `${base}/turf/bookings`;
+  }
   if (item.type === "opportunity.deadline_soon") return `${base}/career`;
   if (item.type.startsWith("membership.")) return `${base}/me`;
   return null;
+}
+
+/** An icon and two colours for each kind of notification, so the list can be scanned at a glance. */
+function look(type: string): { icon: React.ReactNode; tint: string } {
+  if (type === "team.joined")
+    return { icon: <UserPlusIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
+  if (type.startsWith("team.request_accepted") || type === "membership.approved")
+    return { icon: <UserCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
+  if (type.startsWith("team.")) return { icon: <UsersIcon />, tint: "from-[#5b54d6] to-[#8a5fd0]" };
+  if (type === "venue.booking_confirmed")
+    return { icon: <CalendarCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
+  if (type.startsWith("venue."))
+    return { icon: <MapPinnedIcon />, tint: "from-[#2f9fd0] to-[#4f6fe0]" };
+  if (type === "content.removed" || type.startsWith("moderation.") || type === "report.actioned")
+    return { icon: <ShieldAlertIcon />, tint: "from-[#d99a3a] to-[#d6665a]" };
+  if (type === "announcement.published")
+    return { icon: <MegaphoneIcon />, tint: "from-[#2f9fd0] to-[#4f6fe0]" };
+  return { icon: <BellIcon />, tint: "from-[#5b54d6] to-[#7a5198]" };
 }
 
 export function timeAgo(iso: string, now = Date.now()): string {
@@ -98,10 +133,11 @@ export function NotificationsScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
+        app
         eyebrow="Notifications"
-        title="What needs your attention"
+        title="Updates"
         description="Decisions on your requests, new announcements and reminders appear here."
         actions={
           <Button variant="outline" onClick={markAll} disabled={busy !== null || unread === 0}>
@@ -127,7 +163,7 @@ export function NotificationsScreen() {
       ) : first.status === "error" ? (
         <LoadError error={first.error} onRetry={first.reload} what="your notifications" />
       ) : items.length === 0 ? (
-        <div className="rounded-card border border-dashed border-border-strong bg-surface/60 p-8">
+        <div className="glass-card rounded-[22px] p-8">
           <p className="text-lg font-semibold">You are all caught up.</p>
           <p className="mt-1 max-w-prose text-ink-muted">
             When someone answers a request of yours, or your college posts something, you will see
@@ -141,20 +177,22 @@ export function NotificationsScreen() {
           </p>
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-card border border-border bg-surface">
+        <ul className="stagger flex flex-col gap-2.5">
           {items.map((item) => {
             const read = isRead(item);
             return (
-              <li key={item.id} className="border-b border-border last:border-b-0">
+              <li key={item.id}>
                 <button
                   type="button"
                   onClick={() => open(item)}
-                  className="flex min-h-[4.5rem] w-full items-start gap-4 p-5 text-left transition-colors hover:bg-accent-soft/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  className="glass-card lift flex min-h-[4.5rem] w-full items-start gap-3.5 rounded-[20px] p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span
                     aria-hidden="true"
-                    className={`mt-2 size-2.5 shrink-0 rounded-full ${read ? "bg-transparent" : "bg-primary"}`}
-                  />
+                    className={`inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] [&_svg]:size-5 ${look(item.type).tint} ${read ? "opacity-60" : ""}`}
+                  >
+                    {look(item.type).icon}
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span
                       className={`block text-[15px] leading-snug ${read ? "text-ink" : "font-semibold text-ink"}`}
@@ -165,10 +203,16 @@ export function NotificationsScreen() {
                     <span className="mt-1 block text-[14px] leading-relaxed text-ink-muted">
                       {item.payload.message}
                     </span>
-                    <span className="mt-1.5 block text-[13px] text-ink-muted">
+                    <span className="mt-1.5 block text-[12.5px] text-ink-muted">
                       {timeAgo(item.created_at)}
                     </span>
                   </span>
+                  {read ? null : (
+                    <span
+                      aria-hidden="true"
+                      className="bg-brand mt-1.5 size-2.5 shrink-0 rounded-full"
+                    />
+                  )}
                 </button>
               </li>
             );

@@ -48,6 +48,8 @@ async function makePost(page: Page, title: string, teamLink = "https://chat.exam
   await page.goto("/c/alpha/collaborate/new");
   await page.getByLabel(/^title/i).fill(title);
   await page.getByLabel(/what are you building/i).fill("We need one designer for the weekend.");
+  // The two link boxes sit behind one option, to keep the form short.
+  await page.getByRole("button", { name: /add links/i }).click();
   await page.getByLabel(/team chat link/i).fill(teamLink);
   await page.getByPlaceholder("Frontend developer").first().fill("Designer");
   await page.getByRole("button", { name: /^post plan$/i }).click();

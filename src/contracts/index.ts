@@ -14,3 +14,4 @@ export * from "./setup";
 export * from "./events";
 export * from "./board";
 export * from "./moderation";
+export * from "./venues";

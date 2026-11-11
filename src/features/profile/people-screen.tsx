@@ -28,7 +28,7 @@ export function PeopleScreen() {
   const state = useLoad(() => api.people.list(slug, term || undefined), [slug, term]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         eyebrow={college.name}
         title="People"
@@ -65,7 +65,7 @@ export function PeopleScreen() {
         ) : state.status === "error" ? (
           <LoadError error={state.error} onRetry={state.reload} what="the people list" />
         ) : state.data.length === 0 ? (
-          <div className="rounded-card border border-dashed border-border-strong p-8">
+          <div className="glass-card rounded-[22px] p-8">
             <p className="text-lg font-semibold">
               {term ? `Nobody found for “${term}”.` : "Nobody is visible yet."}
             </p>
@@ -76,7 +76,7 @@ export function PeopleScreen() {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {state.data.map((person) => (
               <li key={person.user_id}>
                 <Link
@@ -112,7 +112,7 @@ export function PersonScreen({ userId }: { userId: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.people.one(slug, userId), [slug, userId]);
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <Link
         href={`/c/${slug}/people`}
         className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

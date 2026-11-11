@@ -13,6 +13,7 @@ import * as profile from "./profile";
 import * as setup from "./setup";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
+import * as venues from "./venues";
 
 // One line for every API route method: its id, path, who may call it, and the shapes it takes and gives.
 // This is the single list that docs/openapi.v1.json is generated from. Two tests keep it honest
@@ -313,6 +314,68 @@ export const endpoints: Endpoint[] = [
   e("EVT-05", "DELETE", "/c/{slug}/events/{id}", "mem", "Cancel an event (author or moderator)", {
     response: events.eventResponse,
   }),
+  e("VEN-01", "GET", "/c/{slug}/venues", "mem", "List turfs, courts and grounds", {
+    query: venues.venueListQuery,
+    response: venues.venueListResponse,
+  }),
+  e(
+    "VEN-02",
+    "POST",
+    "/c/{slug}/venues",
+    "mem",
+    "Add a venue (college admins, or anyone in Global)",
+    {
+      body: venues.venueCreateBody,
+      response: venues.venueResponse,
+      status: 201,
+      idem: true,
+    },
+  ),
+  e("VEN-03", "GET", "/c/{slug}/venues/{id}", "mem", "One venue", {
+    response: venues.venueResponse,
+  }),
+  e("VEN-04", "DELETE", "/c/{slug}/venues/{id}", "mem", "Hide a venue (its manager)", {
+    response: venues.venueHideResponse,
+  }),
+  e("VEN-05", "GET", "/c/{slug}/venues/{id}/slots", "mem", "The hours of one day: free or booked", {
+    query: venues.venueSlotsQuery,
+    response: venues.venueSlotsResponse,
+  }),
+  e("VEN-06", "POST", "/c/{slug}/venues/{id}/bookings", "mem", "Ask to book some hours", {
+    body: venues.bookingCreateBody,
+    response: venues.bookingResponse,
+    status: 201,
+    idem: true,
+  }),
+  e(
+    "VEN-07",
+    "GET",
+    "/c/{slug}/venues/{id}/bookings",
+    "mem",
+    "The booking requests of a venue (its manager)",
+    {
+      query: venues.venueBookingsQuery,
+      response: venues.bookingListResponse,
+    },
+  ),
+  e("VEN-08", "GET", "/c/{slug}/me/bookings", "mem", "My booking requests", {
+    query: venues.myBookingsQuery,
+    response: venues.bookingListResponse,
+  }),
+  e(
+    "VEN-09",
+    "POST",
+    "/c/{slug}/bookings/{id}/decision",
+    "mem",
+    "Confirm or decline a request (the venue's manager)",
+    {
+      body: venues.bookingDecisionBody,
+      response: venues.bookingResponse,
+    },
+  ),
+  e("VEN-10", "DELETE", "/c/{slug}/bookings/{id}", "mem", "Cancel my request", {
+    response: venues.bookingResponse,
+  }),
   e("BRD-01", "POST", "/c/{slug}/board", "mem", "Post to Lost and found or the Marketplace", {
     body: board.boardCreateBody,
     response: board.boardResponse,
@@ -385,6 +448,14 @@ export const endpoints: Endpoint[] = [
     "mem",
     "Remove a comment (author or moderator)",
     { response: ideas.ideaDeleteResponse },
+  ),
+  e(
+    "IDE-09",
+    "PUT",
+    "/c/{slug}/ideas/{id}/comments/{commentId}/vote",
+    "mem",
+    "Like or dislike a comment (1, -1 or 0)",
+    { body: ideas.ideaVoteBody, response: ideas.ideaCommentResponse },
   ),
   e("COL-01", "POST", "/colleges/setup", "ses", "Create my college with a setup code", {
     body: setup.collegeSetupBody,

@@ -400,6 +400,7 @@ Ideas are short text posts inside one space (a college or Global). People vote a
 | IDE-06 | POST `/api/v1/c/{slug}/ideas/{id}/comments` | IDEM. `body` 1 to 800, optional `parent_id` of a top level comment of the same idea (one level of replies). 429 at 40 an hour |
 | IDE-07 | GET `/api/v1/c/{slug}/ideas/{id}/comments` | Oldest first, all in one answer |
 | IDE-08 | DELETE `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}` | The author of the comment, or a moderator or admin |
+| IDE-09 | PUT `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}/vote` | `{ "value": 1 \| -1 \| 0 }`. Like, dislike, or take the vote back. Safe to repeat. Answers with the comment, which has `score` and `my_vote` |
 | COL-01 | POST `/api/v1/colleges/setup` | Needs sign in. `{ code (8 digits), slug, name, short_name?, city, state, domains[], join_method: email | invite | approval }`. Makes the college and its first admin in one step. 403 for a wrong, used or expired code (never says which), 409 when the address is taken, 429 after 5 tries an hour |
 
 Team Finder (TMF-01, TMF-04) also accepts three new kinds, `sport`, `event` and `hangout`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
@@ -439,4 +440,23 @@ Events have a start time, a place, an optional capacity and RSVPs. The board is 
 **Events** (EVT-01, EVT-02, EVT-03): every event has `kind` (`official` or `personal`) and `invite_only`. Inside a college only its admins and moderators can create events, and they are `official` (403 `FORBIDDEN` for a student). In Global anyone can create events, and they are `personal`. An `invite_only` event is left out of the lists. It is reachable by its link, by the host and by people who said they go. A removed event has `status: removed`.
 
 **Notifications:** two new types. `team.joined` tells a host that someone joined their plan (payload has `joiner_id` and `joiner_name`). `content.removed` tells an author that a moderator, an admin or the owner removed their item and why (payload has `kind`, `reason`, `note` and `item_title`).
+
+## 18. Turf and court booking (R3 Day 16, decision D-36)
+
+A venue is a turf, a court or a ground. Students ask for some hours on a day, and the venue's manager confirms or declines by hand. There are no payments yet. Any member can add a venue. The manager of a venue is the person who added it, plus the admins and moderators of that college, who can also hide it.
+
+| ID | Request | Notes |
+|---|---|---|
+| VEN-01 | GET `/api/v1/c/{slug}/venues?sport=&limit=50` | The active venues of the space, by name. `sport` filters (for example `football`) |
+| VEN-02 | POST `/api/v1/c/{slug}/venues` | IDEM. `name` 3 to 80, `description` up to 600, `sports` 1 to 5 words, optional `area`, `price_inr_per_hour`, `open_hour` (default 6) and `close_hour` (default 23). Any active member, in a college or in Global. 429 at 20 venues per person |
+| VEN-03 | GET `/api/v1/c/{slug}/venues/{id}` | `is_manager` says whether I answer the requests. `pending_count` is real only for a manager. 404 for a hidden venue |
+| VEN-04 | DELETE `/api/v1/c/{slug}/venues/{id}` | Hides the venue. Only its manager (403 `FORBIDDEN`). Waiting requests are declined and those people are told |
+| VEN-05 | GET `/api/v1/c/{slug}/venues/{id}/slots?date=2026-11-20` | One entry per bookable hour: `state` (`free` or `booked`), `requests` waiting, `mine`. 400 for a day more than 60 days away |
+| VEN-06 | POST `/api/v1/c/{slug}/venues/{id}/bookings` | IDEM. `play_date`, `start_hour`, `hours` (1 to 4) inside the opening hours, optional `players` and `note`. 201, status `pending`. 409 `SLOTS_FULL` when a confirmed request covers those hours, 409 `ALREADY_REQUESTED` for overlapping hours of my own, 429 at 6 waiting requests |
+| VEN-07 | GET `/api/v1/c/{slug}/venues/{id}/bookings?status=` | The requests of a venue, waiting ones first. Only its manager (403 `FORBIDDEN`) |
+| VEN-08 | GET `/api/v1/c/{slug}/me/bookings` | My own requests, newest day first |
+| VEN-09 | POST `/api/v1/c/{slug}/bookings/{id}/decision` | `{ "decision": "confirmed" | "declined", "note": "optional" }`. Only the venue's manager. The person is told. 409 `CONFLICT` when already answered, 409 `SLOTS_FULL` when another confirmed request covers those hours |
+| VEN-10 | DELETE `/api/v1/c/{slug}/bookings/{id}` | The person who asked cancels a waiting or confirmed request. 404 for anyone else's, 409 `CONFLICT` when already declined or cancelled |
+
+**Notifications:** four new types. `venue.booking_requested` tells the manager that someone asked (payload has `booking_id` and `venue_id`). `venue.booking_confirmed` and `venue.booking_declined` tell the person who asked, with the manager's note. `venue.booking_cancelled` tells the manager that a confirmed booking was cancelled, so the hours are free again.
 

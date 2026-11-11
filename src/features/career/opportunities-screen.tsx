@@ -150,7 +150,7 @@ function Results({ filters }: { filters: Filters }) {
 
   if (items.length === 0) {
     return (
-      <div className="mt-4 rounded-card border border-dashed border-border-strong p-8">
+      <div className="mt-4 glass-card rounded-[22px] p-8">
         <p className="text-lg font-semibold">
           {filters.saved
             ? "You have not saved any opportunity."
@@ -169,7 +169,7 @@ function Results({ filters }: { filters: Filters }) {
 
   return (
     <div>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
         {items.map((op) => (
           <OpportunityRow key={op.id} op={op} slug={slug} />
         ))}
@@ -211,7 +211,7 @@ export function OpportunitiesScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         eyebrow={college.name}
         title="Opportunities"

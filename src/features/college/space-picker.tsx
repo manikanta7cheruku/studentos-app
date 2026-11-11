@@ -23,9 +23,9 @@ export function SpacePicker({
   const spaces = session.colleges.filter((item) => item.membership.status === "active");
   if (spaces.length < 2) return null;
   return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-[13px] font-semibold text-ink-muted">{label}</legend>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2">
+      <p className="text-[13px] font-semibold text-ink/90">{label}</p>
+      <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
         {spaces.map((item) => {
           const global = item.college.slug === GLOBAL_SLUG;
           const Icon = global ? GlobeIcon : SchoolIcon;
@@ -34,7 +34,8 @@ export function SpacePicker({
             <button
               key={item.college.slug}
               type="button"
-              aria-pressed={on}
+              role="radio"
+              aria-checked={on}
               onClick={() => onChange(item.college.slug)}
               className={cn(
                 "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-[13.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
@@ -44,11 +45,15 @@ export function SpacePicker({
               )}
             >
               <Icon aria-hidden="true" className="size-4" />
-              {global ? "Global" : `${item.college.name} only`}
+              {global ? (
+                "Public, everyone"
+              ) : (
+                <span className="max-w-[11rem] truncate">{`${item.college.name} only`}</span>
+              )}
             </button>
           );
         })}
       </div>
-    </fieldset>
+    </div>
   );
 }

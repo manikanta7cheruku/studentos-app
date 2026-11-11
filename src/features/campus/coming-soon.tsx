@@ -23,9 +23,9 @@ export function ComingSoon({
 }) {
   const { slug } = useCollege();
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader eyebrow={eyebrow} title={title} description={description} />
-      <ul className="divide-y divide-border rounded-card border border-border bg-surface">
+      <ul className="divide-y divide-border glass-card rounded-[22px]">
         {coming.map((item) => (
           <li key={item.name} className="flex flex-col gap-1 p-5 sm:p-6">
             <p className="text-lg font-semibold">{item.name}</p>

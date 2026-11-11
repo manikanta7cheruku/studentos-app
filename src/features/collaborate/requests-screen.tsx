@@ -82,7 +82,7 @@ export function RequestsScreen() {
   const sent = useLoad(() => api.teamPosts.myRequests(slug), [slug]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title="Requests"
         description="People who asked to join your posts, and the requests you sent."
@@ -101,12 +101,12 @@ export function RequestsScreen() {
         ) : received.status === "error" ? (
           <LoadError error={received.error} onRetry={received.reload} what="your posts" />
         ) : received.data.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-5 text-[14px] text-ink-muted">
+          <p className="glass-card rounded-[22px] p-5 text-[14px] text-ink-muted">
             Nothing is waiting. When someone asks to join one of your open posts, it shows up here
             and in your notifications.
           </p>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {received.data.map((post) => (
               <li key={post.id} className="flex items-center justify-between gap-4 py-4">
                 <div className="min-w-0">
@@ -157,7 +157,7 @@ export function RequestsScreen() {
             </p>
           </Banner>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {sent.data.map((item) => (
               <MyRequestRow key={item.id} item={item} onChanged={sent.reload} />
             ))}

@@ -186,10 +186,17 @@ export async function memberOfAlpha(
   return email;
 }
 
-// The same person joins Global (open to every student).
+// The same person is in Global (open to every student). A member of a college is added to Global by the app on the first
+// visit, so the join page may already send them on to Global; if not, they join with the button.
 export async function joinGlobalThroughUi(page: import("@playwright/test").Page): Promise<void> {
   await page.goto("/c/global/join");
-  await page.getByRole("button", { name: /join global/i }).click();
+  const join = page.getByRole("button", { name: /join global/i });
+  // isVisible() does not wait, so wait for either the button or the redirect to Global.
+  const shown = await join
+    .waitFor({ state: "visible", timeout: 8000 })
+    .then(() => true)
+    .catch(() => false);
+  if (shown) await join.click().catch(() => undefined);
   await page.waitForURL(/\/c\/global\/home$/);
 }
 

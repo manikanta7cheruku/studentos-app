@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDaysIcon, PackageSearchIcon, StoreIcon } from "lucide-react";
+import { CalendarDaysIcon, MapPinnedIcon, PackageSearchIcon, StoreIcon } from "lucide-react";
 
 /** Three ways into the community boards: Events, Lost and found, and the Marketplace. */
 export function ExploreTiles({ slug }: { slug: string }) {
@@ -9,6 +9,12 @@ export function ExploreTiles({ slug }: { slug: string }) {
       title: "Events",
       text: "Talks, fests, meetups",
       icon: <CalendarDaysIcon />,
+    },
+    {
+      href: `/c/${slug}/turf`,
+      title: "Turf and courts",
+      text: "Book a ground",
+      icon: <MapPinnedIcon />,
     },
     {
       href: `/c/${slug}/lost-found`,
@@ -24,12 +30,12 @@ export function ExploreTiles({ slug }: { slug: string }) {
     },
   ];
   return (
-    <ul className="stagger grid gap-3 sm:grid-cols-3">
+    <ul className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
       {tiles.map((tile) => (
         <li key={tile.href}>
           <Link
             href={tile.href}
-            className="lift group flex items-center gap-3 rounded-[20px] border border-white/[0.08] bg-surface p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-col sm:items-start sm:gap-4"
+            className="lift glass-card group flex h-full flex-col items-start gap-3 rounded-[22px] p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="bg-brand inline-flex size-10 items-center justify-center rounded-xl text-white [&_svg]:size-5">
               {tile.icon}

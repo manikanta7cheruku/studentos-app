@@ -313,7 +313,7 @@ function OpenForm({ slug, onJoined }: FormProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <ul className="divide-y divide-border border-y border-border text-[15px]">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4 text-[15px]">
         <li className="py-3">Find teammates and join projects and events open to everyone.</li>
         <li className="py-3">Track your own applications privately.</li>
         <li className="py-3">

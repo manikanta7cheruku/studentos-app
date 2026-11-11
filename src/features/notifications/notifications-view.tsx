@@ -184,10 +184,7 @@ export function NotificationsView({
         </div>
         <div className="flex flex-col gap-4">
           {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
-            >
+            <div key={n} className="flex flex-col gap-3 glass-card rounded-[22px] p-4">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-6 w-32" />
                 <Skeleton className="h-5 w-20" />

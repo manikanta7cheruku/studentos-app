@@ -407,7 +407,7 @@ function SpacesSection() {
       >
         Your spaces
       </h2>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
         {spaces.map((item) => {
           const current = item.college.slug === slug;
           return (
@@ -448,7 +448,7 @@ function SpacesSection() {
 export function SettingsScreen() {
   const { slug } = useCollege();
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title="Settings"
         description="Who sees you, what we remind you about, and your account."

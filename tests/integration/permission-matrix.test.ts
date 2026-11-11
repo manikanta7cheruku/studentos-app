@@ -64,6 +64,7 @@ import {
   POST as ideaCommentsCreate,
 } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/route";
 import { DELETE as ideaCommentsRemove } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/[commentId]/route";
+import { PUT as ideaCommentVote } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/[commentId]/vote/route";
 import { GET as eventsList, POST as eventsCreate } from "@/app/api/v1/c/[slug]/events/route";
 import { DELETE as eventsCancel, GET as eventsGet } from "@/app/api/v1/c/[slug]/events/[id]/route";
 import { PUT as eventsRsvp } from "@/app/api/v1/c/[slug]/events/[id]/rsvp/route";
@@ -79,6 +80,16 @@ import { POST as tmfJoin } from "@/app/api/v1/c/[slug]/team-posts/[id]/join/rout
 import { GET as tmfParticipants } from "@/app/api/v1/c/[slug]/team-posts/[id]/participants/route";
 import { GET as adminContent } from "@/app/api/v1/c/[slug]/admin/content/route";
 import { POST as adminContentRemove } from "@/app/api/v1/c/[slug]/admin/content/remove/route";
+import { GET as venuesList, POST as venuesCreate } from "@/app/api/v1/c/[slug]/venues/route";
+import { GET as venueOne, DELETE as venueHide } from "@/app/api/v1/c/[slug]/venues/[id]/route";
+import { GET as venueSlots } from "@/app/api/v1/c/[slug]/venues/[id]/slots/route";
+import {
+  GET as venueBookings,
+  POST as venueBook,
+} from "@/app/api/v1/c/[slug]/venues/[id]/bookings/route";
+import { GET as myBookings } from "@/app/api/v1/c/[slug]/me/bookings/route";
+import { DELETE as bookingCancel } from "@/app/api/v1/c/[slug]/bookings/[id]/route";
+import { POST as bookingDecide } from "@/app/api/v1/c/[slug]/bookings/[id]/decision/route";
 import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
 import { GET as tmfList, POST as tmfCreate } from "@/app/api/v1/c/[slug]/team-posts/route";
 import { GET as tmfGet, PATCH as tmfPatch } from "@/app/api/v1/c/[slug]/team-posts/[id]/route";
@@ -899,6 +910,21 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     expect: memberOnly(404),
   },
   {
+    op: "IDE-09 PUT /c/alpha/ideas/{id}/comments/{commentId}/vote (unknown comment -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const commentId = randomUUID();
+      return call(ideaCommentVote, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/ideas/${id}/comments/${commentId}/vote`,
+        json: { value: 1 },
+        params: { slug: "alpha", id, commentId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
     op: "COL-01 POST /colleges/setup (any signed in person; an empty body is the probe -> 400)",
     call: (cookie: string | undefined) =>
       call(collegeSetup, {
@@ -957,6 +983,128 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         cookie,
       }).then((r) => r.status),
     expect: modOnly(400),
+  },
+  {
+    op: "VEN-01 GET /c/alpha/venues (members)",
+    call: (cookie: string | undefined) =>
+      call(venuesList, { path: "/api/v1/c/alpha/venues", params: { slug: "alpha" }, cookie }).then(
+        (r) => r.status,
+      ),
+    expect: memberOnly(200),
+  },
+  {
+    op: "VEN-02 POST /c/alpha/venues (an empty body is the probe -> 400 for members)",
+    call: (cookie: string | undefined) =>
+      call(venuesCreate, {
+        method: "POST",
+        path: "/api/v1/c/alpha/venues",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status),
+    expect: memberOnly(400),
+  },
+  {
+    op: "VEN-03 GET /c/alpha/venues/{id} (unknown venue -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(venueOne, {
+        path: `/api/v1/c/alpha/venues/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-04 DELETE /c/alpha/venues/{id} (unknown venue -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(venueHide, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/venues/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-05 GET /c/alpha/venues/{id}/slots (unknown venue -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(venueSlots, {
+        path: `/api/v1/c/alpha/venues/${id}/slots?date=2026-11-20`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-06 POST /c/alpha/venues/{id}/bookings (unknown venue -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(venueBook, {
+        method: "POST",
+        path: `/api/v1/c/alpha/venues/${id}/bookings`,
+        json: { play_date: "2026-11-20", start_hour: 10, hours: 1 },
+        params: { slug: "alpha", id },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-07 GET /c/alpha/venues/{id}/bookings (unknown venue -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(venueBookings, {
+        path: `/api/v1/c/alpha/venues/${id}/bookings`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-08 GET /c/alpha/me/bookings (members)",
+    call: (cookie: string | undefined) =>
+      call(myBookings, {
+        path: "/api/v1/c/alpha/me/bookings",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "VEN-09 POST /c/alpha/bookings/{id}/decision (unknown request -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(bookingDecide, {
+        method: "POST",
+        path: `/api/v1/c/alpha/bookings/${id}/decision`,
+        json: { decision: "confirmed" },
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "VEN-10 DELETE /c/alpha/bookings/{id} (unknown request -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(bookingCancel, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/bookings/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
   },
   {
     op: "TMF-02 GET /c/alpha/team-posts (members)",

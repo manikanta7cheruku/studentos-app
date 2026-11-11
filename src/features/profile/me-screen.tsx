@@ -10,6 +10,7 @@ import {
   StoreIcon,
   ChevronRightIcon,
   InboxIcon,
+  MapPinnedIcon,
   PencilIcon,
   SettingsIcon,
   ShieldCheckIcon,
@@ -68,6 +69,12 @@ function MoreMenu() {
       icon: <CalendarDaysIcon />,
     },
     {
+      href: `/c/${slug}/turf`,
+      label: "Turf and courts",
+      text: "Book a ground, find players",
+      icon: <MapPinnedIcon />,
+    },
+    {
       href: `/c/${slug}/lost-found`,
       label: "Lost and found",
       text: "Lost it? Found it?",
@@ -108,7 +115,7 @@ function MoreMenu() {
       <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
         More
       </h2>
-      <ul className="stagger overflow-hidden rounded-[20px] border border-white/[0.08] bg-surface">
+      <ul className="stagger glass-card overflow-hidden rounded-[24px]">
         {rows.map((row) => (
           <li key={row.href} className="border-t border-white/[0.06] first:border-t-0">
             <Link
@@ -142,7 +149,7 @@ export function MeScreen() {
   }, [slug]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto w-full max-w-2xl px-5 pt-4 pb-2 md:px-8 md:py-8">
       {state.status === "loading" ? (
         <ProfileSkeleton />
       ) : state.status === "error" ? (

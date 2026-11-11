@@ -50,10 +50,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const tabs = TABS.filter((tab) => isAdmin || !tab.adminOnly);
   return (
     <div className="flex flex-col">
-      <nav
-        aria-label="Admin"
-        className="sticky top-14 z-20 border-b border-border bg-surface/95 backdrop-blur md:top-0"
-      >
+      <nav aria-label="Admin" className="border-b border-white/[0.08]">
         <ul className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto px-3 md:px-8">
           {tabs.map((tab) => {
             const href = `${base}${tab.href}`;
@@ -64,7 +61,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   href={href}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "-mb-px inline-flex min-h-12 items-center border-b-2 px-3 text-[15px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    "-mb-px inline-flex min-h-12 items-center border-b-2 px-3 text-[14.5px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                     current
                       ? "border-primary font-semibold text-ink"
                       : "border-transparent text-ink-muted hover:text-ink",
@@ -95,10 +92,10 @@ export function ConsolePage({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8 md:px-8 md:py-10">
-      <header className="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
+      <header className="flex flex-col gap-3 pb-1 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-balance text-3xl font-semibold leading-tight tracking-tight">
+          <h1 className="text-balance text-[1.9rem] font-extrabold leading-tight tracking-tight">
             {title}
           </h1>
           {description ? (
@@ -115,11 +112,7 @@ export function ConsolePage({
 }
 
 export function EmptyNote({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="rounded-card border border-dashed border-border-strong p-6 text-[16px] text-ink-muted">
-      {children}
-    </p>
-  );
+  return <p className="glass-card rounded-[22px] p-6 text-[15px] text-ink-muted">{children}</p>;
 }
 
 export function ListSkeleton() {
