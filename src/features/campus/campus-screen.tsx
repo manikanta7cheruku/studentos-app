@@ -4,6 +4,7 @@ import * as React from "react";
 import { PinIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
+import { ExploreTiles } from "@/components/app/explore-tiles";
 import { PageHeader } from "@/components/app/page-header";
 import { api, type Announcement } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
@@ -60,6 +61,7 @@ export function CampusScreen() {
         title="Campus"
         description="Notices from your college. Pinned ones stay at the top."
       />
+      <ExploreTiles slug={slug} />
       {state.status === "loading" ? (
         <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading announcements">
           {[0, 1, 2].map((n) => (

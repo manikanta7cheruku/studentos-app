@@ -18,6 +18,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Career | OPP-01, OPP-02, OPP-03, OPP-04, REM-01 | curated opportunities, saved, reminders |
 | Application tracker | APP-01, APP-02, APP-03, APP-04 | my applications, edit with a version check, status changes with a history (built by R3 in Day 7, private to the person) |
 | Ideas and college setup | IDE-01, IDE-02, IDE-03, IDE-04, IDE-05, IDE-06, IDE-07, IDE-08, COL-01 | ideas with votes and replies, and college creation with a one-time owner code (built by R3 in Day 11); Team Finder gets the kinds sport and event and a place |
+| Events and board | EVT-01, EVT-02, EVT-03, EVT-04, EVT-05, BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07 | events with RSVPs, Lost and found and the Marketplace with private messages (built by R3 in Day 12, no payments) |
 
 ## 2. Not built
 

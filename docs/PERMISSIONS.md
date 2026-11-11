@@ -62,6 +62,18 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | OPP-03 | DELETE | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
 | OPP-04 | PUT | /me/saved-opportunities/{id} | ses | write limit |
 | OPP-04 | DELETE | /me/saved-opportunities/{id} | ses | write limit |
+| EVT-01 | POST | /c/{slug}/events | mem | write limit, 10 upcoming per person |
+| EVT-02 | GET | /c/{slug}/events | mem | read limit |
+| EVT-03 | GET | /c/{slug}/events/{id} | mem | read limit |
+| EVT-04 | PUT | /c/{slug}/events/{id}/rsvp | mem | write limit |
+| EVT-05 | DELETE | /c/{slug}/events/{id} | mem | author, or moderator and admin (audit logged) |
+| BRD-01 | POST | /c/{slug}/board | mem | write limit, 15 a day |
+| BRD-02 | GET | /c/{slug}/board | mem | read limit |
+| BRD-03 | GET | /c/{slug}/board/{id} | mem | read limit |
+| BRD-04 | POST | /c/{slug}/board/{id}/status | mem | author only |
+| BRD-05 | DELETE | /c/{slug}/board/{id} | mem | author, or moderator and admin (audit logged) |
+| BRD-06 | GET | /c/{slug}/board/{id}/messages | mem | the author sees all threads, others only their own |
+| BRD-07 | POST | /c/{slug}/board/{id}/messages | mem | write limit, 30 an hour |
 | IDE-01 | POST | /c/{slug}/ideas | mem | write limit, 20 a day |
 | IDE-02 | GET | /c/{slug}/ideas | mem | read limit |
 | IDE-03 | GET | /c/{slug}/ideas/{id} | mem | read limit |

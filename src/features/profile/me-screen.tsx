@@ -5,6 +5,9 @@ import {
   BellIcon,
   BriefcaseIcon,
   Building2Icon,
+  CalendarDaysIcon,
+  PackageSearchIcon,
+  StoreIcon,
   ChevronRightIcon,
   InboxIcon,
   PencilIcon,
@@ -58,6 +61,24 @@ function MoreMenu() {
           },
         ]
       : []),
+    {
+      href: `/c/${slug}/events`,
+      label: "Events",
+      text: "Talks, fests, meetups",
+      icon: <CalendarDaysIcon />,
+    },
+    {
+      href: `/c/${slug}/lost-found`,
+      label: "Lost and found",
+      text: "Lost it? Found it?",
+      icon: <PackageSearchIcon />,
+    },
+    {
+      href: `/c/${slug}/market`,
+      label: "Marketplace",
+      text: "Buy, sell, rent, free",
+      icon: <StoreIcon />,
+    },
     {
       href: `/c/${slug}/collaborate/requests`,
       label: "My requests",

@@ -11,3 +11,5 @@ export * from "./opportunities";
 export * from "./applications";
 export * from "./ideas";
 export * from "./setup";
+export * from "./events";
+export * from "./board";

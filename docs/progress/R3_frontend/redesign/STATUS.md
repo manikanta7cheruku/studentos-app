@@ -6,6 +6,12 @@
 - Welcome (sign in), choose space, college setup with an owner code, new landing page, Careers placeholder.
 - Backend for all of it (migration, routes, contracts, docs, tests written).
 
+## Also done: Events, Lost and found, Marketplace (decision D-33)
+- Events: list (upcoming, going, past), create, detail, "I am going" with a capacity.
+- Lost and found, Marketplace: list with kinds, create (price for sell, rent and wanted), detail with private messages (the author sees every thread, others only their own), mark as done, delete.
+- Entry points: Home tiles, Campus tiles, the You page, the desktop sidebar and the create sheet.
+- Not included on purpose: payments, photo upload, reporting a post, notifications for messages and RSVPs.
+
 ## Still in progress (screens that got the new colours and type but not a full rebuild)
 These use the new tokens, so they look right, but they were not redesigned screen by screen yet:
 - You page is rebuilt (More menu); **Edit profile, Skills, Settings, People list, Person page**: restyled by tokens only.
@@ -19,7 +25,7 @@ These use the new tokens, so they look right, but they were not redesigned scree
 2. **Notifications for ideas** (a reply to my idea, my idea reached 100 votes).
 3. **Search** across plans, ideas and people.
 4. **Platform admin dashboard** (owner view: colleges, users, sign-ups, errors; make setup codes from a screen).
-5. **Events, Lost and found, Marketplace, Notes** (the campus tiles are "coming soon" ideas, not built).
+5. **Notes** (study material). Photos for posts, and payments for the Marketplace.
 6. **Careers** (tracker and opportunities are built but hidden; D-31).
 7. **Day 4 projects and portfolio** (deferred by D-26).
 8. Photos for plans and ideas, a profile cover, an installable app manifest (add to home screen), push notifications.

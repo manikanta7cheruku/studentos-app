@@ -39,6 +39,11 @@ export type Report = Data<typeof c.reportQueueResponse>[number];
 export type Idea = Data<typeof c.ideaListResponse>[number];
 export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
+export type EventItem = Data<typeof c.eventResponse>;
+export type BoardItem = Data<typeof c.boardResponse>;
+export type BoardName = z.infer<typeof c.boardName>;
+export type BoardKind = z.infer<typeof c.boardKind>;
+export type BoardMessage = Data<typeof c.boardMessageListResponse>[number];
 
 const j = (path: string) => path;
 
@@ -192,6 +197,89 @@ export const api = {
       }),
   },
 
+  events: {
+    list: (slug: string, filters: { when?: "upcoming" | "past"; mine?: boolean } = {}) => {
+      const query = new URLSearchParams({ when: filters.when ?? "upcoming", limit: "50" });
+      if (filters.mine) query.set("mine", "true");
+      return apiClient(j(`/c/${slug}/events?${query}`), {
+        schema: c.eventListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/events/${id}`), { schema: c.eventResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.eventCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/events`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.eventResponse.shape.data,
+      }),
+    rsvp: (slug: string, id: string, going: boolean) =>
+      apiClient(j(`/c/${slug}/events/${id}/rsvp`), {
+        method: "PUT",
+        body: { going },
+        schema: c.eventResponse.shape.data,
+      }),
+    cancel: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/events/${id}`), {
+        method: "DELETE",
+        schema: c.eventResponse.shape.data,
+      }),
+  },
+  board: {
+    list: (
+      slug: string,
+      filters: {
+        board: BoardName;
+        kind?: BoardKind;
+        status?: "open" | "resolved" | "all";
+        mine?: boolean;
+        cursor?: string;
+        limit?: number;
+      },
+    ) => {
+      const query = new URLSearchParams({ board: filters.board });
+      if (filters.kind) query.set("kind", filters.kind);
+      query.set("status", filters.status ?? "open");
+      if (filters.mine) query.set("mine", "true");
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      query.set("limit", String(filters.limit ?? 20));
+      return apiFetchEnvelope(j(`/c/${slug}/board?${query}`), {
+        schema: c.boardListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/board/${id}`), { schema: c.boardResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.boardCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/board`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.boardResponse.shape.data,
+      }),
+    setStatus: (slug: string, id: string, status: "open" | "resolved") =>
+      apiClient(j(`/c/${slug}/board/${id}/status`), {
+        method: "POST",
+        body: { status },
+        schema: c.boardResponse.shape.data,
+      }),
+    remove: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/board/${id}`), {
+        method: "DELETE",
+        schema: c.boardDeleteResponse.shape.data,
+      }),
+    messages: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/board/${id}/messages`), {
+        schema: c.boardMessageListResponse.shape.data,
+      }),
+    send: (slug: string, id: string, body: { body: string; to_user?: string }, key?: string) =>
+      apiClient(j(`/c/${slug}/board/${id}/messages`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.boardMessageResponse.shape.data,
+      }),
+  },
   ideas: {
     list: (
       slug: string,

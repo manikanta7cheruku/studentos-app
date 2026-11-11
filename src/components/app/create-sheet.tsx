@@ -3,7 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { ChevronRightIcon, LightbulbIcon, UsersIcon } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  ChevronRightIcon,
+  LightbulbIcon,
+  PackageSearchIcon,
+  StoreIcon,
+  UsersIcon,
+} from "lucide-react";
 
 /** What can I start? Opens from the + button in the dock. A sheet from the bottom on phones, a card on desktop. */
 export function CreateSheet({
@@ -23,10 +30,28 @@ export function CreateSheet({
       icon: <UsersIcon aria-hidden="true" />,
     },
     {
+      href: `/c/${slug}/events/new`,
+      title: "Plan an event",
+      text: "A talk, a fest or a get-together",
+      icon: <CalendarDaysIcon aria-hidden="true" />,
+    },
+    {
       href: `/c/${slug}/ideas/new`,
       title: "Share an idea",
       text: "Say what you would build or change",
       icon: <LightbulbIcon aria-hidden="true" />,
+    },
+    {
+      href: `/c/${slug}/lost-found/new`,
+      title: "Lost or found something",
+      text: "Post it and people write to you",
+      icon: <PackageSearchIcon aria-hidden="true" />,
+    },
+    {
+      href: `/c/${slug}/market/new`,
+      title: "Sell or ask for something",
+      text: "Buy, sell, rent or give away",
+      icon: <StoreIcon aria-hidden="true" />,
     },
   ];
   return (

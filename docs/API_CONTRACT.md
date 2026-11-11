@@ -404,3 +404,22 @@ Ideas are short text posts inside one space (a college or Global). People vote a
 
 Team Finder (TMF-01, TMF-04) also accepts two new kinds, `sport` and `event`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
 
+## 16. Events and the board (R3-D12, decision D-33)
+
+Events have a start time, a place, an optional capacity and RSVPs. The board is two lists in one: Lost and found (kind `lost` or `found`) and the Marketplace (kind `sell`, `rent`, `free` or `wanted`, price in whole rupees). Contact is private and in the app: messages between the person who posted and each person who wrote to them. No phone number or email is shown on a post. Payments are not part of this.
+
+| ID | Request | Notes |
+|---|---|---|
+| EVT-01 | POST `/api/v1/c/{slug}/events` | IDEM. `title` 5 to 120, `description` up to 2000, `starts_at` in the future within a year, optional `place` (120) and `capacity` (1 to 5000). 201. The author goes by default. 429 at 10 upcoming events per person |
+| EVT-02 | GET `/api/v1/c/{slug}/events?when=upcoming|past&mine=true&limit=50` | Upcoming is soonest first and includes events that started less than 3 hours ago. One page, at most 100. Each event has `going_count`, `going` and `is_owner` |
+| EVT-03 | GET `/api/v1/c/{slug}/events/{id}` | 404 for another college or a hidden event |
+| EVT-04 | PUT `/api/v1/c/{slug}/events/{id}/rsvp` | `{ "going": true }` or false. Safe to repeat. 409 `SLOTS_FULL` when full, 409 `CONFLICT` for a cancelled or long over event |
+| EVT-05 | DELETE `/api/v1/c/{slug}/events/{id}` | Cancels it (it stays visible as cancelled). The author, or a moderator or admin (audit logged) |
+| BRD-01 | POST `/api/v1/c/{slug}/board` | IDEM. `board` lostfound or market, `kind` for that board, `title` 5 to 120, `description` up to 1500, optional `place`, `price_inr` only for sell, rent or wanted. 201. 429 at 15 a day |
+| BRD-02 | GET `/api/v1/c/{slug}/board?board=&kind=&status=open|resolved|all&mine=true&limit=&cursor=` | `board` is required. Newest first with a cursor |
+| BRD-03 | GET `/api/v1/c/{slug}/board/{id}` | 404 when removed, hidden or in another college |
+| BRD-04 | POST `/api/v1/c/{slug}/board/{id}/status` | `{ "status": "open" | "resolved" }`. Only the author (404 for anyone else) |
+| BRD-05 | DELETE `/api/v1/c/{slug}/board/{id}` | The author, or a moderator or admin (audit logged). `{ "deleted": true }` |
+| BRD-06 | GET `/api/v1/c/{slug}/board/{id}/messages` | Private. The author sees every thread (`with_user` says who), anyone else only their own |
+| BRD-07 | POST `/api/v1/c/{slug}/board/{id}/messages` | IDEM. `{ "body": "...", "to_user": "only for the author, a person who wrote before" }`. 409 `CONFLICT` when the post is resolved. 429 at 30 an hour |
+

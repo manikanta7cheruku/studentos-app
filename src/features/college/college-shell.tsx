@@ -8,6 +8,9 @@ import {
   BellIcon,
   BriefcaseIcon,
   Building2Icon,
+  CalendarDaysIcon,
+  PackageSearchIcon,
+  StoreIcon,
   ChevronDownIcon,
   ChevronsUpDownIcon,
   GlobeIcon,
@@ -47,6 +50,9 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
   const more: NavItem[] = [];
   if (college.modules.campus && slug !== GLOBAL_SLUG)
     more.push({ href: `${base}/campus`, label: "Campus", icon: <Building2Icon /> });
+  more.push({ href: `${base}/events`, label: "Events", icon: <CalendarDaysIcon /> });
+  more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
+  more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
   more.push({ href: `${base}/people`, label: "People", icon: <UsersRoundIcon /> });
   more.push({ href: `${base}/career`, label: "Careers", icon: <BriefcaseIcon /> });
   if (isModerator) more.push({ href: `${base}/admin`, label: "Admin", icon: <ShieldCheckIcon /> });

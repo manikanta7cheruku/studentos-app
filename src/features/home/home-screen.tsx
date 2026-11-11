@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LightbulbIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
 import { api, type Idea, type TeamPost } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
@@ -69,6 +70,8 @@ export function HomeScreen() {
             : `What is happening at ${college.short_name || college.name}.`}
         </p>
       </header>
+
+      <ExploreTiles slug={slug} />
 
       <div
         role="tablist"
