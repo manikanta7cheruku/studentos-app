@@ -461,7 +461,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-h-dvh min-w-0 flex-col">
+      <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
         {/* Phone: the space I am in and the bell */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 px-4 md:hidden">
           <div

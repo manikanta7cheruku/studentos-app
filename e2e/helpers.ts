@@ -190,7 +190,7 @@ export async function memberOfAlpha(
 export async function joinGlobalThroughUi(page: import("@playwright/test").Page): Promise<void> {
   await page.goto("/c/global/join");
   await page.getByRole("button", { name: /join global/i }).click();
-  await page.waitForURL(/\/c\/global\/collaborate$/);
+  await page.waitForURL(/\/c\/global\/home$/);
 }
 
 // Gives an existing Alpha member a different role (admin or moderator), as the owner would in the database.

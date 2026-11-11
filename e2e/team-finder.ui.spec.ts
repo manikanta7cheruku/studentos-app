@@ -77,11 +77,11 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await expect(page.getByText("Yours").first()).toBeVisible();
   await expectNoSidewaysScroll(page);
   await page.getByRole("button", { name: "Hackathon" }).click();
-  await expect(page.getByText(/no posts match these filters/i)).toBeVisible();
+  await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
   await page.getByRole("button", { name: "Project" }).click();
   await expect(row).toBeVisible();
   await page.getByLabel(/search posts/i).fill("zzzz-nothing");
-  await expect(page.getByText(/no posts match these filters/i)).toBeVisible();
+  await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
   await page.getByLabel(/search posts/i).fill("bus tracker");
   await expect(row).toBeVisible();
   await page.getByRole("button", { name: "Mine" }).click();
@@ -140,6 +140,6 @@ test("Your spaces in Settings lets a phone switch to Global", async ({ page }) =
   await page.goto("/c/alpha/me/settings");
   await expect(page.getByRole("heading", { name: /your spaces/i })).toBeVisible();
   await page.getByRole("link", { name: "Open" }).click();
-  await expect(page).toHaveURL(/\/c\/global\/collaborate$/);
+  await expect(page).toHaveURL(/\/c\/global\/home$/);
   await expectNoSidewaysScroll(page);
 });
