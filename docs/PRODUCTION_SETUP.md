@@ -85,6 +85,19 @@ The migrations are in `supabase/migrations` and are the only way the database ch
 3. In the Supabase dashboard open Storage and check that a bucket `avatars` exists (migration `20261110000000`).
 4. Deploy the Vercel project (Deployments, Redeploy). The server refuses to start if a setting is missing and the log names the setting.
 
+## 6b. The owner dashboard (YOU, once per project)
+
+The dashboard is at `/owner` on your site. It needs your account on the owner list and your PIN. Do this once for staging and once for production:
+
+1. Sign in once on the site with the Google account you will use (this creates the account).
+2. On your computer, in the project folder, run `pnpm owner:pin you@gmail.com`. It asks for a PIN twice (hidden, 12 or more characters, not only digits unless 16 or more). Use a long passphrase and keep it in a password manager.
+3. It prints one SQL statement. Paste it in the Supabase SQL editor of that project and run it. Only a hash of the PIN is in it.
+4. Open `https://<your site>/owner`, sign in with Google, enter the PIN.
+
+To change the PIN, run the same command again. To remove access, run `delete from public.platform_admins where user_id = (select id from auth.users where email = 'you@gmail.com');`.
+
+How it is protected: a stranger and a normal student both get a plain "not found" page. Five wrong PINs lock it for 15 minutes. After the PIN it stays open for 30 minutes. Every change asks for the PIN again. Every action is in the Audit page.
+
 ## 6a. Giving a college its setup code (the normal way)
 
 A college admin can create their own college with a one-time code (decision D-30). To make one:

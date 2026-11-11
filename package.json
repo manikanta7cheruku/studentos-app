@@ -21,7 +21,8 @@
     "env:local": "node scripts/write-local-env.mjs",
     "docs:openapi": "node scripts/update-openapi.mjs",
     "env:check": "node scripts/check-environment.mjs",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "owner:pin": "node scripts/owner-pin.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
