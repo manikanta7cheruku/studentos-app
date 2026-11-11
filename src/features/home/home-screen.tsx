@@ -7,7 +7,14 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
-import { api, type BoardItem, type EventItem, type Idea, type TeamPost } from "@/lib/api/endpoints";
+import {
+  api,
+  type BoardItem,
+  type EventItem,
+  type Idea,
+  type TeamPost,
+  type Venue,
+} from "@/lib/api/endpoints";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -17,12 +24,14 @@ import { IdeaCard } from "@/features/ideas/idea-card";
 import { IdeaListSkeleton } from "@/features/ideas/ideas-screen";
 import { EventCard } from "@/features/events/event-card";
 import { BoardCard } from "@/features/board/board-card";
+import { VenueCard } from "@/features/turf/venue-card";
 
 type Item =
   | { kind: "plan"; at: string; post: TeamPost; outside: boolean }
   | { kind: "idea"; at: string; idea: Idea; outside: boolean }
   | { kind: "event"; at: string; event: EventItem; outside: boolean }
-  | { kind: "board"; at: string; post: BoardItem };
+  | { kind: "board"; at: string; post: BoardItem }
+  | { kind: "venue"; at: string; venue: Venue; outside: boolean };
 type Tab = "all" | "plans" | "ideas";
 
 const TABS: { value: Tab; label: string }[] = [
@@ -103,6 +112,7 @@ export function HomeScreen() {
   const events = useLoad(() => api.events.list(slug, { when: "upcoming" }), [slug]);
   const market = useLoad(() => api.board.list(slug, { board: "market", limit: 8 }), [slug]);
   const lost = useLoad(() => api.board.list(slug, { board: "lostfound", limit: 6 }), [slug]);
+  const venues = useLoad(() => api.venues.list(slug), [slug]);
   // What was posted for everyone (the public space) is part of every college feed, with a Public tag.
   const publicPlans = usePublicLoad(
     () => api.teamPosts.list(GLOBAL_SLUG, { status: "open", limit: 8 }),
@@ -113,6 +123,7 @@ export function HomeScreen() {
     [],
   );
   const publicEvents = usePublicLoad(() => api.events.list(GLOBAL_SLUG, { when: "upcoming" }), []);
+  const publicVenues = usePublicLoad(() => api.venues.list(GLOBAL_SLUG), []);
 
   const first = profile?.display_name.split(/\s+/)[0] ?? "there";
   const today = new Date().toLocaleDateString(undefined, {
@@ -121,7 +132,7 @@ export function HomeScreen() {
     month: "long",
   });
 
-  const sources = [plans, ideas, events, market, lost];
+  const sources = [plans, ideas, events, market, lost, venues];
   const loading = sources.some((source) => source.status === "loading");
   const failed = sources.every((source) => source.status === "error");
 
@@ -137,6 +148,12 @@ export function HomeScreen() {
       items.push({ kind: "plan", at: post.created_at, post, outside: true });
     for (const event of (publicEvents ?? []).slice(0, 8))
       items.push({ kind: "event", at: event.created_at, event, outside: true });
+    // Turf and courts sit with the plans: a place to play, and a way to book it.
+    if (venues.status === "ready")
+      for (const venue of venues.data.slice(0, 6))
+        items.push({ kind: "venue", at: venue.created_at, venue, outside: false });
+    for (const venue of (publicVenues ?? []).slice(0, 4))
+      items.push({ kind: "venue", at: venue.created_at, venue, outside: true });
   }
   if (tab !== "plans" && ideas.status === "ready") {
     for (const idea of ideas.data.data)
@@ -157,7 +174,13 @@ export function HomeScreen() {
   const seen = new Set<string>();
   const unique = items.filter((item) => {
     const id =
-      item.kind === "idea" ? item.idea.id : item.kind === "event" ? item.event.id : item.post.id;
+      item.kind === "idea"
+        ? item.idea.id
+        : item.kind === "event"
+          ? item.event.id
+          : item.kind === "venue"
+            ? item.venue.id
+            : item.post.id;
     const key = `${item.kind}:${id}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -241,6 +264,15 @@ export function HomeScreen() {
                 );
               if (item.kind === "board")
                 return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
+              if (item.kind === "venue")
+                return (
+                  <VenueCard
+                    key={`v-${item.venue.id}`}
+                    venue={item.venue}
+                    slug={item.outside ? GLOBAL_SLUG : slug}
+                    outside={item.outside}
+                  />
+                );
               return (
                 <li key={`i-${item.idea.id}`}>
                   <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
@@ -256,6 +288,9 @@ export function HomeScreen() {
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link href={`/c/${slug}/events`}>All events</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/c/${slug}/turf`}>Turf and courts</Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link href={`/c/${slug}/ideas`}>All buzz</Link>

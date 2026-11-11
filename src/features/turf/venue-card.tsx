@@ -1,17 +1,28 @@
 import Link from "next/link";
 import { ClockIcon, MapPinIcon } from "lucide-react";
+import { OutsideBadge } from "@/components/app/outside-badge";
 import { Poster } from "@/components/app/poster";
 import type { Venue } from "@/lib/api/endpoints";
 import { hourLabel, priceLabel, titleCase } from "./format";
 
 /** One venue in a list: a gradient cover with its sports, the name as the link, and where, when and how much. */
-export function VenueCard({ venue, slug }: { venue: Venue; slug: string }) {
+export function VenueCard({
+  venue,
+  slug,
+  outside = false,
+}: {
+  venue: Venue;
+  slug: string;
+  /** It came from the public space while I am looking at my college. */
+  outside?: boolean;
+}) {
   return (
     <li className="group lift glass-card relative overflow-hidden rounded-[18px] focus-within:ring-2 focus-within:ring-ring">
       <article>
         <Poster seed={venue.id} big={titleCase(venue.sports[0] ?? "Play")} className="h-24 p-3">
           <div className="flex h-full flex-col justify-between">
             <div className="flex flex-wrap gap-1.5">
+              {outside ? <OutsideBadge className="h-7 px-3 text-[12px]" /> : null}
               {venue.sports.map((sport) => (
                 <span
                   key={sport}
