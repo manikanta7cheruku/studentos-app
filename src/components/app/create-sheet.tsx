@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   CalendarDaysIcon,
+  MapPinnedIcon,
   MessageCircleHeartIcon,
   PackageSearchIcon,
   StoreIcon,
@@ -40,23 +41,30 @@ export function CreateSheet({
     {
       href: `/c/${slug}/collaborate/new`,
       title: "Plan",
-      text: "A match, a hangout, a team",
+      text: "A match or a team",
       icon: <UsersIcon aria-hidden="true" />,
       tint: "from-[#5b54d6] to-[#8a5fd0]",
     },
     {
       href: `/c/${slug}/ideas/new`,
       title: "Buzz",
-      text: "Say anything, in seconds",
+      text: "Say it in seconds",
       icon: <MessageCircleHeartIcon aria-hidden="true" />,
       tint: "from-[#d6549a] to-[#e0866a]",
     },
     {
       href: `/c/${slug}/events/new`,
       title: "Event",
-      text: "A talk, a fest, a meetup",
+      text: "A talk or a fest",
       icon: <CalendarDaysIcon aria-hidden="true" />,
       tint: "from-[#2f9fd0] to-[#4f6fe0]",
+    },
+    {
+      href: `/c/${slug}/turf`,
+      title: "Book a turf",
+      text: "Pick a free hour",
+      icon: <MapPinnedIcon aria-hidden="true" />,
+      tint: "from-[#7a5fd6] to-[#4f6fe0]",
     },
     {
       href: `/c/${slug}/market/new`,
@@ -68,7 +76,7 @@ export function CreateSheet({
     {
       href: `/c/${slug}/lost-found/new`,
       title: "Lost & found",
-      text: "Post it, people write back",
+      text: "Post it, get a reply",
       icon: <PackageSearchIcon aria-hidden="true" />,
       tint: "from-[#d99a3a] to-[#d6665a]",
     },
@@ -159,36 +167,30 @@ export function CreateSheet({
               </DialogPrimitive.Close>
             </div>
           </div>
-          <ul className="grid grid-cols-2 gap-2.5">
+          <ul className="grid auto-rows-fr grid-cols-2 gap-2.5">
             {choices.map((item, index) => (
               <li
                 key={item.href}
-                className={cn("sheet-tile", index === 0 && "col-span-2")}
+                className="sheet-tile"
                 style={{ "--i": index } as React.CSSProperties}
               >
                 <Link
                   href={item.href}
                   prefetch={false}
                   onClick={() => onOpenChange(false)}
-                  className={cn(
-                    "group flex rounded-[20px] border border-white/[0.12] bg-white/[0.07] p-3.5 outline-none transition-[background-color,border-color,transform] duration-200 hover:border-white/25 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
-                    index === 0 ? "items-center gap-3.5" : "flex-col gap-3",
-                  )}
+                  className="group flex h-full min-h-[5.75rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-3 outline-none transition-[background-color,border-color,transform] duration-200 hover:border-white/25 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
                 >
                   <span
                     className={cn(
-                      "inline-flex shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_18px_-8px_rgba(0,0,0,0.6)] [&_svg]:size-[22px]",
+                      "inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_14px_-8px_rgba(0,0,0,0.6)] [&_svg]:size-[18px]",
                       item.tint,
-                      index === 0 ? "size-12" : "size-11",
                     )}
                   >
                     {item.icon}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[15.5px] font-bold leading-tight">
-                      {item.title}
-                    </span>
-                    <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-muted">
+                    <span className="block text-[14px] font-bold leading-tight">{item.title}</span>
+                    <span className="mt-0.5 block truncate text-[12px] leading-snug text-ink-muted">
                       {item.text}
                     </span>
                   </span>

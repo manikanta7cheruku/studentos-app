@@ -94,7 +94,7 @@ export function VenueNewScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-2 md:px-8 md:py-8">
       <PageHeader
         title="Add a venue"
         back={{ href: `/c/${slug}/turf`, label: "Turf and courts" }}

@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
+import { StickyBar } from "@/components/app/sticky-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { api, type TeamPost, type TeamPostKind } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
 import { useLoad } from "@/lib/use-load";
-import { useCollege } from "@/features/college";
+import { useCollege, usePublicLoad } from "@/features/college";
+import { GLOBAL_SLUG } from "@/lib/home-path";
 import { KIND_LABEL, PLAN_KINDS } from "./labels";
 import { PostRow } from "./post-row";
 
@@ -41,7 +43,7 @@ function Chip({
       aria-pressed={pressed}
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 items-center rounded-full border px-4 text-[13px] font-semibold transition-[background-color,border-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
+        "inline-flex h-8 shrink-0 items-center rounded-full border px-3.5 text-[12.5px] font-semibold transition-[background-color,border-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
         pressed
           ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(8,6,30,0.55)]"
           : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
@@ -65,6 +67,19 @@ function Results({ filters }: { filters: Filters }) {
       }),
     [slug],
   );
+  // Plans posted for everyone are part of the list too (not in "Mine"), with a Public tag.
+  const publicPlans = usePublicLoad(
+    () =>
+      filters.scope === "mine"
+        ? Promise.resolve(null)
+        : api.teamPosts.list(GLOBAL_SLUG, {
+            kind: filters.kind === "all" ? undefined : filters.kind,
+            q: filters.q || undefined,
+            status: "open",
+            limit: 10,
+          }),
+    [filters.kind, filters.q, filters.scope],
+  );
   const [more, setMore] = React.useState<{ items: TeamPost[]; cursor: string | null } | null>(null);
   const [loadingMore, setLoadingMore] = React.useState(false);
   const [moreError, setMoreError] = React.useState<string | null>(null);
@@ -87,7 +102,12 @@ function Results({ filters }: { filters: Filters }) {
     return <LoadError error={first.error} onRetry={first.reload} what="the team posts" />;
   }
 
-  const items = [...first.data.data, ...(more?.items ?? [])];
+  const own = [...first.data.data, ...(more?.items ?? [])];
+  const items = [
+    ...own,
+    ...(publicPlans?.data ?? []).filter((post) => !own.some((item) => item.id === post.id)),
+  ].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const publicIds = new Set((publicPlans?.data ?? []).map((post) => post.id));
   const cursor = more ? more.cursor : (first.data.meta.next_cursor ?? null);
 
   async function loadMore() {
@@ -143,9 +163,14 @@ function Results({ filters }: { filters: Filters }) {
 
   return (
     <div>
-      <ul className="stagger flex flex-col gap-4">
+      <ul className="stagger flex flex-col gap-3">
         {items.map((post) => (
-          <PostRow key={post.id} post={post} slug={slug} />
+          <PostRow
+            key={post.id}
+            post={post}
+            slug={publicIds.has(post.id) ? GLOBAL_SLUG : slug}
+            outside={publicIds.has(post.id)}
+          />
         ))}
       </ul>
       {cursor ? (
@@ -181,7 +206,7 @@ export function TeamFinderScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-2 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-0.5 md:px-8 md:py-8">
       <PageHeader
         app
         eyebrow={college.name}
@@ -201,11 +226,27 @@ export function TeamFinderScreen() {
         }
       />
 
-      <div className="glass-bar sticky top-14 z-20 -mx-5 flex flex-col gap-2.5 px-5 py-2.5 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-4">
+      <div className="relative">
+        <SearchIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted"
+        />
+        <Input
+          type="search"
+          aria-label="Search plans"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="Search plans"
+          className="h-10 rounded-2xl border-white/10 bg-white/[0.06] pl-10"
+          autoComplete="off"
+        />
+      </div>
+
+      <StickyBar>
         <div
           role="group"
           aria-label="Filter plans"
-          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+          className="flex snap-x gap-1.5 overflow-x-auto [scrollbar-width:none] md:flex-wrap"
         >
           <Chip
             pressed={filters.scope === "all" && filters.kind === "all"}
@@ -229,22 +270,7 @@ export function TeamFinderScreen() {
             Mine
           </Chip>
         </div>
-        <div className="relative">
-          <SearchIcon
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted"
-          />
-          <Input
-            type="search"
-            aria-label="Search plans"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="Search plans"
-            className="h-11 rounded-2xl border-white/10 bg-white/[0.06] pl-10"
-            autoComplete="off"
-          />
-        </div>
-      </div>
+      </StickyBar>
 
       <div aria-live="polite">
         <Results

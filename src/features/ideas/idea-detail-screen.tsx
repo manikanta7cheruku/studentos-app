@@ -18,7 +18,7 @@ import { timeAgo } from "@/lib/time-ago";
 import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { IdeaCard } from "./idea-card";
+import { IdeaCard, VotePill } from "./idea-card";
 
 /** A delete that asks once more, in place, so nothing is removed by a stray tap. */
 function ConfirmDelete({ label, onConfirm }: { label: string; onConfirm: () => Promise<void> }) {
@@ -81,7 +81,7 @@ function CommentRow({
   return (
     <li
       className={cn(
-        "flex gap-3 py-4",
+        "flex gap-2.5 py-3",
         nested ? "ml-5 border-l-2 border-white/[0.08] pl-4" : "border-t border-white/[0.07]",
       )}
     >
@@ -95,11 +95,17 @@ function CommentRow({
           {comment.body}
         </p>
         <div className="mt-1.5 flex items-center gap-1 text-ink-muted">
+          <VotePill
+            score={comment.score}
+            mine={comment.my_vote}
+            label="Vote on this comment"
+            send={(value) => api.ideas.voteComment(slug, ideaId, comment.id, value)}
+          />
           {onReply ? (
             <button
               type="button"
               onClick={() => onReply(comment)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] font-semibold outline-none transition-colors duration-200 hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold outline-none transition-colors duration-200 hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
             >
               <CornerDownRightIcon aria-hidden="true" className="size-3.5" /> Reply
             </button>
@@ -297,7 +303,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const [removing, setRemoving] = React.useState(false);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-2 md:px-8 md:py-8">
       <PageHeader title="Buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">

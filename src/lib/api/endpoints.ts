@@ -370,6 +370,12 @@ export const api = {
         idempotent: key ?? true,
         schema: c.ideaResponse.shape.data,
       }),
+    voteComment: (slug: string, id: string, commentId: string, value: -1 | 0 | 1) =>
+      apiClient(j(`/c/${slug}/ideas/${id}/comments/${commentId}/vote`), {
+        method: "PUT",
+        body: { value },
+        schema: c.ideaCommentResponse.shape.data,
+      }),
     vote: (slug: string, id: string, value: -1 | 0 | 1) =>
       apiClient(j(`/c/${slug}/ideas/${id}/vote`), {
         method: "PUT",

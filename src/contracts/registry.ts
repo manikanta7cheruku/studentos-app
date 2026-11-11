@@ -449,6 +449,14 @@ export const endpoints: Endpoint[] = [
     "Remove a comment (author or moderator)",
     { response: ideas.ideaDeleteResponse },
   ),
+  e(
+    "IDE-09",
+    "PUT",
+    "/c/{slug}/ideas/{id}/comments/{commentId}/vote",
+    "mem",
+    "Like or dislike a comment (1, -1 or 0)",
+    { body: ideas.ideaVoteBody, response: ideas.ideaCommentResponse },
+  ),
   e("COL-01", "POST", "/colleges/setup", "ses", "Create my college with a setup code", {
     body: setup.collegeSetupBody,
     response: setup.collegeSetupResponse,

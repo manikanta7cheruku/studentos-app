@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { BadgeCheckIcon, CheckIcon, LockIcon, MapPinIcon, UserIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
+import { OutsideBadge } from "@/components/app/outside-badge";
 import { Poster } from "@/components/app/poster";
 import { api, type EventItem } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
@@ -39,7 +40,7 @@ export function EventBadges({ event }: { event: EventItem }) {
     <span className="flex flex-wrap items-center gap-1.5">
       <span
         className={cn(
-          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold",
+          "inline-flex h-5 items-center gap-1 rounded-full px-2 text-[11px] font-semibold",
           official
             ? "bg-[#7d74e0]/20 text-[#cfcbf5]"
             : "border border-white/10 bg-white/[0.05] text-ink-muted",
@@ -53,7 +54,7 @@ export function EventBadges({ event }: { event: EventItem }) {
         {official ? "Official" : "Personal event"}
       </span>
       {event.invite_only ? (
-        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 text-[11.5px] font-semibold text-ink-muted">
+        <span className="inline-flex h-5 items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 text-[11px] font-semibold text-ink-muted">
           <LockIcon aria-hidden="true" className="size-3" /> Invite only
         </span>
       ) : null}
@@ -65,13 +66,16 @@ export function EventBadges({ event }: { event: EventItem }) {
 export function RsvpButton({
   event,
   size = "sm",
+  space,
   onChange,
 }: {
   event: EventItem;
   size?: "sm" | "lg";
+  space?: string;
   onChange?: (next: EventItem) => void;
 }) {
-  const { slug } = useCollege();
+  const { slug: here } = useCollege();
+  const slug = space ?? here;
   const [override, setOverride] = React.useState<{ going: boolean; from: string } | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -107,7 +111,7 @@ export function RsvpButton({
         aria-pressed={going}
         className={cn(
           "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold outline-none transition-[transform,background-color,color,border-color,filter] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-50",
-          size === "lg" ? "h-12 w-full text-[15px]" : "h-9 px-4 text-[13px]",
+          size === "lg" ? "h-11 w-full text-[14.5px]" : "h-8 px-3.5 text-[12.5px]",
           going
             ? "border border-[#7d74e0]/50 bg-[#7d74e0]/15 text-[#cfcbf5] hover:bg-[#7d74e0]/25"
             : "bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] hover:brightness-110",
@@ -121,29 +125,40 @@ export function RsvpButton({
   );
 }
 
-/** One event in a list. The title is the link, stretched over the card. */
+/**
+ * One event in a list: the day on the left, then the badges (and when, on the right), the title (the link), the place, and at
+ * the bottom how many go and the one button. `space` is set when it came from the public space.
+ */
 export function EventCard({
   event,
+  space,
   onChange,
 }: {
   event: EventItem;
+  space?: string;
   onChange?: (next: EventItem) => void;
 }) {
-  const { slug } = useCollege();
+  const { slug: here } = useCollege();
+  const slug = space ?? here;
+  const outside = slug !== here;
   return (
     <li
       onClickCapture={() => primeLoad(`event:${slug}:${event.id}`, event)}
       className={cn(
-        "lift glass-card relative flex items-start gap-3.5 rounded-[24px] p-4 focus-within:ring-2 focus-within:ring-ring",
+        "lift glass-card relative flex items-start gap-3 rounded-[18px] px-3.5 py-3 focus-within:ring-2 focus-within:ring-ring",
         (event.status === "cancelled" || event.status === "removed") && "opacity-60",
       )}
     >
-      <DateTile iso={event.starts_at} />
+      <DateTile iso={event.starts_at} className="size-12" />
       <div className="min-w-0 flex-1">
-        <div className="mb-1.5">
+        <div className="flex items-center gap-2">
           <EventBadges event={event} />
+          {outside ? <OutsideBadge /> : null}
+          <span className="ml-auto shrink-0 text-[12px] text-ink-muted">
+            {formatWhen(event.starts_at)}
+          </span>
         </div>
-        <h2 className="text-balance text-[1.05rem] font-bold leading-snug">
+        <h2 className="mt-1 text-balance text-[15px] font-bold leading-snug">
           <Link
             href={`/c/${slug}/events/${event.id}`}
             className="outline-none after:absolute after:inset-0"
@@ -151,20 +166,19 @@ export function EventCard({
             {event.title}
           </Link>
         </h2>
-        <p className="mt-1 text-[13px] text-ink-muted">{formatWhen(event.starts_at)}</p>
         {event.place ? (
-          <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-ink-muted">
+          <p className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-ink-muted">
             <MapPinIcon aria-hidden="true" className="size-3.5 shrink-0" />
             <span className="truncate">{event.place}</span>
           </p>
         ) : null}
-        <div className="relative z-10 mt-3 flex items-center justify-between gap-3">
+        <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
           <span className="tabular flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-muted">
-            <UsersIcon aria-hidden="true" className="size-4" />
+            <UsersIcon aria-hidden="true" className="size-3.5" />
             {event.going_count} going
             {event.capacity ? ` of ${event.capacity}` : ""}
           </span>
-          <RsvpButton event={event} onChange={onChange} />
+          <RsvpButton event={event} space={slug} onChange={onChange} />
         </div>
       </div>
     </li>

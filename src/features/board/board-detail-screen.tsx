@@ -307,7 +307,7 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
   const state = useLoad(() => api.board.one(slug, postId), [slug, postId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-2 md:px-8 md:py-8">
       <PageHeader
         title={config.title}
         back={{ href: boardPath(slug, board), label: config.title }}

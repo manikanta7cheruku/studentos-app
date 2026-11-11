@@ -149,7 +149,7 @@ export function MeScreen() {
   }, [slug]);
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-5 py-4 md:px-8 md:py-10">
+    <div className="mx-auto w-full max-w-2xl px-5 pt-1 md:px-8 md:py-8">
       {state.status === "loading" ? (
         <ProfileSkeleton />
       ) : state.status === "error" ? (

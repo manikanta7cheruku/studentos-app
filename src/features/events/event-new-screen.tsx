@@ -88,7 +88,7 @@ export function EventNewScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-2 md:px-8 md:py-8">
       <PageHeader title="New event" back={{ href: `/c/${slug}/events`, label: "Events" }} />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <SpacePicker value={space} onChange={setSpace} label="Where should it appear" />

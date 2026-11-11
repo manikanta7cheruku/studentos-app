@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ClockIcon, MapPinIcon } from "lucide-react";
 import { cn } from "cn";
+import { OutsideBadge } from "@/components/app/outside-badge";
 import { Poster } from "@/components/app/poster";
 import { Avatar } from "@/components/app/avatar";
 import type { TeamPost } from "@/lib/api/endpoints";
@@ -71,19 +72,29 @@ function whenLabel(deadline: string | null): string | null {
  * One plan as a card with a gradient cover. The whole card is the link (the title is the link text, stretched over the
  * card), so a screen reader hears just the title and a finger or mouse can use the whole card.
  */
-export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
+export function PostRow({
+  post,
+  slug,
+  outside = false,
+}: {
+  post: TeamPost;
+  slug: string;
+  /** It came from the public space while I am looking at my college. */
+  outside?: boolean;
+}) {
   const free = openSlots(post);
   const joinedCount = post.roles.reduce((sum, role) => sum + role.filled, 0);
   const when = isTimedKind(post.kind) ? whenLabel(post.deadline) : null;
   return (
-    <li className="group lift glass-card relative overflow-hidden rounded-[24px] focus-within:ring-2 focus-within:ring-ring">
+    <li className="group lift glass-card relative overflow-hidden rounded-[18px] focus-within:ring-2 focus-within:ring-ring">
       <article>
-        <Poster seed={post.id} big={coverWord(post)} className="h-36 p-3.5">
+        <Poster seed={post.id} big={coverWord(post)} className="h-28 p-3">
           <div className="flex h-full flex-col justify-between">
             <div className="flex items-center gap-2">
               <span className="glass inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold">
                 {KIND_LABEL[post.kind]}
               </span>
+              {outside ? <OutsideBadge className="h-7 px-3 text-[12px]" /> : null}
               {post.status !== "open" ? <StatusPill status={post.status} /> : null}
               {post.is_owner ? (
                 <span className="glass inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold">
@@ -107,8 +118,8 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
             </div>
           </div>
         </Poster>
-        <div className="flex flex-col gap-3 p-4">
-          <h2 className="text-balance text-[1.15rem] font-bold leading-snug">
+        <div className="flex flex-col gap-2 px-3.5 py-3">
+          <h2 className="text-balance text-[15.5px] font-bold leading-snug">
             <Link
               href={`/c/${slug}/collaborate/${post.id}`}
               className="outline-none after:absolute after:inset-0"
@@ -117,7 +128,7 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
             </Link>
           </h2>
           {post.description ? (
-            <p className="line-clamp-2 text-[14px] leading-relaxed text-ink-muted">
+            <p className="line-clamp-2 text-[13.5px] leading-relaxed text-ink-muted">
               {post.description}
             </p>
           ) : null}

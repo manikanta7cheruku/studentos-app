@@ -44,7 +44,7 @@ export function SpacePicker({
               )}
             >
               <Icon aria-hidden="true" className="size-4" />
-              {global ? "Global" : `${item.college.name} only`}
+              {global ? "Public, everyone" : `${item.college.short_name || item.college.name} only`}
             </button>
           );
         })}

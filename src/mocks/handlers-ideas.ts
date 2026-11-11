@@ -61,13 +61,26 @@ const ideas: MockIdea[] = [
   },
 ];
 
-const comments = [
+type MockComment = {
+  id: string;
+  parent_id: string | null;
+  body: string;
+  created_at: string;
+  is_owner: boolean;
+  score?: number;
+  my_vote?: number;
+  author: { user_id: string; display_name: string };
+};
+
+const comments: MockComment[] = [
   {
     id: id(201),
     parent_id: null,
     body: "Our warden already has an empty cupboard. I can take the first shelf.",
     created_at: ago(8),
     is_owner: false,
+    score: 4,
+    my_vote: 0,
     author: { user_id: id(14), display_name: "Meera Kumar" },
   },
   {
@@ -133,6 +146,14 @@ export const ideaHandlers = [
     };
     comments.push(made);
     return HttpResponse.json({ data: made, meta: META }, { status: 201 });
+  }),
+  http.put("*/api/v1/c/:slug/ideas/:id/comments/:commentId/vote", async ({ params, request }) => {
+    const { value } = (await request.json()) as { value: -1 | 0 | 1 };
+    const found = comments.find((item) => item.id === params.commentId) ?? comments[0]!;
+    const mine = (found as { my_vote?: number }).my_vote ?? 0;
+    const score = (found as { score?: number }).score ?? 0;
+    Object.assign(found, { my_vote: value, score: score - mine + value });
+    return HttpResponse.json({ data: found, meta: META });
   }),
   http.post("*/api/v1/colleges/setup", async ({ request }) => {
     const body = (await request.json()) as { code: string; slug: string };

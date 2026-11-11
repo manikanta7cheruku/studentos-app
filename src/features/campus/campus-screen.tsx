@@ -68,7 +68,7 @@ export function CampusScreen() {
   if (off || (state.status === "ready" && state.data === null)) return null;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 pt-3 md:px-8 md:py-8">
       <PageHeader
         eyebrow={college.name}
         title="Campus"

@@ -7,9 +7,9 @@ import { hourLabel, priceLabel, titleCase } from "./format";
 /** One venue in a list: a gradient cover with its sports, the name as the link, and where, when and how much. */
 export function VenueCard({ venue, slug }: { venue: Venue; slug: string }) {
   return (
-    <li className="group lift glass-card relative overflow-hidden rounded-[24px] focus-within:ring-2 focus-within:ring-ring">
+    <li className="group lift glass-card relative overflow-hidden rounded-[18px] focus-within:ring-2 focus-within:ring-ring">
       <article>
-        <Poster seed={venue.id} big={titleCase(venue.sports[0] ?? "Play")} className="h-28 p-3.5">
+        <Poster seed={venue.id} big={titleCase(venue.sports[0] ?? "Play")} className="h-24 p-3">
           <div className="flex h-full flex-col justify-between">
             <div className="flex flex-wrap gap-1.5">
               {venue.sports.map((sport) => (
@@ -28,8 +28,8 @@ export function VenueCard({ venue, slug }: { venue: Venue; slug: string }) {
             ) : null}
           </div>
         </Poster>
-        <div className="flex flex-col gap-2 p-4">
-          <h2 className="text-balance text-[1.15rem] font-bold leading-snug">
+        <div className="flex flex-col gap-1.5 px-3.5 py-3">
+          <h2 className="text-balance text-[15.5px] font-bold leading-snug">
             <Link
               href={`/c/${slug}/turf/${venue.id}`}
               className="outline-none after:absolute after:inset-0"

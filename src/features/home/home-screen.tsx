@@ -5,12 +5,14 @@ import Link from "next/link";
 import { MessageCircleHeartIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { StickyBar } from "@/components/app/sticky-bar";
 import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
 import { api, type BoardItem, type EventItem, type Idea, type TeamPost } from "@/lib/api/endpoints";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
-import { useCollege } from "@/features/college";
+import { useCollege, usePublicLoad } from "@/features/college";
+import { GLOBAL_SLUG } from "@/lib/home-path";
 import { PostRow } from "@/features/collaborate/post-row";
 import { IdeaCard } from "@/features/ideas/idea-card";
 import { IdeaListSkeleton } from "@/features/ideas/ideas-screen";
@@ -18,9 +20,9 @@ import { EventCard } from "@/features/events/event-card";
 import { BoardCard } from "@/features/board/board-card";
 
 type Item =
-  | { kind: "plan"; at: string; post: TeamPost }
-  | { kind: "idea"; at: string; idea: Idea }
-  | { kind: "event"; at: string; event: EventItem }
+  | { kind: "plan"; at: string; post: TeamPost; outside: boolean }
+  | { kind: "idea"; at: string; idea: Idea; outside: boolean }
+  | { kind: "event"; at: string; event: EventItem; outside: boolean }
   | { kind: "board"; at: string; post: BoardItem };
 type Tab = "all" | "plans" | "ideas";
 
@@ -39,24 +41,11 @@ function greeting(now = new Date()): string {
 }
 
 /**
- * The three sections of the feed as one glass control with a thumb that slides to the open one. It stays under the top
- * bar while the feed scrolls, and gets a stronger edge and shadow once it is stuck, so it reads as a real app bar.
+ * The three sections of the feed as one small floating glass pill with a thumb that slides to the open one. It stays
+ * under the top bar while the feed scrolls, with no full-width strip behind it.
  */
 function FeedTabs({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
-  const sentinel = React.useRef<HTMLDivElement>(null);
-  const [stuck, setStuck] = React.useState(false);
   const index = TABS.findIndex((item) => item.value === tab);
-
-  // An invisible line just above the bar. When it scrolls out of view (under the top bar), the bar is stuck.
-  React.useEffect(() => {
-    const node = sentinel.current;
-    if (!node || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(([entry]) => setStuck(!entry!.isIntersecting), {
-      rootMargin: "-57px 0px 0px 0px",
-    });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
 
   function onKeyDown(event: React.KeyboardEvent) {
     const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
@@ -70,46 +59,38 @@ function FeedTabs({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void })
   }
 
   return (
-    <>
-      <div ref={sentinel} aria-hidden="true" className="-mb-5 h-px" />
+    <StickyBar>
       <div
-        className={cn(
-          "glass-bar sticky top-14 z-20 -mx-5 px-5 py-2.5 transition-[box-shadow,border-color] duration-300 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-3",
-          stuck && "border-white/[0.14] shadow-[0_14px_30px_-18px_rgba(0,0,0,0.9)]",
-        )}
+        role="tablist"
+        aria-label="What to show"
+        onKeyDown={onKeyDown}
+        className="relative grid grid-cols-3"
       >
-        <div
-          role="tablist"
-          aria-label="What to show"
-          onKeyDown={onKeyDown}
-          className="relative grid grid-cols-3 rounded-[18px] border border-white/[0.1] bg-white/[0.05] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-        >
-          {/* One highlight that glides to the open section. */}
-          <span
-            aria-hidden="true"
-            className="bg-brand absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-[14px] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_16px_-8px_rgba(8,6,30,0.7)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
-            style={{ transform: `translateX(${index * 100}%)` }}
-          />
-          {TABS.map((item) => (
-            <button
-              key={item.value}
-              role="tab"
-              type="button"
-              data-tab={item.value}
-              tabIndex={tab === item.value ? 0 : -1}
-              aria-selected={tab === item.value}
-              onClick={() => onChange(item.value)}
-              className={cn(
-                "relative z-10 h-9 rounded-[14px] text-[13.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
-                tab === item.value ? "text-white" : "text-ink-muted hover:text-ink",
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {/* One highlight that glides to the open section. */}
+        <span
+          aria-hidden="true"
+          className="bg-brand absolute inset-y-0 left-0 w-1/3 rounded-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_16px_-8px_rgba(8,6,30,0.7)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
+          style={{ transform: `translateX(${index * 100}%)` }}
+        />
+        {TABS.map((item) => (
+          <button
+            key={item.value}
+            role="tab"
+            type="button"
+            data-tab={item.value}
+            tabIndex={tab === item.value ? 0 : -1}
+            aria-selected={tab === item.value}
+            onClick={() => onChange(item.value)}
+            className={cn(
+              "relative z-10 h-8 rounded-[15px] text-[13px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+              tab === item.value ? "text-white" : "text-ink-muted hover:text-ink",
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
-    </>
+    </StickyBar>
   );
 }
 
@@ -125,6 +106,16 @@ export function HomeScreen() {
   const events = useLoad(() => api.events.list(slug, { when: "upcoming" }), [slug]);
   const market = useLoad(() => api.board.list(slug, { board: "market", limit: 8 }), [slug]);
   const lost = useLoad(() => api.board.list(slug, { board: "lostfound", limit: 6 }), [slug]);
+  // What was posted for everyone (the public space) is part of every college feed, with a Public tag.
+  const publicPlans = usePublicLoad(
+    () => api.teamPosts.list(GLOBAL_SLUG, { status: "open", limit: 8 }),
+    [],
+  );
+  const publicIdeas = usePublicLoad(
+    () => api.ideas.list(GLOBAL_SLUG, { sort: "new", limit: 8 }),
+    [],
+  );
+  const publicEvents = usePublicLoad(() => api.events.list(GLOBAL_SLUG, { when: "upcoming" }), []);
 
   const first = profile?.display_name.split(/\s+/)[0] ?? "there";
   const today = new Date().toLocaleDateString(undefined, {
@@ -140,13 +131,23 @@ export function HomeScreen() {
   const items: Item[] = [];
   if (tab !== "ideas") {
     if (plans.status === "ready")
-      for (const post of plans.data.data) items.push({ kind: "plan", at: post.created_at, post });
+      for (const post of plans.data.data)
+        items.push({ kind: "plan", at: post.created_at, post, outside: false });
     if (events.status === "ready")
       for (const event of events.data.slice(0, 10))
-        items.push({ kind: "event", at: event.created_at, event });
+        items.push({ kind: "event", at: event.created_at, event, outside: false });
+    for (const post of publicPlans?.data ?? [])
+      items.push({ kind: "plan", at: post.created_at, post, outside: true });
+    for (const event of (publicEvents ?? []).slice(0, 8))
+      items.push({ kind: "event", at: event.created_at, event, outside: true });
   }
   if (tab !== "plans" && ideas.status === "ready") {
-    for (const idea of ideas.data.data) items.push({ kind: "idea", at: idea.created_at, idea });
+    for (const idea of ideas.data.data)
+      items.push({ kind: "idea", at: idea.created_at, idea, outside: false });
+  }
+  if (tab !== "plans") {
+    for (const idea of publicIdeas?.data ?? [])
+      items.push({ kind: "idea", at: idea.created_at, idea, outside: true });
   }
   if (tab === "all") {
     for (const source of [market, lost]) {
@@ -155,6 +156,18 @@ export function HomeScreen() {
           items.push({ kind: "board", at: post.created_at, post });
     }
   }
+  // The same post is never shown twice (once as mine and once as public).
+  const seen = new Set<string>();
+  const unique = items.filter((item) => {
+    const id =
+      item.kind === "idea" ? item.idea.id : item.kind === "event" ? item.event.id : item.post.id;
+    const key = `${item.kind}:${id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  items.length = 0;
+  items.push(...unique);
   items.sort((a, b) => b.at.localeCompare(a.at));
 
   function reloadAll() {
@@ -162,13 +175,13 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-4 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3.5 px-5 pt-1 md:px-8 md:py-8">
       <header>
-        <p className="text-[13px] text-ink-muted">{today}</p>
-        <h1 className="mt-0.5 font-heading text-[1.7rem] font-extrabold leading-tight tracking-tight">
+        <p className="hidden text-[12.5px] text-ink-muted sm:block">{today}</p>
+        <h1 className="font-heading text-[1.4rem] font-extrabold leading-tight tracking-tight">
           {greeting()}, <span className="text-brand">{first}</span>
         </h1>
-        <p className="mt-1 text-[14px] text-ink-muted">
+        <p className="mt-0.5 text-[13px] text-ink-muted">
           {slug === "global"
             ? "Everyone on Global."
             : `What is happening at ${college.short_name || college.name}.`}
@@ -210,17 +223,30 @@ export function HomeScreen() {
             </div>
           </div>
         ) : (
-          <ul key={tab} className="stagger flex flex-col gap-4">
+          <ul key={tab} className="stagger flex flex-col gap-3">
             {items.map((item) => {
               if (item.kind === "plan")
-                return <PostRow key={`p-${item.post.id}`} post={item.post} slug={slug} />;
+                return (
+                  <PostRow
+                    key={`p-${item.post.id}`}
+                    post={item.post}
+                    slug={item.outside ? GLOBAL_SLUG : slug}
+                    outside={item.outside}
+                  />
+                );
               if (item.kind === "event")
-                return <EventCard key={`e-${item.event.id}`} event={item.event} />;
+                return (
+                  <EventCard
+                    key={`e-${item.event.id}`}
+                    event={item.event}
+                    space={item.outside ? GLOBAL_SLUG : undefined}
+                  />
+                );
               if (item.kind === "board")
                 return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
               return (
                 <li key={`i-${item.idea.id}`}>
-                  <IdeaCard idea={item.idea} />
+                  <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
                 </li>
               );
             })}

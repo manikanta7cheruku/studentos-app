@@ -57,7 +57,7 @@ export function IdeaNewScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-2 md:px-8 md:py-8">
       <PageHeader title="New buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
         <div className="flex flex-col gap-2">

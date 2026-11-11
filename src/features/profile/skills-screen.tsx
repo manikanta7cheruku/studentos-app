@@ -329,7 +329,7 @@ export function SkillsScreen() {
   const { slug } = useCollege();
   const state = useLoad(() => api.profile.skills(), [slug]);
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-3 md:px-8 md:py-8">
       <PageHeader
         title="Your skills"
         description="Classmates looking for a teammate can find you by these."

@@ -64,6 +64,7 @@ import {
   POST as ideaCommentsCreate,
 } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/route";
 import { DELETE as ideaCommentsRemove } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/[commentId]/route";
+import { PUT as ideaCommentVote } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/[commentId]/vote/route";
 import { GET as eventsList, POST as eventsCreate } from "@/app/api/v1/c/[slug]/events/route";
 import { DELETE as eventsCancel, GET as eventsGet } from "@/app/api/v1/c/[slug]/events/[id]/route";
 import { PUT as eventsRsvp } from "@/app/api/v1/c/[slug]/events/[id]/rsvp/route";
@@ -902,6 +903,21 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       return call(ideaCommentsRemove, {
         method: "DELETE",
         path: `/api/v1/c/alpha/ideas/${id}/comments/${commentId}`,
+        params: { slug: "alpha", id, commentId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "IDE-09 PUT /c/alpha/ideas/{id}/comments/{commentId}/vote (unknown comment -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const commentId = randomUUID();
+      return call(ideaCommentVote, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/ideas/${id}/comments/${commentId}/vote`,
+        json: { value: 1 },
         params: { slug: "alpha", id, commentId },
         cookie,
       }).then((r) => r.status);

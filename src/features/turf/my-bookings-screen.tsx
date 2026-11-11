@@ -89,7 +89,7 @@ export function MyBookingsScreen() {
     state.status === "ready" ? state.data.filter((item) => item.play_date < today) : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-4 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-1 md:px-8 md:py-8">
       <PageHeader
         title="My bookings"
         description="The hours you asked for. The venue answers, and you are told."

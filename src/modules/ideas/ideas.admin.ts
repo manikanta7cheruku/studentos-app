@@ -113,6 +113,22 @@ export async function listIdeaComments(actor: string, college: string, idea: str
   return (rows ?? []).map(out);
 }
 
+export async function voteIdeaComment(
+  actor: string,
+  college: string,
+  comment: string,
+  value: -1 | 0 | 1,
+) {
+  return out(
+    await rpc<Dated>("idea_comment_vote", {
+      p_actor: actor,
+      p_college: college,
+      p_comment: comment,
+      p_value: value,
+    }),
+  );
+}
+
 export async function removeIdeaComment(actor: string, college: string, comment: string) {
   await rpc("idea_comment_remove", { p_actor: actor, p_college: college, p_comment: comment });
   return { deleted: true as const };

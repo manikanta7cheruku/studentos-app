@@ -30,19 +30,21 @@ export function ExploreTiles({ slug }: { slug: string }) {
     },
   ];
   return (
-    <ul className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <ul className="stagger grid grid-cols-2 gap-2 sm:grid-cols-4">
       {tiles.map((tile) => (
         <li key={tile.href}>
           <Link
             href={tile.href}
-            className="lift glass-card group flex h-full flex-col items-start gap-3 rounded-[22px] p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="lift glass-card group flex h-full items-center gap-2.5 rounded-[16px] px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="bg-brand inline-flex size-10 items-center justify-center rounded-xl text-white [&_svg]:size-5">
+            <span className="bg-brand inline-flex size-8 shrink-0 items-center justify-center rounded-[10px] text-white [&_svg]:size-4">
               {tile.icon}
             </span>
             <span>
-              <span className="block text-[15px] font-bold">{tile.title}</span>
-              <span className="block text-[12.5px] text-ink-muted">{tile.text}</span>
+              <span className="block text-[13px] font-bold leading-tight">{tile.title}</span>
+              <span className="hidden text-[11.5px] leading-tight text-ink-muted sm:block">
+                {tile.text}
+              </span>
             </span>
           </Link>
         </li>

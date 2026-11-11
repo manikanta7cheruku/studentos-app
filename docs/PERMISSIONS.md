@@ -96,6 +96,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | IDE-06 | POST | /c/{slug}/ideas/{id}/comments | mem | write limit, 40 an hour |
 | IDE-07 | GET | /c/{slug}/ideas/{id}/comments | mem | read limit |
 | IDE-08 | DELETE | /c/{slug}/ideas/{id}/comments/{commentId} | mem | author, or moderator and admin |
+| IDE-09 | PUT | /c/{slug}/ideas/{id}/comments/{commentId}/vote | mem | write limit |
 | COL-01 | POST | /colleges/setup | ses | needs a one-time setup code, 5 tries an hour |
 | APP-01 | POST | /me/applications | ses | write limit, 200 per person |
 | APP-02 | GET | /me/applications | ses | read limit |

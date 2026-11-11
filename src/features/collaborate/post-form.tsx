@@ -226,12 +226,12 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                       {item.college.slug === GLOBAL_SLUG ? (
                         <GlobeIcon aria-hidden="true" className="size-4" />
                       ) : null}
-                      {item.college.slug === GLOBAL_SLUG ? "Global" : item.college.name}
+                      {item.college.slug === GLOBAL_SLUG ? "Public, everyone" : item.college.name}
                     </span>
                     <span className="text-[13px] text-ink-muted">
                       {item.college.slug === GLOBAL_SLUG
-                        ? "Open to every student"
-                        : "Only members of this college"}
+                        ? "Shown to every student, in every college"
+                        : "Only members of this college see it"}
                     </span>
                   </span>
                 </label>

@@ -29,3 +29,4 @@
 | 2026-11-12 | R3 owner | Owner dashboard at /owner (D-34): allow-list, PIN, unlock cookie, overview, colleges, setup codes, users, reports, health, audit. Migration 20261116000000, script `pnpm owner:pin`. | R3 (owner) |
 | 2026-11-12 | R3 functional round | Thoughts, open join with participants, official and personal events, content removal with a reason, faster screens (D-35). Migration 20261117000000. | R3 (owner) |
 | 2026-11-12 | R3 turf booking | Venues, booking requests, the manager confirms or declines, notes to both sides (D-36). Migration 20261118000000. | R3 (owner) |
+| 2026-11-12 | R3 calmer UI and public reach | Comment likes and dislikes, public posts reach every college feed, floating filter pills, smaller cards (D-37). Migration 20261119000000. | R3 (owner) |

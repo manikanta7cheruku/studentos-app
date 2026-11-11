@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const tabs = TABS.filter((tab) => isAdmin || !tab.adminOnly);
   return (
     <div className="flex flex-col">
-      <nav aria-label="Admin" className="glass-bar sticky top-14 z-20 md:top-0">
+      <nav aria-label="Admin" className="glass-bar sticky top-12 z-20 md:top-0">
         <ul className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto px-3 md:px-8">
           {tabs.map((tab) => {
             const href = `${base}${tab.href}`;
@@ -92,7 +92,7 @@ export function ConsolePage({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 pt-2 md:px-8 md:py-8">
       <header className="flex flex-col gap-3 pb-1 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-balance text-[1.9rem] font-extrabold leading-tight tracking-tight">

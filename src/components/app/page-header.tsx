@@ -46,14 +46,19 @@ export function PageHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+            <p
+              className={cn(
+                "text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted",
+                app && "hidden sm:block",
+              )}
+            >
               {eyebrow}
             </p>
           ) : null}
           <h1
             className={cn(
-              "mt-1 text-balance font-extrabold leading-tight tracking-tight text-ink sm:text-[2rem]",
-              app ? "text-[2rem]" : "text-[1.7rem]",
+              "mt-0.5 text-balance font-extrabold leading-tight tracking-tight text-ink sm:text-[1.9rem]",
+              app ? "text-[1.6rem]" : "text-[1.5rem]",
             )}
           >
             {title}

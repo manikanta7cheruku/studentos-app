@@ -400,6 +400,7 @@ Ideas are short text posts inside one space (a college or Global). People vote a
 | IDE-06 | POST `/api/v1/c/{slug}/ideas/{id}/comments` | IDEM. `body` 1 to 800, optional `parent_id` of a top level comment of the same idea (one level of replies). 429 at 40 an hour |
 | IDE-07 | GET `/api/v1/c/{slug}/ideas/{id}/comments` | Oldest first, all in one answer |
 | IDE-08 | DELETE `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}` | The author of the comment, or a moderator or admin |
+| IDE-09 | PUT `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}/vote` | `{ "value": 1 \| -1 \| 0 }`. Like, dislike, or take the vote back. Safe to repeat. Answers with the comment, which has `score` and `my_vote` |
 | COL-01 | POST `/api/v1/colleges/setup` | Needs sign in. `{ code (8 digits), slug, name, short_name?, city, state, domains[], join_method: email | invite | approval }`. Makes the college and its first admin in one step. 403 for a wrong, used or expired code (never says which), 409 when the address is taken, 429 after 5 tries an hour |
 
 Team Finder (TMF-01, TMF-04) also accepts three new kinds, `sport`, `event` and `hangout`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
