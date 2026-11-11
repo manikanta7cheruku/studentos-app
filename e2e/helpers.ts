@@ -191,9 +191,12 @@ export async function memberOfAlpha(
 export async function joinGlobalThroughUi(page: import("@playwright/test").Page): Promise<void> {
   await page.goto("/c/global/join");
   const join = page.getByRole("button", { name: /join global/i });
-  if (await join.isVisible({ timeout: 4000 }).catch(() => false)) {
-    await join.click().catch(() => undefined);
-  }
+  // isVisible() does not wait, so wait for either the button or the redirect to Global.
+  const shown = await join
+    .waitFor({ state: "visible", timeout: 8000 })
+    .then(() => true)
+    .catch(() => false);
+  if (shown) await join.click().catch(() => undefined);
   await page.waitForURL(/\/c\/global\/home$/);
 }
 
