@@ -117,7 +117,7 @@ function Results({ filters }: { filters: Filters }) {
   if (items.length === 0) {
     const filtered = filters.kind !== "all" || filters.q || filters.scope === "mine";
     return (
-      <div className="mt-4 rounded-card border border-dashed border-border-strong p-8">
+      <div className="mt-4 glass-card rounded-[22px] p-8">
         <p className="text-lg font-semibold">
           {filters.scope === "mine"
             ? "You have not posted yet."

@@ -124,7 +124,7 @@ export function RoleChip({
     <div
       data-slot="role-chip"
       className={cn(
-        "flex min-h-[44px] flex-col items-start justify-center gap-1 rounded-card border border-border bg-surface p-3 text-left",
+        "flex min-h-[44px] flex-col items-start justify-center gap-1 glass-card rounded-[22px] p-3 text-left",
         isMuted && "border-dashed bg-muted/20",
         className,
       )}

@@ -24,7 +24,7 @@ function AnnouncementCard({ item }: { item: Announcement }) {
   const [open, setOpen] = React.useState(false);
   const long = item.body.length > 280;
   return (
-    <article className="rounded-card border border-border bg-surface p-5 sm:p-6">
+    <article className="glass-card rounded-[22px] p-5 sm:p-6">
       {item.pinned ? (
         <p className="mb-2 inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-primary">
           <PinIcon aria-hidden="true" className="size-3.5" /> Pinned
@@ -78,7 +78,7 @@ export function CampusScreen() {
       {state.status === "loading" ? (
         <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading announcements">
           {[0, 1, 2].map((n) => (
-            <div key={n} className="rounded-card border border-border bg-surface p-6">
+            <div key={n} className="glass-card rounded-[22px] p-6">
               <Skeleton className="h-6 w-2/3" />
               <Skeleton className="mt-4 h-4 w-full" />
               <Skeleton className="mt-2 h-4 w-5/6" />
@@ -88,7 +88,7 @@ export function CampusScreen() {
       ) : state.status === "error" ? (
         <LoadError error={state.error} onRetry={state.reload} what="the announcements" />
       ) : state.data!.data.length === 0 ? (
-        <div className="rounded-card border border-dashed border-border-strong bg-surface/60 p-8">
+        <div className="glass-card rounded-[22px] p-8">
           <p className="text-lg font-semibold">No announcements yet.</p>
           <p className="mt-1 max-w-prose text-ink-muted">
             When your college admins or moderators post a notice, it shows up here and you get a

@@ -139,7 +139,7 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           align={align}
           side="top"
           sideOffset={8}
-          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[13.5px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
+          className="z-50 w-60 glass-card rounded-[22px] p-1.5 text-[13.5px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
         >
           {others.length || !inGlobal ? (
             <>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
 import { api, type Idea, type TeamPost } from "@/lib/api/endpoints";
+import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { PostRow } from "@/features/collaborate/post-row";
@@ -70,6 +71,8 @@ export function HomeScreen() {
             : `What is happening at ${college.short_name || college.name}.`}
         </p>
       </header>
+
+      <FinishProfile />
 
       <ExploreTiles slug={slug} />
 

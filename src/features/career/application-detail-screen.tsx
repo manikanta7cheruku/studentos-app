@@ -279,7 +279,7 @@ function Body({ app, reload }: { app: ApplicationDetail; reload: () => void }) {
         >
           History
         </h2>
-        <ol className="divide-y divide-border border-y border-border">
+        <ol className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {app.events.map((event) => (
             <li
               key={event.id}

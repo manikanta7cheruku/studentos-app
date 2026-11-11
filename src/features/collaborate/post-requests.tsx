@@ -151,11 +151,11 @@ export function PostRequests({ post, onChanged }: { post: TeamPostDetail; onChan
       ) : state.status === "error" ? (
         <LoadError error={state.error} onRetry={state.reload} what="the requests" />
       ) : state.data.length === 0 ? (
-        <p className="rounded-card border border-dashed border-border-strong p-5 text-[14px] text-ink-muted">
+        <p className="glass-card rounded-[22px] p-5 text-[14px] text-ink-muted">
           Nobody has asked yet. Share the post with your classmates.
         </p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {[...state.data]
             .sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending"))
             .map((item) => (

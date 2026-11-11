@@ -463,20 +463,22 @@ select option {
     0 -20px 60px -20px rgba(0, 0, 0, 0.6);
 }
 
-/* A card of glass: a faint light from the top left, a bright hairline edge, and a soft shadow. Used for feed cards. */
-.glass-card {
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025) 60%);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  backdrop-filter: blur(14px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 14px 34px -22px rgba(0, 0, 0, 0.8);
-}
-/* The filter bar that stays under the top bar while a feed scrolls. */
-.glass-bar {
-  background: linear-gradient(180deg, rgba(11, 11, 16, 0.78), rgba(11, 11, 16, 0.55));
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+@layer components {
+  /* A card of glass: a faint light from the top left, a bright hairline edge, and a soft shadow. Used for feed cards. */
+  .glass-card {
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025) 60%);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 14px 34px -22px rgba(0, 0, 0, 0.8);
+  }
+  /* The filter bar that stays under the top bar while a feed scrolls. */
+  .glass-bar {
+    background: linear-gradient(180deg, rgba(11, 11, 16, 0.78), rgba(11, 11, 16, 0.55));
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
 }

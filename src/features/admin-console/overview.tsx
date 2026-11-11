@@ -12,7 +12,7 @@ function Stat({ label, value, href }: { label: string; value: number; href: stri
     <li>
       <Link
         href={href}
-        className="flex min-h-24 flex-col justify-between rounded-card border border-border bg-surface p-4 transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex min-h-24 flex-col justify-between glass-card rounded-[22px] p-4 transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="text-[14px] text-ink-muted">{label}</span>
         <span className="tabular font-heading text-4xl font-semibold">{value}</span>
@@ -87,7 +87,7 @@ export function OverviewScreen() {
       }
     >
       {isAdmin ? <AdminStatsView /> : null}
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
         {links.map((item) => (
           <li key={item.href}>
             <Link

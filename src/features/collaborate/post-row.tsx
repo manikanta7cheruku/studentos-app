@@ -73,6 +73,7 @@ function whenLabel(deadline: string | null): string | null {
  */
 export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
   const free = openSlots(post);
+  const joinedCount = post.roles.reduce((sum, role) => sum + role.filled, 0);
   const when = isTimedKind(post.kind) ? whenLabel(post.deadline) : null;
   return (
     <li className="group lift glass-card relative overflow-hidden rounded-[24px] focus-within:ring-2 focus-within:ring-ring">
@@ -123,8 +124,26 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
           {!isTimedKind(post.kind) ? <RoleChips roles={post.roles} /> : null}
           <footer className="flex items-center justify-between gap-3 pt-1 text-[13px]">
             <span className="flex min-w-0 items-center gap-2 text-ink-muted">
-              <Avatar name={post.author.display_name} size="xs" />
-              <span className="truncate">{post.author.display_name}</span>
+              <span className="flex -space-x-1.5">
+                <Avatar
+                  name={post.author.display_name}
+                  size="xs"
+                  className="ring-2 ring-[#15151d]"
+                />
+                {Array.from({ length: Math.min(3, joinedCount) }).map((_, n) => (
+                  <span
+                    key={n}
+                    aria-hidden="true"
+                    className="bg-brand inline-block size-6 rounded-full opacity-80 ring-2 ring-[#15151d]"
+                    style={{ filter: `hue-rotate(${n * 40}deg)` }}
+                  />
+                ))}
+              </span>
+              <span className="truncate">
+                {joinedCount > 0
+                  ? `${post.author.display_name} +${joinedCount} in`
+                  : post.author.display_name}
+              </span>
             </span>
             {post.my_requests.length ? (
               <span className="shrink-0 font-semibold text-[#b9b4ee]">

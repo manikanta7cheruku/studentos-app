@@ -71,7 +71,7 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
           <p>{error}</p>
         </Banner>
       ) : null}
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
         {post.roles.map((role) => {
           const free = Math.max(0, role.slots - role.filled);
           const mine = post.my_requests.filter((r) => r.role_id === role.id);

@@ -62,7 +62,7 @@ export function ContentScreen() {
       ) : state.data.length === 0 ? (
         <EmptyNote>Nothing has been posted yet.</EmptyNote>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {state.data.map((item) => (
             <Row key={`${item.kind}-${item.id}`} item={item} onDone={state.reload} />
           ))}

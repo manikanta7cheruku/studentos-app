@@ -288,7 +288,7 @@ export function MembersScreen() {
           <EmptyNote>No members match.</EmptyNote>
         ) : (
           <>
-            <ul className="divide-y divide-border border-y border-border">
+            <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
               {list.items.map((member) => (
                 <MemberRow
                   key={member.membership_id}

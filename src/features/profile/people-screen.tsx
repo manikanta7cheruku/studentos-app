@@ -65,7 +65,7 @@ export function PeopleScreen() {
         ) : state.status === "error" ? (
           <LoadError error={state.error} onRetry={state.reload} what="the people list" />
         ) : state.data.length === 0 ? (
-          <div className="rounded-card border border-dashed border-border-strong p-8">
+          <div className="glass-card rounded-[22px] p-8">
             <p className="text-lg font-semibold">
               {term ? `Nobody found for “${term}”.` : "Nobody is visible yet."}
             </p>
@@ -76,7 +76,7 @@ export function PeopleScreen() {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {state.data.map((person) => (
               <li key={person.user_id}>
                 <Link
