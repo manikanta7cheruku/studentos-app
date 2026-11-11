@@ -49,7 +49,7 @@ export function PageHeader({
             <p
               className={cn(
                 "text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted",
-                app && "hidden sm:block",
+                app && "text-[11px]",
               )}
             >
               {eyebrow}

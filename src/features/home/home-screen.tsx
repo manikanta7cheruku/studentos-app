@@ -5,7 +5,6 @@ import Link from "next/link";
 import { MessageCircleHeartIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
-import { StickyBar } from "@/components/app/sticky-bar";
 import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
 import { api, type BoardItem, type EventItem, type Idea, type TeamPost } from "@/lib/api/endpoints";
@@ -41,8 +40,8 @@ function greeting(now = new Date()): string {
 }
 
 /**
- * The three sections of the feed as one small floating glass pill with a thumb that slides to the open one. It stays
- * under the top bar while the feed scrolls, with no full-width strip behind it.
+ * The three sections of the feed as one segmented control with a thumb that glides to the open section. It sits in the page
+ * and scrolls away with it, so nothing stays pinned over the feed.
  */
 function FeedTabs({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const index = TABS.findIndex((item) => item.value === tab);
@@ -59,38 +58,36 @@ function FeedTabs({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void })
   }
 
   return (
-    <StickyBar>
-      <div
-        role="tablist"
-        aria-label="What to show"
-        onKeyDown={onKeyDown}
-        className="relative grid grid-cols-3"
-      >
-        {/* One highlight that glides to the open section. */}
-        <span
-          aria-hidden="true"
-          className="bg-brand absolute inset-y-0 left-0 w-1/3 rounded-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_16px_-8px_rgba(8,6,30,0.7)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
-          style={{ transform: `translateX(${index * 100}%)` }}
-        />
-        {TABS.map((item) => (
-          <button
-            key={item.value}
-            role="tab"
-            type="button"
-            data-tab={item.value}
-            tabIndex={tab === item.value ? 0 : -1}
-            aria-selected={tab === item.value}
-            onClick={() => onChange(item.value)}
-            className={cn(
-              "relative z-10 h-8 rounded-[15px] text-[13px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
-              tab === item.value ? "text-white" : "text-ink-muted hover:text-ink",
-            )}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-    </StickyBar>
+    <div
+      role="tablist"
+      aria-label="What to show"
+      onKeyDown={onKeyDown}
+      className="relative grid grid-cols-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-1"
+    >
+      {/* One highlight that glides to the open section. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-xl bg-white/[0.14] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
+        style={{ transform: `translateX(${index * 100}%)` }}
+      />
+      {TABS.map((item) => (
+        <button
+          key={item.value}
+          role="tab"
+          type="button"
+          data-tab={item.value}
+          tabIndex={tab === item.value ? 0 : -1}
+          aria-selected={tab === item.value}
+          onClick={() => onChange(item.value)}
+          className={cn(
+            "relative z-10 h-9 rounded-xl text-[13.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+            tab === item.value ? "text-ink" : "text-ink-muted hover:text-ink",
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -175,13 +172,13 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-3.5 px-5 pt-1 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-4 md:px-8 md:py-10">
       <header>
-        <p className="hidden text-[12.5px] text-ink-muted sm:block">{today}</p>
-        <h1 className="font-heading text-[1.4rem] font-extrabold leading-tight tracking-tight">
+        <p className="text-[13px] text-ink-muted">{today}</p>
+        <h1 className="mt-0.5 font-heading text-[1.7rem] font-extrabold leading-tight tracking-tight">
           {greeting()}, <span className="text-brand">{first}</span>
         </h1>
-        <p className="mt-0.5 text-[13px] text-ink-muted">
+        <p className="mt-1 text-[14px] text-ink-muted">
           {slug === "global"
             ? "Everyone on Global."
             : `What is happening at ${college.short_name || college.name}.`}

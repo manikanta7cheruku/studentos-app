@@ -126,8 +126,11 @@ export function RsvpButton({
 }
 
 /**
- * One event in a list: the day on the left, then the badges (and when, on the right), the title (the link), the place, and at
- * the bottom how many go and the one button. `space` is set when it came from the public space.
+ * One event in a list. The day on the left, then three rows:
+ *   the title (the link, stretched over the card) with the one button on the right,
+ *   when, where and how many go,
+ *   and the tags (Official, Personal event, Invite only, Public) on a row of their own.
+ * `space` is set when it came from the public space.
  */
 export function EventCard({
   event,
@@ -145,40 +148,42 @@ export function EventCard({
     <li
       onClickCapture={() => primeLoad(`event:${slug}:${event.id}`, event)}
       className={cn(
-        "lift glass-card relative flex items-start gap-3 rounded-[18px] px-3.5 py-3 focus-within:ring-2 focus-within:ring-ring",
+        "lift glass-card relative flex items-start gap-3.5 rounded-[20px] px-4 py-3.5 focus-within:ring-2 focus-within:ring-ring",
         (event.status === "cancelled" || event.status === "removed") && "opacity-60",
       )}
     >
-      <DateTile iso={event.starts_at} className="size-12" />
+      <DateTile iso={event.starts_at} className="size-[3.25rem]" />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <EventBadges event={event} />
-          {outside ? <OutsideBadge /> : null}
-          <span className="ml-auto shrink-0 text-[12px] text-ink-muted">
-            {formatWhen(event.starts_at)}
-          </span>
+        <div className="flex items-start gap-3">
+          <h2 className="min-w-0 flex-1 text-balance text-[15.5px] font-semibold leading-snug">
+            <Link
+              href={`/c/${slug}/events/${event.id}`}
+              className="outline-none after:absolute after:inset-0"
+            >
+              {event.title}
+            </Link>
+          </h2>
+          <div className="relative z-10 shrink-0">
+            <RsvpButton event={event} space={slug} onChange={onChange} />
+          </div>
         </div>
-        <h2 className="mt-1 text-balance text-[15px] font-bold leading-snug">
-          <Link
-            href={`/c/${slug}/events/${event.id}`}
-            className="outline-none after:absolute after:inset-0"
-          >
-            {event.title}
-          </Link>
-        </h2>
-        {event.place ? (
-          <p className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-ink-muted">
-            <MapPinIcon aria-hidden="true" className="size-3.5 shrink-0" />
-            <span className="truncate">{event.place}</span>
-          </p>
-        ) : null}
-        <div className="relative z-10 mt-2 flex items-center justify-between gap-3">
-          <span className="tabular flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-muted">
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.5px] text-ink-muted">
+          <span>{formatWhen(event.starts_at)}</span>
+          {event.place ? (
+            <span className="flex min-w-0 items-center gap-1">
+              <MapPinIcon aria-hidden="true" className="size-3.5 shrink-0" />
+              <span className="truncate">{event.place}</span>
+            </span>
+          ) : null}
+          <span className="tabular flex items-center gap-1">
             <UsersIcon aria-hidden="true" className="size-3.5" />
             {event.going_count} going
             {event.capacity ? ` of ${event.capacity}` : ""}
           </span>
-          <RsvpButton event={event} space={slug} onChange={onChange} />
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <EventBadges event={event} />
+          {outside ? <OutsideBadge /> : null}
         </div>
       </div>
     </li>

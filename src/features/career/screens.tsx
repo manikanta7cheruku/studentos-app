@@ -11,7 +11,7 @@ import { ApplicationForm } from "./application-form";
 export function NewApplicationScreen() {
   const { slug } = useCollege();
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-3 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title="Add an application"
         description="Only you can see it. You can change the details and move it along later."
@@ -26,7 +26,7 @@ export function EditApplicationScreen({ id }: { id: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.applications.one(id), [id]);
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-3 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title="Edit application"
         description="The status is changed on the application page, so every change is kept in its history."

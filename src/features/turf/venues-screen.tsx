@@ -7,7 +7,6 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
-import { StickyBar } from "@/components/app/sticky-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { api } from "@/lib/api/endpoints";
 import { GLOBAL_SLUG } from "@/lib/home-path";
@@ -51,7 +50,7 @@ export function VenuesScreen() {
   const canAdd = slug === GLOBAL_SLUG || isModerator;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-0.5 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         app
         eyebrow={slug === GLOBAL_SLUG ? "Global" : college.name}
@@ -73,11 +72,11 @@ export function VenuesScreen() {
         }
       />
 
-      <StickyBar>
+      <div>
         <div
           role="group"
           aria-label="Sport"
-          className="flex snap-x gap-1.5 overflow-x-auto [scrollbar-width:none]"
+          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
         >
           <Chip pressed={sport === null} onClick={() => setSport(null)}>
             All
@@ -88,7 +87,7 @@ export function VenuesScreen() {
             </Chip>
           ))}
         </div>
-      </StickyBar>
+      </div>
 
       <div aria-live="polite">
         {state.status === "loading" ? (

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
-import { StickyBar } from "@/components/app/sticky-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { api, type TeamPost, type TeamPostKind } from "@/lib/api/endpoints";
@@ -206,7 +205,7 @@ export function TeamFinderScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-0.5 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         app
         eyebrow={college.name}
@@ -242,11 +241,11 @@ export function TeamFinderScreen() {
         />
       </div>
 
-      <StickyBar>
+      <div className="flex flex-col gap-3">
         <div
           role="group"
           aria-label="Filter plans"
-          className="flex snap-x gap-1.5 overflow-x-auto [scrollbar-width:none] md:flex-wrap"
+          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
         >
           <Chip
             pressed={filters.scope === "all" && filters.kind === "all"}
@@ -270,7 +269,7 @@ export function TeamFinderScreen() {
             Mine
           </Chip>
         </div>
-      </StickyBar>
+      </div>
 
       <div aria-live="polite">
         <Results

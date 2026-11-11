@@ -7,7 +7,6 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
-import { StickyBar } from "@/components/app/sticky-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { api } from "@/lib/api/endpoints";
 import { dayLabel } from "@/lib/format";
@@ -88,7 +87,7 @@ export function EventsScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-0.5 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         app
         eyebrow={slug === "global" ? "Global" : college.name}
@@ -102,8 +101,12 @@ export function EventsScreen() {
           </Button>
         }
       />
-      <StickyBar>
-        <div role="tablist" aria-label="Which events" className="grid grid-cols-3 gap-1">
+      <div>
+        <div
+          role="tablist"
+          aria-label="Which events"
+          className="grid grid-cols-3 gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-1"
+        >
           {VIEWS.map((item) => (
             <button
               key={item.value}
@@ -112,15 +115,15 @@ export function EventsScreen() {
               aria-selected={view === item.value}
               onClick={() => setView(item.value)}
               className={cn(
-                "h-8 rounded-[14px] text-[13px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                view === item.value ? "bg-white/[0.16] text-ink" : "text-ink-muted hover:text-ink",
+                "h-9 rounded-xl text-[13.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+                view === item.value ? "bg-white/[0.14] text-ink" : "text-ink-muted hover:text-ink",
               )}
             >
               {item.label}
             </button>
           ))}
         </div>
-      </StickyBar>
+      </div>
 
       <div aria-live="polite">
         {state.status === "loading" ? (

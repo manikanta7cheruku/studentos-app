@@ -19,7 +19,8 @@ import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { priceText } from "./board-card";
-import { BOARDS, KIND_LABEL, RESOLVE_LABEL, boardPath } from "./board-config";
+import { KindTag } from "./kind-tag";
+import { BOARDS, RESOLVE_LABEL, boardPath } from "./board-config";
 
 function Bubble({ message }: { message: BoardMessage }) {
   return (
@@ -307,7 +308,7 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
   const state = useLoad(() => api.board.one(slug, postId), [slug, postId]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-2 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title={config.title}
         back={{ href: boardPath(slug, board), label: config.title }}
@@ -333,9 +334,7 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
         <>
           <article className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="bg-brand inline-flex h-6 items-center rounded-full px-2.5 text-[11.5px] font-bold text-white">
-                {KIND_LABEL[state.data.kind]}
-              </span>
+              <KindTag kind={state.data.kind} />
               {state.data.status === "resolved" ? (
                 <span className="text-[12.5px] font-semibold text-success">Done</span>
               ) : null}

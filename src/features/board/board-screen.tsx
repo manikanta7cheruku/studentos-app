@@ -60,7 +60,7 @@ export function BoardScreen({ board }: { board: BoardName }) {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-2 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         eyebrow={slug === "global" ? "Global" : college.name}
         title={config.title}

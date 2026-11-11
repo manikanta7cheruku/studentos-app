@@ -194,11 +194,13 @@ export function IdeaCard({
         <p className="flex min-w-0 flex-1 items-baseline gap-1.5 leading-tight">
           <Link
             href={`/c/${slug}/people/${idea.author.user_id}`}
-            className="relative z-10 truncate text-[13px] font-semibold hover:underline"
+            className="relative z-10 max-w-[60%] shrink-0 truncate text-[13px] font-semibold hover:underline"
           >
             {idea.author.display_name}
           </Link>
-          <span className="shrink-0 text-[12px] text-ink-muted">· {timeAgo(idea.created_at)}</span>
+          <span className="min-w-0 truncate text-[12px] text-ink-muted">
+            {idea.author.headline ? `· ${idea.author.headline} ` : ""}· {timeAgo(idea.created_at)}
+          </span>
         </p>
         {outside ? <OutsideBadge /> : null}
         {idea.topic !== "other" ? (

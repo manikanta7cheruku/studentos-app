@@ -7,7 +7,6 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
-import { StickyBar } from "@/components/app/sticky-bar";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { api, type IdeaTopic } from "@/lib/api/endpoints";
@@ -95,7 +94,7 @@ export function IdeasScreen() {
   ].sort((a, b) => (sort === "new" ? b.created_at.localeCompare(a.created_at) : 0));
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-0.5 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         app
         eyebrow={slug === "global" ? "Global" : college.name}
@@ -110,41 +109,42 @@ export function IdeasScreen() {
         }
       />
 
-      <StickyBar>
-        <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">
-          <div
-            role="group"
-            aria-label="Order"
-            className="inline-flex shrink-0 rounded-full bg-white/[0.07] p-0.5"
-          >
-            {(["new", "top"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={sort === value}
-                onClick={() => setSort(value)}
-                className={cn(
-                  "h-8 rounded-full px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                  sort === value ? "bg-white/[0.16] text-ink" : "text-ink-muted hover:text-ink",
-                )}
-              >
-                {value === "new" ? "New" : "Top"}
-              </button>
-            ))}
-          </div>
-          <span aria-hidden="true" className="h-5 w-px shrink-0 bg-white/15" />
-          <div role="group" aria-label="Topic" className="flex gap-1.5">
-            <Chip pressed={topic === "all"} onClick={() => setTopic("all")}>
-              All
-            </Chip>
-            {TOPICS.map((value) => (
-              <Chip key={value} pressed={topic === value} onClick={() => setTopic(value)}>
-                {TOPIC_LABEL[value]}
-              </Chip>
-            ))}
-          </div>
+      <div className="flex flex-col gap-3">
+        <div
+          role="group"
+          aria-label="Order"
+          className="inline-flex w-fit rounded-xl border border-white/[0.08] bg-white/[0.05] p-1"
+        >
+          {(["new", "top"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={sort === value}
+              onClick={() => setSort(value)}
+              className={cn(
+                "h-8 rounded-lg px-4 text-[13px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+                sort === value ? "bg-white/[0.14] text-ink" : "text-ink-muted hover:text-ink",
+              )}
+            >
+              {value === "new" ? "New" : "Top this month"}
+            </button>
+          ))}
         </div>
-      </StickyBar>
+        <div
+          role="group"
+          aria-label="Topic"
+          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+        >
+          <Chip pressed={topic === "all"} onClick={() => setTopic("all")}>
+            Everything
+          </Chip>
+          {TOPICS.map((value) => (
+            <Chip key={value} pressed={topic === value} onClick={() => setTopic(value)}>
+              {TOPIC_LABEL[value]}
+            </Chip>
+          ))}
+        </div>
+      </div>
 
       <div aria-live="polite">
         {list.state.status === "loading" ? (

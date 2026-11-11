@@ -211,7 +211,7 @@ export function OpportunitiesScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-3 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         eyebrow={college.name}
         title="Opportunities"

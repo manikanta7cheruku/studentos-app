@@ -467,7 +467,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
         {/* Phone: the space I am in and the bell */}
-        <header className="sticky top-0 z-30 flex h-12 items-center gap-3 px-4 md:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 px-4 md:hidden">
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
