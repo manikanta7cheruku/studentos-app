@@ -113,26 +113,28 @@ test("a student in a college and in Global can post to Global", async ({ page })
   await memberOfAlpha(page, "TF3");
   await joinGlobalThroughUi(page);
   await page.goto("/c/alpha/collaborate/new");
-  await expect(page.getByRole("radio", { name: /global/i })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /public/i })).toBeVisible();
   await expect(page.getByRole("radio", { name: /alpha college/i })).toBeChecked();
-  await page.getByRole("radio", { name: /global/i }).check();
+  await page.getByRole("radio", { name: /public/i }).check();
   await fillPost(page, "Open source note taking app, all colleges welcome");
   await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page).toHaveURL(/\/c\/global\/collaborate\/[0-9a-f-]{36}$/);
   await expect(
     page.getByRole("heading", { name: /open source note taking/i, level: 1 }),
   ).toBeVisible();
-  // It lives in Global, not in Alpha
+  // It lives in Global, and it is shown to every college too (Alpha's list has it, tagged Public)
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByRole("link", { name: /open source note taking/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /open source note taking/i })).toBeVisible();
   await page.goto("/c/global/collaborate");
   await expect(page.getByRole("link", { name: /open source note taking/i })).toBeVisible();
 });
 
-test("a student who is not in Global is offered to join it when posting", async ({ page }) => {
+test("a member of a college can post publicly without joining anything", async ({ page }) => {
   await memberOfAlpha(page, "TF4");
   await page.goto("/c/alpha/collaborate/new");
-  await expect(page.getByRole("link", { name: /join global/i })).toBeVisible();
+  // The app adds every member to the public space on the first visit, so the public choice is there.
+  await expect(page.getByRole("radio", { name: /public/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /join global/i })).toHaveCount(0);
 });
 
 test("Your spaces in Settings lets a phone switch to Global", async ({ page }) => {
