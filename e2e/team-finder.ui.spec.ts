@@ -80,9 +80,9 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
   await page.getByRole("button", { name: "Project" }).click();
   await expect(row).toBeVisible();
-  await page.getByLabel(/search posts/i).fill("zzzz-nothing");
+  await page.getByLabel(/search plans/i).fill("zzzz-nothing");
   await expect(page.getByText(/no plans match these filters/i)).toBeVisible();
-  await page.getByLabel(/search posts/i).fill("bus tracker");
+  await page.getByLabel(/search plans/i).fill("bus tracker");
   await expect(row).toBeVisible();
   await page.getByRole("button", { name: "Mine" }).click();
   await expect(row).toBeVisible();
@@ -103,8 +103,9 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await expect(page.getByText(/the author closed this post/i)).toBeVisible();
   await expect(page.getByRole("link", { name: /^edit/i })).toHaveCount(0);
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByText(/no plans yet|no plans match/i).first()).toBeVisible();
-  await page.getByLabel(/also show closed and full posts/i).check();
+  await expect(page.getByText(/no plans yet/i)).toBeVisible();
+  // My own posts still show what I closed.
+  await page.getByRole("button", { name: "Mine" }).click();
   await expect(page.getByRole("link", { name: /now with a map/i })).toBeVisible();
 });
 

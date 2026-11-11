@@ -60,7 +60,8 @@ function Results({ filters }: { filters: Filters }) {
         kind: filters.kind === "all" ? undefined : filters.kind,
         q: filters.q || undefined,
         mine: filters.scope === "mine",
-        status: filters.status,
+        // My own posts include the closed ones, so I can still find what I closed.
+        status: filters.scope === "mine" ? "all" : filters.status,
       }),
     [slug],
   );
@@ -98,7 +99,8 @@ function Results({ filters }: { filters: Filters }) {
         kind: filters.kind === "all" ? undefined : filters.kind,
         q: filters.q || undefined,
         mine: filters.scope === "mine",
-        status: filters.status,
+        // My own posts include the closed ones, so I can still find what I closed.
+        status: filters.scope === "mine" ? "all" : filters.status,
         cursor,
       });
       setMore({
