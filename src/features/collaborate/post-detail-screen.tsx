@@ -26,7 +26,7 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type TeamPostDetail } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { KIND_LABEL, formatDeadline } from "./labels";
+import { KIND_LABEL, formatDeadline, isTimedKind } from "./labels";
 import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
 import { ReportButton } from "@/features/admin-console/report-button";
@@ -130,9 +130,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           </span>
           <span className="inline-flex items-center gap-1.5">
             <CalendarIcon aria-hidden="true" className="size-4" />
-            {post.kind === "sport" || post.kind === "event"
-              ? startLabel(post.deadline)
-              : formatDeadline(post.deadline)}
+            {isTimedKind(post.kind) ? startLabel(post.deadline) : formatDeadline(post.deadline)}
           </span>
           {post.place ? (
             <span className="inline-flex items-center gap-1.5">

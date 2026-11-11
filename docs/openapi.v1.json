@@ -4365,7 +4365,8 @@
                       "hackathon",
                       "competition",
                       "sport",
-                      "event"
+                      "event",
+                      "hangout"
                     ]
                   },
                   "title": {
@@ -4475,7 +4476,8 @@
                             "hackathon",
                             "competition",
                             "sport",
-                            "event"
+                            "event",
+                            "hangout"
                           ]
                         },
                         "title": {
@@ -4812,7 +4814,8 @@
                 "hackathon",
                 "competition",
                 "sport",
-                "event"
+                "event",
+                "hangout"
               ]
             }
           },
@@ -4891,7 +4894,8 @@
                               "hackathon",
                               "competition",
                               "sport",
-                              "event"
+                              "event",
+                              "hangout"
                             ]
                           },
                           "title": {
@@ -5200,7 +5204,8 @@
                             "hackathon",
                             "competition",
                             "sport",
-                            "event"
+                            "event",
+                            "hangout"
                           ]
                         },
                         "title": {
@@ -5499,7 +5504,8 @@
                       "hackathon",
                       "competition",
                       "sport",
-                      "event"
+                      "event",
+                      "hangout"
                     ]
                   },
                   "title": {
@@ -5588,7 +5594,8 @@
                             "hackathon",
                             "competition",
                             "sport",
-                            "event"
+                            "event",
+                            "hangout"
                           ]
                         },
                         "title": {
@@ -5908,7 +5915,8 @@
                             "hackathon",
                             "competition",
                             "sport",
-                            "event"
+                            "event",
+                            "hangout"
                           ]
                         },
                         "title": {
@@ -7150,7 +7158,8 @@
                                   "hackathon",
                                   "competition",
                                   "sport",
-                                  "event"
+                                  "event",
+                                  "hangout"
                                 ]
                               },
                               "status": {

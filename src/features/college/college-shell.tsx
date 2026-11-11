@@ -316,6 +316,10 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   // Which way the last move between tabs went (1 forward, -1 back), so the next page slides in from that side.
   const direction = React.useRef<1 | -1 | 0>(0);
   const tabIndex = tabs.findIndex((item) => pathname === item.href);
+  // Load the other tabs ahead of time, so a swipe or a tap shows the next page at once.
+  React.useEffect(() => {
+    for (const item of tabs) router.prefetch(item.href);
+  }, [router, tabs]);
   const swipe = React.useRef<{
     x: number;
     y: number;
@@ -400,8 +404,8 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
     node.style.transition = "transform 200ms cubic-bezier(0.2,0.8,0.2,1), opacity 200ms";
     if (neighbour && (Math.abs(dx) > 70 || speed > 0.5)) {
       direction.current = dx < 0 ? 1 : -1;
-      node.style.transform = `translateX(${dx < 0 ? -48 : 48}px)`;
-      node.style.opacity = "0.4";
+      node.style.transform = `translateX(${dx < 0 ? -28 : 28}px)`;
+      node.style.opacity = "0.75";
       router.push(neighbour.href);
     } else {
       node.style.transform = "";
@@ -487,8 +491,17 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 flex gap-2.5 md:hidden">
         <nav
           aria-label="College"
-          className="glass pointer-events-auto flex h-16 flex-1 items-center justify-between rounded-[22px] p-1.5"
+          className="glass-clear pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
         >
+          {/* One highlight that travels to the open tab. */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-2xl bg-white/[0.17] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
+            style={{
+              transform: `translateX(${Math.max(tabIndex, 0) * 100}%)`,
+              opacity: tabIndex >= 0 ? 1 : 0,
+            }}
+          />
           {tabs.map((item, index) => {
             const current = isCurrent(pathname, item);
             return (
@@ -500,23 +513,13 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                     direction.current = index > tabIndex ? 1 : -1;
                 }}
                 aria-current={current ? "page" : undefined}
-                aria-label={item.label}
                 className={cn(
-                  "group flex h-12 min-w-12 items-center justify-center overflow-hidden rounded-2xl px-3.5 text-[13px] font-semibold outline-none transition-[background-color,color,transform] duration-300 ease-[var(--ease)] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-[21px] [&_svg]:shrink-0",
-                  current ? "bg-white/[0.12] text-white" : "text-ink-muted hover:text-ink",
+                  "relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-[20px] [&_svg]:shrink-0",
+                  current ? "text-white" : "text-white/60 hover:text-white/90",
                 )}
               >
-                <span aria-hidden="true" className={current ? "text-[#b9b4ee]" : undefined}>
-                  {item.icon}
-                </span>
-                <span
-                  className={cn(
-                    "overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-300 ease-[var(--ease)]",
-                    current ? "ml-2 max-w-20 opacity-100" : "ml-0 max-w-0 opacity-0",
-                  )}
-                >
-                  {item.label}
-                </span>
+                <span aria-hidden="true">{item.icon}</span>
+                {item.label}
               </Link>
             );
           })}

@@ -233,7 +233,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261111000000_account_leave_profile.sql` | `account_blockers`, `account_delete_prepare` (delete my account), `leave_college`, `profile_view` |
 | `20261113000000_job_applications.sql` | `job_applications`, `application_events` (private to the person, closed to clients), `app_create`, `app_update`, `app_change_status`, `app_json` |
 | `20261112000000_global_open_join.sql` | the `open` join method (only for the Global college, enforced by a trigger), the seeded `global` college, `submit_open_join` (join Global at once, level 1) |
-| `20261114000000_ideas_plans_college_codes.sql` | `ideas`, `idea_votes`, `idea_comments`, `idea_*` functions, `college_setup_codes`, `make_college_setup_code`, `college_setup_create`, Team Finder kinds `sport` and `event`, `team_posts.place`, `tf_set_place` |
+| `20261114000000_ideas_plans_college_codes.sql` | `ideas`, `idea_votes`, `idea_comments`, `idea_*` functions, `college_setup_codes`, `make_college_setup_code`, `college_setup_create`, Team Finder kinds `sport`, `event` and `hangout`, `team_posts.place`, `tf_set_place` |
 | `20261115000000_events_board.sql` | `events`, `event_rsvps`, `board_posts`, `board_messages`, `event_*` and `board_*` functions |
 
 The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.

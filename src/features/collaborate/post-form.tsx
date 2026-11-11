@@ -18,8 +18,9 @@ import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
 import { useSession } from "@/features/session/session-provider";
 import {
-  KINDS,
   KIND_LABEL,
+  PLAN_KINDS,
+  isTimedKind,
   dateInputOffset,
   dateInputValue,
   dateTimeInputValue,
@@ -63,7 +64,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   const [players, setPlayers] = React.useState(
     String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
   );
-  const timed = kind === "sport" || kind === "event";
+  const timed = isTimedKind(kind);
   // The earliest start the picker allows: this minute (computed once when the form opens).
   const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
   const [externalLink, setExternalLink] = React.useState(editing?.external_link ?? "");
@@ -150,7 +151,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           roles: timed
             ? [
                 {
-                  role_name: kind === "sport" ? "Player" : "Guest",
+                  role_name: kind === "sport" ? "Player" : kind === "hangout" ? "Friend" : "Guest",
                   slots: Number(players),
                   skill_ids: [],
                 },
@@ -239,7 +240,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           onChange={(event) => setKind(event.target.value as TeamPostKind)}
           className="h-11 w-full rounded-input border border-border-strong bg-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-64"
         >
-          {KINDS.map((k) => (
+          {(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => (
             <option key={k} value={k}>
               {KIND_LABEL[k]}
             </option>
@@ -291,7 +292,13 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           </div>
           {!editing ? (
             <FormField
-              label={kind === "sport" ? "Players needed" : "How many can come?"}
+              label={
+                kind === "sport"
+                  ? "Players needed"
+                  : kind === "hangout"
+                    ? "How many people?"
+                    : "How many can come?"
+              }
               error={fields.players}
               required
             >

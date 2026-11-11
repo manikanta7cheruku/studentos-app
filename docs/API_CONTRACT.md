@@ -402,7 +402,7 @@ Ideas are short text posts inside one space (a college or Global). People vote a
 | IDE-08 | DELETE `/api/v1/c/{slug}/ideas/{id}/comments/{commentId}` | The author of the comment, or a moderator or admin |
 | COL-01 | POST `/api/v1/colleges/setup` | Needs sign in. `{ code (8 digits), slug, name, short_name?, city, state, domains[], join_method: email | invite | approval }`. Makes the college and its first admin in one step. 403 for a wrong, used or expired code (never says which), 409 when the address is taken, 429 after 5 tries an hour |
 
-Team Finder (TMF-01, TMF-04) also accepts two new kinds, `sport` and `event`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
+Team Finder (TMF-01, TMF-04) also accepts three new kinds, `sport`, `event` and `hangout`, and an optional `place` (up to 120 characters). For a sport or an event the `deadline` is when it starts.
 
 ## 16. Events and the board (R3-D12, decision D-33)
 

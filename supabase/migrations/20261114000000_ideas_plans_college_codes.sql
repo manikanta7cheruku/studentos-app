@@ -1,5 +1,5 @@
 -- Migration: redesign backend (R3-D11). Three things:
---   1. Team Finder gets two new kinds (sport, event) and a place.
+--   1. Team Finder gets three new kinds (sport, event, hangout) and a place.
 --   2. Ideas: short text posts that students vote on and reply to (docs/API_CONTRACT.md section 15).
 --   3. College setup codes: a college can only be created with a one-time code that the platform owner issues
 --      (docs/AUTH_AND_TENANCY.md, decision D-30).
@@ -11,7 +11,7 @@
 -- ---------------------------------------------------------------------------
 alter table public.team_posts drop constraint team_posts_kind_valid;
 alter table public.team_posts add constraint team_posts_kind_valid
-  check (kind in ('project', 'startup', 'hackathon', 'competition', 'sport', 'event'));
+  check (kind in ('project', 'startup', 'hackathon', 'competition', 'sport', 'event', 'hangout'));
 
 alter table public.team_posts add column place text;
 alter table public.team_posts add constraint team_posts_place_length

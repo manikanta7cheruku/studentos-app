@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { Poster } from "@/components/app/poster";
 import { Avatar } from "@/components/app/avatar";
 import type { TeamPost } from "@/lib/api/endpoints";
-import { KIND_LABEL, formatDeadline, openSlots, statusLabel } from "./labels";
+import { KIND_LABEL, formatDeadline, isTimedKind, openSlots, statusLabel } from "./labels";
 
 /** The little label for the state of a post. Words carry the meaning; the colour only helps. */
 export function StatusPill({ status }: { status: TeamPost["status"] }) {
@@ -47,6 +47,7 @@ export function coverWord(post: Pick<TeamPost, "kind" | "roles">): string {
   const slots = post.roles.reduce((sum, role) => sum + role.slots, 0);
   if (post.kind === "sport") return slots > 1 ? `${slots}` : "Play";
   if (post.kind === "event") return "Live";
+  if (post.kind === "hangout") return "Hang";
   if (post.kind === "hackathon") return "Hack";
   if (post.kind === "competition") return "Win";
   if (post.kind === "startup") return "Build";
@@ -72,7 +73,7 @@ function whenLabel(deadline: string | null): string | null {
  */
 export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
   const free = openSlots(post);
-  const when = post.kind === "sport" || post.kind === "event" ? whenLabel(post.deadline) : null;
+  const when = isTimedKind(post.kind) ? whenLabel(post.deadline) : null;
   return (
     <li className="group lift relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-surface focus-within:ring-2 focus-within:ring-ring">
       <article>
@@ -119,7 +120,7 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
               {post.description}
             </p>
           ) : null}
-          {post.kind !== "sport" && post.kind !== "event" ? <RoleChips roles={post.roles} /> : null}
+          {!isTimedKind(post.kind) ? <RoleChips roles={post.roles} /> : null}
           <footer className="flex items-center justify-between gap-3 pt-1 text-[13px]">
             <span className="flex min-w-0 items-center gap-2 text-ink-muted">
               <Avatar name={post.author.display_name} size="xs" />

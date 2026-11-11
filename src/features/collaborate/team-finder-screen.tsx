@@ -7,7 +7,6 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -15,7 +14,7 @@ import { api, type TeamPost, type TeamPostKind } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { KINDS, KIND_LABEL } from "./labels";
+import { KIND_LABEL, PLAN_KINDS } from "./labels";
 import { PostRow } from "./post-row";
 
 type Filters = {
@@ -199,47 +198,48 @@ export function TeamFinderScreen() {
         }
       />
 
-      <div className="flex flex-col gap-4">
-        <div role="group" aria-label="Which posts" className="flex flex-wrap gap-2">
-          <Chip pressed={filters.scope === "all"} onClick={() => set({ scope: "all" })}>
-            All posts
+      <div className="flex flex-col gap-3">
+        <div
+          role="group"
+          aria-label="Filter plans"
+          className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+        >
+          <Chip
+            pressed={filters.scope === "all" && filters.kind === "all"}
+            onClick={() => set({ scope: "all", kind: "all" })}
+          >
+            All
           </Chip>
-          <Chip pressed={filters.scope === "mine"} onClick={() => set({ scope: "mine" })}>
-            My posts
+          {PLAN_KINDS.map((kind) => (
+            <Chip
+              key={kind}
+              pressed={filters.scope === "all" && filters.kind === kind}
+              onClick={() => set({ scope: "all", kind })}
+            >
+              {KIND_LABEL[kind]}
+            </Chip>
+          ))}
+          <Chip
+            pressed={filters.scope === "mine"}
+            onClick={() => set({ scope: "mine", kind: "all" })}
+          >
+            Mine
           </Chip>
         </div>
         <div className="relative">
           <SearchIcon
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted"
           />
           <Input
             type="search"
-            aria-label="Search posts"
+            aria-label="Search plans"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Search by title or description"
-            className="pl-11"
+            placeholder="Search plans"
+            className="h-11 pl-10"
             autoComplete="off"
           />
-        </div>
-        <div role="group" aria-label="Kind of post" className="flex flex-wrap gap-2">
-          <Chip pressed={filters.kind === "all"} onClick={() => set({ kind: "all" })}>
-            Everything
-          </Chip>
-          {KINDS.map((kind) => (
-            <Chip key={kind} pressed={filters.kind === kind} onClick={() => set({ kind })}>
-              {KIND_LABEL[kind]}
-            </Chip>
-          ))}
-        </div>
-        <div className="flex min-h-10 w-fit items-center gap-3 text-[13.5px] text-ink">
-          <Switch
-            id="show-closed"
-            checked={filters.status === "all"}
-            onCheckedChange={(checked) => set({ status: checked ? "all" : "open" })}
-          />
-          <label htmlFor="show-closed">Also show closed and full plans</label>
         </div>
       </div>
 

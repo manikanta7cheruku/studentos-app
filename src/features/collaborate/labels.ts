@@ -7,9 +7,18 @@ export const KIND_LABEL: Record<TeamPostKind, string> = {
   competition: "Competition",
   sport: "Sport",
   event: "Event",
+  hangout: "Hangout",
 };
 
 export const KINDS = Object.keys(KIND_LABEL) as TeamPostKind[];
+
+/** The kinds people pick from and filter by. Startup and competition posts that already exist still show, but they are not offered any more. */
+export const PLAN_KINDS: TeamPostKind[] = ["sport", "hangout", "event", "hackathon", "project"];
+
+/** Kinds that happen at a time and a place, with a head count, instead of a deadline and roles. */
+export function isTimedKind(kind: TeamPostKind): boolean {
+  return kind === "sport" || kind === "event" || kind === "hangout";
+}
 
 const STATUS_LABEL: Record<TeamPost["status"], string> = {
   open: "Open",

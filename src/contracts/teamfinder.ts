@@ -11,6 +11,7 @@ export const teamPostKind = z.enum([
   "competition",
   "sport",
   "event",
+  "hangout",
 ]);
 // `expired` is worked out from the deadline: an open post past its deadline is shown as expired.
 export const teamPostStatus = z.enum(["open", "closed", "filled", "expired"]);
