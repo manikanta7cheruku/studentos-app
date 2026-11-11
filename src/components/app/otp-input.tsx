@@ -20,7 +20,7 @@ type OtpInputProps = {
 };
 
 /**
- * Six boxes for a code from an email. Typing moves on, backspace moves back, pasting fills every box, and phones
+ * Boxes for a code from an email. Typing moves on, backspace moves back, pasting fills every box, and phones
  * offer the code from the mail (autoComplete="one-time-code"). Behind the boxes is ONE input, so screen readers see a
  * single field and password managers and the mail suggestion work.
  */
@@ -51,7 +51,7 @@ export function OtpInput({
   const active = Math.min(value.length, length - 1);
 
   return (
-    <div className="relative w-full max-w-[22rem]" onClick={() => inputRef.current?.focus()}>
+    <div className="relative w-full max-w-full" onClick={() => inputRef.current?.focus()}>
       <input
         ref={inputRef}
         value={value}
@@ -69,7 +69,11 @@ export function OtpInput({
         spellCheck={false}
         className="absolute inset-0 z-10 h-full w-full cursor-text opacity-0"
       />
-      <div aria-hidden="true" className="grid grid-cols-6 gap-2 sm:gap-3">
+      <div
+        aria-hidden="true"
+        className="grid gap-2 sm:gap-2.5"
+        style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}
+      >
         {Array.from({ length }, (_, index) => {
           const char = value[index];
           const isActive = focused && index === active;
@@ -77,9 +81,9 @@ export function OtpInput({
             <div
               key={index}
               className={cn(
-                "tabular flex h-14 items-center justify-center rounded-input border bg-surface font-heading text-2xl font-semibold text-ink transition-colors sm:h-16 sm:text-3xl",
-                invalid ? "border-destructive" : "border-border-strong",
-                isActive && "border-primary ring-2 ring-ring ring-offset-2 ring-offset-background",
+                "tabular flex h-14 items-center justify-center rounded-xl border bg-white/[0.04] font-heading text-xl font-bold text-ink transition-[border-color,box-shadow,background-color] duration-200 sm:text-2xl",
+                invalid ? "border-destructive" : "border-white/[0.15]",
+                isActive && "border-[#8a6bff] bg-white/[0.07] ring-4 ring-[#8a6bff]/20",
                 disabled && "opacity-50",
               )}
             >

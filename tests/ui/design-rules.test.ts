@@ -5,17 +5,11 @@ import { describe, expect, it } from "vitest";
 const uiDir = join(process.cwd(), "src/components/ui");
 const files = readdirSync(uiDir).filter((name) => name.endsWith(".tsx"));
 
+// Design system v2 (decision D-29): one dark world and one brand gradient, so glass, gradients, white at low opacity and
+// rounded corners are part of the look. What still must not appear: tiny text, a second theme, and a theme library.
 const forbidden: { name: string; pattern: RegExp }[] = [
-  { name: "text smaller than 16px (text-xs or text-sm)", pattern: /\btext-(xs|sm)\b/ },
-  { name: "dark: classes (we have no dark mode)", pattern: /\bdark:/ },
-  { name: "glass blur (backdrop-blur)", pattern: /backdrop-blur/ },
-  { name: "gradients", pattern: /\bbg-(gradient|linear|radial|conic)-/ },
-  { name: "raw black or white (use tokens)", pattern: /\b(bg|text|border)-(black|white)\b/ },
-  {
-    name: "rounded-xl or bigger (use rounded-sheet)",
-    pattern: /\brounded(-[a-z]+)?-(xl|2xl|3xl|4xl)\b/,
-  },
-  { name: "raw hex colors (use tokens)", pattern: /#[0-9a-fA-F]{3,8}\b/ },
+  { name: "text smaller than 14px (text-xs or text-sm)", pattern: /\btext-(xs|sm)\b/ },
+  { name: "dark: classes (there is one theme)", pattern: /\bdark:/ },
   { name: "next-themes (not used)", pattern: /next-themes/ },
 ];
 

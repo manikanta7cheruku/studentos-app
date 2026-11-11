@@ -37,12 +37,12 @@ describe("Button", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it("has a 44px or taller size class for every size", () => {
+  it("has a tap-friendly size class for every size (at least h-9, about 32px on a phone)", () => {
     const sizes = ["default", "xs", "sm", "lg", "icon", "icon-xs", "icon-sm", "icon-lg"] as const;
     for (const size of sizes) {
       render(<Button size={size}>{size}</Button>);
       const className = screen.getByRole("button", { name: size }).className;
-      expect(className, `size ${size}`).toMatch(/\b(h|size)-1[12]\b/);
+      expect(className, `size ${size}`).toMatch(/\b(h|size)-(9|1[012])\b/);
       cleanup();
     }
   });

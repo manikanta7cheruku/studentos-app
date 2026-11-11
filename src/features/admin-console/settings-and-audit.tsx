@@ -51,7 +51,12 @@ function Check({
         <span className="block text-[14px] font-medium text-ink">{label}</span>
         <span className="block text-[13px] text-ink-muted">{help}</span>
       </label>
-      <Switch id={id} checked={checked} disabled={disabled} onCheckedChange={(v) => onChange(v === true)} />
+      <Switch
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={(v) => onChange(v === true)}
+      />
     </div>
   );
 }

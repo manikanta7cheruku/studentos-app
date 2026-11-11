@@ -64,6 +64,8 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
     String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
   );
   const timed = kind === "sport" || kind === "event";
+  // The earliest start the picker allows: this minute (computed once when the form opens).
+  const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
   const [externalLink, setExternalLink] = React.useState(editing?.external_link ?? "");
   const [teamLink, setTeamLink] = React.useState(editing?.team_link ?? "");
   const [roles, setRoles] = React.useState<RoleDraft[]>(() => [newRole()]);
@@ -275,7 +277,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                 type="datetime-local"
                 value={when}
                 onChange={(event) => setWhen(event.target.value)}
-                min={dateTimeInputValue(new Date(Date.now() + 60_000).toISOString())}
+                min={minStart}
               />
             </FormField>
             <FormField label="Where?" help="Optional. The turf, hall or room." error={fields.place}>

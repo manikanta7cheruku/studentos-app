@@ -33,7 +33,10 @@ export function PageHeader({
           href={back.href}
           className="group -ml-1 inline-flex h-10 w-fit items-center gap-1 rounded-input px-1 text-[13.5px] font-medium text-ink-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronLeftIcon aria-hidden="true" className="size-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+          <ChevronLeftIcon
+            aria-hidden="true"
+            className="size-5 transition-transform duration-200 group-hover:-translate-x-0.5"
+          />
           {back.label}
         </Link>
       ) : null}

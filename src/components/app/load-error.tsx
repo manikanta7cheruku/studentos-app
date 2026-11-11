@@ -23,7 +23,7 @@ export function LoadError({
       role="alert"
       className="flex flex-col items-start gap-4 rounded-card border border-border bg-surface p-6"
     >
-      <span className="inline-flex size-10 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--danger)_10%,white)] text-danger">
+      <span className="inline-flex size-10 items-center justify-center rounded-full bg-danger/15 text-danger">
         <WifiOffIcon aria-hidden="true" className="size-5" />
       </span>
       <div className="flex flex-col gap-1">

@@ -34,7 +34,10 @@ export function CreateSheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[3px] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
         <DialogPrimitive.Content className="glass fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md rounded-t-[var(--radius-sheet)] p-5 pb-[calc(1.25rem+var(--safe-bottom))] outline-none data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[var(--radius-sheet)]">
-          <div aria-hidden="true" className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 md:hidden" />
+          <div
+            aria-hidden="true"
+            className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20 md:hidden"
+          />
           <DialogPrimitive.Title className="font-heading text-[20px] font-bold">
             Create
           </DialogPrimitive.Title>

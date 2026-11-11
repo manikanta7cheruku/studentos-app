@@ -6,19 +6,39 @@ type AuthFrameProps = {
   eyebrow?: string;
   title: string;
   intro?: React.ReactNode;
-  /** The form or the content on the right (below the text on a phone). */
+  /** The form or the content under the text. */
   children: React.ReactNode;
   /** A line of small print under the form. */
   footer?: React.ReactNode;
   /** The college's own mark and name, when the screen is about one college. */
   college?: { name: string; shortName: string | null; accentVars?: React.CSSProperties };
+  /** Something above the title, for example the fan of plan covers on the welcome screen. */
+  hero?: React.ReactNode;
   className?: string;
 };
 
+/** The StudentOS mark: a small gradient tile and the name. */
+export function Wordmark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 font-heading text-[1.15rem] font-extrabold tracking-tight",
+        className,
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="bg-brand inline-block size-[22px] rounded-[7px] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+      />
+      StudentOS
+    </span>
+  );
+}
+
 /**
- * The frame of every page before a person is inside a college: sign in, join, waiting. A plain top bar with the
- * StudentOS name, then two columns on a wide screen (what this step is, and the step itself) and one column on a
- * phone. Left aligned throughout.
+ * The frame of every page before a person is inside a college: sign in, choose a space, join, waiting. One calm column
+ * on a brand glow: the name on top, then what this step is, then the step itself. Left aligned throughout, and made for a
+ * phone first (on a wide screen the column stays narrow and sits in the middle).
  */
 export function AuthFrame({
   eyebrow,
@@ -27,24 +47,29 @@ export function AuthFrame({
   children,
   footer,
   college,
+  hero,
   className,
 }: AuthFrameProps) {
   const initials = college ? (college.shortName || college.name).slice(0, 2).toUpperCase() : null;
   return (
-    <div className="min-h-dvh bg-bg" style={college?.accentVars}>
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:px-8">
+    <div className="relative min-h-dvh overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(118,86,255,0.28),transparent_70%)]"
+      />
+      <header>
+        <div className="mx-auto flex h-16 max-w-md items-center justify-between px-6">
           <Link
             href="/"
-            className="-ml-1 inline-flex min-h-11 items-center rounded-input px-1 font-heading text-xl font-semibold tracking-tight text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="-ml-1 rounded-lg px-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            StudentOS
+            <Wordmark />
           </Link>
           {college ? (
-            <span className="flex min-w-0 items-center gap-2.5 text-[13.5px] font-medium text-ink">
+            <span className="flex min-w-0 items-center gap-2 text-[13px] font-semibold">
               <span
                 aria-hidden="true"
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-primary font-heading text-[13px] font-bold text-primary-foreground"
+                className="bg-brand inline-flex size-7 shrink-0 items-center justify-center rounded-lg font-heading text-[12px] font-bold text-white"
               >
                 {initials}
               </span>
@@ -55,30 +80,26 @@ export function AuthFrame({
       </header>
       <main
         id="main"
-        className={cn(
-          "mx-auto grid max-w-5xl gap-10 px-5 py-10 md:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-16 lg:py-20",
-          className,
-        )}
+        className={cn("page-enter mx-auto flex max-w-md flex-col px-6 pb-12 pt-4", className)}
       >
-        <div className="max-w-md">
+        {hero ? <div className="mb-6">{hero}</div> : null}
+        <div>
           {eyebrow ? (
-            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="mt-2 text-balance text-[2rem] font-semibold leading-[1.15] tracking-tight text-ink sm:text-[2.5rem]">
+          <h1 className="mt-2 text-balance text-[2rem] font-extrabold leading-[1.05] tracking-tight sm:text-[2.4rem]">
             {title}
           </h1>
           {intro ? (
-            <div className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-muted">
+            <div className="mt-3 text-pretty text-[14.5px] leading-relaxed text-ink-muted">
               {intro}
             </div>
           ) : null}
         </div>
-        <div className="min-w-0 max-w-md">
-          {children}
-          {footer ? <div className="mt-6 text-[13.5px] text-ink-muted">{footer}</div> : null}
-        </div>
+        <div className="mt-7 min-w-0">{children}</div>
+        {footer ? <div className="mt-6 text-[13px] text-ink-muted">{footer}</div> : null}
       </main>
     </div>
   );
