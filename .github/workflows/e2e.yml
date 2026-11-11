@@ -26,7 +26,7 @@ jobs:
     # one database inside a runner still run one after the other, and the whole run takes about a third of the time.
     name: Playwright journeys (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -52,13 +52,20 @@ jobs:
       - name: Build the app
         run: pnpm build
       - name: Install the browser
-        # The runner's package mirror sometimes cannot be reached for a few minutes. Try a few times before giving up.
+        # Only the browser itself is downloaded (from Playwright's own server). The system libraries it needs are
+        # already on the runner, so the slow and sometimes unreachable apt mirror is not used. If the browser cannot
+        # start, apt is tried once as a fallback. Every step has a time limit so a network problem fails in minutes.
+        timeout-minutes: 8
         run: |
           for attempt in 1 2 3; do
-            pnpm exec playwright install --with-deps chromium && exit 0
-            echo "Install failed (try $attempt). Waiting before the next try."
-            sleep 45
+            timeout 150 pnpm exec playwright install chromium && break
+            echo "Download failed (try $attempt)."
+            [ "$attempt" = 3 ] && exit 1
+            sleep 10
           done
-          exit 1
+          if ! node -e "require('@playwright/test').chromium.launch().then(b=>b.close())"; then
+            echo "The browser cannot start. Installing its system libraries."
+            timeout 240 pnpm exec playwright install-deps chromium
+          fi
       - name: Run the journeys
         run: pnpm test:e2e --shard=${{ matrix.shard }}/3
