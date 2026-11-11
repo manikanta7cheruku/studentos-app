@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { PinIcon } from "lucide-react";
+import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
 import { ExploreTiles } from "@/components/app/explore-tiles";
@@ -52,7 +54,18 @@ function AnnouncementCard({ item }: { item: Announcement }) {
 
 export function CampusScreen() {
   const { slug, college } = useCollege();
-  const state = useLoad(() => api.announcements.list(slug), [slug]);
+  const router = useRouter();
+  // Global has no Campus tab (there is no college to post notices), and a college can switch it off. Typing the
+  // address by hand used to show "We could not load the announcements". Send the person home instead.
+  const off = slug === GLOBAL_SLUG || !college.modules.campus;
+  React.useEffect(() => {
+    if (off) router.replace(homePath(slug));
+  }, [off, router, slug]);
+  const state = useLoad(
+    () => (off ? Promise.resolve(null) : api.announcements.list(slug)),
+    [slug, off],
+  );
+  if (off || (state.status === "ready" && state.data === null)) return null;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-8 md:px-8 md:py-12">
@@ -74,7 +87,7 @@ export function CampusScreen() {
         </div>
       ) : state.status === "error" ? (
         <LoadError error={state.error} onRetry={state.reload} what="the announcements" />
-      ) : state.data.data.length === 0 ? (
+      ) : state.data!.data.length === 0 ? (
         <div className="rounded-card border border-dashed border-border-strong bg-surface/60 p-8">
           <p className="text-lg font-semibold">No announcements yet.</p>
           <p className="mt-1 max-w-prose text-ink-muted">
@@ -84,7 +97,7 @@ export function CampusScreen() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {state.data.data.map((item) => (
+          {state.data!.data.map((item) => (
             <AnnouncementCard key={item.id} item={item} />
           ))}
         </div>
