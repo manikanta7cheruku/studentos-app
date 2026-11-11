@@ -80,6 +80,18 @@ Default `network_visibility = private`: nothing crosses. Future modes use **expl
 ## 7. Object-level access control
 Every `GET/PATCH/DELETE /{resource}/{id}` handler loads by id **within** the tenant and checks ownership/role. Tests: for each resource, user B cannot read/modify user A's private object; admin cannot read user-private objects (applications).
 
+## 7a. College setup with an owner code (D-30, COL-01)
+
+How a college is created, without a platform admin screen yet:
+
+1. The platform owner makes a code: `select public.make_college_setup_code('Name for my notes', 14);` (file `supabase/production/create-setup-code.sql`, run in the Supabase SQL editor). The answer is 8 digits. Only its sha256 hash is stored, so a lost code is replaced, never recovered.
+2. The owner sends the code to the college contact.
+3. The contact signs in (Google) and opens `/setup`: code, college details (name, web address, city, state, email domains), join rule (college email, invite link, or approve each student).
+4. The server (`POST /api/v1/colleges/setup`) checks the code by hash and makes the college, its domains, its settings and the person's admin membership in one step (`college_setup_create`). The code is marked used.
+5. The admin continues in the admin console (`/c/{slug}/admin`).
+
+Safety: a code works once and expires (14 days by default, 30 at most). A wrong, a used and an expired code all answer 403 FORBIDDEN, so nobody learns which. Five tries an hour per person (rate limit bucket `college_setup`). The address `global` and the reserved addresses cannot be used. Colleges stay apart by row level security in one database.
+
 ## 8. Administrative privileges and safeguards
 Least privilege; separate `platform_admin` auth path with mandatory 2FA (when available); no shared admin accounts; all admin actions audited; last-admin protection; admin impersonation **not implemented**.
 

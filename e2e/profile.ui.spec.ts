@@ -31,7 +31,7 @@ async function member(page: Page, label: string): Promise<string> {
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await expect(page).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(page).toHaveURL(/\/c\/alpha\/home$/);
   return email;
 }
 

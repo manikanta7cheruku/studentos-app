@@ -182,7 +182,7 @@ export async function memberOfAlpha(
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await page.waitForURL(/\/c\/alpha\/campus$/);
+  await page.waitForURL(/\/c\/alpha\/home$/);
   return email;
 }
 

@@ -81,7 +81,7 @@ test("joining with a good invite code opens the campus", async ({ page }) => {
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await expect(page).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(page).toHaveURL(/\/c\/alpha\/home$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });

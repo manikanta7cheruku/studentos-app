@@ -467,7 +467,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           ) : editing ? (
             "Save changes"
           ) : (
-            "Post to the team finder"
+            "Post plan"
           )}
         </Button>
         <Button

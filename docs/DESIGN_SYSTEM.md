@@ -1,4 +1,44 @@
-# Design system (built in code, no Figma)
+# Design system v2 (decision D-29, 2026-11-11)
+
+This section replaces the colours, the fonts and the "rules" below where they disagree. The old text stays for the history.
+
+## Principles
+1. **Phone first.** Every screen is made at 390px wide and then widened. Most students use a phone.
+2. **One brand, one gradient.** The gradient (violet `#5B4CF5`, magenta `#9A3FE6`, pink `#E0368F`) is the only colour of the product. It is on the main button, the mark, the selected chip, the vote that is on, the switch that is on, and the plan covers. Everything else is neutral. Plans differ a little from each other (three gradient sets inside the brand colours), so the feed has rhythm but never turns into a rainbow.
+3. **Plans are loud, ideas are quiet.** A plan is a card with a gradient cover. An idea is text with a vote pill. So a feed never looks like one repeated card.
+4. **Small and calm.** Base type 14px (14.5px on phones), headings 1.6 to 2rem, buttons 36 to 44px. Space does the separating, not lines.
+5. **It feels alive.** Everything eases out in 200 to 320ms. Lists rise in one after another (`.stagger`), cards lift on hover, buttons press down, the active dock item opens its name, votes pop, skeletons shimmer. All of it is off for people who asked for less motion.
+
+## Tokens (`src/app/globals.css`)
+| Token | Value | Use |
+|---|---|---|
+| bg | #0B0B10 | page |
+| surface / surface-2 | #14141B / #1C1C25 | cards, sheets |
+| ink / ink-muted | #F5F5F8 / #A3A3B2 | text |
+| border / border-strong | #272733 / #62627A | lines, input borders |
+| accent | #7656FF | links, focus colour, small highlights |
+| success, warning, danger | #42D392, #F5B83D, #FF7070 | states |
+| `--grad` | brand gradient | `bg-brand` and `text-brand` |
+
+Utilities: `glass` (blurred lit surface for the dock and sheets), `bg-brand`, `text-brand`, `lift` (card hover), `stagger`, `shimmer`, `grain` (fine noise over gradients).
+
+## Components
+- **Button** (`ui/button.tsx`): default is the gradient with an inner highlight, lifts 1px on hover, presses to 97%. `outline`, `secondary`, `ghost`, `destructive`, `link`. Sizes xs 36px, sm 40px, default 44px, lg 48px.
+- **Switch** (`ui/switch.tsx`): the track fills with the gradient from behind the knob, the knob stretches while pressed and springs, a small tick fades in when it is on. Used instead of checkboxes for settings.
+- **ChoiceCard** (`app/choice-card.tsx`): a choice among a few, with a round radio. Used for the space and the join rule.
+- **Poster** (`app/poster.tsx`): the gradient cover with grain and an optional big word.
+- **Dock and create sheet** (`college/college-shell.tsx`, `app/create-sheet.tsx`).
+- **VoteButtons, IdeaCard, PostRow (plan card)**: optimistic votes, one tap to open.
+
+## Success marks and badges
+Small. A success mark is 40px at most, never a big hero tick.
+
+## Accessibility kept
+Text contrast is checked for body text on `bg` and `surface`. Focus rings are always visible (`--ring`). Every control has a name. Motion respects `prefers-reduced-motion`. Targets are at least 36px (decision D-29 replaces the 44px rule; the dock and the main buttons are 44px or more).
+
+---
+
+# Design system v1 (built in code, no Figma; superseded in part by v2 above)
 
 We design in code with AI help. Rules keep the UI clean and not generic.
 

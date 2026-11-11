@@ -29,7 +29,7 @@ async function member(page: Page, label: string) {
     .last()
     .fill(invite);
   await page.getByRole("button", { name: /join with this code/i }).click();
-  await expect(page).toHaveURL(/\/c\/alpha\/campus$/);
+  await expect(page).toHaveURL(/\/c\/alpha\/home$/);
 }
 
 test("a member sees the campus inside the college shell", async ({ page }) => {

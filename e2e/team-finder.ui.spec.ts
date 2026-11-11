@@ -36,7 +36,7 @@ async function fillPost(page: Page, title: string) {
 test("the empty team finder invites the first post", async ({ page }) => {
   await memberOfAlpha(page, "TF0");
   await page.goto("/c/alpha/collaborate");
-  await expect(page.getByRole("heading", { name: /find your team/i, level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^plans$/i, level: 1 })).toBeVisible();
   await expect(page.getByText(/no team posts yet/i)).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
@@ -45,7 +45,7 @@ test("a short title is explained before sending", async ({ page }) => {
   await memberOfAlpha(page, "TF1");
   await page.goto("/c/alpha/collaborate/new");
   await page.getByLabel(/^title/i).fill("Hi");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page.getByText(/at least 5 characters/i)).toBeVisible();
   await expect(page.getByText(/name the role/i)).toBeVisible();
   await expectNoSidewaysScroll(page);
@@ -60,7 +60,7 @@ test("post with roles, find it, filter, edit, then close", async ({ page }) => {
   await page.getByRole("button", { name: /python/i }).click();
   await page.getByRole("button", { name: /add another role/i }).click();
   await page.getByPlaceholder("Frontend developer").nth(1).fill("Designer");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
 
   // The post page
   await expect(page).toHaveURL(/\/c\/alpha\/collaborate\/[0-9a-f-]{36}$/);
@@ -116,7 +116,7 @@ test("a student in a college and in Global can post to Global", async ({ page })
   await expect(page.getByRole("radio", { name: /alpha college/i })).toBeChecked();
   await page.getByRole("radio", { name: /global/i }).check();
   await fillPost(page, "Open source note taking app, all colleges welcome");
-  await page.getByRole("button", { name: /post to the team finder/i }).click();
+  await page.getByRole("button", { name: /^post plan$/i }).click();
   await expect(page).toHaveURL(/\/c\/global\/collaborate\/[0-9a-f-]{36}$/);
   await expect(
     page.getByRole("heading", { name: /open source note taking/i, level: 1 }),

@@ -7,7 +7,8 @@ import { cleanUp, createOpportunity, memberOfAlpha, uniqueIp } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context }, testInfo) => {
+  testInfo.skip(true, "Careers is a placeholder until it is built (decision D-29).");
   await context.setExtraHTTPHeaders({ "x-forwarded-for": uniqueIp() });
 });
 

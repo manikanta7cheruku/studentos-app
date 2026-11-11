@@ -228,7 +228,7 @@ export function PostDetailScreen({ postId }: { postId: string }) {
         href={`/c/${slug}/collaborate`}
         className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        ← All posts
+        ← All plans
       </Link>
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-4">

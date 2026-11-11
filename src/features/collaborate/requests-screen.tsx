@@ -86,7 +86,7 @@ export function RequestsScreen() {
       <PageHeader
         title="Requests"
         description="People who asked to join your posts, and the requests you sent."
-        back={{ href: `/c/${slug}/collaborate`, label: "All posts" }}
+        back={{ href: `/c/${slug}/collaborate`, label: "Plans" }}
       />
 
       <section aria-labelledby="received" className="flex flex-col gap-3">
