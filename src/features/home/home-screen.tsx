@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ExploreTiles } from "@/components/app/explore-tiles";
 import { LoadError } from "@/components/app/load-error";
 import { api, type Idea, type TeamPost } from "@/lib/api/endpoints";
+import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { PostRow } from "@/features/collaborate/post-row";
@@ -20,7 +21,7 @@ type Tab = "all" | "plans" | "ideas";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "For you" },
   { value: "plans", label: "Plans" },
-  { value: "ideas", label: "Thoughts" },
+  { value: "ideas", label: "Buzz" },
 ];
 
 function greeting(now = new Date()): string {
@@ -71,12 +72,14 @@ export function HomeScreen() {
         </p>
       </header>
 
+      <FinishProfile />
+
       <ExploreTiles slug={slug} />
 
       <div
         role="tablist"
         aria-label="What to show"
-        className="sticky top-14 z-20 -mx-1 flex gap-1 rounded-2xl bg-[#1a1a23] p-1 shadow-[0_8px_16px_-12px_rgba(0,0,0,0.8)] md:top-3"
+        className="glass-bar sticky top-14 z-20 -mx-5 flex gap-1 px-5 py-2.5 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-4"
       >
         {TABS.map((item) => (
           <button
@@ -113,7 +116,7 @@ export function HomeScreen() {
           <div className="flex flex-col items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
             <p className="text-lg font-bold">It is quiet here</p>
             <p className="max-w-[30ch] text-[14px] text-ink-muted">
-              Start something. A plan for the weekend or a thought for your campus.
+              Start something. A plan for the weekend or a buzz for your campus.
             </p>
             <div className="mt-1 flex flex-wrap justify-center gap-2">
               <Button asChild>
@@ -123,7 +126,7 @@ export function HomeScreen() {
               </Button>
               <Button asChild variant="outline">
                 <Link href={`/c/${slug}/ideas/new`}>
-                  <LightbulbIcon aria-hidden="true" /> Share a thought
+                  <LightbulbIcon aria-hidden="true" /> Share a buzz
                 </Link>
               </Button>
             </div>

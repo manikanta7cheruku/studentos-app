@@ -12,6 +12,8 @@ type PageHeaderProps = {
   actions?: React.ReactNode;
   back?: { href: string; label: string };
   className?: string;
+  /** A main tab of the app: a bigger title, no long text and no big button on a phone (the + and the dock do that). */
+  app?: boolean;
 };
 
 /**
@@ -25,9 +27,10 @@ export function PageHeader({
   actions,
   back,
   className,
+  app = false,
 }: PageHeaderProps) {
   return (
-    <header className={cn("flex flex-col gap-4 pb-2", className)}>
+    <header className={cn("flex flex-col gap-4 pb-2", app && "gap-2 pb-0", className)}>
       {back ? (
         <Link
           href={back.href}
@@ -47,16 +50,30 @@ export function PageHeader({
               {eyebrow}
             </p>
           ) : null}
-          <h1 className="mt-1 text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight text-ink sm:text-[2rem]">
+          <h1
+            className={cn(
+              "mt-1 text-balance font-extrabold leading-tight tracking-tight text-ink sm:text-[2rem]",
+              app ? "text-[2rem]" : "text-[1.7rem]",
+            )}
+          >
             {title}
           </h1>
           {description ? (
-            <p className="mt-2 max-w-prose text-pretty text-[14.5px] leading-relaxed text-ink-muted">
+            <p
+              className={cn(
+                "mt-2 max-w-prose text-pretty text-[14.5px] leading-relaxed text-ink-muted",
+                app && "hidden sm:block",
+              )}
+            >
               {description}
             </p>
           ) : null}
         </div>
-        {actions ? <div className="flex flex-wrap items-center gap-3">{actions}</div> : null}
+        {actions ? (
+          <div className={cn("flex flex-wrap items-center gap-3", app && "hidden sm:flex")}>
+            {actions}
+          </div>
+        ) : null}
       </div>
     </header>
   );

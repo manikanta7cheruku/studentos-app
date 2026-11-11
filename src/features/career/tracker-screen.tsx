@@ -143,7 +143,7 @@ export function TrackerScreen() {
       ) : state.status === "error" ? (
         <LoadError error={state.error} onRetry={state.reload} what="your applications" />
       ) : state.data.length === 0 ? (
-        <div className="rounded-card border border-dashed border-border-strong p-8">
+        <div className="glass-card rounded-[22px] p-8">
           <p className="text-lg font-semibold">Nothing here yet.</p>
           <p className="mt-1 max-w-prose text-ink-muted">
             Add the first internship or job you are interested in, with its link and deadline. Move
@@ -245,11 +245,11 @@ function Loaded({
       </div>
       <div aria-live="polite">
         {shown.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-6 text-[14px] text-ink-muted">
+          <p className="glass-card rounded-[22px] p-6 text-[14px] text-ink-muted">
             No applications match. Try another status or word.
           </p>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {shown.map((item) => (
               <Row key={item.id} item={item} slug={slug} />
             ))}

@@ -407,7 +407,7 @@ function SpacesSection() {
       >
         Your spaces
       </h2>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
         {spaces.map((item) => {
           const current = item.college.slug === slug;
           return (

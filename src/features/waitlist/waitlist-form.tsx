@@ -163,7 +163,7 @@ export function WaitlistForm() {
       <fieldset className="flex flex-col gap-2">
         <legend className="text-base font-semibold text-foreground">I am a</legend>
         <div className="flex flex-wrap gap-3">
-          <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-card border border-border bg-surface px-4 py-2 text-base font-medium text-foreground hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-secondary">
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 glass-card rounded-[22px] px-4 py-2 text-base font-medium text-foreground hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-secondary">
             <input
               type="radio"
               name="audience"
@@ -174,7 +174,7 @@ export function WaitlistForm() {
             />
             <span>Student</span>
           </label>
-          <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-card border border-border bg-surface px-4 py-2 text-base font-medium text-foreground hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-secondary">
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 glass-card rounded-[22px] px-4 py-2 text-base font-medium text-foreground hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-secondary">
             <input
               type="radio"
               name="audience"

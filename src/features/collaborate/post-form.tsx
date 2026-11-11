@@ -395,7 +395,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
             </p>
           </div>
           {editing ? (
-            <ul className="divide-y divide-border border-y border-border">
+            <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
               {editing.roles.map((role) => (
                 <li
                   key={role.id}
@@ -414,7 +414,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
               {roles.map((role, index) => (
                 <div
                   key={role.key}
-                  className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4 sm:p-5"
+                  className="flex flex-col gap-4 glass-card rounded-[22px] p-4 sm:p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-muted">

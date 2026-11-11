@@ -117,7 +117,7 @@ function ShareButton({ idea }: { idea: Idea }) {
     const url = `${window.location.origin}/c/${slug}/ideas/${idea.id}`;
     try {
       if (navigator.share)
-        await navigator.share({ title: idea.title || "A thought on StudentOS", url });
+        await navigator.share({ title: idea.title || "A buzz on StudentOS", url });
       else await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
@@ -157,10 +157,7 @@ export function IdeaCard({
   return (
     <article
       onClickCapture={() => primeLoad(`idea:${slug}:${idea.id}`, idea)}
-      className={cn(
-        "relative flex flex-col gap-3 rounded-[20px] border border-white/[0.08] bg-surface p-4",
-        !full && "lift",
-      )}
+      className={cn("glass-card relative flex flex-col gap-3 rounded-[24px] p-4", !full && "lift")}
     >
       <header className="flex items-center gap-2.5">
         <Avatar name={idea.author.display_name} size="xs" />
@@ -195,7 +192,7 @@ export function IdeaCard({
         {!idea.title && !full ? (
           <Link
             href={href}
-            aria-label="Open this thought"
+            aria-label="Open this buzz"
             className="absolute inset-0 rounded-[inherit] outline-none"
           />
         ) : null}

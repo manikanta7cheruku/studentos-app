@@ -298,7 +298,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
-      <PageHeader title="Thought" back={{ href: `/c/${slug}/ideas`, label: "Thoughts" }} />
+      <PageHeader title="Buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-8 w-3/4" />
@@ -307,13 +307,13 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       ) : state.status === "error" ? (
         state.error instanceof ApiError && state.error.status === 404 ? (
           <div className="rounded-card border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-lg font-bold">This thought is not available.</p>
+            <p className="text-lg font-bold">This buzz is not available.</p>
             <p className="mt-1 text-ink-muted">
               It may have been removed, or it belongs to another space.
             </p>
           </div>
         ) : (
-          <LoadError error={state.error} onRetry={state.reload} what="this thought" />
+          <LoadError error={state.error} onRetry={state.reload} what="this buzz" />
         )
       ) : (
         <>
@@ -321,7 +321,7 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           {isModerator && !state.data.is_owner ? (
             <div className="-mt-2 flex justify-end">
               <Button variant="outline" onClick={() => setRemoving(true)}>
-                Remove this thought
+                Remove this buzz
               </Button>
               <RemoveDialog
                 slug={slug}
@@ -336,13 +336,13 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
           {state.data.is_owner ? (
             <div className="-mt-2 flex justify-end">
               <ConfirmDelete
-                label="Delete thought"
+                label="Delete buzz"
                 onConfirm={async () => {
                   try {
                     await api.ideas.remove(slug, ideaId);
                     router.push(`/c/${slug}/ideas`);
                   } catch (caught) {
-                    setError(friendlyMessage(caught, "We could not delete the thought."));
+                    setError(friendlyMessage(caught, "We could not delete the buzz."));
                   }
                 }}
               />

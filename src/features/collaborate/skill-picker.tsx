@@ -74,7 +74,7 @@ export function SkillPicker({
             spellCheck={false}
           />
           {trimmed && results.length ? (
-            <ul className="divide-y divide-border rounded-card border border-border bg-surface">
+            <ul className="divide-y divide-border glass-card rounded-[22px]">
               {results.slice(0, 6).map((hit) => (
                 <li key={hit.id}>
                   <button

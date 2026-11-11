@@ -176,7 +176,7 @@ export function ReportsScreen() {
         </EmptyNote>
       ) : (
         <>
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {list.items.map((item) => (
               <ReportCard key={item.id} item={item} onDone={list.state.reload} />
             ))}

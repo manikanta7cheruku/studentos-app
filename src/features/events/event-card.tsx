@@ -134,7 +134,7 @@ export function EventCard({
     <li
       onClickCapture={() => primeLoad(`event:${slug}:${event.id}`, event)}
       className={cn(
-        "lift relative flex items-start gap-3.5 rounded-[20px] border border-white/[0.08] bg-surface p-4 focus-within:ring-2 focus-within:ring-ring",
+        "lift glass-card relative flex items-start gap-3.5 rounded-[24px] p-4 focus-within:ring-2 focus-within:ring-ring",
         (event.status === "cancelled" || event.status === "removed") && "opacity-60",
       )}
     >

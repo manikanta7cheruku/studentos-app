@@ -9,7 +9,7 @@ import { removeContentAction } from "../actions";
 
 export const instant = false;
 
-const KIND = { plan: "Plan", thought: "Thought", event: "Event", listing: "Board post" } as const;
+const KIND = { plan: "Plan", thought: "Buzz", event: "Event", listing: "Board post" } as const;
 const REASONS = [
   ["spam", "Spam"],
   ["inappropriate", "Inappropriate"],
@@ -31,7 +31,7 @@ export default async function OwnerContent({
     <>
       <OwnerTitle
         title="Content"
-        text="Every plan, thought, event and board post across all colleges. Removing one hides it and tells its author why. It is kept in the audit log."
+        text="Every plan, buzz, event and board post across all colleges. Removing one hides it and tells its author why. It is kept in the audit log."
       />
       <form method="get" className="mb-5 flex max-w-xl gap-2" role="search">
         <div className="relative flex-1">

@@ -90,7 +90,7 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
               No skill found for &ldquo;{trimmed}&rdquo;. Try another word.
             </p>
           ) : (
-            <ul className="divide-y divide-border rounded-card border border-border bg-surface">
+            <ul className="glass-card divide-y divide-white/[0.07] overflow-hidden rounded-[20px]">
               {results.slice(0, 8).map((hit) => (
                 <li key={hit.id}>
                   <button
@@ -99,7 +99,7 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
                       onAdd(hit);
                       setQuery("");
                     }}
-                    className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left transition-colors hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span>
                       <span className="text-[14px] font-medium">{hit.name}</span>
@@ -118,6 +118,92 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** One skill as a glass card: its name, a level you tap (five steps), and an optional link to your work. */
+function SkillCard({
+  row,
+  error,
+  onChange,
+  onRemove,
+}: {
+  row: Row;
+  error?: string;
+  onChange: (patch: Partial<Row>) => void;
+  onRemove: () => void;
+}) {
+  const [linking, setLinking] = React.useState(Boolean(row.evidence_url) || Boolean(error));
+  return (
+    <li className="glass-card rounded-[22px] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[16px] font-bold leading-snug">{row.name}</p>
+          <p className="mt-0.5 text-[13px] text-ink-muted" aria-live="polite">
+            {LEVEL_LABELS[row.level - 1]}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${row.name}`}
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-ink-muted outline-none transition-[background-color,color,transform] duration-200 hover:bg-danger/20 hover:text-danger focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
+        >
+          <Trash2Icon aria-hidden="true" className="size-4" />
+        </button>
+      </div>
+      <div role="radiogroup" aria-label={`Level for ${row.name}`} className="mt-3 flex gap-1.5">
+        {LEVEL_LABELS.map((label, index) => {
+          const value = index + 1;
+          const on = value <= row.level;
+          return (
+            <button
+              key={label}
+              type="button"
+              role="radio"
+              aria-checked={row.level === value}
+              aria-label={`${value}, ${label}`}
+              onClick={() => onChange({ level: value })}
+              className="group flex h-9 flex-1 items-center outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+            >
+              <span
+                className={
+                  "h-2 w-full rounded-full transition-[background-color,transform] duration-200 group-active:scale-y-150 " +
+                  (on ? "bg-brand" : "bg-white/[0.12] group-hover:bg-white/[0.2]")
+                }
+              />
+            </button>
+          );
+        })}
+      </div>
+      {linking ? (
+        <div className="mt-3">
+          <FormField
+            label="Link to your work"
+            help="Optional. A link starting with https://"
+            error={error}
+          >
+            <Input
+              type="url"
+              value={row.evidence_url}
+              onChange={(event) => onChange({ evidence_url: event.target.value })}
+              autoCapitalize="none"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="https://github.com/you/project"
+            />
+          </FormField>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setLinking(true)}
+          className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg text-[13px] font-semibold text-[#b9b4ee] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <PlusIcon aria-hidden="true" className="size-3.5" /> Add a link to your work
+        </button>
+      )}
+    </li>
   );
 }
 
@@ -187,71 +273,27 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
       <section aria-labelledby="my-skills" className="flex flex-col gap-3">
         <h2
           id="my-skills"
-          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+          className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
         >
           Your skills ({rows.length})
         </h2>
         {rows.length === 0 ? (
-          <p className="rounded-card border border-dashed border-border-strong p-6 text-[15px] text-ink-muted">
+          <p className="glass-card rounded-[22px] border-dashed p-6 text-[15px] text-ink-muted">
             No skills yet. Search above and add the ones you want classmates to find you by.
           </p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border border-y border-border">
+          <ul className="flex flex-col gap-3">
             {rows.map((row) => (
-              <li
+              <SkillCard
                 key={row.skill_id}
-                className="grid gap-3 py-4 sm:grid-cols-[1fr_12rem] sm:items-start"
-              >
-                <div className="flex flex-col gap-3">
-                  <p className="text-[15px] font-semibold">{row.name}</p>
-                  <FormField
-                    label="Link to your work"
-                    help="Optional. A link starting with https://"
-                    error={fields[row.skill_id]}
-                  >
-                    <Input
-                      type="url"
-                      value={row.evidence_url}
-                      onChange={(event) =>
-                        update(row.skill_id, { evidence_url: event.target.value })
-                      }
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      spellCheck={false}
-                      placeholder="https://github.com/you/project"
-                    />
-                  </FormField>
-                </div>
-                <div className="flex items-end gap-2 sm:flex-col sm:items-stretch">
-                  <label className="flex flex-1 flex-col gap-1.5 text-[13.5px] font-medium">
-                    Level
-                    <select
-                      value={row.level}
-                      onChange={(event) =>
-                        update(row.skill_id, { level: Number(event.target.value) })
-                      }
-                      className="h-11 rounded-input border border-border-strong bg-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {LEVEL_LABELS.map((label, index) => (
-                        <option key={label} value={index + 1}>
-                          {index + 1} · {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setSaved(false);
-                      setRows((current) => current.filter((r) => r.skill_id !== row.skill_id));
-                    }}
-                    aria-label={`Remove ${row.name}`}
-                  >
-                    <Trash2Icon aria-hidden="true" /> Remove
-                  </Button>
-                </div>
-              </li>
+                row={row}
+                error={fields[row.skill_id]}
+                onChange={(patch) => update(row.skill_id, patch)}
+                onRemove={() => {
+                  setSaved(false);
+                  setRows((current) => current.filter((r) => r.skill_id !== row.skill_id));
+                }}
+              />
             ))}
           </ul>
         )}

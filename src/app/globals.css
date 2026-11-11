@@ -354,3 +354,131 @@ select option {
   background: #1c1c25;
   color: var(--ink);
 }
+
+/* ---- The create sheet: slides up on a fast, soft curve, and its choices pop in one after another. ----
+   Only transform and opacity move, so it stays smooth on a phone. */
+@keyframes sheet-in {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes sheet-out {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 100%, 0);
+  }
+}
+@keyframes sheet-pop-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheet-pop-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.98);
+  }
+}
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes scrim-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.sheet-scrim {
+  background: rgba(6, 6, 12, 0.6);
+}
+.sheet-scrim[data-state="open"] {
+  animation: scrim-in 220ms ease-out both;
+}
+.sheet-scrim[data-state="closed"] {
+  animation: scrim-out 180ms ease-in both;
+}
+.sheet-panel {
+  will-change: transform;
+}
+.sheet-panel[data-state="open"] {
+  animation: sheet-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sheet-panel[data-state="closed"] {
+  animation: sheet-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+/* When a finger already pulled it away, it must not slide out a second time. */
+.sheet-panel[data-gone="true"] {
+  animation: none !important;
+}
+@media (min-width: 768px) {
+  .sheet-panel[data-state="open"] {
+    animation: sheet-pop-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .sheet-panel[data-state="closed"] {
+    animation: sheet-pop-out 160ms ease-in both;
+  }
+}
+.sheet-panel[data-state="open"] .sheet-tile {
+  animation: tile-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(90ms + var(--i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel,
+  .sheet-panel .sheet-tile,
+  .sheet-scrim {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* The sheet's glass: frosted and bright at the edge, light enough that the page shows through it. */
+.glass-sheet {
+  background: linear-gradient(160deg, rgba(60, 56, 100, 0.55), rgba(24, 24, 36, 0.72) 55%);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 -20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+@layer components {
+  /* A card of glass: a faint light from the top left, a bright hairline edge, and a soft shadow. Used for feed cards. */
+  .glass-card {
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025) 60%);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 14px 34px -22px rgba(0, 0, 0, 0.8);
+  }
+  /* The filter bar that stays under the top bar while a feed scrolls. */
+  .glass-bar {
+    background: linear-gradient(180deg, rgba(11, 11, 16, 0.78), rgba(11, 11, 16, 0.55));
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+}

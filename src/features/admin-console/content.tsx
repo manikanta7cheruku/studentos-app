@@ -12,7 +12,7 @@ import { RemoveDialog } from "./remove-dialog";
 
 const KIND_LABEL: Record<ContentItem["kind"], string> = {
   plan: "Plan",
-  thought: "Thought",
+  thought: "Buzz",
   event: "Event",
   listing: "Board post",
 };
@@ -46,14 +46,14 @@ function Row({ item, onDone }: { item: ContentItem; onDone: () => void }) {
   );
 }
 
-/** The newest plans, thoughts, events and board posts. A moderator removes one with a reason the author receives. */
+/** The newest plans, buzz, events and board posts. A moderator removes one with a reason the author receives. */
 export function ContentScreen() {
   const { slug } = useCollege();
   const state = useLoad(() => api.admin.content(slug), [slug]);
   return (
     <ConsolePage
       title="Content"
-      description="Remove a plan, thought, event or board post. You pick the reason and the person who posted it is told."
+      description="Remove a plan, buzz, event or board post. You pick the reason and the person who posted it is told."
     >
       {state.status === "loading" ? (
         <ListSkeleton />
@@ -62,7 +62,7 @@ export function ContentScreen() {
       ) : state.data.length === 0 ? (
         <EmptyNote>Nothing has been posted yet.</EmptyNote>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
           {state.data.map((item) => (
             <Row key={`${item.kind}-${item.id}`} item={item} onDone={state.reload} />
           ))}

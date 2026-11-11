@@ -242,7 +242,7 @@ export function AuditScreen() {
         <EmptyNote>Nothing recorded yet.</EmptyNote>
       ) : (
         <>
-          <ol className="divide-y divide-border border-y border-border">
+          <ol className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
             {list.items.map((entry) => (
               <li
                 key={entry.id}

@@ -19,10 +19,7 @@ export function LoadError({
 }) {
   const api = error instanceof ApiError ? error : null;
   return (
-    <div
-      role="alert"
-      className="flex flex-col items-start gap-4 rounded-card border border-border bg-surface p-6"
-    >
+    <div role="alert" className="flex flex-col items-start gap-4 glass-card rounded-[22px] p-6">
       <span className="inline-flex size-10 items-center justify-center rounded-full bg-danger/15 text-danger">
         <WifiOffIcon aria-hidden="true" className="size-5" />
       </span>

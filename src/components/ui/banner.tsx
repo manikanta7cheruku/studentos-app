@@ -4,14 +4,14 @@ import { CircleCheckIcon, InfoIcon, OctagonXIcon, TriangleAlertIcon } from "luci
 import { cn } from "cn";
 
 const bannerVariants = cva(
-  "flex items-start gap-3 rounded-card border-2 bg-surface p-4 text-base text-foreground",
+  "glass-card flex items-start gap-3 rounded-[18px] border p-4 text-[14.5px] text-foreground",
   {
     variants: {
       variant: {
-        info: "border-primary",
-        success: "border-success",
-        warning: "border-warning",
-        error: "border-destructive",
+        info: "border-primary/60",
+        success: "border-success/60",
+        warning: "border-warning/60",
+        error: "border-destructive/60",
       },
     },
     defaultVariants: {

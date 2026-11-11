@@ -28,7 +28,7 @@ export const REMOVAL_REASONS: { value: RemovalReason; label: string; hint: strin
 
 const KIND_WORD: Record<ContentKind, string> = {
   plan: "plan",
-  thought: "thought",
+  thought: "buzz",
   event: "event",
   listing: "listing",
 };

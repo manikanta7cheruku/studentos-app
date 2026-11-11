@@ -15,7 +15,7 @@ import {
   ChevronsUpDownIcon,
   GlobeIcon,
   HouseIcon,
-  LightbulbIcon,
+  MessageCircleHeartIcon,
   LogOutIcon,
   PlusIcon,
   SettingsIcon,
@@ -44,7 +44,7 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
   const tabs: NavItem[] = [
     { href: `${base}/home`, label: "Home", icon: <HouseIcon /> },
     { href: `${base}/collaborate`, label: "Plans", icon: <UsersIcon /> },
-    { href: `${base}/ideas`, label: "Thoughts", icon: <LightbulbIcon /> },
+    { href: `${base}/ideas`, label: "Buzz", icon: <MessageCircleHeartIcon /> },
     { href: `${base}/me`, label: "You", icon: <UserRoundIcon /> },
   ];
   const more: NavItem[] = [];
@@ -139,7 +139,7 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           align={align}
           side="top"
           sideOffset={8}
-          className="z-50 w-60 rounded-card border border-border bg-surface p-1.5 text-[13.5px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
+          className="z-50 w-60 glass-card rounded-[22px] p-1.5 text-[13.5px] shadow-[0_8px_24px_-12px_rgba(27,26,23,0.25)]"
         >
           {others.length || !inGlobal ? (
             <>
@@ -528,7 +528,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           type="button"
           aria-label="Create"
           onClick={() => setCreating(true)}
-          className="bg-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_26px_-6px_rgba(8,6,30,0.55)] outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 active:rotate-90"
+          className="bg-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_26px_-6px_rgba(8,6,30,0.55)] outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
         >
           <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
         </button>
