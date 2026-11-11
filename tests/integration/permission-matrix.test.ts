@@ -56,6 +56,25 @@ import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route"
 import { GET as skillSearch } from "@/app/api/v1/skills/route";
 import { POST as uploadAvatar } from "@/app/api/v1/me/avatar/route";
 import { POST as avatarUploadUrl } from "@/app/api/v1/me/avatar/upload-url/route";
+import { GET as ideasList, POST as ideasCreate } from "@/app/api/v1/c/[slug]/ideas/route";
+import { DELETE as ideasRemove, GET as ideasGet } from "@/app/api/v1/c/[slug]/ideas/[id]/route";
+import { PUT as ideasVote } from "@/app/api/v1/c/[slug]/ideas/[id]/vote/route";
+import {
+  GET as ideaCommentsList,
+  POST as ideaCommentsCreate,
+} from "@/app/api/v1/c/[slug]/ideas/[id]/comments/route";
+import { DELETE as ideaCommentsRemove } from "@/app/api/v1/c/[slug]/ideas/[id]/comments/[commentId]/route";
+import { GET as eventsList, POST as eventsCreate } from "@/app/api/v1/c/[slug]/events/route";
+import { DELETE as eventsCancel, GET as eventsGet } from "@/app/api/v1/c/[slug]/events/[id]/route";
+import { PUT as eventsRsvp } from "@/app/api/v1/c/[slug]/events/[id]/rsvp/route";
+import { GET as boardList, POST as boardCreate } from "@/app/api/v1/c/[slug]/board/route";
+import { DELETE as boardRemove, GET as boardGet } from "@/app/api/v1/c/[slug]/board/[id]/route";
+import { POST as boardStatus } from "@/app/api/v1/c/[slug]/board/[id]/status/route";
+import {
+  GET as boardMessagesList,
+  POST as boardMessagesSend,
+} from "@/app/api/v1/c/[slug]/board/[id]/messages/route";
+import { POST as collegeSetup } from "@/app/api/v1/colleges/setup/route";
 import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
 import { GET as tmfList, POST as tmfCreate } from "@/app/api/v1/c/[slug]/team-posts/route";
 import { GET as tmfGet, PATCH as tmfPatch } from "@/app/api/v1/c/[slug]/team-posts/[id]/route";
@@ -670,6 +689,221 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         cookie,
       }).then((r) => r.status),
     expect: memberOnly(200),
+  },
+  // Ideas, events, the board and college setup (R3 Day 11 and 12)
+  ...(
+    [
+      ["IDE-02 GET /c/alpha/ideas (members)", ideasList, "GET", undefined, "/ideas", 200, false],
+      [
+        "IDE-01 POST /c/alpha/ideas (an empty body is the probe -> 400 for members)",
+        ideasCreate,
+        "POST",
+        {},
+        "/ideas",
+        400,
+        true,
+      ],
+      ["EVT-02 GET /c/alpha/events (members)", eventsList, "GET", undefined, "/events", 200, false],
+      [
+        "EVT-01 POST /c/alpha/events (an empty body is the probe -> 400 for members)",
+        eventsCreate,
+        "POST",
+        {},
+        "/events",
+        400,
+        true,
+      ],
+      [
+        "BRD-02 GET /c/alpha/board (members)",
+        boardList,
+        "GET",
+        undefined,
+        "/board?board=market",
+        200,
+        false,
+      ],
+      [
+        "BRD-01 POST /c/alpha/board (an empty body is the probe -> 400 for members)",
+        boardCreate,
+        "POST",
+        {},
+        "/board",
+        400,
+        true,
+      ],
+    ] as const
+  ).map(([op, handler, method, json, tail, status, withKey]) => ({
+    op,
+    call: (cookie: string | undefined) =>
+      call(handler, {
+        method,
+        path: `/api/v1/c/alpha${tail}`,
+        json,
+        params: { slug: "alpha" },
+        cookie,
+        headers: withKey ? idem() : undefined,
+      }).then((r) => r.status),
+    expect: memberOnly(status),
+  })),
+  ...(
+    [
+      [
+        "IDE-03 GET /c/alpha/ideas/{id} (unknown idea -> 404 for members)",
+        ideasGet,
+        "GET",
+        undefined,
+        "/ideas",
+        "",
+        false,
+      ],
+      [
+        "IDE-04 PUT /c/alpha/ideas/{id}/vote (unknown idea -> 404 for members)",
+        ideasVote,
+        "PUT",
+        { value: 1 },
+        "/ideas",
+        "/vote",
+        false,
+      ],
+      [
+        "IDE-05 DELETE /c/alpha/ideas/{id} (unknown idea -> 404 for members)",
+        ideasRemove,
+        "DELETE",
+        undefined,
+        "/ideas",
+        "",
+        false,
+      ],
+      [
+        "IDE-07 GET /c/alpha/ideas/{id}/comments (unknown idea -> 404 for members)",
+        ideaCommentsList,
+        "GET",
+        undefined,
+        "/ideas",
+        "/comments",
+        false,
+      ],
+      [
+        "IDE-06 POST /c/alpha/ideas/{id}/comments (unknown idea -> 404 for members)",
+        ideaCommentsCreate,
+        "POST",
+        { body: "Hello" },
+        "/ideas",
+        "/comments",
+        true,
+      ],
+      [
+        "EVT-03 GET /c/alpha/events/{id} (unknown event -> 404 for members)",
+        eventsGet,
+        "GET",
+        undefined,
+        "/events",
+        "",
+        false,
+      ],
+      [
+        "EVT-04 PUT /c/alpha/events/{id}/rsvp (unknown event -> 404 for members)",
+        eventsRsvp,
+        "PUT",
+        { going: true },
+        "/events",
+        "/rsvp",
+        false,
+      ],
+      [
+        "EVT-05 DELETE /c/alpha/events/{id} (unknown event -> 404 for members)",
+        eventsCancel,
+        "DELETE",
+        undefined,
+        "/events",
+        "",
+        false,
+      ],
+      [
+        "BRD-03 GET /c/alpha/board/{id} (unknown post -> 404 for members)",
+        boardGet,
+        "GET",
+        undefined,
+        "/board",
+        "",
+        false,
+      ],
+      [
+        "BRD-04 POST /c/alpha/board/{id}/status (unknown post -> 404 for members)",
+        boardStatus,
+        "POST",
+        { status: "resolved" },
+        "/board",
+        "/status",
+        false,
+      ],
+      [
+        "BRD-05 DELETE /c/alpha/board/{id} (unknown post -> 404 for members)",
+        boardRemove,
+        "DELETE",
+        undefined,
+        "/board",
+        "",
+        false,
+      ],
+      [
+        "BRD-06 GET /c/alpha/board/{id}/messages (unknown post -> 404 for members)",
+        boardMessagesList,
+        "GET",
+        undefined,
+        "/board",
+        "/messages",
+        false,
+      ],
+      [
+        "BRD-07 POST /c/alpha/board/{id}/messages (unknown post -> 404 for members)",
+        boardMessagesSend,
+        "POST",
+        { body: "Hello" },
+        "/board",
+        "/messages",
+        true,
+      ],
+    ] as const
+  ).map(([op, handler, method, json, base, tail, withKey]) => ({
+    op,
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(handler, {
+        method,
+        path: `/api/v1/c/alpha${base}/${id}${tail}`,
+        json,
+        params: { slug: "alpha", id },
+        cookie,
+        headers: withKey ? idem() : undefined,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  })),
+  {
+    op: "IDE-08 DELETE /c/alpha/ideas/{id}/comments/{commentId} (unknown comment -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const commentId = randomUUID();
+      return call(ideaCommentsRemove, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/ideas/${id}/comments/${commentId}`,
+        params: { slug: "alpha", id, commentId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "COL-01 POST /colleges/setup (any signed in person; an empty body is the probe -> 400)",
+    call: (cookie: string | undefined) =>
+      call(collegeSetup, {
+        method: "POST",
+        path: "/api/v1/colleges/setup",
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
   },
   {
     op: "TMF-02 GET /c/alpha/team-posts (members)",

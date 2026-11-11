@@ -69,7 +69,7 @@ select is((public.tf_post_json((select v::uuid from t where k = 'sport'), 'aaaaa
 select throws_ok(format($$select public.tf_set_place('aaaaaaaa-1000-4000-8000-000000000004', %L, 'Hijacked')$$, (select v from t where k = 'sport')), 'P0001', 'NOT_FOUND', 'someone else cannot set the place');
 select lives_ok(format($$select public.tf_set_place('aaaaaaaa-1000-4000-8000-000000000003', %L, '')$$, (select v from t where k = 'sport')), 'an empty place clears it');
 select is((public.tf_post_json((select v::uuid from t where k = 'sport'), 'aaaaaaaa-1000-4000-8000-000000000003') -> 'place'), 'null'::jsonb, 'and it is null again');
-insert into t select 'event', (public.tf_create_post('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'event', 'Open mic night', 'Bring a song.', now() + interval '3 days', null, null, '[{"role_name":"Guest","slots":50,"skill_ids":[]}]'::jsonb) ->> 'id');
+insert into t select 'event', (public.tf_create_post('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'event', 'Open mic night', 'Bring a song.', now() + interval '3 days', null, null, '[{"role_name":"Guest","slots":20,"skill_ids":[]}]'::jsonb) ->> 'id');
 select is((public.tf_post_json((select v::uuid from t where k = 'event'), 'aaaaaaaa-1000-4000-8000-000000000003') ->> 'kind'), 'event', 'the kind event is accepted');
 select throws_ok($$select public.tf_create_post('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'party', 'Not a kind we know', 'x', null, null, null, '[{"role_name":"A","slots":1,"skill_ids":[]}]'::jsonb)$$, '23514', null, 'an unknown kind is still refused');
 
