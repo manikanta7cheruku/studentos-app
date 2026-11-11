@@ -68,8 +68,9 @@ export function EventsScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-2 md:px-8 md:py-10">
       <PageHeader
+        app
         eyebrow={slug === "global" ? "Global" : college.name}
         title="Events"
         description="Fests, talks, meetups and matches. Say you are going and see who else is."
@@ -84,7 +85,7 @@ export function EventsScreen() {
       <div
         role="tablist"
         aria-label="Which events"
-        className="flex gap-1 rounded-2xl bg-white/[0.05] p-1"
+        className="glass-bar sticky top-14 z-20 -mx-5 flex gap-1 px-5 py-2.5 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-4"
       >
         {VIEWS.map((item) => (
           <button

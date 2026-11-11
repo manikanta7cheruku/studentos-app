@@ -181,8 +181,9 @@ export function TeamFinderScreen() {
   }, [draft]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-2 md:px-8 md:py-10">
       <PageHeader
+        app
         eyebrow={college.name}
         title="Plans"
         description="Matches, events, hackathons and projects looking for people. Join one, or start your own."
@@ -200,11 +201,11 @@ export function TeamFinderScreen() {
         }
       />
 
-      <div className="flex flex-col gap-3">
+      <div className="glass-bar sticky top-14 z-20 -mx-5 flex flex-col gap-2.5 px-5 py-2.5 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-4">
         <div
           role="group"
           aria-label="Filter plans"
-          className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
         >
           <Chip
             pressed={filters.scope === "all" && filters.kind === "all"}
@@ -239,7 +240,7 @@ export function TeamFinderScreen() {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Search plans"
-            className="h-11 pl-10"
+            className="h-11 rounded-2xl border-white/10 bg-white/[0.06] pl-10"
             autoComplete="off"
           />
         </div>

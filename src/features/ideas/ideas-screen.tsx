@@ -42,7 +42,7 @@ function Chip({
 
 export function IdeaListSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading thoughts" className="flex flex-col gap-4">
+    <div aria-busy="true" aria-label="Loading buzz" className="flex flex-col gap-4">
       {[0, 1, 2].map((n) => (
         <div key={n} className="flex flex-col gap-3 rounded-[20px] border border-white/[0.06] p-4">
           <div className="flex items-center gap-2.5">
@@ -75,21 +75,22 @@ export function IdeasScreen() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-2 md:px-8 md:py-10">
       <PageHeader
+        app
         eyebrow={slug === "global" ? "Global" : college.name}
-        title="Thoughts"
+        title="Buzz"
         description="Say whatever is on your mind. Vote on what you like and join the talk."
         actions={
           <Button asChild>
             <Link href={`/c/${slug}/ideas/new`}>
-              <PlusIcon aria-hidden="true" /> New thought
+              <PlusIcon aria-hidden="true" /> New buzz
             </Link>
           </Button>
         }
       />
 
-      <div className="flex flex-col gap-3">
+      <div className="glass-bar sticky top-14 z-20 -mx-5 flex flex-col gap-2.5 px-5 py-2.5 md:top-0 md:mx-0 md:rounded-2xl md:border md:px-4">
         <div
           role="group"
           aria-label="Order"
@@ -130,20 +131,20 @@ export function IdeasScreen() {
         {list.state.status === "loading" ? (
           <IdeaListSkeleton />
         ) : list.state.status === "error" ? (
-          <LoadError error={list.state.error} onRetry={list.state.reload} what="the thoughts" />
+          <LoadError error={list.state.error} onRetry={list.state.reload} what="the buzzs" />
         ) : list.items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
             <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
               <LightbulbIcon aria-hidden="true" className="size-6" />
             </span>
             <p className="text-lg font-bold">
-              {topic === "all" ? "No thoughts yet" : "Nothing under this topic yet"}
+              {topic === "all" ? "Nothing buzzing yet" : "Nothing under this topic yet"}
             </p>
             <p className="max-w-[30ch] text-[14px] text-ink-muted">
-              Be the first. A thought can be one sentence.
+              Be the first. A buzz can be one sentence.
             </p>
             <Button asChild className="mt-1">
-              <Link href={`/c/${slug}/ideas/new`}>Share a thought</Link>
+              <Link href={`/c/${slug}/ideas/new`}>Share a buzz</Link>
             </Button>
           </div>
         ) : (

@@ -75,7 +75,7 @@ export function PostRow({ post, slug }: { post: TeamPost; slug: string }) {
   const free = openSlots(post);
   const when = isTimedKind(post.kind) ? whenLabel(post.deadline) : null;
   return (
-    <li className="group lift relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-surface focus-within:ring-2 focus-within:ring-ring">
+    <li className="group lift glass-card relative overflow-hidden rounded-[24px] focus-within:ring-2 focus-within:ring-ring">
       <article>
         <Poster seed={post.id} big={coverWord(post)} className="h-36 p-3.5">
           <div className="flex h-full flex-col justify-between">
