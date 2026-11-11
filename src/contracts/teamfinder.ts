@@ -29,8 +29,11 @@ export const teamRoleInput = z.strictObject({
   slots: z.number().int().min(1).max(20),
   skill_ids: z.array(uuid).max(10).default([]),
 });
+export const joinMode = z.enum(["open", "approval"]);
 export const teamPostCreateBody = z.strictObject({
   kind: teamPostKind,
+  // open: anyone joins with one tap. approval: people ask and the host decides (the default).
+  join_mode: joinMode.optional(),
   title: z.string().trim().min(5).max(120),
   description: z.string().trim().max(3000).default(""),
   // A future date within 180 days. Leave out for no deadline. For a sport or an event this is when it starts.
@@ -74,6 +77,7 @@ export const teamPost = z.object({
   status: teamPostStatus,
   deadline: isoDateTime.nullable(),
   place: z.string().nullable().default(null),
+  join_mode: joinMode.default("approval"),
   external_link: z.string().nullable(),
   created_at: isoDateTime,
   is_owner: z.boolean(),
@@ -165,3 +169,16 @@ export const myJoinRequestItem = z.object({
   role: z.object({ id: uuid, role_name: z.string() }),
 });
 export const myJoinRequestListResponse = successEnvelope(z.array(myJoinRequestItem));
+
+// TMF-11 POST /api/v1/c/{slug}/team-posts/{id}/join (IDEM). One tap join for a plan with join_mode open.
+export const teamJoinBody = z.strictObject({ role_id: uuid.optional() });
+
+// TMF-12 GET /api/v1/c/{slug}/team-posts/{id}/participants. Only the host and people who joined see the list.
+export const teamParticipant = z.object({
+  user_id: uuid,
+  display_name: z.string(),
+  role_name: z.string(),
+  joined_at: isoDateTime,
+  is_host: z.boolean(),
+});
+export const teamParticipantListResponse = successEnvelope(z.array(teamParticipant));

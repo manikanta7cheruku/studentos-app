@@ -423,3 +423,20 @@ Events have a start time, a place, an optional capacity and RSVPs. The board is 
 | BRD-06 | GET `/api/v1/c/{slug}/board/{id}/messages` | Private. The author sees every thread (`with_user` says who), anyone else only their own |
 | BRD-07 | POST `/api/v1/c/{slug}/board/{id}/messages` | IDEM. `{ "body": "...", "to_user": "only for the author, a person who wrote before" }`. 409 `CONFLICT` when the post is resolved. 429 at 30 an hour |
 
+## 17. The functional round (R3 Day 14, decision D-35)
+
+**Thoughts** (the idea posts, IDE-01 and the others): a thought needs only some text. `title`, `body` and `topic` are all optional, but `title` and `body` cannot both be empty (400 `VALIDATION_FAILED`).
+
+**Plans** (Team Finder): `join_mode` is `open` (anyone joins with one tap) or `approval` (the default). Every plan answers with `join_mode`.
+
+| ID | Request | Notes |
+|---|---|---|
+| TMF-11 | POST `/api/v1/c/{slug}/team-posts/{id}/join` | IDEM. `{ "role_id": "optional" }`. One tap join for a plan with `join_mode: open`. You are in at once, the role count goes up and the host gets a `team.joined` notification. Without `role_id` the first role with room is taken. 403 for a plan that needs approval and for the host, 409 `SLOTS_FULL`, 409 `CONFLICT` (closed), 409 `ALREADY_REQUESTED` |
+| TMF-12 | GET `/api/v1/c/{slug}/team-posts/{id}/participants` | The host first, then the people who joined. Only the host and people who joined get the list; for anyone else it is empty |
+| ADM-13 | POST `/api/v1/c/{slug}/admin/content/remove` | `{ "kind": "plan" | "thought" | "event" | "listing", "id": "...", "reason": "spam" | "inappropriate" | "harassment" | "scam" | "duplicate" | "other", "note": "optional, up to 300" }`. A moderator or admin removes it. The author gets a `content.removed` notification with the reason and the note. Written to the audit log. 404 for an item of another college |
+| ADM-14 | GET `/api/v1/c/{slug}/admin/content?limit=50` | The newest plans, thoughts, events and listings of the college (not the removed ones) |
+
+**Events** (EVT-01, EVT-02, EVT-03): every event has `kind` (`official` or `personal`) and `invite_only`. Inside a college only its admins and moderators can create events, and they are `official` (403 `FORBIDDEN` for a student). In Global anyone can create events, and they are `personal`. An `invite_only` event is left out of the lists. It is reachable by its link, by the host and by people who said they go. A removed event has `status: removed`.
+
+**Notifications:** two new types. `team.joined` tells a host that someone joined their plan (payload has `joiner_id` and `joiner_name`). `content.removed` tells an author that a moderator, an admin or the owner removed their item and why (payload has `kind`, `reason`, `note` and `item_title`).
+

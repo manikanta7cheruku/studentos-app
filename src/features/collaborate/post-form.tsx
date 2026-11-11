@@ -65,6 +65,8 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
     String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
   );
   const timed = isTimedKind(kind);
+  // Open join: one tap and you are in, no asking. On by default for plans with a time and a place.
+  const [openJoin, setOpenJoin] = React.useState(true);
   // The earliest start the picker allows: this minute (computed once when the form opens).
   const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
   const [externalLink, setExternalLink] = React.useState(editing?.external_link ?? "");
@@ -146,6 +148,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           description: description.trim(),
           deadline: timed ? new Date(when).toISOString() : deadlineFromDate(deadline),
           ...(timed && place.trim() ? { place: place.trim() } : {}),
+          ...(timed && openJoin ? { join_mode: "open" as const } : {}),
           ...(externalLink.trim() ? { external_link: externalLink.trim() } : {}),
           ...(teamLink.trim() ? { team_link: teamLink.trim() } : {}),
           roles: timed
@@ -309,6 +312,25 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                 className="sm:w-32"
               />
             </FormField>
+          ) : null}
+          {!editing ? (
+            <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
+              <input
+                type="checkbox"
+                checked={openJoin}
+                onChange={(event) => setOpenJoin(event.target.checked)}
+                className="mt-0.5 size-5 accent-[var(--primary)]"
+              />
+              <span>
+                <span className="block text-[14px] font-semibold">
+                  Anyone can join with one tap
+                </span>
+                <span className="block text-[13px] text-ink-muted">
+                  No asking and no waiting. You are told who joins, and everyone who joins sees who
+                  is in.
+                </span>
+              </span>
+            </label>
           ) : null}
         </>
       ) : (

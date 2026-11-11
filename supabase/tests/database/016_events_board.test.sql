@@ -19,11 +19,11 @@ select throws_ok($$select public.event_list('aaaaaaaa-1000-4000-8000-00000000000
 reset role;
 
 -- ===== events ================================================================
-insert into t select 'ev', (public.event_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', '  Open mic night  ', 'Bring a song.', now() + interval '2 days', 'Main hall', 2) ->> 'id');
+insert into t select 'ev', (public.event_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', '  Open mic night  ', 'Bring a song.', now() + interval '2 days', 'Main hall', 2) ->> 'id');
 select is((public.event_get('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', (select v::uuid from t where k = 'ev')) ->> 'title'), 'Open mic night', 'the title is trimmed');
 select is((public.event_get('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', (select v::uuid from t where k = 'ev')) ->> 'going_count')::int, 1, 'the author goes by default');
-select throws_ok($$select public.event_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'In the past', 'x', now() - interval '1 day', null, null)$$, 'P0001', 'VALIDATION_FAILED', 'an event in the past is refused');
-select throws_ok($$select public.event_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'Too far away', 'x', now() + interval '2 years', null, null)$$, 'P0001', 'VALIDATION_FAILED', 'an event more than a year away is refused');
+select throws_ok($$select public.event_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'In the past', 'x', now() - interval '1 day', null, null)$$, 'P0001', 'VALIDATION_FAILED', 'an event in the past is refused');
+select throws_ok($$select public.event_create('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'Too far away', 'x', now() + interval '2 years', null, null)$$, 'P0001', 'VALIDATION_FAILED', 'an event more than a year away is refused');
 select throws_ok($$select public.event_create('bbbbbbbb-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'Not my college', 'x', now() + interval '1 day', null, null)$$, 'P0001', 'FORBIDDEN', 'a person of another college cannot create one in Alpha');
 select throws_ok(format($$select public.event_get('bbbbbbbb-1000-4000-8000-000000000001', 'bbbbbbbb-0000-4000-8000-000000000001', %L)$$, (select v from t where k = 'ev')), 'P0001', 'NOT_FOUND', 'Beta cannot see an Alpha event');
 

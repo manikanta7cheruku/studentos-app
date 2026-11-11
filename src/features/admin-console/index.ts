@@ -8,3 +8,4 @@ export { OpportunitiesAdminScreen } from "./opportunities";
 export { ReportsScreen } from "./reports";
 export { SettingsAdminScreen, AuditScreen } from "./settings-and-audit";
 export { ReportButton } from "./report-button";
+export { ContentScreen } from "./content";

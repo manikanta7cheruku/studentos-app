@@ -31,6 +31,8 @@ import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
 import { ReportButton } from "@/features/admin-console/report-button";
 import { RoleList } from "./role-list";
+import { Participants } from "./participants";
+import { RemoveDialog } from "@/features/admin-console/remove-dialog";
 
 function startLabel(deadline: string | null): string {
   if (!deadline) return "No time set";
@@ -103,8 +105,10 @@ function CloseDialog({
 }
 
 function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }) {
-  const { slug } = useCollege();
+  const { slug, isModerator } = useCollege();
   const [closing, setClosing] = React.useState(false);
+  const [removing, setRemoving] = React.useState(false);
+  const version = post.roles.map((role) => role.filled).join(",") + post.status;
 
   return (
     <article className="flex flex-col gap-8">
@@ -115,6 +119,11 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
           </span>
           <StatusPill status={post.status} />
         </div>
+        {post.join_mode === "open" && post.status === "open" ? (
+          <p className="w-fit rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[12.5px] font-semibold text-ink-muted">
+            Open to everyone: tap Join, no approval needed
+          </p>
+        ) : null}
         <h1 className="text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight sm:text-[2.1rem]">
           {post.title}
         </h1>
@@ -142,6 +151,13 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
         {!post.is_owner ? (
           <div>
             <ReportButton targetType="team_post" targetId={post.id} what="this post" />
+          </div>
+        ) : null}
+        {isModerator && !post.is_owner ? (
+          <div>
+            <Button variant="outline" onClick={() => setRemoving(true)}>
+              Remove this plan
+            </Button>
           </div>
         ) : null}
         {post.is_owner && post.status === "open" ? (
@@ -209,8 +225,18 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
 
       <RoleList post={post} onChanged={reload} />
 
+      <Participants post={post} version={version} />
+
       {post.is_owner ? <PostRequests post={post} onChanged={reload} /> : null}
 
+      <RemoveDialog
+        slug={slug}
+        kind="plan"
+        id={post.id}
+        open={removing}
+        onOpenChange={setRemoving}
+        onRemoved={reload}
+      />
       <CloseDialog post={post} open={closing} onOpenChange={setClosing} onClosed={reload} />
     </article>
   );
@@ -218,7 +244,11 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
 
 export function PostDetailScreen({ postId }: { postId: string }) {
   const { slug } = useCollege();
-  const state = useLoad(() => api.teamPosts.one(slug, postId), [slug, postId]);
+  const state = useLoad(
+    () => api.teamPosts.one(slug, postId),
+    [slug, postId],
+    `plan:${slug}:${postId}`,
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 py-6 md:px-8 md:py-10">

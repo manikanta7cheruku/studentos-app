@@ -143,6 +143,34 @@ export type UserRow = {
 };
 export const users = (q: string) => rpc<UserRow[]>("owner_users", { p_q: q, p_limit: 50 });
 
+export type OwnerContentRow = {
+  kind: "plan" | "thought" | "event" | "listing";
+  id: string;
+  title: string;
+  author: string;
+  college_slug: string;
+  status: string;
+  created_at: string;
+};
+export const content = (q: string) =>
+  rpc<OwnerContentRow[]>("owner_content", { p_q: q, p_limit: 50 });
+
+/** Removes any plan, thought, event or board post. The author is told why. Written to the audit log as the owner. */
+export const removeContent = (
+  actor: string,
+  kind: OwnerContentRow["kind"],
+  id: string,
+  reason: string,
+  note: string | null,
+) =>
+  rpc("owner_content_remove", {
+    p_actor: actor,
+    p_kind: kind,
+    p_id: id,
+    p_reason: reason,
+    p_note: note,
+  });
+
 export type ReportRow = {
   id: string;
   college_slug: string;

@@ -13,6 +13,8 @@ export const eventCreateBody = z.strictObject({
   starts_at: isoDateTime,
   place: z.string().trim().min(1).max(120).optional(),
   capacity: z.number().int().min(1).max(5000).optional(),
+  // Only reachable by its link, by the host and by people who said they go.
+  invite_only: z.boolean().optional(),
 });
 
 export const eventItem = z.object({
@@ -22,7 +24,10 @@ export const eventItem = z.object({
   starts_at: isoDateTime,
   place: z.string().nullable(),
   capacity: z.number().int().nullable(),
-  status: z.enum(["published", "cancelled"]),
+  status: z.enum(["published", "cancelled", "removed"]),
+  // official: made by a college admin or moderator inside a college. personal: made by a student in Global.
+  kind: z.enum(["official", "personal"]).default("official"),
+  invite_only: z.boolean().default(false),
   going_count: z.number().int().min(0),
   // Am I going? The author goes by default.
   going: z.boolean(),

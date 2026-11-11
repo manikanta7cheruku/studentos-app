@@ -7,11 +7,17 @@ import { isoDateTime, paginationQuery, successEnvelope, uuid } from "./common";
 export const ideaTopic = z.enum(["campus", "study", "sports", "tech", "food", "other"]);
 
 // IDE-01 POST /api/v1/c/{slug}/ideas (IDEM)
-export const ideaCreateBody = z.strictObject({
-  title: z.string().trim().min(5).max(140),
-  body: z.string().trim().max(2000).default(""),
-  topic: ideaTopic.default("other"),
-});
+// A thought needs only some text: a title, a body, or both. The topic is optional.
+export const ideaCreateBody = z
+  .strictObject({
+    title: z.string().trim().max(140).default(""),
+    body: z.string().trim().max(2000).default(""),
+    topic: ideaTopic.default("other"),
+  })
+  .refine((value) => value.title.length + value.body.length > 0, {
+    message: "Write something",
+    path: ["body"],
+  });
 
 export const idea = z.object({
   id: uuid,

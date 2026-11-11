@@ -13,7 +13,7 @@ type Role = TeamPostDetail["roles"][number];
 
 const REQUEST_WORDS: Record<string, string> = {
   pending: "You asked to join. Waiting for the author.",
-  accepted: "You are on the team.",
+  accepted: "You are in.",
   declined: "The author said no this time.",
   cancelled: "This request was cancelled.",
   withdrawn: "You withdrew this request.",
@@ -24,10 +24,26 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
   const { slug } = useCollege();
   const [asking, setAsking] = React.useState<Role | null>(null);
   const [withdrawing, setWithdrawing] = React.useState<string | null>(null);
+  const [joining, setJoining] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   // A person can have one live request (waiting or accepted) in a post.
   const live = post.my_requests.find((r) => r.status === "pending" || r.status === "accepted");
+
+  // One tap: no message, no waiting. The host is told and you are in at once.
+  async function joinNow(roleId: string) {
+    if (joining) return;
+    setJoining(roleId);
+    setError(null);
+    try {
+      await api.teamPosts.join(slug, post.id, roleId);
+      onChanged();
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not add you. Please try again."));
+    } finally {
+      setJoining(null);
+    }
+  }
 
   async function withdraw(requestId: string) {
     setWithdrawing(requestId);
@@ -88,7 +104,13 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
                 <p className="tabular text-[13.5px] text-ink-muted">
                   {free === 0 ? "No places left" : `${free} of ${role.slots} places free`}
                 </p>
-                {canAsk ? <Button onClick={() => setAsking(role)}>Ask to join</Button> : null}
+                {canAsk && post.join_mode === "open" ? (
+                  <Button onClick={() => void joinNow(role.id)} disabled={joining !== null}>
+                    {joining === role.id ? <Spinner /> : null} Join
+                  </Button>
+                ) : canAsk ? (
+                  <Button onClick={() => setAsking(role)}>Ask to join</Button>
+                ) : null}
                 {latest && (latest.status === "pending" || latest.status === "accepted") ? (
                   <Button
                     variant="outline"

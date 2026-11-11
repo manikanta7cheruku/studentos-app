@@ -75,6 +75,10 @@ import {
   POST as boardMessagesSend,
 } from "@/app/api/v1/c/[slug]/board/[id]/messages/route";
 import { POST as collegeSetup } from "@/app/api/v1/colleges/setup/route";
+import { POST as tmfJoin } from "@/app/api/v1/c/[slug]/team-posts/[id]/join/route";
+import { GET as tmfParticipants } from "@/app/api/v1/c/[slug]/team-posts/[id]/participants/route";
+import { GET as adminContent } from "@/app/api/v1/c/[slug]/admin/content/route";
+import { POST as adminContentRemove } from "@/app/api/v1/c/[slug]/admin/content/remove/route";
 import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
 import { GET as tmfList, POST as tmfCreate } from "@/app/api/v1/c/[slug]/team-posts/route";
 import { GET as tmfGet, PATCH as tmfPatch } from "@/app/api/v1/c/[slug]/team-posts/[id]/route";
@@ -904,6 +908,55 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         cookie,
       }).then((r) => r.status),
     expect: signedIn(400),
+  },
+  {
+    op: "TMF-11 POST /c/alpha/team-posts/{id}/join (unknown post -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(tmfJoin, {
+        method: "POST",
+        path: `/api/v1/c/alpha/team-posts/${id}/join`,
+        json: {},
+        params: { slug: "alpha", id },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "TMF-12 GET /c/alpha/team-posts/{id}/participants (unknown post -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(tmfParticipants, {
+        path: `/api/v1/c/alpha/team-posts/${id}/participants`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "ADM-14 GET /c/alpha/admin/content (moderators and admins)",
+    call: (cookie: string | undefined) =>
+      call(adminContent, {
+        path: "/api/v1/c/alpha/admin/content",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: modOnly(200),
+  },
+  {
+    op: "ADM-13 POST /c/alpha/admin/content/remove (an empty body is the probe -> 400 for moderators)",
+    call: (cookie: string | undefined) =>
+      call(adminContentRemove, {
+        method: "POST",
+        path: "/api/v1/c/alpha/admin/content/remove",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: modOnly(400),
   },
   {
     op: "TMF-02 GET /c/alpha/team-posts (members)",

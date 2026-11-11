@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoveDialog } from "@/features/admin-console/remove-dialog";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownRightIcon, SendIcon, Trash2Icon, XIcon } from "lucide-react";
@@ -287,12 +288,17 @@ function Thread({ idea }: { idea: Idea }) {
 export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
   const { slug, isModerator } = useCollege();
   const router = useRouter();
-  const state = useLoad(() => api.ideas.one(slug, ideaId), [slug, ideaId]);
+  const state = useLoad(
+    () => api.ideas.one(slug, ideaId),
+    [slug, ideaId],
+    `idea:${slug}:${ideaId}`,
+  );
   const [error, setError] = React.useState<string | null>(null);
+  const [removing, setRemoving] = React.useState(false);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
-      <PageHeader title="Idea" back={{ href: `/c/${slug}/ideas`, label: "Ideas" }} />
+      <PageHeader title="Thought" back={{ href: `/c/${slug}/ideas`, label: "Thoughts" }} />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-8 w-3/4" />
@@ -301,27 +307,42 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       ) : state.status === "error" ? (
         state.error instanceof ApiError && state.error.status === 404 ? (
           <div className="rounded-card border border-white/10 bg-white/[0.03] p-8">
-            <p className="text-lg font-bold">This idea is not available.</p>
+            <p className="text-lg font-bold">This thought is not available.</p>
             <p className="mt-1 text-ink-muted">
               It may have been removed, or it belongs to another space.
             </p>
           </div>
         ) : (
-          <LoadError error={state.error} onRetry={state.reload} what="this idea" />
+          <LoadError error={state.error} onRetry={state.reload} what="this thought" />
         )
       ) : (
         <>
           <IdeaCard idea={state.data} full />
-          {state.data.is_owner || isModerator ? (
+          {isModerator && !state.data.is_owner ? (
+            <div className="-mt-2 flex justify-end">
+              <Button variant="outline" onClick={() => setRemoving(true)}>
+                Remove this thought
+              </Button>
+              <RemoveDialog
+                slug={slug}
+                kind="thought"
+                id={ideaId}
+                open={removing}
+                onOpenChange={setRemoving}
+                onRemoved={() => router.push(`/c/${slug}/ideas`)}
+              />
+            </div>
+          ) : null}
+          {state.data.is_owner ? (
             <div className="-mt-2 flex justify-end">
               <ConfirmDelete
-                label="Delete idea"
+                label="Delete thought"
                 onConfirm={async () => {
                   try {
                     await api.ideas.remove(slug, ideaId);
                     router.push(`/c/${slug}/ideas`);
                   } catch (caught) {
-                    setError(friendlyMessage(caught, "We could not delete the idea."));
+                    setError(friendlyMessage(caught, "We could not delete the thought."));
                   }
                 }}
               />

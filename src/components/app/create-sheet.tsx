@@ -49,8 +49,8 @@ export function CreateSheet({
     },
     {
       href: `/c/${slug}/ideas/new`,
-      title: "Share an idea",
-      text: "Say what you would build or change",
+      title: "Share a thought",
+      text: "Say anything, as easy as a message",
       icon: <LightbulbIcon aria-hidden="true" />,
     },
     {

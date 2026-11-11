@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ActivityIcon,
+  FileTextIcon,
   Building2Icon,
   FlagIcon,
   KeyRoundIcon,
@@ -18,6 +19,7 @@ const ITEMS = [
   { href: "/owner/colleges", label: "Colleges", icon: <Building2Icon /> },
   { href: "/owner/codes", label: "Setup codes", icon: <KeyRoundIcon /> },
   { href: "/owner/users", label: "Users", icon: <UsersIcon /> },
+  { href: "/owner/content", label: "Content", icon: <FileTextIcon /> },
   { href: "/owner/reports", label: "Reports", icon: <FlagIcon /> },
   { href: "/owner/health", label: "Health", icon: <ActivityIcon /> },
   { href: "/owner/audit", label: "Audit", icon: <ScrollTextIcon /> },

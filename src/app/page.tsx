@@ -19,8 +19,8 @@ const FEATURES = [
   },
   {
     icon: <LightbulbIcon aria-hidden="true" />,
-    title: "Share an idea",
-    text: "Say what you would build or change. The best ideas rise and people join the talk.",
+    title: "Share a thought",
+    text: "Say whatever is on your mind, as easy as a message. The best thoughts rise and people join the talk.",
   },
   {
     icon: <GraduationCapIcon aria-hidden="true" />,

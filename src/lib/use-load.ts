@@ -22,9 +22,22 @@ function sameDeps(a: React.DependencyList, b: React.DependencyList): boolean {
  * How it avoids setting state inside the effect: the answer is stored together with the
  * deps and reload count it belongs to, and "loading" simply means "the stored answer belongs to older deps".
  */
+// The last answer of every screen that passes a `cacheKey`. Opening the same card again shows what it knew at once and
+// refreshes in the background, so going back and forth between a list and a card feels instant.
+const answers = new Map<string, unknown>();
+const MAX_ANSWERS = 80;
+
+/** Hands a screen an answer a list already holds (for example a card's data) so the card opens with no wait. */
+export function primeLoad(cacheKey: string, data: unknown): void {
+  if (answers.has(cacheKey)) return;
+  answers.set(cacheKey, data);
+  if (answers.size > MAX_ANSWERS) answers.delete(answers.keys().next().value as string);
+}
+
 export function useLoad<T>(
   fn: (signal: AbortSignal) => Promise<T>,
   deps: React.DependencyList,
+  cacheKey?: string,
 ): LoadState<T> & { reload: () => void; refreshing: boolean } {
   const [tick, setTick] = React.useState(0);
   const [settled, setSettled] = React.useState<Settled<T> | null>(null);
@@ -39,6 +52,11 @@ export function useLoad<T>(
       .current(controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) {
+          if (cacheKey) {
+            answers.delete(cacheKey);
+            answers.set(cacheKey, data);
+            if (answers.size > MAX_ANSWERS) answers.delete(answers.keys().next().value as string);
+          }
           setSettled({ tick, deps, state: { status: "ready", data, error: null } });
         }
       })
@@ -63,12 +81,17 @@ export function useLoad<T>(
   // After `reload` the screen keeps showing the data it already has (and `refreshing` is true) instead of falling
   // back to a skeleton: an answer to "Accept" must not make the whole page flash. A failed answer still shows the
   // error, and a retry after an error shows loading.
-  const state: LoadState<T> =
-    settled && sameInputs && (settled.tick === tick || settled.state.status === "ready")
-      ? settled.state
+  const known = cacheKey && answers.has(cacheKey) ? (answers.get(cacheKey) as T) : undefined;
+  const fresh =
+    settled && sameInputs && (settled.tick === tick || settled.state.status === "ready");
+  const state: LoadState<T> = fresh
+    ? settled.state
+    : known !== undefined
+      ? { status: "ready", data: known, error: null }
       : { status: "loading", data: null, error: null };
   const refreshing = Boolean(
-    settled && sameInputs && settled.tick !== tick && settled.state.status === "ready",
+    (settled && sameInputs && settled.tick !== tick && settled.state.status === "ready") ||
+    (!fresh && known !== undefined),
   );
   return { ...state, reload, refreshing };
 }

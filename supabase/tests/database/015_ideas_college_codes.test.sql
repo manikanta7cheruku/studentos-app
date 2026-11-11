@@ -24,7 +24,8 @@ select is((public.idea_get('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-000
 select is((public.idea_get('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', (select v::uuid from t where k = 'idea')) ->> 'score')::int, 1, 'a new idea starts at 1 (the author up vote)');
 select is((public.idea_get('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', (select v::uuid from t where k = 'idea')) ->> 'my_vote')::int, 1, 'the author has voted up');
 
-select throws_ok($$select public.idea_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'Hi', 'x', 'other')$$, '23514', null, 'a title under 5 characters is refused');
+select throws_ok($$select public.idea_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', '', '', 'other')$$, '23514', null, 'a thought with no text at all is refused');
+select lives_ok($$select public.idea_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', '', 'Just a few words.', 'other')$$, 'a thought with only some text is fine');
 select throws_ok($$select public.idea_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'A fine title', 'x', 'nonsense')$$, '23514', null, 'an unknown topic is refused');
 select throws_ok($$select public.idea_create('bbbbbbbb-1000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'Not my college', 'x', 'other')$$, 'P0001', 'FORBIDDEN', 'a person of another college cannot post in Alpha');
 

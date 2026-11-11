@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CheckIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { BadgeCheckIcon, CheckIcon, LockIcon, MapPinIcon, UserIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
 import { Poster } from "@/components/app/poster";
 import { api, type EventItem } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
 import { formatWhen } from "@/lib/format";
+import { primeLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 
 /** The day as a small tile: the number big, the month small. */
@@ -31,6 +32,35 @@ export function DateTile({ iso, className }: { iso: string; className?: string }
   );
 }
 
+/** What kind of event it is: Official (a college admin made it), Personal event, and Invite only on top of those. */
+export function EventBadges({ event }: { event: EventItem }) {
+  const official = event.kind === "official";
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold",
+          official
+            ? "bg-[#7d74e0]/20 text-[#cfcbf5]"
+            : "border border-white/10 bg-white/[0.05] text-ink-muted",
+        )}
+      >
+        {official ? (
+          <BadgeCheckIcon aria-hidden="true" className="size-3.5" />
+        ) : (
+          <UserIcon aria-hidden="true" className="size-3.5" />
+        )}
+        {official ? "Official" : "Personal event"}
+      </span>
+      {event.invite_only ? (
+        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 text-[11.5px] font-semibold text-ink-muted">
+          <LockIcon aria-hidden="true" className="size-3" /> Invite only
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 /** "I am going" as one button. It answers at once and goes back if the server says no. */
 export function RsvpButton({
   event,
@@ -48,7 +78,7 @@ export function RsvpButton({
   const from = `${event.going}:${event.going_count}`;
   const going = override && override.from === from ? override.going : event.going;
   const full = event.capacity !== null && event.going_count >= event.capacity && !going;
-  const closed = event.status === "cancelled";
+  const closed = event.status === "cancelled" || event.status === "removed";
 
   async function toggle() {
     if (busy || closed) return;
@@ -102,13 +132,17 @@ export function EventCard({
   const { slug } = useCollege();
   return (
     <li
+      onClickCapture={() => primeLoad(`event:${slug}:${event.id}`, event)}
       className={cn(
         "lift relative flex items-start gap-3.5 rounded-[20px] border border-white/[0.08] bg-surface p-4 focus-within:ring-2 focus-within:ring-ring",
-        event.status === "cancelled" && "opacity-60",
+        (event.status === "cancelled" || event.status === "removed") && "opacity-60",
       )}
     >
       <DateTile iso={event.starts_at} />
       <div className="min-w-0 flex-1">
+        <div className="mb-1.5">
+          <EventBadges event={event} />
+        </div>
         <h2 className="text-balance text-[1.05rem] font-bold leading-snug">
           <Link
             href={`/c/${slug}/events/${event.id}`}

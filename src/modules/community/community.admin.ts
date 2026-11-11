@@ -31,6 +31,7 @@ export async function createEvent(
     starts_at: string;
     place?: string;
     capacity?: number;
+    invite_only?: boolean;
   },
 ) {
   return eventOut(
@@ -42,6 +43,7 @@ export async function createEvent(
       p_starts: input.starts_at,
       p_place: input.place ?? null,
       p_capacity: input.capacity ?? null,
+      p_invite_only: input.invite_only ?? false,
     }),
   );
 }

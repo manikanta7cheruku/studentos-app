@@ -13,3 +13,4 @@ export * from "./ideas";
 export * from "./setup";
 export * from "./events";
 export * from "./board";
+export * from "./moderation";
