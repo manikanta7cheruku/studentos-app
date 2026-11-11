@@ -318,7 +318,7 @@ test("a screen that cannot load shows a retry, and works after it", async ({ pag
   await expect(page.getByText(/we could not load the team posts/i)).toBeVisible();
   broken = false;
   await page.getByRole("button", { name: /try again/i }).click();
-  await expect(page.getByText(/no team posts yet|team post/i).first()).toBeVisible();
+  await expect(page.getByText(/no plans yet|plans/i).first()).toBeVisible();
   await expect(page.getByText(/we could not load the team posts/i)).toHaveCount(0);
 });
 

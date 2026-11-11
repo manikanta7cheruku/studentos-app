@@ -27,7 +27,7 @@ const signIn = signInThroughUi;
 
 test("the sign in page asks for an email and does not scroll sideways", async ({ page }) => {
   await page.goto("/signin");
-  await expect(page.getByRole("heading", { name: /sign in to your college/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /make a plan/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
 });
 
