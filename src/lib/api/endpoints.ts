@@ -41,6 +41,9 @@ export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
 export type BoardItem = Data<typeof c.boardResponse>;
+export type Venue = Data<typeof c.venueResponse>;
+export type VenueSlot = Data<typeof c.venueSlotsResponse>[number];
+export type Booking = Data<typeof c.bookingResponse>;
 export type Participant = Data<typeof c.teamParticipantListResponse>[number];
 export type ContentItem = Data<typeof c.contentListResponse>[number];
 export type ContentKind = z.infer<typeof c.contentKind>;
@@ -228,6 +231,59 @@ export const api = {
       apiClient(j(`/c/${slug}/events/${id}`), {
         method: "DELETE",
         schema: c.eventResponse.shape.data,
+      }),
+  },
+  venues: {
+    list: (slug: string, sport?: string) => {
+      const query = new URLSearchParams({ limit: "50" });
+      if (sport) query.set("sport", sport);
+      return apiClient(j(`/c/${slug}/venues?${query}`), {
+        schema: c.venueListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/venues/${id}`), { schema: c.venueResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.venueCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/venues`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.venueResponse.shape.data,
+      }),
+    hide: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/venues/${id}`), {
+        method: "DELETE",
+        schema: c.venueHideResponse.shape.data,
+      }),
+    slots: (slug: string, id: string, date: string) =>
+      apiClient(j(`/c/${slug}/venues/${id}/slots?date=${date}`), {
+        schema: c.venueSlotsResponse.shape.data,
+      }),
+    book: (slug: string, id: string, body: z.input<typeof c.bookingCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/venues/${id}/bookings`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.bookingResponse.shape.data,
+      }),
+    requests: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/venues/${id}/bookings?limit=50`), {
+        schema: c.bookingListResponse.shape.data,
+      }),
+    mine: (slug: string) =>
+      apiClient(j(`/c/${slug}/me/bookings?limit=50`), {
+        schema: c.bookingListResponse.shape.data,
+      }),
+    decide: (slug: string, bookingId: string, decision: "confirmed" | "declined", note?: string) =>
+      apiClient(j(`/c/${slug}/bookings/${bookingId}/decision`), {
+        method: "POST",
+        body: note ? { decision, note } : { decision },
+        schema: c.bookingResponse.shape.data,
+      }),
+    cancel: (slug: string, bookingId: string) =>
+      apiClient(j(`/c/${slug}/bookings/${bookingId}`), {
+        method: "DELETE",
+        schema: c.bookingResponse.shape.data,
       }),
   },
   board: {

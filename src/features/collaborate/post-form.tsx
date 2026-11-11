@@ -38,6 +38,19 @@ const newRole = (): RoleDraft => ({
   skills: [],
 });
 
+/** A plan can be started from a booked slot: the link carries the kind, the place and the time. */
+function readPreset(): { kind?: TeamPostKind; place?: string; when?: string } {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  const kind = params.get("kind");
+  const when = params.get("when");
+  return {
+    kind: PLAN_KINDS.includes(kind as TeamPostKind) ? (kind as TeamPostKind) : undefined,
+    place: params.get("place")?.slice(0, 120) || undefined,
+    when: when && !Number.isNaN(new Date(when).getTime()) ? when : undefined,
+  };
+}
+
 const httpsOk = (value: string) => !value.trim() || value.trim().startsWith("https://");
 
 /**
@@ -53,14 +66,17 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   const spaces = session.colleges.filter((item) => item.membership.status === "active");
   const inGlobal = spaces.some((item) => item.college.slug === GLOBAL_SLUG);
 
+  const [preset] = React.useState(readPreset);
   const [space, setSpace] = React.useState(currentSlug);
-  const [kind, setKind] = React.useState<TeamPostKind>(editing?.kind ?? "project");
+  const [kind, setKind] = React.useState<TeamPostKind>(editing?.kind ?? preset.kind ?? "project");
   const [title, setTitle] = React.useState(editing?.title ?? "");
   const [description, setDescription] = React.useState(editing?.description ?? "");
   const [deadline, setDeadline] = React.useState(dateInputValue(editing?.deadline ?? null));
   // A sport or an event has a start time and a place instead of a deadline and a list of roles.
-  const [when, setWhen] = React.useState(dateTimeInputValue(editing?.deadline ?? null));
-  const [place, setPlace] = React.useState(editing?.place ?? "");
+  const [when, setWhen] = React.useState(
+    dateTimeInputValue(editing?.deadline ?? preset.when ?? null),
+  );
+  const [place, setPlace] = React.useState(editing?.place ?? preset.place ?? "");
   const [players, setPlayers] = React.useState(
     String(editing?.roles.reduce((sum, role) => sum + role.slots, 0) || 10),
   );

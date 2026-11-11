@@ -73,6 +73,8 @@ erDiagram
 **platform_admins**: `user_id` PK · `pin_hash` (`scrypt$...` only) · `pin_set_at`. The accounts allowed into the owner dashboard. Closed to clients; read only by the server.
 **events**: `id` · `college_id` · `author_id` · `title` (5 to 120) · `description` (≤2000) · `starts_at` · `place` · `capacity` (1 to 5000, null = no limit) · `status` (`published`,`cancelled`). **event_rsvps**: PK(`event_id`,`user_id`). Closed to clients, reached through `event_*` functions.
 **board_posts**: `id` · `college_id` · `author_id` · `board` (`lostfound`,`market`) · `kind` (`lost`,`found`,`sell`,`rent`,`free`,`wanted`) · `title` · `description` (≤1500) · `place` · `price_inr` (whole rupees, market only) · `status` (`open`,`resolved`,`removed`). **board_messages**: `id` · `post_id` · `college_id` · `from_user` · `to_user` · `body` (1 to 500). Private threads: the author sees all, others only their own.
+
+**venues**: `id` · `college_id` · `created_by` · `name` (3 to 80) · `description` (≤600) · `sports` (1 to 5 words) · `area` · `price_inr_per_hour` (whole rupees, null = ask) · `open_hour` and `close_hour` (24 hour clock, open before close) · `status` (`active`,`hidden`). **venue_bookings**: `id` · `venue_id` · `college_id` · `requester_id` · `play_date` · `start_hour` · `hours` (1 to 4) · `players` · `note` (≤300) · `status` (`pending`,`confirmed`,`declined`,`cancelled`) · `manager_note` · `decided_by` · `decided_at`. Closed to clients, reached through `venue_*` and `booking_*` functions. Two confirmed bookings of one venue never overlap in time.
 **opportunities**: `id` · `college_id` null (null = platform-curated, visible to tenants that enable it) · `title` · `org` · `kind` (`internship`,`job`,`hackathon`,`competition`,`scholarship`) · `location` · `mode` (`onsite`,`remote`,`hybrid`) · `stipend_min`,`stipend_max` int (paise/month, nullable) · `eligibility` text · `skills` text[] · `deadline` · `apply_url` (https) · `posted_by` · `status` (`draft`,`published`,`expired`,`removed`) · `last_verified_at`.
 **saved_opportunities**: PK(`user_id`,`opportunity_id`).
 **reminders**: `id` · `user_id` · `kind` · `ref_type`,`ref_id` · `remind_at` · `sent_at` · UQ(`user_id`,`kind`,`ref_id`,`remind_on`).
@@ -238,6 +240,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261115000000_events_board.sql` | `events`, `event_rsvps`, `board_posts`, `board_messages`, `event_*` and `board_*` functions |
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
+| `20261118000000_turf_booking.sql` | `venues`, `venue_bookings`, `venue_*` and `booking_*` functions, notification types `venue.booking_requested`, `venue.booking_confirmed`, `venue.booking_declined`, `venue.booking_cancelled` |
 
 The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
 

@@ -15,6 +15,7 @@ import {
   ChevronsUpDownIcon,
   GlobeIcon,
   HouseIcon,
+  MapPinnedIcon,
   MessageCircleHeartIcon,
   LogOutIcon,
   PlusIcon,
@@ -51,6 +52,7 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
   if (college.modules.campus && slug !== GLOBAL_SLUG)
     more.push({ href: `${base}/campus`, label: "Campus", icon: <Building2Icon /> });
   more.push({ href: `${base}/events`, label: "Events", icon: <CalendarDaysIcon /> });
+  more.push({ href: `${base}/turf`, label: "Turf and courts", icon: <MapPinnedIcon /> });
   more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
   more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
   more.push({ href: `${base}/people`, label: "People", icon: <UsersRoundIcon /> });

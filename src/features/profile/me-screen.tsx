@@ -10,6 +10,7 @@ import {
   StoreIcon,
   ChevronRightIcon,
   InboxIcon,
+  MapPinnedIcon,
   PencilIcon,
   SettingsIcon,
   ShieldCheckIcon,
@@ -66,6 +67,12 @@ function MoreMenu() {
       label: "Events",
       text: "Talks, fests, meetups",
       icon: <CalendarDaysIcon />,
+    },
+    {
+      href: `/c/${slug}/turf`,
+      label: "Turf and courts",
+      text: "Book a ground, find players",
+      icon: <MapPinnedIcon />,
     },
     {
       href: `/c/${slug}/lost-found`,

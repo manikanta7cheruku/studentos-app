@@ -28,4 +28,4 @@
 | 2026-11-11 | R3 community | Events (EVT-01 to EVT-05), Lost and found and the Marketplace with private messages (BRD-01 to BRD-07), no payments (D-33). Migration 20261115000000. Entry points on Home, Campus, the You page and the create sheet. | R3 (owner) |
 | 2026-11-12 | R3 owner | Owner dashboard at /owner (D-34): allow-list, PIN, unlock cookie, overview, colleges, setup codes, users, reports, health, audit. Migration 20261116000000, script `pnpm owner:pin`. | R3 (owner) |
 | 2026-11-12 | R3 functional round | Thoughts, open join with participants, official and personal events, content removal with a reason, faster screens (D-35). Migration 20261117000000. | R3 (owner) |
-
+| 2026-11-12 | R3 turf booking | Venues, booking requests, the manager confirms or declines, notes to both sides (D-36). Migration 20261118000000. | R3 (owner) |

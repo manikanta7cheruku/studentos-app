@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BellIcon,
+  CalendarCheckIcon,
+  MapPinnedIcon,
   CheckCheckIcon,
   MegaphoneIcon,
   ShieldAlertIcon,
@@ -32,6 +34,13 @@ export function notificationHref(item: NotificationItem, slug: string): string |
     const postId = item.payload.post_id;
     return typeof postId === "string" ? `${base}/collaborate/${postId}` : `${base}/collaborate`;
   }
+  if (item.type.startsWith("venue.")) {
+    const venueId = item.payload.venue_id;
+    // The manager answers on the venue page, the person who asked sees it in My bookings.
+    if (item.type === "venue.booking_requested" || item.type === "venue.booking_cancelled")
+      return typeof venueId === "string" ? `${base}/turf/${venueId}` : `${base}/turf`;
+    return `${base}/turf/bookings`;
+  }
   if (item.type === "opportunity.deadline_soon") return `${base}/career`;
   if (item.type.startsWith("membership.")) return `${base}/me`;
   return null;
@@ -44,6 +53,10 @@ function look(type: string): { icon: React.ReactNode; tint: string } {
   if (type.startsWith("team.request_accepted") || type === "membership.approved")
     return { icon: <UserCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
   if (type.startsWith("team.")) return { icon: <UsersIcon />, tint: "from-[#5b54d6] to-[#8a5fd0]" };
+  if (type === "venue.booking_confirmed")
+    return { icon: <CalendarCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
+  if (type.startsWith("venue."))
+    return { icon: <MapPinnedIcon />, tint: "from-[#2f9fd0] to-[#4f6fe0]" };
   if (type === "content.removed" || type.startsWith("moderation.") || type === "report.actioned")
     return { icon: <ShieldAlertIcon />, tint: "from-[#d99a3a] to-[#d6665a]" };
   if (type === "announcement.published")
