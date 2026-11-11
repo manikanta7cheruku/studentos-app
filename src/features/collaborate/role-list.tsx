@@ -13,7 +13,7 @@ type Role = TeamPostDetail["roles"][number];
 
 const REQUEST_WORDS: Record<string, string> = {
   pending: "You asked to join. Waiting for the author.",
-  accepted: "You are in.",
+  accepted: "You are on the team.",
   declined: "The author said no this time.",
   cancelled: "This request was cancelled.",
   withdrawn: "You withdrew this request.",
