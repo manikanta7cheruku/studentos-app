@@ -18,6 +18,7 @@ const TABS: Tab[] = [
   { href: "/invites", label: "Invite codes", adminOnly: true },
   { href: "/announcements", label: "Announcements", adminOnly: false },
   { href: "/opportunities", label: "Opportunities", adminOnly: false },
+  { href: "/content", label: "Content", adminOnly: false },
   { href: "/reports", label: "Reports", adminOnly: false },
   { href: "/settings", label: "Settings", adminOnly: true },
   { href: "/audit", label: "Audit log", adminOnly: true },

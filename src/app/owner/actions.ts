@@ -8,6 +8,7 @@ import { AppError } from "@/lib/errors";
 import {
   checkPin,
   makeCode,
+  removeContent,
   ownerAudit,
   revokeCode,
   setCollegeStatus,
@@ -131,6 +132,31 @@ export async function collegeStatusAction(
     await setCollegeStatus(confirmed.userId, id.data, status.data);
     revalidatePath("/owner/colleges");
     return { ok: status.data === "suspended" ? "College suspended." : "College is active again." };
+  } catch (caught) {
+    return failure(caught);
+  }
+}
+
+export async function removeContentAction(
+  _previous: OwnerActionState,
+  form: FormData,
+): Promise<OwnerActionState> {
+  const confirmed = await confirmPin(form);
+  if ("error" in confirmed) return confirmed;
+  const id = idSchema.safeParse(form.get("id"));
+  const kind = z.enum(["plan", "thought", "event", "listing"]).safeParse(form.get("kind"));
+  const reason = z
+    .enum(["spam", "inappropriate", "harassment", "scam", "duplicate", "other"])
+    .safeParse(form.get("reason"));
+  if (!id.success || !kind.success) return { error: "That item was not found." };
+  if (!reason.success) return { error: "Pick a reason. The author is told it." };
+  const note = String(form.get("note") ?? "")
+    .trim()
+    .slice(0, 300);
+  try {
+    await removeContent(confirmed.userId, kind.data, id.data, reason.data, note || null);
+    revalidatePath("/owner/content");
+    return { ok: "Removed. The author was told why." };
   } catch (caught) {
     return failure(caught);
   }

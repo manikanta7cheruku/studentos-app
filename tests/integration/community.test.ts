@@ -41,6 +41,7 @@ function expectError(result: { status: number; body: unknown }, code: number, na
 }
 
 let author: string;
+let collegeAdmin: string;
 let buyer: string;
 let nosy: string;
 
@@ -48,6 +49,7 @@ beforeAll(async () => {
   await clearInbox();
   await clearRateLimits();
   author = (await signIn(routes, "student1@alpha.test")).cookie;
+  collegeAdmin = (await signIn(routes, "admin@alpha.test")).cookie;
   buyer = (await signIn(routes, "student2@alpha.test")).cookie;
   nosy = (await signIn(routes, "student3@alpha.test")).cookie;
 }, 120_000);
@@ -73,7 +75,7 @@ describe("events", () => {
       method: "POST",
       path: `/api/v1/c/${SLUG}/events`,
       json: { title: "Open mic night", starts_at: new Date(Date.now() - 86_400_000).toISOString() },
-      cookie: author,
+      cookie: collegeAdmin,
       params: { slug: SLUG },
       headers: idem(),
     });
@@ -85,7 +87,7 @@ describe("events", () => {
       method: "POST",
       path: `/api/v1/c/${SLUG}/events`,
       json: { title: "Open mic night", starts_at: soon(), place: "Main hall", capacity: 2 },
-      cookie: author,
+      cookie: collegeAdmin,
       params: { slug: SLUG },
       headers: idem(),
     });
@@ -129,7 +131,7 @@ describe("events", () => {
     const cancelled = await call(cancelEvent, {
       method: "DELETE",
       path: `/api/v1/c/${SLUG}/events/${event.id}`,
-      cookie: author,
+      cookie: collegeAdmin,
       params: params(event.id as string),
     });
     expect(cancelled.body.data).toMatchObject({ status: "cancelled" });

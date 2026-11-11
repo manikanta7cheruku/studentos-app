@@ -112,8 +112,12 @@ describe("IDE-01 create and IDE-02 list", () => {
     expect((again.body.data as Json).id).toBe(idea.id);
   });
 
-  it("refuses a short title and an unknown topic", async () => {
-    expectError(await create(author, { title: "Hi" }), 400, "VALIDATION_FAILED");
+  it("accepts text without a title, and refuses an empty thought and an unknown topic", async () => {
+    const quick = await create(author, { body: "What if the library stayed open all night?" });
+    expect(quick.status).toBe(201);
+    made.push((quick.body.data as Json).id as string);
+    expect(quick.body.data).toMatchObject({ title: "" });
+    expectError(await create(author, {}), 400, "VALIDATION_FAILED");
     expectError(
       await create(author, { title: "A fine title", topic: "nonsense" }),
       400,

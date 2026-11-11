@@ -237,6 +237,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261114000000_ideas_plans_college_codes.sql` | `ideas`, `idea_votes`, `idea_comments`, `idea_*` functions, `college_setup_codes`, `make_college_setup_code`, `college_setup_create`, Team Finder kinds `sport`, `event` and `hangout`, `team_posts.place`, `tf_set_place` |
 | `20261115000000_events_board.sql` | `events`, `event_rsvps`, `board_posts`, `board_messages`, `event_*` and `board_*` functions |
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
+| `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 
 The test `tests/docs-sync.test.ts` fails when a migration or a table is missing from this document.
 

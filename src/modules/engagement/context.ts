@@ -44,11 +44,15 @@ export async function memberContext(
   const slug = parseSlug(rawSlug);
   const jar = new CookieJar();
   const member = await requireMember(request, jar, slug, { minLevel: 1 });
-  if (options.write) await limitWrites(member.user.id);
-  else await limitReads(member.user.id);
-  if (options.module) {
-    await assertModuleEnabled(member.supabase, member.membership.college_id, options.module);
-  }
+  // The rate limit and the "is this tab on" check do not depend on each other, so they run together
+  // (each one is a trip to the database).
+  const { module } = options;
+  await Promise.all([
+    options.write ? limitWrites(member.user.id) : limitReads(member.user.id),
+    module
+      ? assertModuleEnabled(member.supabase, member.membership.college_id, module)
+      : Promise.resolve(),
+  ]);
   return {
     jar,
     slug,

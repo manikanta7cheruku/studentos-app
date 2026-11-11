@@ -41,6 +41,10 @@ export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
 export type BoardItem = Data<typeof c.boardResponse>;
+export type Participant = Data<typeof c.teamParticipantListResponse>[number];
+export type ContentItem = Data<typeof c.contentListResponse>[number];
+export type ContentKind = z.infer<typeof c.contentKind>;
+export type RemovalReason = z.infer<typeof c.removalReason>;
 export type BoardName = z.infer<typeof c.boardName>;
 export type BoardKind = z.infer<typeof c.boardKind>;
 export type BoardMessage = Data<typeof c.boardMessageListResponse>[number];
@@ -411,6 +415,17 @@ export const api = {
         idempotent: key ?? true,
         schema: c.joinRequestDecisionResponse.shape.data,
       }),
+    join: (slug: string, id: string, roleId?: string, key?: string) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}/join`), {
+        method: "POST",
+        body: roleId ? { role_id: roleId } : {},
+        idempotent: key ?? true,
+        schema: c.teamPostResponse.shape.data,
+      }),
+    participants: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/team-posts/${id}/participants`), {
+        schema: c.teamParticipantListResponse.shape.data,
+      }),
     withdraw: (slug: string, requestId: string) =>
       apiClient(j(`/c/${slug}/join-requests/${requestId}`), {
         method: "DELETE",
@@ -500,6 +515,19 @@ export const api = {
 
   // The college console. Moderators may use announcements, opportunities and reports; the rest is for admins.
   admin: {
+    content: (slug: string) =>
+      apiClient(j(`/c/${slug}/admin/content?limit=50`), {
+        schema: c.contentListResponse.shape.data,
+      }),
+    removeContent: (
+      slug: string,
+      body: { kind: ContentKind; id: string; reason: RemovalReason; note?: string },
+    ) =>
+      apiClient(j(`/c/${slug}/admin/content/remove`), {
+        method: "POST",
+        body,
+        schema: c.contentRemoveResponse.shape.data,
+      }),
     stats: (slug: string) =>
       apiClient(j(`/c/${slug}/admin/stats`), { schema: c.adminStatsResponse.shape.data }),
     settings: (slug: string) =>

@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoveDialog } from "@/features/admin-console/remove-dialog";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { LockIcon, MapPinIcon, SendIcon } from "lucide-react";
@@ -207,6 +208,7 @@ function Actions({
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
   const [asking, setAsking] = React.useState(false);
+  const [removing, setRemoving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   async function run(action: () => Promise<unknown>, after: () => void) {
@@ -247,7 +249,22 @@ function Actions({
             </Button>
           )
         ) : null}
-        {post.is_owner || isModerator ? (
+        {isModerator && !post.is_owner ? (
+          <>
+            <Button variant="outline" onClick={() => setRemoving(true)}>
+              Remove this post
+            </Button>
+            <RemoveDialog
+              slug={slug}
+              kind="listing"
+              id={post.id}
+              open={removing}
+              onOpenChange={setRemoving}
+              onRemoved={() => router.push(boardPath(slug, board))}
+            />
+          </>
+        ) : null}
+        {post.is_owner ? (
           asking ? (
             <span className="inline-flex items-center gap-2 text-[13.5px]">
               <span className="text-ink-muted">Delete for good?</span>

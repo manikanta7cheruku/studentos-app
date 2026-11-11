@@ -44,7 +44,7 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
   const tabs: NavItem[] = [
     { href: `${base}/home`, label: "Home", icon: <HouseIcon /> },
     { href: `${base}/collaborate`, label: "Plans", icon: <UsersIcon /> },
-    { href: `${base}/ideas`, label: "Ideas", icon: <LightbulbIcon /> },
+    { href: `${base}/ideas`, label: "Thoughts", icon: <LightbulbIcon /> },
     { href: `${base}/me`, label: "You", icon: <UserRoundIcon /> },
   ];
   const more: NavItem[] = [];

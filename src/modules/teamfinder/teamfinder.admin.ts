@@ -35,6 +35,7 @@ export async function createTeamPost(
     description: string;
     deadline?: string | null;
     place?: string;
+    join_mode?: "open" | "approval";
     external_link?: string;
     team_link?: string;
     roles: { role_name: string; slots: number; skill_ids: string[] }[];
@@ -51,9 +52,15 @@ export async function createTeamPost(
     p_team_link: input.team_link ?? null,
     p_roles: input.roles,
   });
-  if (input.place) {
-    await rpc("tf_set_place", { p_actor: actor, p_post: post.id, p_place: input.place });
-  }
+  // The place and the join mode live in their own columns, so they are set right after the post is made.
+  await Promise.all([
+    input.place
+      ? rpc("tf_set_place", { p_actor: actor, p_post: post.id, p_place: input.place })
+      : null,
+    input.join_mode && input.join_mode !== "approval"
+      ? rpc("tf_set_join_mode", { p_actor: actor, p_post: post.id, p_mode: input.join_mode })
+      : null,
+  ]);
   // The creator is the owner, so the detail shape (team link, pending count) applies.
   return getTeamPost(actor, college, post.id as string);
 }
@@ -205,4 +212,29 @@ export async function withdrawJoinRequest(
     p_request: request,
     p_request_id: requestId,
   });
+}
+
+// One tap join (TMF-11). The host is told by the database function.
+export async function joinOpenTeamPost(
+  actor: string,
+  college: string,
+  post: string,
+  role?: string,
+) {
+  await rpc("tf_join_open", {
+    p_actor: actor,
+    p_college: college,
+    p_post: post,
+    p_role: role ?? null,
+  });
+  return getTeamPost(actor, college, post);
+}
+
+// Who is in (TMF-12). Only the host and the people who joined get names.
+export async function listParticipants(actor: string, college: string, post: string) {
+  const rows = await rpc<({ joined_at: string } & Record<string, unknown>)[] | null>(
+    "tf_participants",
+    { p_actor: actor, p_college: college, p_post: post },
+  );
+  return (rows ?? []).map((row) => ({ ...row, joined_at: toIso(row.joined_at) }));
 }

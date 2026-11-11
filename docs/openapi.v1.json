@@ -2314,7 +2314,9 @@
                               "team.request_withdrawn",
                               "team.post_expired",
                               "membership.expired",
-                              "opportunity.deadline_soon"
+                              "opportunity.deadline_soon",
+                              "team.joined",
+                              "content.removed"
                             ]
                           },
                           "payload": {
@@ -4369,6 +4371,13 @@
                       "hangout"
                     ]
                   },
+                  "join_mode": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "approval"
+                    ]
+                  },
                   "title": {
                     "type": "string",
                     "minLength": 5,
@@ -4514,6 +4523,14 @@
                             "null"
                           ]
                         },
+                        "join_mode": {
+                          "default": "approval",
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "approval"
+                          ]
+                        },
                         "external_link": {
                           "type": [
                             "string",
@@ -4649,6 +4666,7 @@
                         "status",
                         "deadline",
                         "place",
+                        "join_mode",
                         "external_link",
                         "created_at",
                         "is_owner",
@@ -4932,6 +4950,14 @@
                               "null"
                             ]
                           },
+                          "join_mode": {
+                            "default": "approval",
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "approval"
+                            ]
+                          },
                           "external_link": {
                             "type": [
                               "string",
@@ -5056,6 +5082,7 @@
                           "status",
                           "deadline",
                           "place",
+                          "join_mode",
                           "external_link",
                           "created_at",
                           "is_owner",
@@ -5242,6 +5269,14 @@
                             "null"
                           ]
                         },
+                        "join_mode": {
+                          "default": "approval",
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "approval"
+                          ]
+                        },
                         "external_link": {
                           "type": [
                             "string",
@@ -5377,6 +5412,7 @@
                         "status",
                         "deadline",
                         "place",
+                        "join_mode",
                         "external_link",
                         "created_at",
                         "is_owner",
@@ -5632,6 +5668,14 @@
                             "null"
                           ]
                         },
+                        "join_mode": {
+                          "default": "approval",
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "approval"
+                          ]
+                        },
                         "external_link": {
                           "type": [
                             "string",
@@ -5767,6 +5811,7 @@
                         "status",
                         "deadline",
                         "place",
+                        "join_mode",
                         "external_link",
                         "created_at",
                         "is_owner",
@@ -5953,6 +5998,14 @@
                             "null"
                           ]
                         },
+                        "join_mode": {
+                          "default": "approval",
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "approval"
+                          ]
+                        },
                         "external_link": {
                           "type": [
                             "string",
@@ -6088,6 +6141,7 @@
                         "status",
                         "deadline",
                         "place",
+                        "join_mode",
                         "external_link",
                         "created_at",
                         "is_owner",
@@ -9294,6 +9348,873 @@
         }
       }
     },
+    "/c/{slug}/team-posts/{id}/join": {
+      "post": {
+        "operationId": "TMF-11_post",
+        "tags": [
+          "TMF"
+        ],
+        "summary": "TMF-11: Join an open plan with one tap",
+        "x-who": "mem",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "A new UUID for each user action. Reuse it only to retry the same action.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "project",
+                            "startup",
+                            "hackathon",
+                            "competition",
+                            "sport",
+                            "event",
+                            "hangout"
+                          ]
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "closed",
+                            "filled",
+                            "expired"
+                          ]
+                        },
+                        "deadline": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "place": {
+                          "default": null,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "join_mode": {
+                          "default": "approval",
+                          "type": "string",
+                          "enum": [
+                            "open",
+                            "approval"
+                          ]
+                        },
+                        "external_link": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "is_owner": {
+                          "type": "boolean"
+                        },
+                        "author": {
+                          "type": "object",
+                          "properties": {
+                            "user_id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "display_name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "user_id",
+                            "display_name"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "roles": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "role_name": {
+                                "type": "string"
+                              },
+                              "slots": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "filled": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "skills": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skill_ids": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                }
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "role_name",
+                              "slots",
+                              "filled",
+                              "skills",
+                              "skill_ids"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "my_requests": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "role_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "accepted",
+                                  "declined",
+                                  "withdrawn",
+                                  "cancelled"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "role_id",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "team_link": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "pending_requests": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "title",
+                        "description",
+                        "status",
+                        "deadline",
+                        "place",
+                        "join_mode",
+                        "external_link",
+                        "created_at",
+                        "is_owner",
+                        "author",
+                        "roles",
+                        "my_requests",
+                        "team_link"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONFLICT (also while the same Idempotency-Key is still running)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IDEMPOTENCY_KEY_REUSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/team-posts/{id}/participants": {
+      "get": {
+        "operationId": "TMF-12_get",
+        "tags": [
+          "TMF"
+        ],
+        "summary": "TMF-12: Who joined a plan",
+        "x-who": "mem",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "user_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "role_name": {
+                            "type": "string"
+                          },
+                          "joined_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "is_host": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "display_name",
+                          "role_name",
+                          "joined_at",
+                          "is_host"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/admin/content/remove": {
+      "post": {
+        "operationId": "ADM-13_post",
+        "tags": [
+          "ADM"
+        ],
+        "summary": "ADM-13: Remove content with a reason",
+        "x-who": "mod",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "plan",
+                      "thought",
+                      "event",
+                      "listing"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "inappropriate",
+                      "harassment",
+                      "scam",
+                      "duplicate",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "kind",
+                  "id",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "removed": {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "removed"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/admin/content": {
+      "get": {
+        "operationId": "ADM-14_get",
+        "tags": [
+          "ADM"
+        ],
+        "summary": "ADM-14: Newest content of the college",
+        "x-who": "mod",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "plan",
+                              "thought",
+                              "event",
+                              "listing"
+                            ]
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "author": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id",
+                          "title",
+                          "author",
+                          "status",
+                          "created_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/c/{slug}/events": {
       "post": {
         "operationId": "EVT-01_post",
@@ -9358,6 +10279,9 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 5000
+                  },
+                  "invite_only": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
@@ -9418,8 +10342,21 @@
                           "type": "string",
                           "enum": [
                             "published",
-                            "cancelled"
+                            "cancelled",
+                            "removed"
                           ]
+                        },
+                        "kind": {
+                          "default": "official",
+                          "type": "string",
+                          "enum": [
+                            "official",
+                            "personal"
+                          ]
+                        },
+                        "invite_only": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "going_count": {
                           "type": "integer",
@@ -9464,6 +10401,8 @@
                         "place",
                         "capacity",
                         "status",
+                        "kind",
+                        "invite_only",
                         "going_count",
                         "going",
                         "is_owner",
@@ -9682,8 +10621,21 @@
                             "type": "string",
                             "enum": [
                               "published",
-                              "cancelled"
+                              "cancelled",
+                              "removed"
                             ]
+                          },
+                          "kind": {
+                            "default": "official",
+                            "type": "string",
+                            "enum": [
+                              "official",
+                              "personal"
+                            ]
+                          },
+                          "invite_only": {
+                            "default": false,
+                            "type": "boolean"
                           },
                           "going_count": {
                             "type": "integer",
@@ -9728,6 +10680,8 @@
                           "place",
                           "capacity",
                           "status",
+                          "kind",
+                          "invite_only",
                           "going_count",
                           "going",
                           "is_owner",
@@ -9900,8 +10854,21 @@
                           "type": "string",
                           "enum": [
                             "published",
-                            "cancelled"
+                            "cancelled",
+                            "removed"
                           ]
+                        },
+                        "kind": {
+                          "default": "official",
+                          "type": "string",
+                          "enum": [
+                            "official",
+                            "personal"
+                          ]
+                        },
+                        "invite_only": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "going_count": {
                           "type": "integer",
@@ -9946,6 +10913,8 @@
                         "place",
                         "capacity",
                         "status",
+                        "kind",
+                        "invite_only",
                         "going_count",
                         "going",
                         "is_owner",
@@ -10105,8 +11074,21 @@
                           "type": "string",
                           "enum": [
                             "published",
-                            "cancelled"
+                            "cancelled",
+                            "removed"
                           ]
+                        },
+                        "kind": {
+                          "default": "official",
+                          "type": "string",
+                          "enum": [
+                            "official",
+                            "personal"
+                          ]
+                        },
+                        "invite_only": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "going_count": {
                           "type": "integer",
@@ -10151,6 +11133,8 @@
                         "place",
                         "capacity",
                         "status",
+                        "kind",
+                        "invite_only",
                         "going_count",
                         "going",
                         "is_owner",
@@ -10331,8 +11315,21 @@
                           "type": "string",
                           "enum": [
                             "published",
-                            "cancelled"
+                            "cancelled",
+                            "removed"
                           ]
+                        },
+                        "kind": {
+                          "default": "official",
+                          "type": "string",
+                          "enum": [
+                            "official",
+                            "personal"
+                          ]
+                        },
+                        "invite_only": {
+                          "default": false,
+                          "type": "boolean"
                         },
                         "going_count": {
                           "type": "integer",
@@ -10377,6 +11374,8 @@
                         "place",
                         "capacity",
                         "status",
+                        "kind",
+                        "invite_only",
                         "going_count",
                         "going",
                         "is_owner",
@@ -12119,8 +13118,8 @@
                 "type": "object",
                 "properties": {
                   "title": {
+                    "default": "",
                     "type": "string",
-                    "minLength": 5,
                     "maxLength": 140
                   },
                   "body": {
@@ -12141,9 +13140,6 @@
                     ]
                   }
                 },
-                "required": [
-                  "title"
-                ],
                 "additionalProperties": false
               }
             }

@@ -42,7 +42,7 @@ function Chip({
 
 export function IdeaListSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading ideas" className="flex flex-col gap-4">
+    <div aria-busy="true" aria-label="Loading thoughts" className="flex flex-col gap-4">
       {[0, 1, 2].map((n) => (
         <div key={n} className="flex flex-col gap-3 rounded-[20px] border border-white/[0.06] p-4">
           <div className="flex items-center gap-2.5">
@@ -78,12 +78,12 @@ export function IdeasScreen() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
       <PageHeader
         eyebrow={slug === "global" ? "Global" : college.name}
-        title="Ideas"
-        description="Say what you would build or change. Vote on what you like and join the talk."
+        title="Thoughts"
+        description="Say whatever is on your mind. Vote on what you like and join the talk."
         actions={
           <Button asChild>
             <Link href={`/c/${slug}/ideas/new`}>
-              <PlusIcon aria-hidden="true" /> New idea
+              <PlusIcon aria-hidden="true" /> New thought
             </Link>
           </Button>
         }
@@ -130,20 +130,20 @@ export function IdeasScreen() {
         {list.state.status === "loading" ? (
           <IdeaListSkeleton />
         ) : list.state.status === "error" ? (
-          <LoadError error={list.state.error} onRetry={list.state.reload} what="the ideas" />
+          <LoadError error={list.state.error} onRetry={list.state.reload} what="the thoughts" />
         ) : list.items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
             <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
               <LightbulbIcon aria-hidden="true" className="size-6" />
             </span>
             <p className="text-lg font-bold">
-              {topic === "all" ? "No ideas yet" : "Nothing under this topic yet"}
+              {topic === "all" ? "No thoughts yet" : "Nothing under this topic yet"}
             </p>
             <p className="max-w-[30ch] text-[14px] text-ink-muted">
-              Be the first. A good idea can be one sentence.
+              Be the first. A thought can be one sentence.
             </p>
             <Button asChild className="mt-1">
-              <Link href={`/c/${slug}/ideas/new`}>Share an idea</Link>
+              <Link href={`/c/${slug}/ideas/new`}>Share a thought</Link>
             </Button>
           </div>
         ) : (

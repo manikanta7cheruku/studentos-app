@@ -8,6 +8,7 @@ import { Avatar } from "@/components/app/avatar";
 import { api, type Idea, type IdeaTopic } from "@/lib/api/endpoints";
 import { timeAgo } from "@/lib/time-ago";
 import { useCollege } from "@/features/college";
+import { primeLoad } from "@/lib/use-load";
 
 export const TOPIC_LABEL: Record<IdeaTopic, string> = {
   campus: "Campus life",
@@ -115,7 +116,8 @@ function ShareButton({ idea }: { idea: Idea }) {
   async function share() {
     const url = `${window.location.origin}/c/${slug}/ideas/${idea.id}`;
     try {
-      if (navigator.share) await navigator.share({ title: idea.title, url });
+      if (navigator.share)
+        await navigator.share({ title: idea.title || "A thought on StudentOS", url });
       else await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
@@ -154,6 +156,7 @@ export function IdeaCard({
   const href = `/c/${slug}/ideas/${idea.id}`;
   return (
     <article
+      onClickCapture={() => primeLoad(`idea:${slug}:${idea.id}`, idea)}
       className={cn(
         "relative flex flex-col gap-3 rounded-[20px] border border-white/[0.08] bg-surface p-4",
         !full && "lift",
@@ -178,19 +181,29 @@ export function IdeaCard({
         </span>
       </header>
       <div>
-        <h2 className="text-balance text-[1.1rem] font-bold leading-snug">
-          {full ? (
-            idea.title
-          ) : (
-            <Link href={href} className="outline-none after:absolute after:inset-0">
-              {idea.title}
-            </Link>
-          )}
-        </h2>
+        {idea.title ? (
+          <h2 className="text-balance text-[1.1rem] font-bold leading-snug">
+            {full ? (
+              idea.title
+            ) : (
+              <Link href={href} className="outline-none after:absolute after:inset-0">
+                {idea.title}
+              </Link>
+            )}
+          </h2>
+        ) : null}
+        {!idea.title && !full ? (
+          <Link
+            href={href}
+            aria-label="Open this thought"
+            className="absolute inset-0 rounded-[inherit] outline-none"
+          />
+        ) : null}
         {idea.body ? (
           <p
             className={cn(
-              "mt-1.5 whitespace-pre-line text-[14.5px] leading-relaxed text-ink/85",
+              "whitespace-pre-line text-[14.5px] leading-relaxed text-ink/85",
+              idea.title && "mt-1.5",
               !full && "line-clamp-3",
             )}
           >

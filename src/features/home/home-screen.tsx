@@ -20,7 +20,7 @@ type Tab = "all" | "plans" | "ideas";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "For you" },
   { value: "plans", label: "Plans" },
-  { value: "ideas", label: "Ideas" },
+  { value: "ideas", label: "Thoughts" },
 ];
 
 function greeting(now = new Date()): string {
@@ -113,7 +113,7 @@ export function HomeScreen() {
           <div className="flex flex-col items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
             <p className="text-lg font-bold">It is quiet here</p>
             <p className="max-w-[30ch] text-[14px] text-ink-muted">
-              Start something. A plan for the weekend or an idea for your campus.
+              Start something. A plan for the weekend or a thought for your campus.
             </p>
             <div className="mt-1 flex flex-wrap justify-center gap-2">
               <Button asChild>
@@ -123,7 +123,7 @@ export function HomeScreen() {
               </Button>
               <Button asChild variant="outline">
                 <Link href={`/c/${slug}/ideas/new`}>
-                  <LightbulbIcon aria-hidden="true" /> Share an idea
+                  <LightbulbIcon aria-hidden="true" /> Share a thought
                 </Link>
               </Button>
             </div>

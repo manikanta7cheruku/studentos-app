@@ -1,5 +1,6 @@
 "use client";
 
+import { RemoveDialog } from "@/features/admin-console/remove-dialog";
 import * as React from "react";
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
@@ -14,7 +15,7 @@ import { api, type EventItem } from "@/lib/api/endpoints";
 import { formatWhen } from "@/lib/format";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { RsvpButton } from "./event-card";
+import { EventBadges, RsvpButton } from "./event-card";
 
 function CancelEvent({ event, onDone }: { event: EventItem; onDone: () => void }) {
   const { slug } = useCollege();
@@ -61,7 +62,12 @@ function CancelEvent({ event, onDone }: { event: EventItem; onDone: () => void }
 
 export function EventDetailScreen({ eventId }: { eventId: string }) {
   const { slug, isModerator } = useCollege();
-  const state = useLoad(() => api.events.one(slug, eventId), [slug, eventId]);
+  const state = useLoad(
+    () => api.events.one(slug, eventId),
+    [slug, eventId],
+    `event:${slug}:${eventId}`,
+  );
+  const [removing, setRemoving] = React.useState(false);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 py-6 md:px-8 md:py-10">
@@ -97,6 +103,9 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
             </span>
           </Poster>
           <div>
+            <div className="mb-2">
+              <EventBadges event={state.data} />
+            </div>
             <h1 className="text-balance font-heading text-[1.7rem] font-extrabold leading-tight tracking-tight">
               {state.data.title}
             </h1>
@@ -104,6 +113,11 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
               Hosted by {state.data.author.display_name}
             </p>
           </div>
+          {state.data.status === "removed" ? (
+            <Banner variant="info" title="This event was removed">
+              <p>A moderator took it down.</p>
+            </Banner>
+          ) : null}
           {state.data.status === "cancelled" ? (
             <Banner variant="info" title="This event was cancelled">
               <p>Nothing will happen at this time.</p>
@@ -132,6 +146,21 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
             </p>
           ) : null}
           <RsvpButton event={state.data} size="lg" onChange={() => state.reload()} />
+          {isModerator && !state.data.is_owner && state.data.status !== "removed" ? (
+            <>
+              <Button variant="outline" onClick={() => setRemoving(true)}>
+                Remove this event
+              </Button>
+              <RemoveDialog
+                slug={slug}
+                kind="event"
+                id={state.data.id}
+                open={removing}
+                onOpenChange={setRemoving}
+                onRemoved={state.reload}
+              />
+            </>
+          ) : null}
           {(state.data.is_owner || isModerator) && state.data.status === "published" ? (
             <CancelEvent event={state.data} onDone={state.reload} />
           ) : null}

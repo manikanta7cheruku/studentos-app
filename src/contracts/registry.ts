@@ -7,6 +7,7 @@ import * as board from "./board";
 import * as engagement from "./engagement";
 import * as events from "./events";
 import * as ideas from "./ideas";
+import * as moderation from "./moderation";
 import * as opportunities from "./opportunities";
 import * as profile from "./profile";
 import * as setup from "./setup";
@@ -275,6 +276,22 @@ export const endpoints: Endpoint[] = [
   }),
   e("OPP-04", "DELETE", "/me/saved-opportunities/{id}", "ses", "Unsave an opportunity", {
     response: opportunities.savedOpportunityResponse,
+  }),
+  e("TMF-11", "POST", "/c/{slug}/team-posts/{id}/join", "mem", "Join an open plan with one tap", {
+    body: teamfinder.teamJoinBody,
+    response: teamfinder.teamPostResponse,
+    idem: true,
+  }),
+  e("TMF-12", "GET", "/c/{slug}/team-posts/{id}/participants", "mem", "Who joined a plan", {
+    response: teamfinder.teamParticipantListResponse,
+  }),
+  e("ADM-13", "POST", "/c/{slug}/admin/content/remove", "mod", "Remove content with a reason", {
+    body: moderation.contentRemoveBody,
+    response: moderation.contentRemoveResponse,
+  }),
+  e("ADM-14", "GET", "/c/{slug}/admin/content", "mod", "Newest content of the college", {
+    query: moderation.contentListQuery,
+    response: moderation.contentListResponse,
   }),
   e("EVT-01", "POST", "/c/{slug}/events", "mem", "Create an event", {
     body: events.eventCreateBody,

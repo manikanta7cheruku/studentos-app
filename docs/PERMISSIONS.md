@@ -62,6 +62,10 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | OPP-03 | DELETE | /c/{slug}/admin/opportunities/{id} | mod | admin bucket |
 | OPP-04 | PUT | /me/saved-opportunities/{id} | ses | write limit |
 | OPP-04 | DELETE | /me/saved-opportunities/{id} | ses | write limit |
+| TMF-11 | POST | /c/{slug}/team-posts/{id}/join | mem | write limit, open plans only |
+| TMF-12 | GET | /c/{slug}/team-posts/{id}/participants | mem | read limit, names only for the host and people who joined |
+| ADM-13 | POST | /c/{slug}/admin/content/remove | mod | moderators and admins, audit logged, the author is told |
+| ADM-14 | GET | /c/{slug}/admin/content | mod | moderators and admins |
 | EVT-01 | POST | /c/{slug}/events | mem | write limit, 10 upcoming per person |
 | EVT-02 | GET | /c/{slug}/events | mem | read limit |
 | EVT-03 | GET | /c/{slug}/events/{id} | mem | read limit |

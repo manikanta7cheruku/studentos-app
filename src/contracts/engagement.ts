@@ -19,6 +19,8 @@ export const notificationType = z.enum([
   "team.post_expired",
   "membership.expired",
   "opportunity.deadline_soon",
+  "team.joined",
+  "content.removed",
 ]);
 // payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
 // announcement_id, report_id or college_slug that the screen can turn into a link.
