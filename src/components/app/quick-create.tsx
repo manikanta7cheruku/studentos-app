@@ -14,55 +14,73 @@ import { cn } from "cn";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 
-/** How long a press must last to count as a hold, and how close two taps must be to count as a double tap. */
+/** How long a press must last to count as a hold, and how long to wait for a second tap. */
 export const HOLD_MS = 650;
-export const DOUBLE_TAP_MS = 320;
+export const DOUBLE_TAP_MS = 280;
 
 /**
- * Gestures for the + button. A tap opens the full list of things to create. A double tap, or a press held for about
- * two thirds of a second, opens the shortcuts instead: messages, requests, alerts, people and feedback.
+ * Gestures for the + button. A single tap opens the full list of things to create, after a very short wait to be sure no
+ * second tap follows (so a double tap never flashes that list). A double tap, or a press held for about two thirds of a
+ * second, opens the shortcuts instead: messages, requests, alerts, people and feedback.
  */
 export function usePlusGestures({ onTap, onQuick }: { onTap: () => void; onQuick: () => void }) {
-  const timer = React.useRef<number | null>(null);
+  const holdTimer = React.useRef<number | null>(null);
+  const tapTimer = React.useRef<number | null>(null);
   const held = React.useRef(false);
-  const lastTap = React.useRef(0);
 
-  const clear = () => {
-    if (timer.current !== null) window.clearTimeout(timer.current);
-    timer.current = null;
+  const clearHold = () => {
+    if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
+    holdTimer.current = null;
   };
-
-  const props = {
-    onPointerDown: () => {
-      held.current = false;
-      clear();
-      timer.current = window.setTimeout(() => {
-        held.current = true;
-        navigator.vibrate?.(12);
-        onQuick();
-      }, HOLD_MS);
+  const clearTap = () => {
+    if (tapTimer.current !== null) window.clearTimeout(tapTimer.current);
+    tapTimer.current = null;
+  };
+  React.useEffect(
+    () => () => {
+      if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
+      if (tapTimer.current !== null) window.clearTimeout(tapTimer.current);
     },
-    onPointerUp: clear,
-    onPointerLeave: clear,
-    onPointerCancel: clear,
-    // A long press on a phone would otherwise open the browser's own menu.
-    onContextMenu: (event: React.MouseEvent) => event.preventDefault(),
-    onClick: () => {
-      // The press that opened the quick menu also ends in a click: ignore it.
-      if (held.current) {
+    [],
+  );
+
+  return {
+    props: {
+      onPointerDown: () => {
         held.current = false;
-        return;
-      }
-      const now = performance.now();
-      const isDouble = now - lastTap.current < DOUBLE_TAP_MS;
-      lastTap.current = now;
-      if (isDouble) onQuick();
-      else onTap();
+        clearHold();
+        holdTimer.current = window.setTimeout(() => {
+          held.current = true;
+          clearTap();
+          navigator.vibrate?.(12);
+          onQuick();
+        }, HOLD_MS);
+      },
+      onPointerUp: clearHold,
+      onPointerLeave: clearHold,
+      onPointerCancel: clearHold,
+      // A long press on a phone would otherwise open the browser's own menu.
+      onContextMenu: (event: React.MouseEvent) => event.preventDefault(),
+      onClick: () => {
+        // The press that opened the shortcuts also ends in a click: ignore it.
+        if (held.current) {
+          held.current = false;
+          return;
+        }
+        if (tapTimer.current !== null) {
+          // The second tap of a double tap.
+          clearTap();
+          navigator.vibrate?.(8);
+          onQuick();
+          return;
+        }
+        tapTimer.current = window.setTimeout(() => {
+          tapTimer.current = null;
+          onTap();
+        }, DOUBLE_TAP_MS);
+      },
     },
   };
-  /** True while a second tap would still count as a double tap (the full sheet may already be open). */
-  const recentlyTapped = () => performance.now() - lastTap.current < DOUBLE_TAP_MS;
-  return { props, recentlyTapped };
 }
 
 const HINT_KEY = "studentos.plusHint";
@@ -223,9 +241,11 @@ function ShortcutList({
                 plusHintDone();
                 onPick();
               }}
-              className="glass-clear group flex h-[52px] flex-row-reverse items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 outline-none transition-[transform,background-color] duration-200 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:flex-row md:pl-1.5 md:pr-5 [&_svg]:size-[18px]"
+              className="glass-clear group flex h-[52px] w-[15rem] items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 outline-none transition-[transform,background-color] duration-200 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:flex-row-reverse md:pl-1.5 md:pr-5 [&_svg]:size-[18px]"
             >
-              <span className="text-[14.5px] font-semibold">{item.title}</span>
+              <span className="min-w-0 flex-1 truncate text-left text-[14.5px] font-semibold leading-none">
+                {item.title}
+              </span>
               <span
                 className={cn(
                   "relative inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/[0.14] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors group-hover:bg-white/[0.22]",

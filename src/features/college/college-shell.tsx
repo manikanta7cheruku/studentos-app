@@ -363,7 +363,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   const inChat = /\/messages\/[^/]+$/.test(pathname);
   const [creating, setCreating] = React.useState(false);
   const [quick, setQuick] = React.useState(false);
-  // + : one tap opens everything you can create. A double tap or a hold opens the four quick starts.
+  // + : one tap opens everything you can create. A double tap or a hold opens the shortcuts.
   const plus = usePlusGestures({
     onTap: () => setCreating(true),
     onQuick: () => {
@@ -372,22 +372,6 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       setQuick(true);
     },
   });
-  const { recentlyTapped } = plus;
-  // The full sheet opens on the first tap and covers the button, so a quick second tap lands on its backdrop: treat it as
-  // the double tap it is.
-  React.useEffect(() => {
-    if (!creating) return;
-    const second = (event: PointerEvent) => {
-      if (!recentlyTapped()) return;
-      event.stopPropagation();
-      event.preventDefault();
-      plusHintDone();
-      setCreating(false);
-      setQuick(true);
-    };
-    window.addEventListener("pointerdown", second, true);
-    return () => window.removeEventListener("pointerdown", second, true);
-  }, [creating, recentlyTapped]);
   const router = useRouter();
   // A new person finishes the short tour (name, username, sex, interests) before anything else.
   const needsTour = me !== null && !me.onboarded;
