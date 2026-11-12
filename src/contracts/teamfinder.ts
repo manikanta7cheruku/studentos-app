@@ -180,5 +180,7 @@ export const teamParticipant = z.object({
   role_name: z.string(),
   joined_at: isoDateTime,
   is_host: z.boolean(),
+  // Only the host sees it, and only if the person chose to share it with hosts. Hidden again a day after the plan.
+  phone: z.string().nullable().default(null),
 });
 export const teamParticipantListResponse = successEnvelope(z.array(teamParticipant));

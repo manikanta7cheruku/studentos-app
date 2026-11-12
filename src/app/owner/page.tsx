@@ -1,7 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import { OwnerTitle, Panel, Stat } from "@/features/owner/owner-ui";
-import { overview, signups } from "@/modules/owner/owner.admin";
+import { insights, overview, signups } from "@/modules/owner/owner.admin";
 
 export const instant = false;
 
@@ -33,7 +33,8 @@ function Chart({ days }: { days: { day: string; n: number }[] }) {
 
 export default async function OwnerOverview() {
   await connection();
-  const [data, days] = await Promise.all([overview(), signups(30)]);
+  const [data, days, people] = await Promise.all([overview(), signups(30), insights()]);
+  const pct = (n: number) => (people.users ? Math.round((n / people.users) * 100) : 0);
   const alerts: { text: string; href: string }[] = [];
   if (data.reports_open > 0)
     alerts.push({
@@ -107,6 +108,81 @@ export default async function OwnerOverview() {
               </div>
             ))}
           </dl>
+        </Panel>
+      </div>
+
+      <h2 className="mb-3 mt-8 text-[15px] font-bold">People and profiles</h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat
+          label="Finished the tour"
+          value={`${pct(people.onboarded)}%`}
+          note={`${people.onboarded} of ${people.users}`}
+        />
+        <Stat
+          label="Gave a mobile number"
+          value={people.with_phone}
+          note={`${people.phone_shared_with_hosts} share it with hosts`}
+        />
+        <Stat
+          label="Messages waiting"
+          value={people.messages_waiting}
+          note="they vanish by themselves"
+        />
+        <Stat label="New feedback" value={people.feedback_new} note="in the Feedback page" />
+      </div>
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+        <Panel title="Gender (counts only)">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[14px]">
+            {(
+              [
+                ["Woman", people.sex.woman],
+                ["Man", people.sex.man],
+                ["Non-binary", people.sex.non_binary],
+                ["Prefer not to say", people.sex.prefer_not_to_say],
+                ["Not answered", people.sex.unanswered],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[12.5px] text-ink-muted">{label}</dt>
+                <dd className="tabular font-heading text-[1.2rem] font-extrabold">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Panel>
+        <Panel title="Age (from birth year)">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[14px]">
+            {(
+              [
+                ["Under 18", people.age.under_18],
+                ["18 to 22", people.age.from_18_to_22],
+                ["23 and over", people.age.from_23],
+                ["Not shared", people.age.not_shared],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[12.5px] text-ink-muted">{label}</dt>
+                <dd className="tabular font-heading text-[1.2rem] font-extrabold">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Panel>
+        <Panel title="Popular interests">
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
+            For fun
+          </p>
+          <p className="mb-3 mt-1 text-[14px]">
+            {people.top_interests.length
+              ? people.top_interests.map((i) => `${i.name} (${i.n})`).join(", ")
+              : "None yet"}
+          </p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-muted">
+            Tech and career
+          </p>
+          <p className="mt-1 text-[14px]">
+            {people.top_tech.length
+              ? people.top_tech.map((i) => `${i.name} (${i.n})`).join(", ")
+              : "None yet"}
+          </p>
         </Panel>
       </div>
     </>

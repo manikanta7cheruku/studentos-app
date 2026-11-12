@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { ToggleChips } from "@/components/ui/choice-chips";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -160,30 +161,22 @@ export function VenueNewScreen() {
             />
           </FormField>
           <FormField label="Opens" error={fields.hours}>
-            <select
-              value={open}
-              onChange={(event) => setOpen(Number(event.target.value))}
-              className="h-12 w-full rounded-[14px] border border-white/10 bg-white/[0.045] px-3 text-[15px] outline-none focus-visible:border-[#7d74e0] focus-visible:ring-[3px] focus-visible:ring-[#7d74e0]/25"
-            >
+            <Select value={open} onChange={(event) => setOpen(Number(event.target.value))}>
               {HOURS.slice(0, 24).map((hour) => (
                 <option key={hour} value={hour}>
                   {hourLabel(hour)}
                 </option>
               ))}
-            </select>
+            </Select>
           </FormField>
           <FormField label="Closes">
-            <select
-              value={close}
-              onChange={(event) => setClose(Number(event.target.value))}
-              className="h-12 w-full rounded-[14px] border border-white/10 bg-white/[0.045] px-3 text-[15px] outline-none focus-visible:border-[#7d74e0] focus-visible:ring-[3px] focus-visible:ring-[#7d74e0]/25"
-            >
+            <Select value={close} onChange={(event) => setClose(Number(event.target.value))}>
               {HOURS.slice(1).map((hour) => (
                 <option key={hour} value={hour}>
                   {hourLabel(hour)}
                 </option>
               ))}
-            </select>
+            </Select>
           </FormField>
         </div>
 

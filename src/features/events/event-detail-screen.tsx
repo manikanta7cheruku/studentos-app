@@ -1,6 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import * as React from "react";
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
@@ -71,7 +72,15 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader title="Event" back={{ href: `/c/${slug}/events`, label: "Events" }} />
+      <PageHeader
+        title="Event"
+        back={{ href: `/c/${slug}/events`, label: "Events" }}
+        menu={
+          state.status === "ready" && !state.data.is_owner ? (
+            <ReportMenu targetType="event" targetId={state.data.id} what="event" />
+          ) : undefined
+        }
+      />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-40 w-full rounded-3xl" />

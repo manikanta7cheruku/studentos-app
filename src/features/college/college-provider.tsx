@@ -16,7 +16,7 @@ export type CollegeContextValue = {
   isModerator: boolean;
   unread: number;
   refreshUnread: () => Promise<void>;
-  profile: Pick<Profile, "display_name" | "avatar_url"> | null;
+  profile: (Pick<Profile, "display_name" | "avatar_url"> & { onboarded: boolean }) | null;
   refreshProfile: () => Promise<void>;
 };
 
@@ -61,7 +61,11 @@ export function useCollegeLoad(slug: string): CollegeLoad {
   const refreshProfile = React.useCallback(async () => {
     try {
       const mine = await api.profile.get();
-      setProfile({ display_name: mine.display_name, avatar_url: mine.avatar_url });
+      setProfile({
+        display_name: mine.display_name,
+        avatar_url: mine.avatar_url,
+        onboarded: mine.onboarded,
+      });
     } catch {
       // The shell falls back to "You" until the next try.
     }
@@ -82,7 +86,12 @@ export function useCollegeLoad(slug: string): CollegeLoad {
     api.profile
       .get()
       .then((mine) => {
-        if (!stop) setProfile({ display_name: mine.display_name, avatar_url: mine.avatar_url });
+        if (!stop)
+          setProfile({
+            display_name: mine.display_name,
+            avatar_url: mine.avatar_url,
+            onboarded: mine.onboarded,
+          });
       })
       .catch(() => undefined);
     const timer = window.setInterval(tick, UNREAD_REFRESH_MS);

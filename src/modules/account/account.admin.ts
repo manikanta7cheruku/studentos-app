@@ -1,3 +1,4 @@
+import { getPublicDetails } from "@/modules/profile/profile-private.admin";
 import { adminClient } from "@/server/admin/supabase-admin";
 import { AppError } from "@/lib/errors";
 import { mapDbError } from "@/lib/db-error";
@@ -51,7 +52,8 @@ export async function viewPerson(actor: string, college: string, target: string)
   const avatar_url = avatar_path
     ? adminClient().storage.from("avatars").getPublicUrl(avatar_path).data.publicUrl
     : null;
-  return { ...person, avatar_url };
+  const shown = await getPublicDetails(target);
+  return { ...person, avatar_url, gender: shown.gender, age: shown.age };
 }
 
 type MembershipRow = {

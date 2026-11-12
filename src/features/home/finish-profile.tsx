@@ -43,12 +43,12 @@ export function FinishProfile() {
       <div className="min-w-0 flex-1">
         <p className="text-[14.5px] font-bold leading-snug">Make it yours</p>
         <p className="text-[13px] text-ink-muted">
-          Add your skills so people can find you for their plans.{" "}
+          Add your strengths so people can find you for their plans.{" "}
           <Link
-            href={`/c/${slug}/me/skills`}
+            href={`/c/${slug}/me/strengths`}
             className="font-semibold text-[#b9b4ee] underline-offset-4 hover:underline"
           >
-            Add skills
+            Add strengths
           </Link>
         </p>
       </div>

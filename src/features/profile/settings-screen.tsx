@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ChevronRightIcon, MessageSquareIcon } from "lucide-react";
+import { Avatar } from "@/components/app/avatar";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -19,11 +21,38 @@ import { OtpInput } from "@/components/app/otp-input";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
-import { api } from "@/lib/api/endpoints";
+import { api, type BlockedPerson } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useCollege } from "@/features/college";
 import { useSession } from "@/features/session/session-provider";
+
+function Group({
+  id,
+  title,
+  text,
+  children,
+}: {
+  id: string;
+  title: string;
+  text?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-2.5">
+      <div className="px-1">
+        <h2
+          id={id}
+          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        >
+          {title}
+        </h2>
+        {text ? <p className="mt-0.5 text-[13px] text-ink-muted">{text}</p> : null}
+      </div>
+      <div className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">{children}</div>
+    </section>
+  );
+}
 
 function Row({
   title,
@@ -35,10 +64,10 @@ function Row({
   action: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-t border-border py-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
+    <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <div className="max-w-prose">
-        <h3 className="text-[16px] font-semibold">{title}</h3>
-        <div className="mt-1 text-[14px] leading-relaxed text-ink-muted">{children}</div>
+        <h3 className="text-[15px] font-semibold">{title}</h3>
+        <div className="mt-0.5 text-[13.5px] leading-relaxed text-ink-muted">{children}</div>
       </div>
       <div className="shrink-0">{action}</div>
     </div>
@@ -60,7 +89,7 @@ function Choice({
 }) {
   const id = React.useId();
   return (
-    <div className="flex min-h-11 items-center justify-between gap-4 py-1.5">
+    <div className="flex min-h-14 items-center justify-between gap-4 py-2.5">
       <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
         <span className="block font-medium text-ink">{label}</span>
         <span className="block text-[13px] text-ink-muted">{help}</span>
@@ -84,6 +113,7 @@ function PrivacySection() {
     visible?: boolean;
     portfolio?: boolean;
     reminders?: boolean;
+    phone?: boolean;
   }>({});
   const [, setBusy] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<string>("");
@@ -102,6 +132,7 @@ function PrivacySection() {
   const visible = override.visible ?? state.data.profile.visibility === "college";
   const portfolio = override.portfolio ?? state.data.profile.portfolio_public;
   const reminders = override.reminders ?? state.data.reminders.enabled;
+  const phoneShared = override.phone ?? state.data.profile.phone_visibility === "hosts";
 
   async function run(key: string, done: string, call: () => Promise<unknown>, undo: () => void) {
     setBusy(key);
@@ -119,14 +150,8 @@ function PrivacySection() {
   }
 
   return (
-    <section aria-labelledby="privacy" className="flex flex-col">
-      <h2
-        id="privacy"
-        className="mb-3 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
-      >
-        Privacy and reminders
-      </h2>
-      <div className="flex max-w-xl flex-col gap-1">
+    <div className="flex flex-col gap-2">
+      <Group id="privacy" title="Privacy and reminders">
         <Choice
           checked={visible}
           label="Show my profile to my college"
@@ -155,6 +180,22 @@ function PrivacySection() {
             );
           }}
         />
+        {state.data.profile.phone ? (
+          <Choice
+            checked={phoneShared}
+            label="Share my number with plan hosts"
+            help="The host of a plan you join sees it until a day after the plan. Never on your profile."
+            onChange={(next) => {
+              setOverride((o) => ({ ...o, phone: next }));
+              void run(
+                "phone",
+                next ? "Hosts of plans you join can see your number." : "Your number is hidden.",
+                () => api.profile.patch({ phone_visibility: next ? "hosts" : "hidden" }),
+                () => setOverride((o) => ({ ...o, phone: !next })),
+              );
+            }}
+          />
+        ) : null}
         <Choice
           checked={reminders}
           label="Remind me before a saved deadline"
@@ -169,8 +210,8 @@ function PrivacySection() {
             );
           }}
         />
-      </div>
-      <p role="status" className="mt-3 min-h-6 text-[13.5px] text-ink-muted">
+      </Group>
+      <p role="status" className="min-h-5 px-1 text-[13px] text-ink-muted">
         {message}
       </p>
       {error ? (
@@ -178,7 +219,7 @@ function PrivacySection() {
           <p>{error}</p>
         </Banner>
       ) : null}
-    </section>
+    </div>
   );
 }
 
@@ -400,18 +441,12 @@ function SpacesSection() {
   const spaces = session.colleges.filter((item) => item.membership.status === "active");
   const inGlobal = spaces.some((item) => item.college.slug === GLOBAL_SLUG);
   return (
-    <section aria-labelledby="spaces" className="flex flex-col gap-3">
-      <h2
-        id="spaces"
-        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
-      >
-        Your spaces
-      </h2>
-      <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
+    <div className="flex flex-col gap-2">
+      <Group id="spaces" title="Your spaces">
         {spaces.map((item) => {
           const current = item.college.slug === slug;
           return (
-            <li
+            <div
               key={item.college.slug}
               className="flex min-h-14 items-center justify-between gap-4 py-2"
             >
@@ -426,10 +461,10 @@ function SpacesSection() {
                   <Link href={homePath(item.college.slug)}>Open</Link>
                 </Button>
               )}
-            </li>
+            </div>
           );
         })}
-      </ul>
+      </Group>
       {inGlobal ? null : (
         <p className="text-[13.5px] text-ink-muted">
           Not in Global yet. It is open to every student, with no college email needed.{" "}
@@ -441,29 +476,121 @@ function SpacesSection() {
           </Link>
         </p>
       )}
-    </section>
+    </div>
+  );
+}
+
+function BlockedSection() {
+  const state = useLoad(() => api.blocks.list(), []);
+  const [freed, setFreed] = React.useState<string[]>([]);
+  const [busy, setBusy] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function unblock(person: BlockedPerson) {
+    setBusy(person.user_id);
+    setError(null);
+    try {
+      await api.blocks.unblock(person.user_id);
+      setFreed((current) => [...current, person.user_id]);
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not unblock them. Please try again."));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const people =
+    state.status === "ready" ? state.data.filter((p) => !freed.includes(p.user_id)) : [];
+  return (
+    <div className="flex flex-col gap-2">
+      <Group
+        id="blocked"
+        title="Blocked people"
+        text="They cannot message you. Unblock to let them again."
+      >
+        {state.status === "loading" ? (
+          <div aria-busy="true" className="py-4">
+            <Skeleton className="h-10 w-2/3" />
+          </div>
+        ) : state.status === "error" ? (
+          <div className="py-3">
+            <LoadError error={state.error} onRetry={state.reload} what="your blocked list" />
+          </div>
+        ) : people.length === 0 ? (
+          <p className="py-4 text-[14px] text-ink-muted">You have not blocked anyone.</p>
+        ) : (
+          people.map((person) => (
+            <div
+              key={person.user_id}
+              className="flex min-h-14 items-center justify-between gap-3 py-2"
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <Avatar name={person.display_name} src={person.avatar_url} size="sm" />
+                <span className="truncate text-[15px] font-medium">{person.display_name}</span>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy === person.user_id}
+                onClick={() => void unblock(person)}
+                aria-label={`Unblock ${person.display_name}`}
+              >
+                {busy === person.user_id ? <Spinner /> : null} Unblock
+              </Button>
+            </div>
+          ))
+        )}
+      </Group>
+      {error ? (
+        <Banner variant="error">
+          <p>{error}</p>
+        </Banner>
+      ) : null}
+    </div>
+  );
+}
+
+function HelpSection() {
+  const { slug } = useCollege();
+  return (
+    <Group id="help" title="Help">
+      <Link
+        href={`/c/${slug}/feedback`}
+        className="flex min-h-14 items-center justify-between gap-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="flex items-center gap-3">
+          <MessageSquareIcon aria-hidden="true" className="size-5 text-ink-muted" />
+          <span>
+            <span className="block text-[15px] font-medium">Send feedback</span>
+            <span className="block text-[13px] text-ink-muted">
+              A bug, an idea, or something that confused you.
+            </span>
+          </span>
+        </span>
+        <ChevronRightIcon aria-hidden="true" className="size-4 text-ink-muted" />
+      </Link>
+    </Group>
   );
 }
 
 export function SettingsScreen() {
   const { slug } = useCollege();
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-7 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
         title="Settings"
         description="Who sees you, what we remind you about, and your account."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
-      <SpacesSection />
       <PrivacySection />
-      <div className="flex flex-col">
-        <h2 className="mb-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-          Account
-        </h2>
+      <BlockedSection />
+      <SpacesSection />
+      <HelpSection />
+      <Group id="account" title="Account">
         <SignOutRow />
         <LeaveCollege />
         <DeleteAccount />
-      </div>
+      </Group>
     </div>
   );
 }
