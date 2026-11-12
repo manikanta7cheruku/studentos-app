@@ -90,6 +90,15 @@ import {
 import { GET as myBookings } from "@/app/api/v1/c/[slug]/me/bookings/route";
 import { DELETE as bookingCancel } from "@/app/api/v1/c/[slug]/bookings/[id]/route";
 import { POST as bookingDecide } from "@/app/api/v1/c/[slug]/bookings/[id]/decision/route";
+import { GET as messagesList } from "@/app/api/v1/c/[slug]/messages/route";
+import {
+  GET as messagesThread,
+  POST as messagesSend,
+} from "@/app/api/v1/c/[slug]/messages/[userId]/route";
+import { POST as messagesReport } from "@/app/api/v1/c/[slug]/messages/[userId]/report/route";
+import { POST as feedbackSend } from "@/app/api/v1/me/feedback/route";
+import { POST as photoUploadUrl } from "@/app/api/v1/c/[slug]/photos/upload-url/route";
+import { PUT as boardPhotoPut } from "@/app/api/v1/c/[slug]/board/[id]/photo/route";
 import { GET as peopleList } from "@/app/api/v1/c/[slug]/people/route";
 import { GET as tmfList, POST as tmfCreate } from "@/app/api/v1/c/[slug]/team-posts/route";
 import { GET as tmfGet, PATCH as tmfPatch } from "@/app/api/v1/c/[slug]/team-posts/[id]/route";
@@ -1100,6 +1109,94 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       return call(bookingCancel, {
         method: "DELETE",
         path: `/api/v1/c/alpha/bookings/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-01 GET /c/alpha/messages (members)",
+    call: (cookie: string | undefined) =>
+      call(messagesList, {
+        path: "/api/v1/c/alpha/messages",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "MSG-02 GET /c/alpha/messages/{userId} (unknown person -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messagesThread, {
+        path: `/api/v1/c/alpha/messages/${userId}`,
+        params: { slug: "alpha", userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-03 POST /c/alpha/messages/{userId} (unknown person -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messagesSend, {
+        method: "POST",
+        path: `/api/v1/c/alpha/messages/${userId}`,
+        json: { body: "hello" },
+        params: { slug: "alpha", userId },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-04 POST /c/alpha/messages/{userId}/report (unknown person -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messagesReport, {
+        method: "POST",
+        path: `/api/v1/c/alpha/messages/${userId}/report`,
+        json: { reason: "spam" },
+        params: { slug: "alpha", userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "FDB-01 POST /me/feedback (any signed in person; an empty body is the probe -> 400)",
+    call: (cookie: string | undefined) =>
+      call(feedbackSend, {
+        method: "POST",
+        path: "/api/v1/me/feedback",
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
+  },
+  {
+    op: "PHO-01 POST /c/alpha/photos/upload-url (an empty body is the probe -> 400 for members)",
+    call: (cookie: string | undefined) =>
+      call(photoUploadUrl, {
+        method: "POST",
+        path: "/api/v1/c/alpha/photos/upload-url",
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(400),
+  },
+  {
+    op: "BRD-08 PUT /c/alpha/board/{id}/photo (unknown post -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(boardPhotoPut, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/board/${id}/photo`,
+        json: { path: null },
         params: { slug: "alpha", id },
         cookie,
       }).then((r) => r.status);

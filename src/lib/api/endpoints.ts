@@ -233,6 +233,54 @@ export const api = {
         schema: c.eventResponse.shape.data,
       }),
   },
+  blocks: {
+    block: (userId: string) =>
+      apiClient(j(`/me/blocks/${userId}`), {
+        method: "PUT",
+        schema: c.blockResponse.shape.data,
+      }),
+  },
+  feedback: {
+    send: (body: z.input<typeof c.feedbackCreateBody>) =>
+      apiClient(j("/me/feedback"), {
+        method: "POST",
+        body,
+        schema: c.feedbackCreateResponse.shape.data,
+      }),
+  },
+  messages: {
+    threads: (slug: string) =>
+      apiClient(j(`/c/${slug}/messages`), { schema: c.dmThreadListResponse.shape.data }),
+    thread: (slug: string, userId: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}`), { schema: c.dmThreadResponse.shape.data }),
+    send: (slug: string, userId: string, body: string, key?: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}`), {
+        method: "POST",
+        body: { body },
+        idempotent: key ?? true,
+        schema: c.dmSendResponse.shape.data,
+      }),
+    report: (slug: string, userId: string, body: z.input<typeof c.dmReportBody>) =>
+      apiClient(j(`/c/${slug}/messages/${userId}/report`), {
+        method: "POST",
+        body,
+        schema: c.reportCreateResponse.shape.data,
+      }),
+  },
+  photos: {
+    uploadUrl: (slug: string, body: z.input<typeof c.photoUploadUrlBody>) =>
+      apiClient(j(`/c/${slug}/photos/upload-url`), {
+        method: "POST",
+        body,
+        schema: c.photoUploadUrlResponse.shape.data,
+      }),
+    attach: (slug: string, postId: string, path: string | null) =>
+      apiClient(j(`/c/${slug}/board/${postId}/photo`), {
+        method: "PUT",
+        body: { path },
+        schema: c.boardPhotoResponse.shape.data,
+      }),
+  },
   venues: {
     list: (slug: string, sport?: string) => {
       const query = new URLSearchParams({ limit: "50" });

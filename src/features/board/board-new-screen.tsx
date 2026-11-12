@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
+import { PhotoPicker } from "@/components/app/photo-picker";
+import { uploadPhoto } from "@/lib/upload-photo";
 import { api, type BoardKind, type BoardName } from "@/lib/api/endpoints";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
@@ -28,6 +30,7 @@ export function BoardNewScreen({ board }: { board: BoardName }) {
   const [place, setPlace] = React.useState("");
   const [price, setPrice] = React.useState("");
   const [fields, setFields] = React.useState<Record<string, string>>({});
+  const [photo, setPhoto] = React.useState<File | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -56,6 +59,14 @@ export function BoardNewScreen({ board }: { board: BoardName }) {
         attempt.get(),
       );
       attempt.reset();
+      // The photo goes up after the post exists. If it fails the post is still there and can get its photo from its own page.
+      if (photo) {
+        try {
+          await api.photos.attach(slug, made.id, await uploadPhoto(slug, photo));
+        } catch {
+          // Posted without the photo. The author can add it again on the post.
+        }
+      }
       router.push(`${boardPath(slug, board)}/${made.id}`);
     } catch (caught) {
       if (!(caught instanceof ApiError && caught.isOffline)) attempt.reset();
@@ -94,6 +105,7 @@ export function BoardNewScreen({ board }: { board: BoardName }) {
             ))}
           </div>
         </fieldset>
+        <PhotoPicker file={photo} onChange={setPhoto} label="Add a photo (optional)" />
         <FormField label="Title" error={fields.title} required>
           <Input
             value={title}

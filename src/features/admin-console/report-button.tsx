@@ -35,7 +35,7 @@ export function ReportButton({
   targetId,
   what,
 }: {
-  targetType: "team_post" | "profile";
+  targetType: "team_post" | "profile" | "idea" | "idea_comment" | "event" | "listing" | "venue";
   targetId: string;
   what: string;
 }) {

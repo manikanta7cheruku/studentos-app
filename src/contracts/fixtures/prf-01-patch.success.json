@@ -11,7 +11,14 @@
     "visibility": "college",
     "portfolio_public": false,
     "created_at": "2026-10-31T09:00:00Z",
-    "updated_at": "2026-11-05T18:30:00Z"
+    "updated_at": "2026-11-05T18:30:00Z",
+    "tech_interests": ["Web development"],
+    "excited_by": "Building small apps and late night football",
+    "sex": "prefer_not_to_say",
+    "birth_year": 2006,
+    "phone": null,
+    "phone_visibility": "hidden",
+    "onboarded": true
   },
   "meta": {
     "request_id": "req_7f3a9c2e41b8"

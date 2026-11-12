@@ -1,6 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
+import { ReportButton } from "@/features/admin-console/report-button";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { LockIcon, MapPinIcon, SendIcon } from "lucide-react";
@@ -18,6 +19,8 @@ import { timeAgo } from "@/lib/time-ago";
 import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { PhotoPicker } from "@/components/app/photo-picker";
+import { uploadPhoto } from "@/lib/upload-photo";
 import { priceText } from "./board-card";
 import { KindTag } from "./kind-tag";
 import { BOARDS, RESOLVE_LABEL, boardPath } from "./board-config";
@@ -302,6 +305,57 @@ function Actions({
   );
 }
 
+/** The author can add, change or remove the photo of their post. */
+function OwnerPhoto({ post, onChanged }: { post: BoardItem; onChanged: () => void }) {
+  const { slug } = useCollege();
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function choose(file: File | null) {
+    if (!file || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.photos.attach(slug, post.id, await uploadPhoto(slug, file));
+      onChanged();
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not add the photo. Please try again."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.photos.attach(slug, post.id, null);
+      onChanged();
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not remove the photo."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <PhotoPicker
+        file={null}
+        onChange={(file) => void choose(file)}
+        label={post.photo_url ? "Change the photo" : "Add a photo"}
+      />
+      {busy ? <Spinner /> : null}
+      {post.photo_url && !busy ? (
+        <Button variant="ghost" size="sm" onClick={() => void remove()}>
+          Remove the photo
+        </Button>
+      ) : null}
+      {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+    </div>
+  );
+}
+
 export function BoardDetailScreen({ board, postId }: { board: BoardName; postId: string }) {
   const { slug } = useCollege();
   const config = BOARDS[board];
@@ -339,6 +393,15 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
                 <span className="text-[12.5px] font-semibold text-success">Done</span>
               ) : null}
             </div>
+            {state.data.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={state.data.photo_url}
+                alt={`Photo of ${state.data.title}`}
+                decoding="async"
+                className="max-h-80 w-full rounded-[22px] object-cover"
+              />
+            ) : null}
             <h1 className="text-balance font-heading text-[1.6rem] font-extrabold leading-tight tracking-tight">
               {state.data.title}
             </h1>
@@ -364,6 +427,12 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
             </p>
           </article>
           <Actions post={state.data} board={board} onChanged={state.reload} />
+          {state.data.is_owner ? <OwnerPhoto post={state.data} onChanged={state.reload} /> : null}
+          {!state.data.is_owner ? (
+            <div className="-mt-3">
+              <ReportButton targetType="listing" targetId={state.data.id} what="this post" />
+            </div>
+          ) : null}
           <Messages post={state.data} />
         </>
       )}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
+import { ReportButton } from "@/features/admin-console/report-button";
 import { PageHeader } from "@/components/app/page-header";
 import { Poster } from "@/components/app/poster";
 import { Spinner } from "@/components/app/spinner";
@@ -483,6 +484,11 @@ export function VenueDetailScreen({ venueId }: { venueId: string }) {
             <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink/90">
               {state.data.description}
             </p>
+          ) : null}
+          {!state.data.is_manager ? (
+            <div>
+              <ReportButton targetType="venue" targetId={state.data.id} what="this venue" />
+            </div>
           ) : null}
           <BookingPanel venue={state.data} />
           {state.data.is_manager ? (

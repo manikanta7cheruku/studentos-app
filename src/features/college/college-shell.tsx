@@ -310,12 +310,17 @@ function SpaceMenu() {
 }
 
 export function CollegeShell({ children }: { children: React.ReactNode }) {
-  const { slug } = useCollege();
+  const { slug, profile: me } = useCollege();
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
   const [creating, setCreating] = React.useState(false);
   const router = useRouter();
+  // A new person finishes the short tour (name, username, sex, interests) before anything else.
+  const needsTour = me !== null && !me.onboarded;
+  React.useEffect(() => {
+    if (needsTour) router.replace(`/welcome?next=${encodeURIComponent(pathname)}`);
+  }, [needsTour, pathname, router]);
   const mainRef = React.useRef<HTMLElement>(null);
   // Which way the last move between tabs went (1 forward, -1 back), so the next page slides in from that side.
   const direction = React.useRef<1 | -1 | 0>(0);

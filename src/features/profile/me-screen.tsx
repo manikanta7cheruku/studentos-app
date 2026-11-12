@@ -10,6 +10,8 @@ import {
   StoreIcon,
   ChevronRightIcon,
   InboxIcon,
+  MessageCircleIcon,
+  MessageSquareHeartIcon,
   MapPinnedIcon,
   PencilIcon,
   SettingsIcon,
@@ -93,12 +95,24 @@ function MoreMenu() {
       icon: <InboxIcon />,
     },
     {
+      href: `/c/${slug}/messages`,
+      label: "Messages",
+      text: "Private notes that disappear",
+      icon: <MessageCircleIcon />,
+    },
+    {
       href: `/c/${slug}/notifications`,
       label: "Notifications",
       text: "What happened for you",
       icon: <BellIcon />,
     },
     { href: `/c/${slug}/career`, label: "Careers", text: "Coming soon", icon: <BriefcaseIcon /> },
+    {
+      href: `/c/${slug}/feedback`,
+      label: "Send feedback",
+      text: "An idea, or something wrong",
+      icon: <MessageSquareHeartIcon />,
+    },
     ...(isModerator
       ? [
           {

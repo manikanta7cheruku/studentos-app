@@ -1,6 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
+import { ReportButton } from "@/features/admin-console/report-button";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownRightIcon, SendIcon, Trash2Icon, XIcon } from "lucide-react";
@@ -109,6 +110,9 @@ function CommentRow({
             >
               <CornerDownRightIcon aria-hidden="true" className="size-3.5" /> Reply
             </button>
+          ) : null}
+          {!comment.is_owner ? (
+            <ReportButton targetType="idea_comment" targetId={comment.id} what="this comment" />
           ) : null}
           {comment.is_owner || isModerator ? (
             <ConfirmDelete
@@ -324,6 +328,11 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       ) : (
         <>
           <IdeaCard idea={state.data} full />
+          {!state.data.is_owner ? (
+            <div className="-mt-2 flex justify-end">
+              <ReportButton targetType="idea" targetId={ideaId} what="this buzz" />
+            </div>
+          ) : null}
           {isModerator && !state.data.is_owner ? (
             <div className="-mt-2 flex justify-end">
               <Button variant="outline" onClick={() => setRemoving(true)}>

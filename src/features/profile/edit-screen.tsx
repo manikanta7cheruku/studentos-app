@@ -16,8 +16,19 @@ import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type Profile } from "@/lib/api/endpoints";
+import { compressImage } from "@/lib/compress-image";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import {
+  BirthYearSelect,
+  InterestChips,
+  PHONE_OK,
+  PhoneFields,
+  SexField,
+  TECH_INTERESTS,
+  normalisePhone,
+  type Sex,
+} from "./about-fields";
 
 const HANDLE = /^[a-z0-9_]{3,30}$/;
 
@@ -31,6 +42,12 @@ export function profileChanges(
     bio: string;
     career_goal: string;
     interests: string[];
+    tech_interests?: string[];
+    excited_by?: string;
+    sex?: Sex | null;
+    birth_year?: number | null;
+    phone?: string;
+    share_phone?: boolean;
   },
 ) {
   const patch: Record<string, unknown> = {};
@@ -43,6 +60,22 @@ export function profileChanges(
   if (text(form.career_goal) !== saved.career_goal) patch.career_goal = text(form.career_goal);
   if (JSON.stringify(form.interests) !== JSON.stringify(saved.interests))
     patch.interests = form.interests;
+  if (
+    form.tech_interests !== undefined &&
+    JSON.stringify(form.tech_interests) !== JSON.stringify(saved.tech_interests)
+  )
+    patch.tech_interests = form.tech_interests;
+  if (form.excited_by !== undefined && text(form.excited_by) !== saved.excited_by)
+    patch.excited_by = text(form.excited_by);
+  if (form.sex !== undefined && form.sex !== saved.sex) patch.sex = form.sex;
+  if (form.birth_year !== undefined && form.birth_year !== saved.birth_year)
+    patch.birth_year = form.birth_year;
+  if (form.phone !== undefined) {
+    const number = form.phone.trim() ? normalisePhone(form.phone) : null;
+    if (number !== saved.phone) patch.phone = number;
+    const visibility = number && form.share_phone ? "hosts" : "hidden";
+    if (visibility !== saved.phone_visibility) patch.phone_visibility = visibility;
+  }
   return patch;
 }
 
@@ -151,7 +184,11 @@ function PhotoField({ profile, onChanged }: { profile: Profile; onChanged: () =>
     setError(null);
     setBusy(true);
     try {
-      const saved = await api.profile.uploadAvatar(file);
+      // Shrunk first (at most 512 pixels, WebP): it is small, and the camera's metadata is gone.
+      const small = await compressImage(file, { maxEdge: 512, maxBytes: 300_000 });
+      const saved = await api.profile.uploadAvatar(
+        new File([small], "avatar.webp", { type: small.type }),
+      );
       setUrl(saved.avatar_url);
       onChanged();
     } catch (caught) {
@@ -204,6 +241,12 @@ function EditForm({ saved }: { saved: Profile }) {
     bio: saved.bio ?? "",
     career_goal: saved.career_goal ?? "",
     interests: saved.interests,
+    tech_interests: saved.tech_interests,
+    excited_by: saved.excited_by ?? "",
+    sex: saved.sex as Sex | null,
+    birth_year: saved.birth_year,
+    phone: saved.phone ?? "",
+    share_phone: saved.phone_visibility === "hosts",
   });
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -219,6 +262,8 @@ function EditForm({ saved }: { saved: Profile }) {
     if (!form.display_name.trim()) problems.display_name = "Enter the name classmates will see.";
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
+    if (form.phone.trim() && !PHONE_OK.test(normalisePhone(form.phone)))
+      problems.phone = "Use the form +919876543210.";
     setFields(problems);
     if (Object.keys(problems).length) return;
 
@@ -297,6 +342,53 @@ function EditForm({ saved }: { saved: Profile }) {
         onChange={(next) => set("interests", next)}
         error={fields.interests}
       />
+      <InterestChips
+        title="Tech and career interests"
+        suggestions={TECH_INTERESTS}
+        value={form.tech_interests}
+        onChange={(next) => set("tech_interests", next)}
+        room={20 - form.tech_interests.length}
+        placeholder="Another skill or field"
+      />
+      <FormField
+        label="What makes you excited?"
+        help="One line classmates see on your profile."
+        error={fields.excited_by}
+      >
+        <Textarea
+          value={form.excited_by}
+          onChange={(e) => set("excited_by", e.target.value)}
+          maxLength={200}
+          rows={2}
+        />
+      </FormField>
+      <section
+        aria-labelledby="private"
+        className="glass-card flex flex-col gap-4 rounded-[22px] p-4"
+      >
+        <div>
+          <h2 id="private" className="text-[15px] font-bold">
+            Private details
+          </h2>
+          <p className="text-[12.5px] text-ink-muted">
+            Only you can see these. They are never on your profile.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">Sex</p>
+          <SexField value={form.sex} onChange={(next) => set("sex", next)} />
+        </div>
+        <FormField label="Birth year" help="Optional. We only keep the year.">
+          <BirthYearSelect value={form.birth_year} onChange={(next) => set("birth_year", next)} />
+        </FormField>
+        <PhoneFields
+          phone={form.phone}
+          onPhone={(next) => set("phone", next)}
+          share={form.share_phone}
+          onShare={(next) => set("share_phone", next)}
+          error={fields.phone}
+        />
+      </section>
       {error ? (
         <Banner variant="error">
           <p>{error}</p>

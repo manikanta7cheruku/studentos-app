@@ -1,4 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
+
+// The private details (sex, birth year, number) come from the server only. Not needed for what these tests check.
+vi.mock("../profile-private.admin", () => ({
+  getPrivate: async () => ({
+    sex: null,
+    birth_year: null,
+    phone: null,
+    phone_visibility: "hidden",
+  }),
+  setPrivate: async () => undefined,
+}));
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getMyProfile,

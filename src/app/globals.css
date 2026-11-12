@@ -498,3 +498,43 @@ select option {
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   }
 }
+
+/* Less transparency: for people who asked for it in their system settings, and a lighter page on weak phones. Glass becomes a
+   solid dark surface (no blur to compute), and the borders get a little stronger so shapes still read. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-clear,
+  .glass-card,
+  .glass-sheet,
+  .glass-brand,
+  .glass-bar {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass,
+  .glass-clear,
+  .glass-card,
+  .glass-bar {
+    background: #1a1a24;
+  }
+  .glass-sheet {
+    background: #1b1a2c;
+  }
+  .sheet-scrim {
+    background: rgba(6, 6, 12, 0.7);
+  }
+}
+/* More contrast: stronger edges and brighter secondary text. */
+@media (prefers-contrast: more) {
+  :root {
+    --ink-muted: #c9c9d6;
+    --border: #4a4a5c;
+  }
+  .glass,
+  .glass-clear,
+  .glass-card,
+  .glass-sheet,
+  .glass-pill {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}

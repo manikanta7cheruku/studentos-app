@@ -5,6 +5,7 @@ import { AppError } from "@/lib/errors";
 import { mapDbError } from "@/lib/db-error";
 import { toIso } from "@/lib/api";
 import { serverEnv } from "@/lib/env";
+import { getPrivate, setPrivate } from "./profile-private.admin";
 
 export async function getMyProfile(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
@@ -31,6 +32,9 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     }
   }
 
+  const priv = await getPrivate(userId);
+  const interests: string[] = data.interests ?? [];
+  const techInterests: string[] = data.tech_interests ?? [];
   return {
     user_id: data.user_id,
     display_name: data.display_name,
@@ -38,10 +42,23 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     headline: data.headline ?? null,
     bio: data.bio ?? null,
     avatar_url: avatarUrl,
-    interests: data.interests ?? [],
+    interests,
+    tech_interests: techInterests,
+    excited_by: (data.excited_by as string | null) ?? null,
     career_goal: data.career_goal ?? null,
     visibility: (data.visibility as "college" | "hidden") ?? "college",
     portfolio_public: Boolean(data.portfolio_public),
+    sex: priv.sex,
+    birth_year: priv.birth_year,
+    phone: priv.phone,
+    phone_visibility: priv.phone_visibility,
+    // A name, a username, sex (also "prefer not to say") and at least one interest.
+    onboarded: Boolean(
+      data.display_name?.trim() &&
+      data.handle &&
+      priv.sex &&
+      interests.length + techInterests.length >= 1,
+    ),
     created_at: toIso(data.created_at)!,
     updated_at: toIso(data.updated_at)!,
   };
@@ -58,17 +75,31 @@ export async function updateMyProfile(
   if (patch.headline !== undefined) updatePayload.headline = patch.headline;
   if (patch.bio !== undefined) updatePayload.bio = patch.bio;
   if (patch.interests !== undefined) updatePayload.interests = patch.interests;
+  if (patch.tech_interests !== undefined) updatePayload.tech_interests = patch.tech_interests;
+  if (patch.excited_by !== undefined) updatePayload.excited_by = patch.excited_by;
   if (patch.career_goal !== undefined) updatePayload.career_goal = patch.career_goal;
   if (patch.visibility !== undefined) updatePayload.visibility = patch.visibility;
   if (patch.portfolio_public !== undefined) updatePayload.portfolio_public = patch.portfolio_public;
 
-  const { error } = await supabase.from("profiles").update(updatePayload).eq("user_id", userId);
+  if (Object.keys(updatePayload).length > 0) {
+    const { error } = await supabase.from("profiles").update(updatePayload).eq("user_id", userId);
 
-  if (error) {
-    if (error.code === "23505" || error.message?.includes("unique")) {
-      throw new AppError("CONFLICT", { message: "That handle is already taken." });
+    if (error) {
+      if (error.code === "23505" || error.message?.includes("unique")) {
+        throw new AppError("CONFLICT", { message: "That username is already taken." });
+      }
+      throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
     }
-    throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
+  }
+
+  // The private details go through the server only.
+  const priv: Record<string, unknown> = {};
+  if (patch.sex !== undefined) priv.sex = patch.sex;
+  if (patch.birth_year !== undefined) priv.birth_year = patch.birth_year;
+  if (patch.phone !== undefined) priv.phone = patch.phone;
+  if (patch.phone_visibility !== undefined) priv.phone_visibility = patch.phone_visibility;
+  if (Object.keys(priv).length > 0) {
+    await setPrivate(userId, priv);
   }
 
   return getMyProfile(supabase, userId);
@@ -240,6 +271,8 @@ export async function getMemberProfile(
     bio: data.bio ?? null,
     avatar_url: avatarUrl,
     interests: data.interests ?? [],
+    tech_interests: (data.tech_interests as string[] | null) ?? [],
+    excited_by: (data.excited_by as string | null) ?? null,
     career_goal: data.career_goal ?? null,
     visibility: data.visibility as "college",
     portfolio_public: Boolean(data.portfolio_public),

@@ -1,6 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
+import { ReportButton } from "@/features/admin-console/report-button";
 import * as React from "react";
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
@@ -146,6 +147,11 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
             </p>
           ) : null}
           <RsvpButton event={state.data} size="lg" onChange={() => state.reload()} />
+          {!state.data.is_owner ? (
+            <div>
+              <ReportButton targetType="event" targetId={state.data.id} what="this event" />
+            </div>
+          ) : null}
           {isModerator && !state.data.is_owner && state.data.status !== "removed" ? (
             <>
               <Button variant="outline" onClick={() => setRemoving(true)}>

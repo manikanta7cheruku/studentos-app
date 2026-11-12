@@ -45,6 +45,8 @@ export const boardItem = z.object({
   description: z.string(),
   place: z.string().nullable(),
   price_inr: z.number().int().nullable(),
+  // A picture of the thing, if the author added one (shrunk on the phone, at most 1 MB).
+  photo_url: z.string().nullable().default(null),
   status: boardStatus,
   created_at: isoDateTime,
   is_owner: z.boolean(),

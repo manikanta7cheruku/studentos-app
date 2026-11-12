@@ -3,6 +3,11 @@ import { httpsUrl, isoDateTime, successEnvelope, uuid } from "./common";
 
 // PRF-01 GET / PATCH /api/v1/me/profile
 export const profileVisibility = z.enum(["college", "hidden"]);
+// Private details (never shown to classmates). "prefer_not_to_say" counts as an answer.
+export const sexChoice = z.enum(["woman", "man", "non_binary", "prefer_not_to_say"]);
+// hidden: nobody sees the number. hosts: the host of a plan I joined sees it, until a day after the plan.
+export const phoneVisibility = z.enum(["hidden", "hosts"]);
+export const phoneNumber = z.string().regex(/^\+[1-9][0-9]{7,14}$/, "Use the form +919876543210");
 
 export const profile = z.object({
   user_id: uuid,
@@ -14,10 +19,21 @@ export const profile = z.object({
   headline: z.string().max(120).nullable(),
   bio: z.string().max(1000).nullable(),
   avatar_url: z.url().nullable(),
+  // Casual interests (football, movies, music) and technical ones, kept apart.
   interests: z.array(z.string().min(1).max(40)).max(20),
+  tech_interests: z.array(z.string().min(1).max(40)).max(20).default([]),
+  // One line: what makes this person excited.
+  excited_by: z.string().max(200).nullable().default(null),
   career_goal: z.string().max(200).nullable(),
   visibility: profileVisibility,
   portfolio_public: z.boolean(),
+  // Private, only in my own profile.
+  sex: sexChoice.nullable().default(null),
+  birth_year: z.number().int().min(1940).max(2030).nullable().default(null),
+  phone: phoneNumber.nullable().default(null),
+  phone_visibility: phoneVisibility.default("hidden"),
+  // True when the name, a username, sex and at least one interest are set. The app asks for them once, in a short tour.
+  onboarded: z.boolean().default(false),
   created_at: isoDateTime,
   updated_at: isoDateTime,
 });
@@ -33,9 +49,15 @@ export const profilePatchBody = z
     headline: z.string().trim().max(120).nullable(),
     bio: z.string().trim().max(1000).nullable(),
     interests: z.array(z.string().trim().min(1).max(40)).max(20),
+    tech_interests: z.array(z.string().trim().min(1).max(40)).max(20),
+    excited_by: z.string().trim().max(200).nullable(),
     career_goal: z.string().trim().max(200).nullable(),
     visibility: profileVisibility,
     portfolio_public: z.boolean(),
+    sex: sexChoice.nullable(),
+    birth_year: z.number().int().min(1940).max(2030).nullable(),
+    phone: phoneNumber.nullable(),
+    phone_visibility: phoneVisibility,
   })
   .partial()
   .refine((body) => Object.keys(body).length > 0, "Send at least one field");
@@ -116,6 +138,8 @@ export const personProfileResponse = successEnvelope(
     bio: z.string().nullable(),
     avatar_url: z.string().nullable(),
     interests: z.array(z.string()),
+    tech_interests: z.array(z.string()).default([]),
+    excited_by: z.string().nullable().default(null),
     career_goal: z.string().nullable(),
     program: z.string().nullable(),
     grad_year: z.number().int().nullable(),

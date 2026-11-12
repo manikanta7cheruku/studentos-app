@@ -21,6 +21,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Events and board | EVT-01, EVT-02, EVT-03, EVT-04, EVT-05, BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07 | events with RSVPs, Lost and found and the Marketplace with private messages (built by R3 in Day 12, no payments) |
 | Open join and removal | TMF-11, TMF-12, ADM-13, ADM-14 | one tap join with a host note and a list of who joined, and removing content with a reason that reaches the author (built by R3 in Day 14) |
 | Turf booking | VEN-01, VEN-02, VEN-03, VEN-04, VEN-05, VEN-06, VEN-07, VEN-08, VEN-09, VEN-10 | a directory of turfs and courts, booking requests that the manager confirms by hand, and notes to both sides (built by R3 in Day 16, no payments) |
+| Messages, feedback and photos | MSG-01, MSG-02, MSG-03, MSG-04, FDB-01, PHO-01, BRD-08 | disappearing text messages between classmates, a feedback note to the team, and one shrunk photo on a market or lost and found post (built by R3 in Day 17) |
 
 ## 2. Not built
 

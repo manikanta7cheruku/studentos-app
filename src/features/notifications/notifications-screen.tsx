@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BellIcon,
+  MessageCircleIcon,
   CalendarCheckIcon,
   MapPinnedIcon,
   CheckCheckIcon,
@@ -41,6 +42,10 @@ export function notificationHref(item: NotificationItem, slug: string): string |
       return typeof venueId === "string" ? `${base}/turf/${venueId}` : `${base}/turf`;
     return `${base}/turf/bookings`;
   }
+  if (item.type === "dm.received") {
+    const from = item.payload.from;
+    return typeof from === "string" ? `${base}/messages/${from}` : `${base}/messages`;
+  }
   if (item.type === "opportunity.deadline_soon") return `${base}/career`;
   if (item.type.startsWith("membership.")) return `${base}/me`;
   return null;
@@ -53,6 +58,8 @@ function look(type: string): { icon: React.ReactNode; tint: string } {
   if (type.startsWith("team.request_accepted") || type === "membership.approved")
     return { icon: <UserCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
   if (type.startsWith("team.")) return { icon: <UsersIcon />, tint: "from-[#5b54d6] to-[#8a5fd0]" };
+  if (type === "dm.received")
+    return { icon: <MessageCircleIcon />, tint: "from-[#d6549a] to-[#e0866a]" };
   if (type === "venue.booking_confirmed")
     return { icon: <CalendarCheckIcon />, tint: "from-[#2fb98a] to-[#2f90b9]" };
   if (type.startsWith("venue."))

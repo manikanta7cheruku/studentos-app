@@ -25,6 +25,7 @@ export const notificationType = z.enum([
   "venue.booking_confirmed",
   "venue.booking_declined",
   "venue.booking_cancelled",
+  "dm.received",
 ]);
 // payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
 // announcement_id, report_id or college_slug that the screen can turn into a link.
@@ -99,7 +100,17 @@ export const adminAnnouncementListResponse = successEnvelope(z.array(announcemen
 // ---------------------------------------------------------------------------
 // Reports (RPT-01 create, RPT-02 queue, RPT-03 action)
 // ---------------------------------------------------------------------------
-export const reportTargetType = z.enum(["profile", "project", "team_post", "announcement"]);
+export const reportTargetType = z.enum([
+  "profile",
+  "project",
+  "team_post",
+  "announcement",
+  "idea",
+  "idea_comment",
+  "event",
+  "listing",
+  "venue",
+]);
 export const reportReason = z.enum([
   "spam",
   "harassment",
