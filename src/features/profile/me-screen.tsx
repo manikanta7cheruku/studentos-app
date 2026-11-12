@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import {
   BellIcon,
@@ -43,11 +44,65 @@ function ProfileSkeleton() {
   );
 }
 
-/** My own profile, as classmates see it, with the ways to change it. */
-/** The places that are not in the dock: people, the college notices, careers, my requests, alerts and the admin tools. */
+type MoreRow = { href: string; label: string; text: string; icon: React.ReactNode };
+
+function MoreGroup({ title, rows }: { title: string; rows: MoreRow[] }) {
+  if (!rows.length) return null;
+  return (
+    <section aria-label={title}>
+      <h2 className="mb-2.5 px-1 text-[12px] font-bold uppercase tracking-[0.12em] text-ink-muted">
+        {title}
+      </h2>
+      <ul className="glass-card overflow-hidden rounded-[24px]">
+        {rows.map((row) => (
+          <li key={row.href} className="border-t border-white/[0.06] first:border-t-0">
+            <Link
+              href={row.href}
+              className="group flex items-center gap-3.5 px-4 py-3 outline-none transition-colors duration-200 hover:bg-white/[0.05] focus-visible:bg-white/[0.07]"
+            >
+              <span className="inline-flex size-9 items-center justify-center rounded-xl bg-white/[0.07] text-ink-muted transition-colors duration-200 group-hover:text-ink [&_svg]:size-[18px]">
+                {row.icon}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14.5px] font-semibold">{row.label}</span>
+                <span className="block text-[12.5px] text-ink-muted">{row.text}</span>
+              </span>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="size-4 text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5"
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** The places that are not in the dock, in three groups: what I do, what is around me, and my account. */
 function MoreMenu() {
   const { slug, college, isModerator } = useCollege();
-  const rows = [
+  const activity: MoreRow[] = [
+    {
+      href: `/c/${slug}/messages`,
+      label: "Messages",
+      text: "Private notes that disappear",
+      icon: <MessageCircleIcon />,
+    },
+    {
+      href: `/c/${slug}/collaborate/requests`,
+      label: "My requests",
+      text: "Plans you asked to join",
+      icon: <InboxIcon />,
+    },
+    {
+      href: `/c/${slug}/notifications`,
+      label: "Notifications",
+      text: "What happened for you",
+      icon: <BellIcon />,
+    },
+  ];
+  const explore: MoreRow[] = [
     {
       href: `/c/${slug}/people`,
       label: "People",
@@ -88,25 +143,9 @@ function MoreMenu() {
       text: "Buy, sell, rent, free",
       icon: <StoreIcon />,
     },
-    {
-      href: `/c/${slug}/collaborate/requests`,
-      label: "My requests",
-      text: "Plans you asked to join",
-      icon: <InboxIcon />,
-    },
-    {
-      href: `/c/${slug}/messages`,
-      label: "Messages",
-      text: "Private notes that disappear",
-      icon: <MessageCircleIcon />,
-    },
-    {
-      href: `/c/${slug}/notifications`,
-      label: "Notifications",
-      text: "What happened for you",
-      icon: <BellIcon />,
-    },
     { href: `/c/${slug}/career`, label: "Careers", text: "Coming soon", icon: <BriefcaseIcon /> },
+  ];
+  const account: MoreRow[] = [
     {
       href: `/c/${slug}/feedback`,
       label: "Send feedback",
@@ -125,32 +164,10 @@ function MoreMenu() {
       : []),
   ];
   return (
-    <nav aria-label="More" className="mt-8">
-      <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-        More
-      </h2>
-      <ul className="stagger glass-card overflow-hidden rounded-[24px]">
-        {rows.map((row) => (
-          <li key={row.href} className="border-t border-white/[0.06] first:border-t-0">
-            <Link
-              href={row.href}
-              className="group flex items-center gap-3.5 px-4 py-3.5 outline-none transition-colors duration-200 hover:bg-white/[0.05] focus-visible:bg-white/[0.07]"
-            >
-              <span className="inline-flex size-9 items-center justify-center rounded-xl bg-white/[0.07] text-ink-muted transition-colors duration-200 group-hover:text-ink [&_svg]:size-[18px]">
-                {row.icon}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-semibold">{row.label}</span>
-                <span className="block text-[12.5px] text-ink-muted">{row.text}</span>
-              </span>
-              <ChevronRightIcon
-                aria-hidden="true"
-                className="size-4 text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <nav aria-label="More" className="stagger mt-6 flex flex-col gap-6">
+      <MoreGroup title="Your activity" rows={activity} />
+      <MoreGroup title="Around you" rows={explore} />
+      <MoreGroup title="Help" rows={account} />
     </nav>
   );
 }
@@ -174,17 +191,17 @@ export function MeScreen() {
             person={{ ...state.data.profile, skills: state.data.skills }}
             actions={
               <>
-                <Button asChild>
+                <Button asChild className="rounded-full">
                   <Link href={`/c/${slug}/me/edit`}>
                     <PencilIcon aria-hidden="true" /> Edit profile
                   </Link>
                 </Button>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="rounded-full">
                   <Link href={`/c/${slug}/me/skills`}>
                     <SparklesIcon aria-hidden="true" /> Skills
                   </Link>
                 </Button>
-                <Button asChild variant="ghost">
+                <Button asChild variant="outline" className="rounded-full">
                   <Link href={`/c/${slug}/me/settings`}>
                     <SettingsIcon aria-hidden="true" /> Settings
                   </Link>

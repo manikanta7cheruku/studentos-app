@@ -32,6 +32,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | TEN-07 | POST | /c/{slug}/me/leave | ses | write limit |
 | NTF-01 | GET | /me/notifications | ses | none |
 | NTF-02 | POST | /me/notifications/read | ses | write limit |
+| RPT-05 | GET | /me/blocks | ses | read limit |
 | RPT-04 | PUT | /me/blocks/{userId} | ses | write limit |
 | RPT-04 | DELETE | /me/blocks/{userId} | ses | write limit |
 | WL-01 | POST | /waitlist | pub | 5/h per IP |

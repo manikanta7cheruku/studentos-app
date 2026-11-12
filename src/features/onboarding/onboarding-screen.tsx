@@ -16,7 +16,7 @@ import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { homeFor, useSession } from "@/features/session/session-provider";
 import {
-  BirthYearSelect,
+  BirthYearPicker,
   CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
@@ -201,7 +201,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         </p>
       </div>
       <FormField label="Birth year" help="Optional and private. We only keep the year.">
-        <BirthYearSelect value={year} onChange={setYear} />
+        <BirthYearPicker value={year} onChange={setYear} />
       </FormField>
       {error ? (
         <Banner variant="error">

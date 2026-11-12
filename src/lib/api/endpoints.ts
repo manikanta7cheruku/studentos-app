@@ -44,6 +44,7 @@ export type BoardItem = Data<typeof c.boardResponse>;
 export type Venue = Data<typeof c.venueResponse>;
 export type VenueSlot = Data<typeof c.venueSlotsResponse>[number];
 export type Booking = Data<typeof c.bookingResponse>;
+export type BlockedPerson = Data<typeof c.blocksListResponse>[number];
 export type Participant = Data<typeof c.teamParticipantListResponse>[number];
 export type ContentItem = Data<typeof c.contentListResponse>[number];
 export type ContentKind = z.infer<typeof c.contentKind>;
@@ -234,6 +235,12 @@ export const api = {
       }),
   },
   blocks: {
+    list: () => apiClient(j("/me/blocks"), { schema: c.blocksListResponse.shape.data }),
+    unblock: (userId: string) =>
+      apiClient(j(`/me/blocks/${userId}`), {
+        method: "DELETE",
+        schema: c.blockResponse.shape.data,
+      }),
     block: (userId: string) =>
       apiClient(j(`/me/blocks/${userId}`), {
         method: "PUT",

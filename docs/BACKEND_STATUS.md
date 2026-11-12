@@ -13,7 +13,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | College and joining | TEN-01, TEN-02, TEN-03, TEN-04, TEN-05, TEN-07, TEN-08, TEN-09 | public branding with `modules`, membership, invite code, manual, college email, leave a college, my colleges, join the Global space |
 | College admin | ADM-03, ADM-05, ADM-06, ADM-07, ADM-08, ADM-09, ADM-10, ADM-11 | settings, invites, queue, members, audit, stats |
 | Profile | PRF-01, PRF-02, PRF-03, PRF-04, PRF-05, PRF-06 | own profile, skills, avatar, people directory, one classmate (PRF-01 to PRF-05 built by R3, fixed and tested by R2) |
-| Notifications and moderation | NTF-01, NTF-02, ANN-01, ANN-02, RPT-01, RPT-02, RPT-03, RPT-04, WL-01 | notifications, announcements, reports, blocks, waitlist |
+| Notifications and moderation | NTF-01, NTF-02, ANN-01, ANN-02, RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, WL-01 | notifications, announcements, reports, blocks, waitlist |
 | Team Finder | TMF-01, TMF-02, TMF-03, TMF-04, TMF-05, TMF-06, TMF-07, TMF-08, TMF-09, TMF-10 | posts, roles, requests, decisions |
 | Career | OPP-01, OPP-02, OPP-03, OPP-04, REM-01 | curated opportunities, saved, reminders |
 | Application tracker | APP-01, APP-02, APP-03, APP-04 | my applications, edit with a version check, status changes with a history (built by R3 in Day 7, private to the person) |

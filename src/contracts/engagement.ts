@@ -177,6 +177,15 @@ export const reportActionResponse = successEnvelope(
 // ---------------------------------------------------------------------------
 export const blockResponse = successEnvelope(z.object({ blocked: z.boolean() }));
 
+// RPT-05 GET /api/v1/me/blocks: the people I blocked, newest first (so I can unblock them from Settings).
+export const blockedPerson = z.object({
+  user_id: uuid,
+  display_name: z.string(),
+  avatar_url: z.string().nullable(),
+  blocked_at: isoDateTime,
+});
+export const blocksListResponse = successEnvelope(z.array(blockedPerson));
+
 // ---------------------------------------------------------------------------
 // Waitlist (WL-01), used by the landing page. consent must be true. The server stamps consent_at.
 // ---------------------------------------------------------------------------

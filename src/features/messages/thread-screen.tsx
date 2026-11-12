@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { BanIcon, ChevronLeftIcon, SendIcon } from "lucide-react";
+import { BanIcon, CheckIcon, ChevronLeftIcon, FlagIcon, LockIcon, SendIcon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
+import { OverflowMenu } from "@/components/app/overflow-menu";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
@@ -46,6 +47,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [blocked, setBlocked] = React.useState(false);
+  const [reporting, setReporting] = React.useState(false);
   const bottom = React.useRef<HTMLDivElement>(null);
 
   const { reload } = state;
@@ -99,34 +101,60 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const other = data?.other;
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-2xl flex-col gap-3 px-5 pt-3 pb-2 md:px-8 md:py-8">
-      <header className="flex items-center gap-2">
+      <header className="glass flex items-center gap-1.5 rounded-[22px] p-2">
         <Link
           href={`/c/${slug}/messages`}
           aria-label="Back to messages"
-          className="-ml-2 inline-flex size-10 items-center justify-center rounded-full text-ink-muted outline-none hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-ink-muted outline-none transition-colors hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ChevronLeftIcon aria-hidden="true" className="size-5" />
         </Link>
         {other ? (
           <Link
             href={`/c/${slug}/people/${other.user_id}`}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-xl py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Avatar name={other.display_name} src={other.avatar_url} size="sm" />
-            <span className="truncate text-[16px] font-bold">{other.display_name}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-[15.5px] font-bold leading-tight">
+                {other.display_name}
+              </span>
+              <span className="block text-[12px] text-ink-muted">View profile</span>
+            </span>
           </Link>
         ) : (
           <span className="flex-1" />
         )}
         {other ? (
-          <div className="flex items-center gap-1">
-            <ReportConversation userId={userId} name={other.display_name} />
-            {data?.can_message && !blocked ? (
-              <Button variant="ghost" size="sm" onClick={() => void block()}>
-                <BanIcon aria-hidden="true" /> Block
-              </Button>
-            ) : null}
-          </div>
+          <>
+            <OverflowMenu
+              className="size-10"
+              items={[
+                {
+                  label: "Report " + other.display_name,
+                  icon: <FlagIcon aria-hidden="true" />,
+                  danger: true,
+                  onSelect: () => setReporting(true),
+                },
+                ...(data?.can_message && !blocked
+                  ? [
+                      {
+                        label: "Block",
+                        icon: <BanIcon aria-hidden="true" />,
+                        danger: true,
+                        onSelect: () => void block(),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            <ReportConversation
+              userId={userId}
+              name={other.display_name}
+              open={reporting}
+              onOpenChange={setReporting}
+            />
+          </>
         ) : null}
       </header>
 
@@ -162,7 +190,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
               >
                 <div
                   className={cn(
-                    "max-w-[82%] rounded-[18px] px-3.5 py-2",
+                    "max-w-[82%] rounded-[20px] px-3.5 py-2.5 shadow-sm",
                     message.mine ? "bg-brand rounded-br-md text-white" : "glass-card rounded-bl-md",
                   )}
                 >
@@ -171,15 +199,22 @@ export function ThreadScreen({ userId }: { userId: string }) {
                   </p>
                   <p
                     className={cn(
-                      "mt-0.5 text-[11px]",
-                      message.mine ? "text-white/75" : "text-ink-muted",
+                      "mt-1 flex items-center gap-1 text-[11px]",
+                      message.mine ? "justify-end text-white/80" : "text-ink-muted",
                     )}
                   >
-                    {message.opened_at
-                      ? `Gone ${leaves(message.expires_at, now)}`
-                      : message.mine
-                        ? "Sent, not opened yet"
-                        : ""}
+                    {message.mine ? (
+                      message.opened_at ? (
+                        <>
+                          <CheckIcon aria-hidden="true" className="size-3" /> Seen · disappears{" "}
+                          {leaves(message.expires_at, now)}
+                        </>
+                      ) : (
+                        "Sent · starts to disappear once seen"
+                      )
+                    ) : (
+                      <>Disappears {leaves(message.expires_at, now)}</>
+                    )}
                   </p>
                 </div>
               </li>
@@ -223,6 +258,13 @@ export function ThreadScreen({ userId }: { userId: string }) {
           </Button>
         </form>
       )}
+      <p className="flex items-start justify-center gap-1.5 px-2 text-center text-[12px] leading-snug text-ink-muted">
+        <LockIcon aria-hidden="true" className="mt-0.5 size-3 shrink-0" />
+        <span>
+          Messages cannot be edited or unsent. They disappear 1 hour after the other person sees
+          them.
+        </span>
+      </p>
     </div>
   );
 }

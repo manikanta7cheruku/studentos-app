@@ -72,33 +72,83 @@ export function SexField({
   );
 }
 
-/** Birth year from a list (the last 60 years). Optional. We keep the year, not the date. */
-export function BirthYearSelect({
+/**
+ * Birth year in two taps: pick a decade, then the year. No long list to scroll. It is optional, so "Prefer not to say" clears
+ * it, and a small line says how old that makes you (only you see this).
+ */
+export function BirthYearPicker({
   value,
   onChange,
-  id,
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
-  id?: string;
 }) {
-  // Read once, so the list does not move while it is open.
+  // Read once, so the choices do not move while the screen is open.
   const [thisYear] = React.useState(() => new Date().getFullYear());
-  const years = Array.from({ length: 60 }, (_, index) => thisYear - 10 - index);
+  const newest = thisYear - 10;
+  const oldest = thisYear - 60;
+  const decades: number[] = [];
+  for (let d = Math.floor(newest / 10) * 10; d >= Math.floor(oldest / 10) * 10; d -= 10)
+    decades.push(d);
+  const [chosen, setChosen] = React.useState<number>(
+    value ? Math.floor(value / 10) * 10 : Math.floor((thisYear - 19) / 10) * 10,
+  );
+  const years = Array.from({ length: 10 }, (_, index) => chosen + index).filter(
+    (year) => year <= newest && year >= oldest,
+  );
+  const chip =
+    "inline-flex h-9 shrink-0 items-center justify-center rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95";
   return (
-    <select
-      id={id}
-      value={value ?? ""}
-      onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
-      className="h-11 w-full rounded-[12px] border border-white/10 bg-white/[0.045] px-3 text-[14.5px] outline-none focus-visible:border-[#7d74e0] focus-visible:ring-[3px] focus-visible:ring-[#7d74e0]/25 sm:w-56"
-    >
-      <option value="">Prefer not to say</option>
-      {years.map((year) => (
-        <option key={year} value={year}>
-          {year}
-        </option>
-      ))}
-    </select>
+    <div className="flex flex-col gap-3">
+      <div
+        role="radiogroup"
+        aria-label="Decade"
+        className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none]"
+      >
+        {decades.map((decade) => (
+          <button
+            key={decade}
+            type="button"
+            role="radio"
+            aria-checked={chosen === decade}
+            onClick={() => setChosen(decade)}
+            className={cn(
+              chip,
+              chosen === decade
+                ? "border-white/30 bg-white/[0.16] text-ink"
+                : "border-white/10 bg-white/[0.04] text-ink-muted hover:text-ink",
+            )}
+          >
+            {decade}s
+          </button>
+        ))}
+      </div>
+      <div role="radiogroup" aria-label="Birth year" className="grid grid-cols-5 gap-2">
+        {years.map((year) => (
+          <button
+            key={year}
+            type="button"
+            role="radio"
+            aria-checked={value === year}
+            onClick={() => onChange(value === year ? null : year)}
+            className={cn(
+              chip,
+              "tabular w-full px-0",
+              value === year
+                ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(8,6,30,0.55)]"
+                : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+            )}
+          >
+            {year}
+          </button>
+        ))}
+      </div>
+      <p className="text-[12.5px] text-ink-muted" aria-live="polite">
+        {value
+          ? `Born ${value}, so ${thisYear - value} this year. Only you see this.`
+          : "Not shared. You can add it any time."}
+      </p>
+    </div>
   );
 }
 

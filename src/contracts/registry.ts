@@ -148,6 +148,9 @@ export const endpoints: Endpoint[] = [
     body: engagement.notificationReadBody,
     response: engagement.notificationReadResponse,
   }),
+  e("RPT-05", "GET", "/me/blocks", "ses", "The people I blocked", {
+    response: engagement.blocksListResponse,
+  }),
   e("RPT-04", "PUT", "/me/blocks/{userId}", "ses", "Block a classmate", {
     response: engagement.blockResponse,
   }),

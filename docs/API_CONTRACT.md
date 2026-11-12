@@ -104,6 +104,7 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | RPT-02 | GET `/c/{slug}/admin/reports` | Queue | mod | P0 | | TC-RPT-02 |
 | RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | Dismiss/hide/warn/suspend | mod | P0 | ✓ | TC-RPT-03 |
 | RPT-04 | PUT/DELETE `/me/blocks/{user_id}` | Block/unblock | mem(1) | P1 | | TC-RPT-04 |
+| RPT-05 | GET `/me/blocks` | The people I blocked | ses | P1 | | TC-RPT-05 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
 | ADM-02 | PATCH `/platform/colleges/{id}` | Status/branding (suspend) | plat | P0 | | TC-ADM-02 |
 | ADM-03 | GET/PATCH `/c/{slug}/admin/settings` | Tenant settings & flags | adm | P0 | | TC-ADM-03 |
@@ -271,6 +272,7 @@ Base `/api/v1`. All changes need a matching `Origin`. Writes are limited to 60 a
 | RPT-01 | POST `/c/{slug}/reports` | IDEM. `target_type` (`announcement` or `profile` for now), `target_id`, `reason`, optional `details`. 409 if you already have an open report on it, 400 for yourself, 404 for another college |
 | RPT-02 | GET `/c/{slug}/admin/reports?status=open&limit=&cursor=` | Moderators and admins. Each item has `target_title`, `reporter`, `status` |
 | RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | IDEM. `action`: `dismiss`, `hide`, `warn`, `suspend`. `note` of 5 or more characters is needed except for dismiss. 409 if already handled. 403 if the report is about you, or you may not suspend that role (a moderator suspends students only, nobody suspends an admin here) |
+| RPT-05 | GET `/me/blocks` | The people I blocked, newest first (so Settings can unblock them). Each has the name, picture and when |
 | RPT-04 | PUT / DELETE `/me/blocks/{userId}` | Block or unblock a classmate. Safe to repeat. 400 for yourself, 404 for someone not in a college you share |
 | WL-01 | POST `/waitlist` | Public. `college_name`, `contact_name`, `contact_email`, `role`, `consent: true`, optional `source`. Always answers `{ "joined": true }`, even for an email already there. 5 a hour per IP |
 

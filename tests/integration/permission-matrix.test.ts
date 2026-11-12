@@ -51,6 +51,7 @@ import {
   PATCH as patchAnnouncement,
 } from "@/app/api/v1/c/[slug]/admin/announcements/[id]/route";
 import { DELETE as unblockUser } from "@/app/api/v1/me/blocks/[userId]/route";
+import { GET as listBlocks } from "@/app/api/v1/me/blocks/route";
 import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
 import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route";
 import { GET as skillSearch } from "@/app/api/v1/skills/route";
@@ -1527,6 +1528,12 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status),
     expect: Object.fromEntries(allPrincipals.map((p) => [p, 400])) as Record<Principal, Expected>,
   })),
+  {
+    op: "RPT-05 GET /me/blocks (my own list -> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(listBlocks, { method: "GET", path: "/api/v1/me/blocks", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
   {
     op: "RPT-04 DELETE /me/blocks/{stranger} (nothing to remove -> 200 for everyone signed in)",
     call: (cookie) => {

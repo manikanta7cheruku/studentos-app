@@ -29,7 +29,7 @@ import { useCollege } from "@/features/college";
 import { KIND_LABEL, formatDeadline, isTimedKind } from "./labels";
 import { StatusPill } from "./post-row";
 import { PostRequests } from "./post-requests";
-import { ReportButton } from "@/features/admin-console/report-button";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import { RoleList } from "./role-list";
 import { Participants } from "./participants";
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
@@ -150,7 +150,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
         </p>
         {!post.is_owner ? (
           <div>
-            <ReportButton targetType="team_post" targetId={post.id} what="this post" />
+            <ReportMenu targetType="team_post" targetId={post.id} what="plan" />
           </div>
         ) : null}
         {isModerator && !post.is_owner ? (

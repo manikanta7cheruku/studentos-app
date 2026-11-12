@@ -34,14 +34,23 @@ export function ReportButton({
   targetType,
   targetId,
   what,
+  open: openProp,
+  onOpenChange,
+  hideTrigger = false,
 }: {
   targetType: "team_post" | "profile" | "idea" | "idea_comment" | "event" | "listing" | "venue";
   targetId: string;
   what: string;
+  /** Opened from outside, for example from a "..." menu. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }) {
   const { slug } = useCollege();
   const attempt = useAttempt();
-  const [open, setOpen] = React.useState(false);
+  const [openState, setOpenState] = React.useState(false);
+  const open = openProp ?? openState;
+  const setOpen = onOpenChange ?? setOpenState;
   const [reason, setReason] = React.useState<(typeof REASONS)[number][0]>("spam");
   const [details, setDetails] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -79,9 +88,11 @@ export function ReportButton({
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-        <FlagIcon aria-hidden="true" /> Report
-      </Button>
+      {hideTrigger ? null : (
+        <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+          <FlagIcon aria-hidden="true" /> Report
+        </Button>
+      )}
       <Dialog open={open} onOpenChange={(next) => !busy && setOpen(next)}>
         <DialogContent>
           {sent ? (

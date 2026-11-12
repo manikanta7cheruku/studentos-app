@@ -1,7 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
-import { ReportButton } from "@/features/admin-console/report-button";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { LockIcon, MapPinIcon, SendIcon } from "lucide-react";
@@ -366,6 +366,11 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
       <PageHeader
         title={config.title}
         back={{ href: boardPath(slug, board), label: config.title }}
+        menu={
+          state.status === "ready" && !state.data.is_owner ? (
+            <ReportMenu targetType="listing" targetId={state.data.id} what="post" />
+          ) : undefined
+        }
       />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
@@ -428,11 +433,6 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
           </article>
           <Actions post={state.data} board={board} onChanged={state.reload} />
           {state.data.is_owner ? <OwnerPhoto post={state.data} onChanged={state.reload} /> : null}
-          {!state.data.is_owner ? (
-            <div className="-mt-3">
-              <ReportButton targetType="listing" targetId={state.data.id} what="this post" />
-            </div>
-          ) : null}
           <Messages post={state.data} />
         </>
       )}

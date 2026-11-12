@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CameraIcon, XIcon } from "lucide-react";
+import { CameraIcon } from "lucide-react";
 import { AVATAR_MAX_BYTES, avatarAllowedMimeTypes } from "@/contracts/profile";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import { compressImage } from "@/lib/compress-image";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import {
-  BirthYearSelect,
+  BirthYearPicker,
+  CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
   PhoneFields,
@@ -79,87 +80,38 @@ export function profileChanges(
   return patch;
 }
 
-function InterestsField({
-  value,
-  onChange,
-  error,
+function uploadMessage(caught: unknown): string {
+  if (caught instanceof ApiError && caught.code === "VALIDATION_FAILED")
+    return "That picture could not be used. Try a JPEG or PNG under 2 MB.";
+  return friendlyMessage(
+    caught,
+    "We could not upload that picture. Check your connection and try again.",
+  );
+}
+
+function Section({
+  title,
+  text,
+  children,
 }: {
-  value: string[];
-  onChange: (next: string[]) => void;
-  error?: string;
+  title: string;
+  text?: string;
+  children: React.ReactNode;
 }) {
-  const [draft, setDraft] = React.useState("");
-
-  function addAll(items: string[]) {
-    const next = [...value];
-    for (const raw of items) {
-      const item = raw.trim();
-      if (!item || item.length > 40 || next.length >= 20) continue;
-      if (next.some((v) => v.toLowerCase() === item.toLowerCase())) continue;
-      next.push(item);
-    }
-    if (next.length !== value.length) onChange(next);
-  }
-
-  function add() {
-    addAll([draft]);
-    setDraft("");
-  }
-
-  // A comma ends an interest, also when it arrives from a paste or a phone keyboard.
-  function typed(text: string) {
-    if (!text.includes(",")) {
-      setDraft(text);
-      return;
-    }
-    const parts = text.split(",");
-    addAll(parts.slice(0, -1));
-    setDraft(parts[parts.length - 1] ?? "");
-  }
-
+  const id = React.useId();
   return (
-    <div className="flex flex-col gap-3">
-      <FormField
-        label="Interests"
-        help="Press Enter or comma after each one. Up to 20."
-        error={error}
-      >
-        <Input
-          value={draft}
-          onChange={(event) => typed(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === ",") {
-              event.preventDefault();
-              add();
-            } else if (event.key === "Backspace" && !draft && value.length) {
-              onChange(value.slice(0, -1));
-            }
-          }}
-          onBlur={add}
-          placeholder="Robotics, design, football"
-          enterKeyHint="done"
-        />
-      </FormField>
-      {value.length ? (
-        <ul className="flex flex-wrap gap-2">
-          {value.map((interest) => (
-            <li key={interest}>
-              <span className="inline-flex min-h-9 items-center gap-1 rounded-full border border-border bg-surface pl-3 text-[13.5px]">
-                {interest}
-                <button
-                  type="button"
-                  onClick={() => onChange(value.filter((v) => v !== interest))}
-                  aria-label={`Remove ${interest}`}
-                  className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <XIcon aria-hidden="true" className="size-4" />
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
+    <section
+      aria-labelledby={id}
+      className="glass-card flex flex-col gap-4 rounded-[22px] p-4 md:p-5"
+    >
+      <div>
+        <h2 id={id} className="text-[15px] font-bold">
+          {title}
+        </h2>
+        {text ? <p className="text-[12.5px] text-ink-muted">{text}</p> : null}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -185,23 +137,30 @@ function PhotoField({ profile, onChanged }: { profile: Profile; onChanged: () =>
     setBusy(true);
     try {
       // Shrunk first (at most 512 pixels, WebP): it is small, and the camera's metadata is gone.
-      const small = await compressImage(file, { maxEdge: 512, maxBytes: 300_000 });
-      const saved = await api.profile.uploadAvatar(
-        new File([small], "avatar.webp", { type: small.type }),
-      );
+      // If shrinking or the shrunk file fails for any reason, the original is sent instead.
+      let saved;
+      try {
+        const small = await compressImage(file, { maxEdge: 512, maxBytes: 300_000 });
+        saved = await api.profile.uploadAvatar(
+          new File([small], "avatar.webp", { type: small.type }),
+        );
+      } catch (first) {
+        if (first instanceof ApiError && first.status >= 500) throw first;
+        saved = await api.profile.uploadAvatar(file);
+      }
       setUrl(saved.avatar_url);
       onChanged();
     } catch (caught) {
-      setError(friendlyMessage(caught, "We could not upload that picture."));
+      setError(uploadMessage(caught));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
       <Avatar name={profile.display_name} src={url} size="xl" />
-      <div className="flex flex-col items-start gap-2">
+      <div className="flex flex-col items-center gap-2 sm:items-start">
         <input
           ref={input}
           type="file"
@@ -288,99 +247,103 @@ function EditForm({ saved }: { saved: Profile }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-xl flex-col gap-6" noValidate>
-      <PhotoField profile={saved} onChanged={() => void refreshProfile()} />
-      <FormField label="Name" help="What classmates see." error={fields.display_name} required>
-        <Input
-          value={form.display_name}
-          onChange={(e) => set("display_name", e.target.value)}
-          maxLength={80}
-          autoComplete="name"
+    <form onSubmit={submit} className="flex max-w-xl flex-col gap-4" noValidate>
+      <Section title="Photo">
+        <PhotoField profile={saved} onChanged={() => void refreshProfile()} />
+      </Section>
+      <Section title="You" text="What verified classmates see first.">
+        <FormField label="Name" error={fields.display_name} required>
+          <Input
+            value={form.display_name}
+            onChange={(e) => set("display_name", e.target.value)}
+            maxLength={80}
+            autoComplete="name"
+          />
+        </FormField>
+        <FormField
+          label="Username"
+          help="Optional. Lowercase letters, numbers and underscores."
+          error={fields.handle}
+        >
+          <Input
+            value={form.handle}
+            onChange={(e) => set("handle", e.target.value.toLowerCase())}
+            maxLength={30}
+            autoCapitalize="none"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="your_name"
+          />
+        </FormField>
+        <FormField label="Headline" help="One line about you." error={fields.headline}>
+          <Input
+            value={form.headline}
+            onChange={(e) => set("headline", e.target.value)}
+            maxLength={120}
+            placeholder="Third year CSE, building things with sensors"
+          />
+        </FormField>
+        <FormField label="About you" error={fields.bio}>
+          <Textarea
+            value={form.bio}
+            onChange={(e) => set("bio", e.target.value)}
+            maxLength={1000}
+            rows={4}
+          />
+        </FormField>
+        <FormField
+          label="What makes you excited?"
+          help="One line on your profile."
+          error={fields.excited_by}
+        >
+          <Textarea
+            value={form.excited_by}
+            onChange={(e) => set("excited_by", e.target.value)}
+            maxLength={200}
+            rows={2}
+          />
+        </FormField>
+      </Section>
+      <Section title="Interests" text="Pick a few. Add your own below each list.">
+        <InterestChips
+          title="For fun"
+          suggestions={CASUAL_INTERESTS}
+          value={form.interests}
+          onChange={(next) => set("interests", next)}
+          room={20 - form.interests.length}
+          placeholder="Something else you enjoy"
         />
-      </FormField>
-      <FormField
-        label="Handle"
-        help="Optional. Lowercase letters, numbers and underscores."
-        error={fields.handle}
+        <InterestChips
+          title="Tech and career"
+          suggestions={TECH_INTERESTS}
+          value={form.tech_interests}
+          onChange={(next) => set("tech_interests", next)}
+          room={20 - form.tech_interests.length}
+          placeholder="Another skill or field"
+        />
+        <FormField label="Career goal" error={fields.career_goal}>
+          <Input
+            value={form.career_goal}
+            onChange={(e) => set("career_goal", e.target.value)}
+            maxLength={200}
+            placeholder="Embedded systems engineer"
+          />
+        </FormField>
+      </Section>
+      <Section
+        title="Private details"
+        text="Only you can see these. They are never on your profile."
       >
-        <Input
-          value={form.handle}
-          onChange={(e) => set("handle", e.target.value.toLowerCase())}
-          maxLength={30}
-          autoCapitalize="none"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="your_name"
-        />
-      </FormField>
-      <FormField label="Headline" help="One line about you." error={fields.headline}>
-        <Input
-          value={form.headline}
-          onChange={(e) => set("headline", e.target.value)}
-          maxLength={120}
-          placeholder="Third year CSE, building things with sensors"
-        />
-      </FormField>
-      <FormField label="About you" error={fields.bio}>
-        <Textarea
-          value={form.bio}
-          onChange={(e) => set("bio", e.target.value)}
-          maxLength={1000}
-          rows={5}
-        />
-      </FormField>
-      <FormField label="Career goal" error={fields.career_goal}>
-        <Input
-          value={form.career_goal}
-          onChange={(e) => set("career_goal", e.target.value)}
-          maxLength={200}
-          placeholder="Embedded systems engineer"
-        />
-      </FormField>
-      <InterestsField
-        value={form.interests}
-        onChange={(next) => set("interests", next)}
-        error={fields.interests}
-      />
-      <InterestChips
-        title="Tech and career interests"
-        suggestions={TECH_INTERESTS}
-        value={form.tech_interests}
-        onChange={(next) => set("tech_interests", next)}
-        room={20 - form.tech_interests.length}
-        placeholder="Another skill or field"
-      />
-      <FormField
-        label="What makes you excited?"
-        help="One line classmates see on your profile."
-        error={fields.excited_by}
-      >
-        <Textarea
-          value={form.excited_by}
-          onChange={(e) => set("excited_by", e.target.value)}
-          maxLength={200}
-          rows={2}
-        />
-      </FormField>
-      <section
-        aria-labelledby="private"
-        className="glass-card flex flex-col gap-4 rounded-[22px] p-4"
-      >
-        <div>
-          <h2 id="private" className="text-[15px] font-bold">
-            Private details
-          </h2>
-          <p className="text-[12.5px] text-ink-muted">
-            Only you can see these. They are never on your profile.
-          </p>
-        </div>
         <div className="flex flex-col gap-2">
           <p className="text-[13px] font-semibold text-ink/90">Sex</p>
           <SexField value={form.sex} onChange={(next) => set("sex", next)} />
         </div>
-        <FormField label="Birth year" help="Optional. We only keep the year.">
-          <BirthYearSelect value={form.birth_year} onChange={(next) => set("birth_year", next)} />
-        </FormField>
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">
+            Birth year <span className="font-normal text-ink-muted">(optional)</span>
+          </p>
+          <BirthYearPicker value={form.birth_year} onChange={(next) => set("birth_year", next)} />
+        </div>
         <PhoneFields
           phone={form.phone}
           onPhone={(next) => set("phone", next)}
@@ -388,7 +351,7 @@ function EditForm({ saved }: { saved: Profile }) {
           onShare={(next) => set("share_phone", next)}
           error={fields.phone}
         />
-      </section>
+      </Section>
       {error ? (
         <Banner variant="error">
           <p>{error}</p>

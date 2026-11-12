@@ -105,6 +105,10 @@ export const socialHandlers = [
   http.put("*/api/v1/me/blocks/:userId", () =>
     HttpResponse.json({ data: { blocked: true }, meta: META }),
   ),
+  http.delete("*/api/v1/me/blocks/:userId", () =>
+    HttpResponse.json({ data: { blocked: false }, meta: META }),
+  ),
+  http.get("*/api/v1/me/blocks", () => HttpResponse.json({ data: [], meta: META })),
   http.post("*/api/v1/me/feedback", () =>
     HttpResponse.json(
       { data: { id: id(980), created_at: new Date().toISOString() }, meta: META },

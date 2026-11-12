@@ -10,6 +10,8 @@ export type ProfileViewData = {
   bio: string | null;
   avatar_url: string | null;
   interests: string[];
+  tech_interests?: string[];
+  excited_by?: string | null;
   career_goal: string | null;
   program?: string | null;
   grad_year?: number | null;
@@ -27,7 +29,7 @@ function Section({
 }) {
   return (
     <section className="glass-card rounded-[24px] p-5">
-      <h2 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+      <h2 className="mb-3.5 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-ink-muted">
         {title}
         {count !== undefined ? (
           <span className="tabular rounded-full bg-white/[0.08] px-2 py-0.5 text-[11px] text-ink">
@@ -78,13 +80,20 @@ export function ProfileView({
             ) : null}
           </div>
           {actions ? (
-            <div className="mt-1 flex flex-wrap justify-center gap-2.5 sm:justify-start">
+            <div className="mt-2 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:min-w-[7.5rem] [&>*]:flex-1 sm:[&>*]:flex-none">
               {actions}
             </div>
           ) : null}
         </div>
       </header>
 
+      {person.excited_by ? (
+        <Section title="What excites me">
+          <p className="max-w-prose text-pretty text-[17px] font-medium leading-snug">
+            {person.excited_by}
+          </p>
+        </Section>
+      ) : null}
       {person.bio ? (
         <Section title="About">
           <p className="max-w-prose whitespace-pre-line text-[15px] leading-relaxed">
@@ -125,15 +134,34 @@ export function ProfileView({
           </ul>
         </Section>
       ) : null}
-      {person.interests.length ? (
+      {person.interests.length || person.tech_interests?.length ? (
         <Section title="Interests">
-          <ul className="flex flex-wrap gap-2">
-            {person.interests.map((interest) => (
-              <li key={interest}>
-                <Chip>{interest}</Chip>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-4">
+            {person.interests.length ? (
+              <div>
+                <p className="mb-2 text-[13px] font-semibold text-ink/90">For fun</p>
+                <ul className="flex flex-wrap gap-2">
+                  {person.interests.map((interest) => (
+                    <li key={interest}>
+                      <Chip>{interest}</Chip>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {person.tech_interests?.length ? (
+              <div>
+                <p className="mb-2 text-[13px] font-semibold text-ink/90">Tech and career</p>
+                <ul className="flex flex-wrap gap-2">
+                  {person.tech_interests.map((interest) => (
+                    <li key={interest}>
+                      <Chip>{interest}</Chip>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
         </Section>
       ) : null}
     </article>

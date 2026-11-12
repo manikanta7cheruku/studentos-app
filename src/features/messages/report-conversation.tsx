@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { FlagIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,9 +32,19 @@ type Reason = (typeof REASONS)[number]["value"];
  * Report the person from a conversation. The moderators of the college get the report with a copy of the recent messages,
  * because the messages themselves will be gone soon.
  */
-export function ReportConversation({ userId, name }: { userId: string; name: string }) {
+export function ReportConversation({
+  userId,
+  name,
+  open,
+  onOpenChange,
+}: {
+  userId: string;
+  name: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { slug } = useCollege();
-  const [open, setOpen] = React.useState(false);
+  const setOpen = onOpenChange;
   const [reason, setReason] = React.useState<Reason>("harassment");
   const [details, setDetails] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -65,9 +74,6 @@ export function ReportConversation({ userId, name }: { userId: string; name: str
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-        <FlagIcon aria-hidden="true" /> Report
-      </Button>
       <Dialog open={open} onOpenChange={(next) => !busy && setOpen(next)}>
         <DialogContent>
           {sent ? (

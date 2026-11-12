@@ -31,4 +31,5 @@
 | 2026-11-12 | R3 turf booking | Venues, booking requests, the manager confirms or declines, notes to both sides (D-36). Migration 20261118000000. | R3 (owner) |
 | 2026-11-12 | R3 calmer UI and public reach | Comment likes and dislikes, public posts reach every college feed, floating filter pills, smaller cards (D-37). Migration 20261119000000. | R3 (owner) |
 | 2026-11-12 | R3 venues for everyone | Any member can add a turf or court; the + sheet and the Turf page have an Add option (D-38). Migration 20261120000000. | R3 (owner) |
+| 2026-11-12 | R3 profile and settings redesign | New You page, Edit profile, Settings (with blocked people), message screen with Seen status and a caution line, owner profile insights (D-43). Migration 20261125000000. | R3 (owner) |
 | 2026-11-12 | R3 onboarding, messages, feedback, photos | A tour for new people, private profile details, reports for everything, feedback, disappearing messages, photos on posts (D-39 to D-42). Migrations 20261121 to 20261124. | R3 (owner) |

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
-import { ReportButton } from "@/features/admin-console/report-button";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import { PageHeader } from "@/components/app/page-header";
 import { Poster } from "@/components/app/poster";
 import { Spinner } from "@/components/app/spinner";
@@ -425,7 +425,15 @@ export function VenueDetailScreen({ venueId }: { venueId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader title="Venue" back={{ href: `/c/${slug}/turf`, label: "Turf and courts" }} />
+      <PageHeader
+        title="Venue"
+        back={{ href: `/c/${slug}/turf`, label: "Turf and courts" }}
+        menu={
+          state.status === "ready" && !state.data.is_manager ? (
+            <ReportMenu targetType="venue" targetId={state.data.id} what="venue" />
+          ) : undefined
+        }
+      />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-40 w-full rounded-3xl" />
@@ -484,11 +492,6 @@ export function VenueDetailScreen({ venueId }: { venueId: string }) {
             <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink/90">
               {state.data.description}
             </p>
-          ) : null}
-          {!state.data.is_manager ? (
-            <div>
-              <ReportButton targetType="venue" targetId={state.data.id} what="this venue" />
-            </div>
           ) : null}
           <BookingPanel venue={state.data} />
           {state.data.is_manager ? (

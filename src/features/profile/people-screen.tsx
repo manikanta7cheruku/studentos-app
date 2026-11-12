@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { MessageCircleIcon, SearchIcon } from "lucide-react";
+import { BanIcon, MessageCircleIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { ReportButton } from "@/features/admin-console/report-button";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import { ProfileView } from "./profile-view";
 
 /** The people of this college who chose to be visible, with a search by name or interest. */
@@ -109,9 +109,19 @@ export function PeopleScreen() {
   );
 }
 
+async function blockThem(userId: string, say: (text: string) => void) {
+  try {
+    await api.blocks.block(userId);
+    say("Blocked. You can unblock them in Settings.");
+  } catch {
+    say("We could not block them. Please try again.");
+  }
+}
+
 export function PersonScreen({ userId }: { userId: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.people.one(slug, userId), [slug, userId]);
+  const [note, setNote] = React.useState("");
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <Link
@@ -137,25 +147,41 @@ export function PersonScreen({ userId }: { userId: string }) {
           <LoadError error={state.error} onRetry={state.reload} what="this profile" />
         )
       ) : (
-        <ProfileView
-          person={state.data}
-          actions={
-            state.data.is_self ? undefined : (
-              <>
-                <Button asChild>
-                  <Link href={`/c/${slug}/messages/${state.data.user_id}`}>
-                    <MessageCircleIcon aria-hidden="true" /> Message
-                  </Link>
-                </Button>
-                <ReportButton
-                  targetType="profile"
-                  targetId={state.data.user_id}
-                  what="this profile"
-                />
-              </>
-            )
-          }
-        />
+        <>
+          {note ? (
+            <p role="status" className="glass-card rounded-2xl px-4 py-3 text-[14px]">
+              {note}
+            </p>
+          ) : null}
+          <ProfileView
+            person={state.data}
+            actions={
+              state.data.is_self ? undefined : (
+                <>
+                  <Button asChild className="rounded-full">
+                    <Link href={`/c/${slug}/messages/${state.data.user_id}`}>
+                      <MessageCircleIcon aria-hidden="true" /> Message
+                    </Link>
+                  </Button>
+                  <ReportMenu
+                    targetType="profile"
+                    targetId={state.data.user_id}
+                    what="profile"
+                    className="size-10 shrink-0 !min-w-0 !flex-none border border-white/10"
+                    extra={[
+                      {
+                        label: "Block " + state.data.display_name,
+                        icon: <BanIcon aria-hidden="true" />,
+                        danger: true,
+                        onSelect: () => void blockThem(state.data.user_id, setNote),
+                      },
+                    ]}
+                  />
+                </>
+              )
+            }
+          />
+        </>
       )}
     </div>
   );

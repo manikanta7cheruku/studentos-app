@@ -1,7 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
-import { ReportButton } from "@/features/admin-console/report-button";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownRightIcon, SendIcon, Trash2Icon, XIcon } from "lucide-react";
@@ -112,7 +112,12 @@ function CommentRow({
             </button>
           ) : null}
           {!comment.is_owner ? (
-            <ReportButton targetType="idea_comment" targetId={comment.id} what="this comment" />
+            <ReportMenu
+              targetType="idea_comment"
+              targetId={comment.id}
+              what="comment"
+              className="ml-auto size-8"
+            />
           ) : null}
           {comment.is_owner || isModerator ? (
             <ConfirmDelete
@@ -308,7 +313,15 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader title="Buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
+      <PageHeader
+        title="Buzz"
+        back={{ href: `/c/${slug}/ideas`, label: "Buzz" }}
+        menu={
+          state.status === "ready" && !state.data.is_owner ? (
+            <ReportMenu targetType="idea" targetId={ideaId} what="buzz" />
+          ) : undefined
+        }
+      />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-8 w-3/4" />
@@ -328,11 +341,6 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
       ) : (
         <>
           <IdeaCard idea={state.data} full />
-          {!state.data.is_owner ? (
-            <div className="-mt-2 flex justify-end">
-              <ReportButton targetType="idea" targetId={ideaId} what="this buzz" />
-            </div>
-          ) : null}
           {isModerator && !state.data.is_owner ? (
             <div className="-mt-2 flex justify-end">
               <Button variant="outline" onClick={() => setRemoving(true)}>
