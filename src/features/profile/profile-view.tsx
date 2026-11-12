@@ -104,7 +104,7 @@ export function ProfileView({
           </Section>
         ) : null}
         {person.skills.length ? (
-          <Section title="Skills" count={person.skills.length}>
+          <Section title="Strengths" count={person.skills.length}>
             <ul className="grid gap-x-8 gap-y-3.5 sm:grid-cols-2">
               {person.skills.map((skill) => (
                 <li key={skill.name} className="flex flex-col gap-1.5">

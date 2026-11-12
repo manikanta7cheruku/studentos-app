@@ -192,7 +192,7 @@ export function MeScreen() {
                   <Link href={`/c/${slug}/me/edit`}>Edit profile</Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/skills`}>Skills</Link>
+                  <Link href={`/c/${slug}/me/skills`}>Strengths</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link href={`/c/${slug}/me/settings`}>Settings</Link>

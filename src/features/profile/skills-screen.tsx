@@ -15,45 +15,10 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type MySkill, type SkillHit } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { SUGGESTED_SKILLS as SUGGESTIONS } from "@/lib/suggested-skills";
 import { LEVEL_LABELS } from "./skill-level";
 
 const MAX_SKILLS = 50;
-
-/** One tap suggestions, in groups. Each name is looked up in the skills list when tapped, so only real skills are added. */
-const SUGGESTIONS: { title: string; names: string[] }[] = [
-  {
-    title: "Social",
-    names: [
-      "Communication",
-      "Talkative",
-      "Public speaking",
-      "Teamwork",
-      "Leadership",
-      "Networking",
-      "Active listening",
-      "Empathy",
-      "Negotiation",
-      "Mentoring",
-      "Event hosting",
-      "Storytelling",
-    ],
-  },
-  {
-    title: "How you work",
-    names: [
-      "Time management",
-      "Problem solving",
-      "Creativity",
-      "Adaptability",
-      "Critical thinking",
-      "Organising",
-    ],
-  },
-  {
-    title: "Tech and creative",
-    names: ["Python", "React", "Figma", "Video editing", "Content writing", "Photography"],
-  },
-];
 
 type Row = { skill_id: string; name: string; level: number; evidence_url: string };
 
@@ -86,7 +51,7 @@ function Suggestions({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
       const hits = await api.profile.searchSkills(name);
       const hit = hits.find((item) => item.name.toLowerCase() === name.toLowerCase());
       if (hit) onAdd(hit);
-      else setFailed(`${name} is not in the list yet. Try searching for it above.`);
+      else setFailed(`${name} could not be added right now. Try the search box.`);
     } catch {
       setFailed("We could not add that just now. Try again.");
     } finally {
@@ -105,7 +70,7 @@ function Suggestions({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
         id="suggested"
         className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
       >
-        Suggestions
+        Tap to add
       </h2>
       {groups.map((group) => (
         <div key={group.title} className="flex flex-col gap-2">
@@ -165,14 +130,14 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
 
   return (
     <div className="flex flex-col gap-3">
-      <FormField label="Add a skill" help="Search the list, for example Python or Figma.">
+      <FormField label="Add a strength" help="Search, for example Teamwork or Python.">
         <Input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           autoComplete="off"
           spellCheck={false}
-          placeholder="Search skills"
+          placeholder="Search strengths"
         />
       </FormField>
       {trimmed ? (
@@ -343,9 +308,9 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
       router.push(`/c/${slug}/me`);
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === "VALIDATION_FAILED") {
-        setError("One of the skills or links is not valid. Check the links and try again.");
+        setError("One of the strengths or links is not valid. Check the links and try again.");
       } else {
-        setError(friendlyMessage(caught, "We could not save your skills. Please try again."));
+        setError(friendlyMessage(caught, "We could not save your strengths. Please try again."));
       }
       setBusy(false);
     }
@@ -366,7 +331,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
         />
       ) : (
         <Banner variant="info">
-          <p>You have reached the limit of {MAX_SKILLS} skills.</p>
+          <p>You have reached the limit of {MAX_SKILLS} strengths.</p>
         </Banner>
       )}
       {rows.length < MAX_SKILLS ? (
@@ -388,11 +353,11 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
           id="my-skills"
           className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
         >
-          Your skills ({rows.length})
+          Your strengths ({rows.length})
         </h2>
         {rows.length === 0 ? (
           <p className="glass-card rounded-[22px] border-dashed p-6 text-[15px] text-ink-muted">
-            No skills yet. Search above and add the ones you want classmates to find you by.
+            Nothing here yet. Tap a few above that sound like you. Classmates can find you by them.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -424,7 +389,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
               <Spinner /> Saving
             </>
           ) : (
-            "Save skills"
+            "Save strengths"
           )}
         </Button>
         <Button variant="ghost" size="lg" onClick={() => router.push(`/c/${slug}/me`)}>
@@ -444,8 +409,8 @@ export function SkillsScreen() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
-        title="Your skills"
-        description="Classmates looking for a teammate can find you by these."
+        title="Your strengths"
+        description="What you are good at. Classmates looking for a teammate can find you by these."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
       {state.status === "loading" ? (
@@ -455,7 +420,7 @@ export function SkillsScreen() {
           <Skeleton className="h-24 w-full" />
         </div>
       ) : state.status === "error" ? (
-        <LoadError error={state.error} onRetry={state.reload} what="your skills" />
+        <LoadError error={state.error} onRetry={state.reload} what="your strengths" />
       ) : (
         <SkillsEditor initial={state.data.skills} />
       )}
