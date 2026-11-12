@@ -59,7 +59,9 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
   }
 
   const finish = () => {
-    router.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
+    // A full page load, not a soft move: the app then reads the finished profile fresh, so it can never think the tour is
+    // still to do (a soft move could keep the old answer until a reload).
+    window.location.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
   };
 
   return (
