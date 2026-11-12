@@ -2,6 +2,7 @@ import { adminClient } from "@/server/admin/supabase-admin";
 import { toIso } from "@/lib/api";
 import { mapDbError } from "@/lib/db-error";
 import { paginate, type PageCursor } from "@/lib/cursor";
+import { photoUrl } from "./photos.admin";
 
 // Wrappers around the Events and Board SQL functions (migration 20261115000000, functions event_* and board_*).
 // Every function checks again, inside the database, that the actor is an active member of the college.
@@ -19,7 +20,15 @@ const eventOut = (item: Json) => ({
   starts_at: toIso(item.starts_at as string),
   created_at: toIso(item.created_at as string),
 });
-const dated = (item: Json) => ({ ...item, created_at: toIso(item.created_at as string) });
+// A board post also carries its photo: the stored path becomes a public address.
+const dated = (item: Json) => {
+  const { photo_path, ...rest } = item as Json & { photo_path?: string | null };
+  return {
+    ...rest,
+    created_at: toIso(item.created_at as string),
+    ...("photo_path" in item ? { photo_url: photoUrl(photo_path ?? null) } : {}),
+  };
+};
 
 // ---- Events ----
 export async function createEvent(

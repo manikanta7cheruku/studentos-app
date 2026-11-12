@@ -31,3 +31,7 @@
 | 2026-11-12 | R3 turf booking | Venues, booking requests, the manager confirms or declines, notes to both sides (D-36). Migration 20261118000000. | R3 (owner) |
 | 2026-11-12 | R3 calmer UI and public reach | Comment likes and dislikes, public posts reach every college feed, floating filter pills, smaller cards (D-37). Migration 20261119000000. | R3 (owner) |
 | 2026-11-12 | R3 venues for everyone | Any member can add a turf or court; the + sheet and the Turf page have an Add option (D-38). Migration 20261120000000. | R3 (owner) |
+| 2026-11-13 | R3 age on profile, campus notice, People | Age in years can be shown on the profile (D-45). Home shows the latest college notice. People gets interest filters, shared interests first and a Message button. Migration 20261128000000. | R3 (owner) |
+| 2026-11-13 | R3 gender on profile, strengths, quick create | Gender replaces sex in the screens and can be shown on the profile (D-44). Strengths work in sample mode and before the catalog migration. Double tap or hold on + opens a quick menu. Migration 20261127000000. | R3 (owner) |
+| 2026-11-12 | R3 profile and settings redesign | New You page, Edit profile, Settings (with blocked people), message screen with Seen status and a caution line, owner profile insights (D-43). Migration 20261125000000. | R3 (owner) |
+| 2026-11-12 | R3 onboarding, messages, feedback, photos | A tour for new people, private profile details, reports for everything, feedback, disappearing messages, photos on posts (D-39 to D-42). Migrations 20261121 to 20261124. | R3 (owner) |

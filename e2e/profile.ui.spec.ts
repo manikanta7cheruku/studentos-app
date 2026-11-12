@@ -50,10 +50,12 @@ test("edit the profile, add skills, and see them on my page", async ({ page }) =
   await page.getByRole("link", { name: /edit profile/i }).click();
   await expect(page.getByRole("heading", { name: /edit profile/i })).toBeVisible();
   await page.getByLabel(/^name/i).fill("Asha Rao");
-  await page.getByLabel(/^handle/i).fill("asha_rao");
+  await page.getByLabel(/^username/i).fill("asha_rao");
   await page.getByLabel(/^headline/i).fill("Third year CSE, building sensors");
-  await page.getByLabel(/^interests/i).fill("robotics,design,");
-  await expect(page.getByText("robotics", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Football", exact: true }).click();
+  await page.getByLabel(/add your own: for fun/i).fill("robotics");
+  await page.getByRole("button", { name: "Add", exact: true }).first().click();
+  await expect(page.getByRole("button", { name: /remove robotics/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
   await page.getByRole("button", { name: /save changes/i }).click();
 
@@ -62,12 +64,12 @@ test("edit the profile, add skills, and see them on my page", async ({ page }) =
   await expect(page.getByText("@asha_rao")).toBeVisible();
   await expect(page.getByText("Third year CSE, building sensors")).toBeVisible();
 
-  await page.getByRole("link", { name: /^skills/i }).click();
-  await page.getByLabel(/add a skill/i).fill("Pyth");
-  await page.getByRole("button", { name: /python/i }).click();
-  await expect(page.getByRole("heading", { name: /your skills \(1\)/i })).toBeVisible();
+  await page.getByRole("link", { name: /^strengths/i }).click();
+  await page.getByLabel(/add a strength/i).fill("Pyth");
+  await page.getByRole("button", { name: "Python", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /your strengths \(1 of 5\)/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
-  await page.getByRole("button", { name: /save skills/i }).click();
+  await page.getByRole("button", { name: /save strengths/i }).click();
   await expect(page).toHaveURL(/\/c\/alpha\/me$/);
   await expect(page.getByText("Python", { exact: true }).filter({ visible: true })).toBeVisible();
 });
@@ -75,7 +77,7 @@ test("edit the profile, add skills, and see them on my page", async ({ page }) =
 test("a handle that is not allowed is explained before saving", async ({ page }) => {
   await member(page, "PRF2");
   await page.goto("/c/alpha/me/edit");
-  await page.getByLabel(/^handle/i).fill("No Spaces!");
+  await page.getByLabel(/^username/i).fill("No Spaces!");
   await page.getByRole("button", { name: /save changes/i }).click();
   await expect(page.getByText(/lowercase letters, numbers or underscores/i)).toBeVisible();
 });

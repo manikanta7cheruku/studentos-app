@@ -9,6 +9,7 @@ import {
   FlagIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
+  MessageSquareIcon,
   ScrollTextIcon,
   UsersIcon,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const ITEMS = [
   { href: "/owner/codes", label: "Setup codes", icon: <KeyRoundIcon /> },
   { href: "/owner/users", label: "Users", icon: <UsersIcon /> },
   { href: "/owner/content", label: "Content", icon: <FileTextIcon /> },
+  { href: "/owner/feedback", label: "Feedback", icon: <MessageSquareIcon /> },
   { href: "/owner/reports", label: "Reports", icon: <FlagIcon /> },
   { href: "/owner/health", label: "Health", icon: <ActivityIcon /> },
   { href: "/owner/audit", label: "Audit", icon: <ScrollTextIcon /> },

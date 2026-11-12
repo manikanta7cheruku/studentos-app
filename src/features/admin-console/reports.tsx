@@ -28,6 +28,11 @@ const TARGET: Record<string, string> = {
   project: "a project",
   team_post: "a team post",
   announcement: "an announcement",
+  idea: "a buzz",
+  idea_comment: "a comment",
+  event: "an event",
+  listing: "a market or lost and found post",
+  venue: "a venue",
 };
 
 type Action = "dismiss" | "hide" | "warn" | "suspend";

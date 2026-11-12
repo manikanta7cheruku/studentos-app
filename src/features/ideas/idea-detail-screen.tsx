@@ -1,6 +1,7 @@
 "use client";
 
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { CornerDownRightIcon, SendIcon, Trash2Icon, XIcon } from "lucide-react";
@@ -110,6 +111,14 @@ function CommentRow({
               <CornerDownRightIcon aria-hidden="true" className="size-3.5" /> Reply
             </button>
           ) : null}
+          {!comment.is_owner ? (
+            <ReportMenu
+              targetType="idea_comment"
+              targetId={comment.id}
+              what="comment"
+              className="ml-auto size-8"
+            />
+          ) : null}
           {comment.is_owner || isModerator ? (
             <ConfirmDelete
               label="Delete"
@@ -195,7 +204,7 @@ function Composer({
           </button>
         </div>
       ) : null}
-      <div className="flex items-end gap-2">
+      <div className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-white/[0.05] p-1.5 pl-3 transition-[border-color,box-shadow] duration-200 focus-within:border-[#8f86f0]/70 focus-within:shadow-[0_0_0_3px_rgba(143,134,240,0.22)]">
         <label htmlFor="comment-body" className="sr-only">
           Add a comment
         </label>
@@ -304,7 +313,15 @@ export function IdeaDetailScreen({ ideaId }: { ideaId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader title="Buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
+      <PageHeader
+        title="Buzz"
+        back={{ href: `/c/${slug}/ideas`, label: "Buzz" }}
+        menu={
+          state.status === "ready" && !state.data.is_owner ? (
+            <ReportMenu targetType="idea" targetId={ideaId} what="buzz" />
+          ) : undefined
+        }
+      />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-3">
           <Skeleton className="h-8 w-3/4" />

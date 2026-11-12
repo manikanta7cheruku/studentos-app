@@ -100,6 +100,30 @@ export type Overview = {
 };
 export const overview = () => rpc<Overview>("owner_overview");
 
+export type Insights = {
+  users: number;
+  onboarded: number;
+  sex: {
+    woman: number;
+    man: number;
+    non_binary: number;
+    prefer_not_to_say: number;
+    unanswered: number;
+  };
+  age: { under_18: number; from_18_to_22: number; from_23: number; not_shared: number };
+  with_phone: number;
+  phone_shared_with_hosts: number;
+  top_interests: { name: string; n: number }[];
+  top_tech: { name: string; n: number }[];
+  feedback_new: number;
+  messages_waiting: number;
+  venues: number;
+  bookings_pending: number;
+  photos: number;
+};
+/** Counts only. The owner never sees one person's sex, birth year or number. */
+export const insights = () => rpc<Insights>("owner_insights");
+
 export type SignupDay = { day: string; n: number };
 export const signups = (days = 30) => rpc<SignupDay[]>("owner_signups", { p_days: days });
 

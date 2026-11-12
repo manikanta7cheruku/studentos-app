@@ -14,6 +14,9 @@ import * as setup from "./setup";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 import * as venues from "./venues";
+import * as messages from "./messages";
+import * as feedback from "./feedback";
+import * as photos from "./photos";
 
 // One line for every API route method: its id, path, who may call it, and the shapes it takes and gives.
 // This is the single list that docs/openapi.v1.json is generated from. Two tests keep it honest
@@ -144,6 +147,9 @@ export const endpoints: Endpoint[] = [
   e("NTF-02", "POST", "/me/notifications/read", "ses", "Mark some or all as read", {
     body: engagement.notificationReadBody,
     response: engagement.notificationReadResponse,
+  }),
+  e("RPT-05", "GET", "/me/blocks", "ses", "The people I blocked", {
+    response: engagement.blocksListResponse,
   }),
   e("RPT-04", "PUT", "/me/blocks/{userId}", "ses", "Block a classmate", {
     response: engagement.blockResponse,
@@ -457,6 +463,65 @@ export const endpoints: Endpoint[] = [
     "Like or dislike a comment (1, -1 or 0)",
     { body: ideas.ideaVoteBody, response: ideas.ideaCommentResponse },
   ),
+  e("MSG-01", "GET", "/c/{slug}/messages", "mem", "My conversations (the words are not listed)", {
+    response: messages.dmThreadListResponse,
+  }),
+  e(
+    "MSG-02",
+    "GET",
+    "/c/{slug}/messages/{userId}",
+    "mem",
+    "One conversation (opening it starts the 1 hour clock)",
+    {
+      response: messages.dmThreadResponse,
+    },
+  ),
+  e(
+    "MSG-03",
+    "POST",
+    "/c/{slug}/messages/{userId}",
+    "mem",
+    "Send a message (text, up to 500 characters)",
+    {
+      body: messages.dmSendBody,
+      response: messages.dmSendResponse,
+      status: 201,
+      idem: true,
+    },
+  ),
+  e(
+    "MSG-04",
+    "POST",
+    "/c/{slug}/messages/{userId}/report",
+    "mem",
+    "Report the other person (recent messages are copied)",
+    {
+      body: messages.dmReportBody,
+      response: engagement.reportCreateResponse,
+      status: 201,
+    },
+  ),
+  e("FDB-01", "POST", "/me/feedback", "ses", "Send feedback to the team", {
+    body: feedback.feedbackCreateBody,
+    response: feedback.feedbackCreateResponse,
+    status: 201,
+  }),
+  e(
+    "PHO-01",
+    "POST",
+    "/c/{slug}/photos/upload-url",
+    "mem",
+    "Get a link to upload one picture (at most 1 MB)",
+    {
+      body: photos.photoUploadUrlBody,
+      response: photos.photoUploadUrlResponse,
+      status: 201,
+    },
+  ),
+  e("BRD-08", "PUT", "/c/{slug}/board/{id}/photo", "mem", "Attach or remove the photo of my post", {
+    body: photos.boardPhotoBody,
+    response: photos.boardPhotoResponse,
+  }),
   e("COL-01", "POST", "/colleges/setup", "ses", "Create my college with a setup code", {
     body: setup.collegeSetupBody,
     response: setup.collegeSetupResponse,

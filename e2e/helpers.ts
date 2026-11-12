@@ -157,7 +157,7 @@ export async function cleanUp(): Promise<void> {
 }
 
 // Sign in through the real sign in page (email, then the code from the mail). Ends on the page `next` or the person's home.
-export async function signInThroughUi(
+export async function signInOnly(
   page: import("@playwright/test").Page,
   email: string,
   next?: string,
@@ -167,6 +167,40 @@ export async function signInThroughUi(
   await page.getByRole("button", { name: /email me a code/i }).click();
   await page.getByRole("heading", { name: /enter the code/i }).waitFor();
   await page.getByLabel(/six digit code from your email/i).fill(await codeFor(email));
+}
+
+// Signs in and answers the tour, so the journeys can start on the screens that come after it.
+export async function signInThroughUi(
+  page: import("@playwright/test").Page,
+  email: string,
+  next?: string,
+): Promise<void> {
+  await signInOnly(page, email, next);
+  await finishTour(page);
+}
+
+// A new person is sent to a short tour (name, username, sex, interests) before anything else. The journeys are about the
+// screens that come after it, so this answers the tour through the API as the person would (the tour itself has its own
+// journey in onboarding.ui.spec.ts).
+export async function finishTour(page: import("@playwright/test").Page): Promise<void> {
+  await page.waitForURL((url) => !url.pathname.startsWith("/signin"), { timeout: 30_000 });
+  const handle = `e2e_${randomUUID().slice(0, 10).replace(/-/g, "")}`;
+  const status = await page.evaluate(async (handle) => {
+    const response = await fetch("/api/v1/me/profile", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        handle,
+        sex: "prefer_not_to_say",
+        interests: ["football"],
+        tech_interests: ["Web development"],
+      }),
+    });
+    return response.status;
+  }, handle);
+  if (status !== 200)
+    throw new Error(`The tour could not be answered for the test person (HTTP ${status}).`);
 }
 
 // A new student who has joined Alpha College with a fresh invite code, through the real screens. Returns the email.

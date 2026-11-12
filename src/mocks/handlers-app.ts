@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import prf01 from "@/contracts/fixtures/prf-01-get.success.json";
 import prf02 from "@/contracts/fixtures/prf-02.request.json";
 import prf03 from "@/contracts/fixtures/prf-03.success.json";
+import { SUGGESTED_SKILLS } from "@/lib/suggested-skills";
 import ten02 from "@/contracts/fixtures/ten-02.success.json";
 import ten08 from "@/contracts/fixtures/ten-08.success.json";
 
@@ -11,7 +12,23 @@ import ten08 from "@/contracts/fixtures/ten-08.success.json";
 // (e2e/*.ui.spec.ts and tests/integration).
 const META = { request_id: "req_mock_app" };
 let profile = { ...prf01.data };
+// Sample catalog: the suggested strengths plus the fixture's skills. Ids are made from the name, so they stay the same.
+const catalog = new Map<string, { id: string; name: string; category: string | null }>();
+const addToCatalog = (name: string, category: string | null) => {
+  const id = `00000000-0000-4000-8000-${String(catalog.size + 1).padStart(12, "0")}`;
+  catalog.set(id, { id, name, category });
+};
+for (const group of SUGGESTED_SKILLS)
+  for (const name of group.names) addToCatalog(name, group.category);
+for (const hit of prf03.data)
+  catalog.set(hit.id, hit as { id: string; name: string; category: string | null });
 let skills = (prf02 as unknown as { skills: { skill_id: string; level: number }[] }).skills;
+const named = (list: typeof skills) =>
+  list.map((s) => ({
+    ...s,
+    name: catalog.get(s.skill_id)?.name ?? "Strength",
+    evidence_url: null,
+  }));
 
 export const appHandlers = [
   http.post("*/api/v1/auth/otp/request", () =>
@@ -41,19 +58,19 @@ export const appHandlers = [
     return HttpResponse.json({ data: profile, meta: META });
   }),
   http.get("*/api/v1/me/skills", () =>
-    HttpResponse.json({
-      data: { skills: skills.map((s) => ({ ...s, name: "Skill", evidence_url: null })) },
-      meta: META,
-    }),
+    HttpResponse.json({ data: { skills: named(skills) }, meta: META }),
   ),
   http.put("*/api/v1/me/skills", async ({ request }) => {
     skills = ((await request.json()) as { skills: typeof skills }).skills;
-    return HttpResponse.json({
-      data: { skills: skills.map((s) => ({ ...s, name: "Skill", evidence_url: null })) },
-      meta: META,
-    });
+    return HttpResponse.json({ data: { skills: named(skills) }, meta: META });
   }),
-  http.get("*/api/v1/skills", () => HttpResponse.json(prf03)),
+  http.get("*/api/v1/skills", ({ request }) => {
+    const q = (new URL(request.url).searchParams.get("q") ?? "").toLowerCase();
+    const data = [...catalog.values()]
+      .filter((item) => item.name.toLowerCase().includes(q))
+      .slice(0, 20);
+    return HttpResponse.json({ data, meta: META });
+  }),
   http.post("*/api/v1/me/avatar", () =>
     HttpResponse.json({ data: { avatar_url: null }, meta: META }),
   ),

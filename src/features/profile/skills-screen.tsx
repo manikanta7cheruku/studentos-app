@@ -15,9 +15,11 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type MySkill, type SkillHit } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { SUGGESTED_SKILLS as SUGGESTIONS } from "@/lib/suggested-skills";
 import { LEVEL_LABELS } from "./skill-level";
 
-const MAX_SKILLS = 50;
+// A short list says more than a long one: five is plenty for a profile.
+const MAX_SKILLS = 5;
 
 type Row = { skill_id: string; name: string; level: number; evidence_url: string };
 
@@ -36,6 +38,66 @@ export function skillsPayload(rows: Row[]) {
     level: row.level,
     ...(row.evidence_url.trim() ? { evidence_url: row.evidence_url.trim() } : {}),
   }));
+}
+
+function Suggestions({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: SkillHit) => void }) {
+  const [busy, setBusy] = React.useState<string | null>(null);
+  const [failed, setFailed] = React.useState<string | null>(null);
+
+  async function add(name: string) {
+    if (busy) return;
+    setBusy(name);
+    setFailed(null);
+    try {
+      const hits = await api.profile.searchSkills(name);
+      const hit = hits.find((item) => item.name.toLowerCase() === name.toLowerCase());
+      if (hit) onAdd(hit);
+      else setFailed(`${name} could not be added right now. Try the search box.`);
+    } catch {
+      setFailed("We could not add that just now. Try again.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const groups = SUGGESTIONS.map((group) => ({
+    ...group,
+    names: group.names.filter((name) => !taken.has(`name:${name.toLowerCase()}`)),
+  })).filter((group) => group.names.length);
+  if (!groups.length) return null;
+  return (
+    <section aria-labelledby="suggested" className="flex flex-col gap-4">
+      <h2
+        id="suggested"
+        className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
+      >
+        Tap to add
+      </h2>
+      {groups.map((group) => (
+        <div key={group.title} className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">{group.title}</p>
+          <div role="group" aria-label={group.title} className="flex flex-wrap gap-2">
+            {group.names.map((name) => (
+              <button
+                key={name}
+                type="button"
+                disabled={busy !== null}
+                onClick={() => void add(name)}
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-white/[0.04] px-3.5 text-[13px] font-semibold text-ink-muted outline-none transition-[background-color,border-color,color,transform] duration-200 hover:border-white/25 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-60"
+              >
+                {busy === name ? "Adding…" : name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {failed ? (
+        <p role="status" className="text-[13.5px] text-ink-muted">
+          {failed}
+        </p>
+      ) : null}
+    </section>
+  );
 }
 
 function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: SkillHit) => void }) {
@@ -69,14 +131,14 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
 
   return (
     <div className="flex flex-col gap-3">
-      <FormField label="Add a skill" help="Search the list, for example Python or Figma.">
+      <FormField label="Add a strength" help="Search, for example Teamwork or Python.">
         <Input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           autoComplete="off"
           spellCheck={false}
-          placeholder="Search skills"
+          placeholder="Search strengths"
         />
       </FormField>
       {trimmed ? (
@@ -87,7 +149,7 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
             <p className="text-[13.5px] text-ink-muted">Searching…</p>
           ) : results.length === 0 ? (
             <p className="text-[13.5px] text-ink-muted">
-              No skill found for &ldquo;{trimmed}&rdquo;. Try another word.
+              Nothing found for &ldquo;{trimmed}&rdquo;. Try another word.
             </p>
           ) : (
             <ul className="glass-card divide-y divide-white/[0.07] overflow-hidden rounded-[20px]">
@@ -217,6 +279,10 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
   const [saved, setSaved] = React.useState(false);
 
   const taken = React.useMemo(() => new Set(rows.map((r) => r.skill_id)), [rows]);
+  const takenNames = React.useMemo(
+    () => new Set(rows.map((r) => `name:${r.name.toLowerCase()}`)),
+    [rows],
+  );
   const dirty =
     JSON.stringify(skillsPayload(rows)) !== JSON.stringify(skillsPayload(fromServer(initial)));
 
@@ -243,9 +309,9 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
       router.push(`/c/${slug}/me`);
     } catch (caught) {
       if (caught instanceof ApiError && caught.code === "VALIDATION_FAILED") {
-        setError("One of the skills or links is not valid. Check the links and try again.");
+        setError("One of the strengths or links is not valid. Check the links and try again.");
       } else {
-        setError(friendlyMessage(caught, "We could not save your skills. Please try again."));
+        setError(friendlyMessage(caught, "We could not save your strengths. Please try again."));
       }
       setBusy(false);
     }
@@ -266,20 +332,33 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
         />
       ) : (
         <Banner variant="info">
-          <p>You have reached the limit of {MAX_SKILLS} skills.</p>
+          <p>That is the {MAX_SKILLS} strengths a profile can show. Remove one to add another.</p>
         </Banner>
       )}
+      {rows.length < MAX_SKILLS ? (
+        <Suggestions
+          taken={takenNames}
+          onAdd={(hit) => {
+            setSaved(false);
+            setRows((current) =>
+              current.some((r) => r.skill_id === hit.id)
+                ? current
+                : [...current, { skill_id: hit.id, name: hit.name, level: 3, evidence_url: "" }],
+            );
+          }}
+        />
+      ) : null}
 
-      <section aria-labelledby="my-skills" className="flex flex-col gap-3">
+      <section aria-labelledby="my-strengths" className="flex flex-col gap-3">
         <h2
-          id="my-skills"
+          id="my-strengths"
           className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
         >
-          Your skills ({rows.length})
+          Your strengths ({rows.length} of {MAX_SKILLS})
         </h2>
         {rows.length === 0 ? (
           <p className="glass-card rounded-[22px] border-dashed p-6 text-[15px] text-ink-muted">
-            No skills yet. Search above and add the ones you want classmates to find you by.
+            Nothing here yet. Tap a few above that sound like you. Classmates can find you by them.
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -311,7 +390,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
               <Spinner /> Saving
             </>
           ) : (
-            "Save skills"
+            "Save strengths"
           )}
         </Button>
         <Button variant="ghost" size="lg" onClick={() => router.push(`/c/${slug}/me`)}>
@@ -331,8 +410,8 @@ export function SkillsScreen() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
-        title="Your skills"
-        description="Classmates looking for a teammate can find you by these."
+        title="Your strengths"
+        description="What you are good at. Classmates looking for a teammate can find you by these."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
       {state.status === "loading" ? (
@@ -342,7 +421,7 @@ export function SkillsScreen() {
           <Skeleton className="h-24 w-full" />
         </div>
       ) : state.status === "error" ? (
-        <LoadError error={state.error} onRetry={state.reload} what="your skills" />
+        <LoadError error={state.error} onRetry={state.reload} what="your strengths" />
       ) : (
         <SkillsEditor initial={state.data.skills} />
       )}

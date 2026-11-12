@@ -183,6 +183,26 @@ export async function blockUser(actor: string, target: string): Promise<void> {
   await rpc<null>("block_user", { p_actor: actor, p_target: target });
 }
 
+export async function listBlocks(actor: string) {
+  const rows = await rpc<
+    | { user_id: string; display_name: string; avatar_path: string | null; blocked_at: string }[]
+    | null
+  >("blocks_list", { p_user: actor });
+  return (rows ?? []).map((row) => ({
+    user_id: row.user_id,
+    display_name: row.display_name,
+    avatar_url: avatarUrlFor(row.avatar_path),
+    blocked_at: toIso(row.blocked_at) as string,
+  }));
+}
+
+function avatarUrlFor(path: string | null): string | null {
+  if (!path) return null;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return base ? `${base.replace(/\/$/, "")}/storage/v1/object/public/avatars/${path}` : null;
+}
+
 export async function unblockUser(actor: string, target: string): Promise<void> {
   await rpc<null>("unblock_user", { p_actor: actor, p_target: target });
 }

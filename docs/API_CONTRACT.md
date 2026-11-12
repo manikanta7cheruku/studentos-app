@@ -104,6 +104,7 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | RPT-02 | GET `/c/{slug}/admin/reports` | Queue | mod | P0 | | TC-RPT-02 |
 | RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | Dismiss/hide/warn/suspend | mod | P0 | ✓ | TC-RPT-03 |
 | RPT-04 | PUT/DELETE `/me/blocks/{user_id}` | Block/unblock | mem(1) | P1 | | TC-RPT-04 |
+| RPT-05 | GET `/me/blocks` | The people I blocked | ses | P1 | | TC-RPT-05 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
 | ADM-02 | PATCH `/platform/colleges/{id}` | Status/branding (suspend) | plat | P0 | | TC-ADM-02 |
 | ADM-03 | GET/PATCH `/c/{slug}/admin/settings` | Tenant settings & flags | adm | P0 | | TC-ADM-03 |
@@ -271,6 +272,7 @@ Base `/api/v1`. All changes need a matching `Origin`. Writes are limited to 60 a
 | RPT-01 | POST `/c/{slug}/reports` | IDEM. `target_type` (`announcement` or `profile` for now), `target_id`, `reason`, optional `details`. 409 if you already have an open report on it, 400 for yourself, 404 for another college |
 | RPT-02 | GET `/c/{slug}/admin/reports?status=open&limit=&cursor=` | Moderators and admins. Each item has `target_title`, `reporter`, `status` |
 | RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | IDEM. `action`: `dismiss`, `hide`, `warn`, `suspend`. `note` of 5 or more characters is needed except for dismiss. 409 if already handled. 403 if the report is about you, or you may not suspend that role (a moderator suspends students only, nobody suspends an admin here) |
+| RPT-05 | GET `/me/blocks` | The people I blocked, newest first (so Settings can unblock them). Each has the name, picture and when |
 | RPT-04 | PUT / DELETE `/me/blocks/{userId}` | Block or unblock a classmate. Safe to repeat. 400 for yourself, 404 for someone not in a college you share |
 | WL-01 | POST `/waitlist` | Public. `college_name`, `contact_name`, `contact_email`, `role`, `consent: true`, optional `source`. Always answers `{ "joined": true }`, even for an email already there. 5 a hour per IP |
 
@@ -459,4 +461,24 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 | VEN-10 | DELETE `/api/v1/c/{slug}/bookings/{id}` | The person who asked cancels a waiting or confirmed request. 404 for anyone else's, 409 `CONFLICT` when already declined or cancelled |
 
 **Notifications:** four new types. `venue.booking_requested` tells the manager that someone asked (payload has `booking_id` and `venue_id`). `venue.booking_confirmed` and `venue.booking_declined` tell the person who asked, with the manager's note. `venue.booking_cancelled` tells the manager that a confirmed booking was cancelled, so the hours are free again.
+
+## 19. Onboarding, messages, feedback and photos (R3 Day 17, decisions D-39 to D-42)
+
+**Profile (PRF-01 GET and PATCH)** has new keys. `tech_interests` (technical interests, kept apart from `interests`, which are the casual ones) and `excited_by` (one line, up to 200) are shown to classmates. These are private and come only in my own profile: `sex` (`woman`, `man`, `non_binary` or `prefer_not_to_say`), `birth_year`, `phone` (the form `+919876543210`, optional) and `phone_visibility` (`hidden` or `hosts`). `onboarded` is true when the name, a username (`handle`), a `sex` answer and at least one interest are set. The app sends a person who is not onboarded to a short tour at `/welcome`. A handle already taken answers 409 `CONFLICT`. A participant list (TMF-12) shows a `phone` only to the host, only for a person who chose `hosts`, and only until a day after the plan.
+
+**Reports (RPT-01)** now accept `idea`, `idea_comment`, `event`, `listing` and `venue` as `target_type` besides `profile`, `team_post` and `announcement`. A moderator can hide any of them from the report queue.
+
+| ID | Request | Notes |
+|---|---|---|
+| MSG-01 | GET `/api/v1/c/{slug}/messages` | My conversations that still have a message: the person, `unread` (messages from them not opened yet) and `last_at`. The words are not listed |
+| MSG-02 | GET `/api/v1/c/{slug}/messages/{userId}` | One conversation. Opening it marks their messages as opened, so they disappear 1 hour later. `can_message` is false when one of us blocked the other. 404 for someone who is not an active member of the college |
+| MSG-03 | POST `/api/v1/c/{slug}/messages/{userId}` | IDEM. `{ "body": "1 to 500 characters" }`. Text only. 201. 403 `FORBIDDEN` when blocked, 429 `RATE_LIMITED` at 60 an hour or 20 unopened messages waiting at the same person |
+| MSG-04 | POST `/api/v1/c/{slug}/messages/{userId}/report` | `{ "reason": "harassment", "details": "optional" }`. Reports the person. The recent messages are copied into the report. 409 `CONFLICT` for a second open report |
+| FDB-01 | POST `/api/v1/me/feedback` | `{ "kind": "idea" \| "problem" \| "other", "message": "5 to 1500", "page": "/c/alpha/turf" }`. Any signed in person. 201. 429 `RATE_LIMITED` at 10 a day |
+| PHO-01 | POST `/api/v1/c/{slug}/photos/upload-url` | `{ "content_type": "image/webp" \| "image/jpeg" \| "image/png", "file_size": 180000 }`. A one time upload link and the `path` (it starts with my own id). 400 above 1 MB |
+| BRD-08 | PUT `/api/v1/c/{slug}/board/{id}/photo` | `{ "path": "<path from PHO-01>" \| null }`. The author attaches or removes the photo of a market or lost and found post. 403 for anyone else, 400 for a path that does not start with the author's id. Board posts now carry `photo_url` |
+
+**Disappearing messages:** a message is deleted 1 hour after the other person opens it, or 3 days after it was sent if it is never opened. Only text is allowed. Nothing else is stored.
+
+**Notifications:** one new type. `dm.received` tells a person that someone sent them a message (payload has `from`). It is sent for the first unopened message of a conversation only, so a flood stays quiet.
 

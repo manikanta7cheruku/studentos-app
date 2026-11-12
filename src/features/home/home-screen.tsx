@@ -15,6 +15,7 @@ import {
   type TeamPost,
   type Venue,
 } from "@/lib/api/endpoints";
+import { CampusNotice } from "./campus-notice";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -207,6 +208,8 @@ export function HomeScreen() {
             : `What is happening at ${college.short_name || college.name}.`}
         </p>
       </header>
+
+      <CampusNotice />
 
       <FinishProfile />
 

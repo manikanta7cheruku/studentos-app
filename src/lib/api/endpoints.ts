@@ -44,6 +44,7 @@ export type BoardItem = Data<typeof c.boardResponse>;
 export type Venue = Data<typeof c.venueResponse>;
 export type VenueSlot = Data<typeof c.venueSlotsResponse>[number];
 export type Booking = Data<typeof c.bookingResponse>;
+export type BlockedPerson = Data<typeof c.blocksListResponse>[number];
 export type Participant = Data<typeof c.teamParticipantListResponse>[number];
 export type ContentItem = Data<typeof c.contentListResponse>[number];
 export type ContentKind = z.infer<typeof c.contentKind>;
@@ -231,6 +232,60 @@ export const api = {
       apiClient(j(`/c/${slug}/events/${id}`), {
         method: "DELETE",
         schema: c.eventResponse.shape.data,
+      }),
+  },
+  blocks: {
+    list: () => apiClient(j("/me/blocks"), { schema: c.blocksListResponse.shape.data }),
+    unblock: (userId: string) =>
+      apiClient(j(`/me/blocks/${userId}`), {
+        method: "DELETE",
+        schema: c.blockResponse.shape.data,
+      }),
+    block: (userId: string) =>
+      apiClient(j(`/me/blocks/${userId}`), {
+        method: "PUT",
+        schema: c.blockResponse.shape.data,
+      }),
+  },
+  feedback: {
+    send: (body: z.input<typeof c.feedbackCreateBody>) =>
+      apiClient(j("/me/feedback"), {
+        method: "POST",
+        body,
+        schema: c.feedbackCreateResponse.shape.data,
+      }),
+  },
+  messages: {
+    threads: (slug: string) =>
+      apiClient(j(`/c/${slug}/messages`), { schema: c.dmThreadListResponse.shape.data }),
+    thread: (slug: string, userId: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}`), { schema: c.dmThreadResponse.shape.data }),
+    send: (slug: string, userId: string, body: string, key?: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}`), {
+        method: "POST",
+        body: { body },
+        idempotent: key ?? true,
+        schema: c.dmSendResponse.shape.data,
+      }),
+    report: (slug: string, userId: string, body: z.input<typeof c.dmReportBody>) =>
+      apiClient(j(`/c/${slug}/messages/${userId}/report`), {
+        method: "POST",
+        body,
+        schema: c.reportCreateResponse.shape.data,
+      }),
+  },
+  photos: {
+    uploadUrl: (slug: string, body: z.input<typeof c.photoUploadUrlBody>) =>
+      apiClient(j(`/c/${slug}/photos/upload-url`), {
+        method: "POST",
+        body,
+        schema: c.photoUploadUrlResponse.shape.data,
+      }),
+    attach: (slug: string, postId: string, path: string | null) =>
+      apiClient(j(`/c/${slug}/board/${postId}/photo`), {
+        method: "PUT",
+        body: { path },
+        schema: c.boardPhotoResponse.shape.data,
       }),
   },
   venues: {

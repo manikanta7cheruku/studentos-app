@@ -35,6 +35,16 @@ export function BoardCard({ post, slug }: { post: BoardItem; slug: string }) {
         done && "opacity-60",
       )}
     >
+      {post.photo_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={post.photo_url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="-mx-4 -mt-3.5 mb-1 h-36 w-[calc(100%+2rem)] max-w-none rounded-t-[20px] object-cover"
+        />
+      ) : null}
       <div className="flex items-start gap-3">
         <h2 className="min-w-0 flex-1 text-balance text-[15.5px] font-semibold leading-snug">
           <Link
