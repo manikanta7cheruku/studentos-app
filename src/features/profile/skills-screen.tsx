@@ -18,8 +18,8 @@ import { useCollege } from "@/features/college";
 import { SUGGESTED_SKILLS as SUGGESTIONS } from "@/lib/suggested-skills";
 import { LEVEL_LABELS } from "./skill-level";
 
-// A short list says more than a long one: twelve is plenty for a profile.
-const MAX_SKILLS = 12;
+// A short list says more than a long one: five is plenty for a profile.
+const MAX_SKILLS = 5;
 
 type Row = { skill_id: string; name: string; level: number; evidence_url: string };
 
