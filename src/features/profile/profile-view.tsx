@@ -15,6 +15,8 @@ export type ProfileViewData = {
   excited_by?: string | null;
   /** Only set when the person chose to show it. */
   gender?: string | null;
+  /** Age in years. Only set when the person chose to show it. */
+  age?: number | null;
   career_goal: string | null;
   program?: string | null;
   grad_year?: number | null;
@@ -104,6 +106,7 @@ export function ProfileView({
 }) {
   const meta = [
     person.gender ? GENDER_LABEL[person.gender] : null,
+    person.age ? `${person.age} years` : null,
     person.program,
     person.grad_year ? `Class of ${person.grad_year}` : null,
   ].filter(Boolean);

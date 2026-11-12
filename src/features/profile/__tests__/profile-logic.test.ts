@@ -18,6 +18,7 @@ const saved = {
   portfolio_public: false,
   sex: null,
   sex_public: false,
+  age_public: false,
   birth_year: null,
   phone: null,
   phone_visibility: "hidden" as const,

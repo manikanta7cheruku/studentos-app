@@ -8,6 +8,7 @@ import { mapDbError } from "@/lib/db-error";
 export type PrivateDetails = {
   sex: "woman" | "man" | "non_binary" | "prefer_not_to_say" | null;
   sex_public?: boolean;
+  age_public?: boolean;
   birth_year: number | null;
   phone: string | null;
   phone_visibility: "hidden" | "hosts";
@@ -28,12 +29,13 @@ export async function setPrivate(userId: string, patch: Record<string, unknown>)
   if (error) throw mapDbError(error);
 }
 
-/** The gender other people may see: only when the person turned the switch on, never "prefer not to say". */
-export async function getPublicGender(userId: string): Promise<string | null> {
-  const { data, error } = await adminClient().rpc("profile_public_gender", { p_user: userId });
-  if (error) {
-    // Before the migration has run, nobody has chosen to show it.
-    return null;
-  }
-  return (data as string | null) ?? null;
+/** What other people may see: gender and age (in years), each only when the person turned its switch on. */
+export async function getPublicDetails(
+  userId: string,
+): Promise<{ gender: string | null; age: number | null }> {
+  const { data, error } = await adminClient().rpc("profile_public_details", { p_user: userId });
+  // Before the migration has run, nobody has chosen to show anything.
+  if (error || !data) return { gender: null, age: null };
+  const row = data as { gender?: string | null; age?: number | null };
+  return { gender: row.gender ?? null, age: row.age ?? null };
 }

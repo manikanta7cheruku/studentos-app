@@ -32,6 +32,8 @@ export const profile = z.object({
   // True when I chose to show my gender on my profile. Off by default.
   sex_public: z.boolean().default(false),
   birth_year: z.number().int().min(1940).max(2030).nullable().default(null),
+  // True when I chose to show my age (in years, never the year) on my profile. Off by default.
+  age_public: z.boolean().default(false),
   phone: phoneNumber.nullable().default(null),
   phone_visibility: phoneVisibility.default("hidden"),
   // True when the name, a username, sex and at least one interest are set. The app asks for them once, in a short tour.
@@ -59,6 +61,7 @@ export const profilePatchBody = z
     sex: sexChoice.nullable(),
     sex_public: z.boolean(),
     birth_year: z.number().int().min(1940).max(2030).nullable(),
+    age_public: z.boolean(),
     phone: phoneNumber.nullable(),
     phone_visibility: phoneVisibility,
   })
@@ -145,6 +148,8 @@ export const personProfileResponse = successEnvelope(
     excited_by: z.string().nullable().default(null),
     // Only when the person chose to show it (never "prefer not to say").
     gender: sexChoice.nullable().default(null),
+    // Age in years, only when the person chose to show it.
+    age: z.number().int().nullable().default(null),
     career_goal: z.string().nullable(),
     program: z.string().nullable(),
     grad_year: z.number().int().nullable(),

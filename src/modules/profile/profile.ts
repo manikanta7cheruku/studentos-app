@@ -50,6 +50,7 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     portfolio_public: Boolean(data.portfolio_public),
     sex: priv.sex,
     sex_public: Boolean(priv.sex_public),
+    age_public: Boolean(priv.age_public),
     birth_year: priv.birth_year,
     phone: priv.phone,
     phone_visibility: priv.phone_visibility,
@@ -97,6 +98,7 @@ export async function updateMyProfile(
   const priv: Record<string, unknown> = {};
   if (patch.sex !== undefined) priv.sex = patch.sex;
   if (patch.sex_public !== undefined) priv.sex_public = patch.sex_public;
+  if (patch.age_public !== undefined) priv.age_public = patch.age_public;
   if (patch.birth_year !== undefined) priv.birth_year = patch.birth_year;
   if (patch.phone !== undefined) priv.phone = patch.phone;
   if (patch.phone_visibility !== undefined) priv.phone_visibility = patch.phone_visibility;

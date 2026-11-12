@@ -188,6 +188,10 @@ export function MeScreen() {
             person={{
               ...state.data.profile,
               gender: state.data.profile.sex_public ? state.data.profile.sex : null,
+              age:
+                state.data.profile.age_public && state.data.profile.birth_year
+                  ? new Date().getFullYear() - state.data.profile.birth_year
+                  : null,
               skills: state.data.skills,
             }}
             actions={

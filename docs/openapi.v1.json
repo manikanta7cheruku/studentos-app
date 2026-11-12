@@ -3195,6 +3195,10 @@
                             }
                           ]
                         },
+                        "age_public": {
+                          "default": false,
+                          "type": "boolean"
+                        },
                         "phone": {
                           "default": null,
                           "anyOf": [
@@ -3246,6 +3250,7 @@
                         "sex",
                         "sex_public",
                         "birth_year",
+                        "age_public",
                         "phone",
                         "phone_visibility",
                         "onboarded",
@@ -3444,6 +3449,9 @@
                       }
                     ]
                   },
+                  "age_public": {
+                    "type": "boolean"
+                  },
                   "phone": {
                     "anyOf": [
                       {
@@ -3619,6 +3627,10 @@
                             }
                           ]
                         },
+                        "age_public": {
+                          "default": false,
+                          "type": "boolean"
+                        },
                         "phone": {
                           "default": null,
                           "anyOf": [
@@ -3670,6 +3682,7 @@
                         "sex",
                         "sex_public",
                         "birth_year",
+                        "age_public",
                         "phone",
                         "phone_visibility",
                         "onboarded",
@@ -4571,6 +4584,19 @@
                             }
                           ]
                         },
+                        "age": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "career_goal": {
                           "type": [
                             "string",
@@ -4631,6 +4657,7 @@
                         "tech_interests",
                         "excited_by",
                         "gender",
+                        "age",
                         "career_goal",
                         "program",
                         "grad_year",

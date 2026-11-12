@@ -48,6 +48,7 @@ export function profileChanges(
     excited_by?: string;
     sex?: Sex | null;
     sex_public?: boolean;
+    age_public?: boolean;
     birth_year?: number | null;
     phone?: string;
     share_phone?: boolean;
@@ -71,6 +72,8 @@ export function profileChanges(
   if (form.excited_by !== undefined && text(form.excited_by) !== saved.excited_by)
     patch.excited_by = text(form.excited_by);
   if (form.sex !== undefined && form.sex !== saved.sex) patch.sex = form.sex;
+  if (form.age_public !== undefined && form.age_public !== saved.age_public)
+    patch.age_public = form.age_public;
   if (form.sex_public !== undefined && form.sex_public !== saved.sex_public)
     patch.sex_public = form.sex_public;
   if (form.birth_year !== undefined && form.birth_year !== saved.birth_year)
@@ -208,6 +211,7 @@ function EditForm({ saved }: { saved: Profile }) {
     excited_by: saved.excited_by ?? "",
     sex: saved.sex as Sex | null,
     sex_public: saved.sex_public,
+    age_public: saved.age_public,
     birth_year: saved.birth_year,
     phone: saved.phone ?? "",
     share_phone: saved.phone_visibility === "hosts",
@@ -337,7 +341,7 @@ function EditForm({ saved }: { saved: Profile }) {
       </Section>
       <Section
         title="Private details"
-        text="Only you can see these, unless you choose to show your gender."
+        text="Only you can see these, unless you choose to show your gender or age."
       >
         <div className="flex flex-col gap-2">
           <p className="text-[13px] font-semibold text-ink/90">Gender</p>
@@ -356,6 +360,14 @@ function EditForm({ saved }: { saved: Profile }) {
             Birth year <span className="font-normal text-ink-muted">(optional)</span>
           </p>
           <BirthYearPicker value={form.birth_year} onChange={(next) => set("birth_year", next)} />
+          {form.birth_year ? (
+            <ToggleRow
+              checked={form.age_public}
+              onChange={(next) => set("age_public", next)}
+              title="Show my age on my profile"
+              text="Classmates see your age in years, never the year you were born. Off by default."
+            />
+          ) : null}
         </div>
         <PhoneFields
           phone={form.phone}
