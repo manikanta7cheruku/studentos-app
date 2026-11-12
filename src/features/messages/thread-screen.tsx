@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { BanIcon, CheckIcon, ChevronLeftIcon, FlagIcon, LockIcon, SendIcon } from "lucide-react";
+import {
+  BanIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  FlagIcon,
+  LockIcon,
+  SendIcon,
+  TimerIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { OverflowMenu } from "@/components/app/overflow-menu";
@@ -17,7 +25,6 @@ import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportConversation } from "./report-conversation";
-import { DisappearNote } from "./messages-screen";
 
 /** "in 52 min", "in 3 days", "any moment": when a message disappears. */
 function leaves(iso: string, now: number): string {
@@ -100,7 +107,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
 
   const other = data?.other;
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-2xl flex-col gap-3 px-5 pt-3 pb-2 md:px-8 md:py-8">
+    <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8">
       <header className="glass flex items-center gap-1.5 rounded-[22px] p-2">
         <Link
           href={`/c/${slug}/messages`}
@@ -158,9 +165,13 @@ export function ThreadScreen({ userId }: { userId: string }) {
         ) : null}
       </header>
 
-      <DisappearNote />
-
-      <div className="flex flex-1 flex-col gap-2" aria-live="polite">
+      <div
+        className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-1 py-2"
+        aria-live="polite"
+      >
+        <p className="mx-auto mb-1 flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted">
+          <TimerIcon aria-hidden="true" className="size-3" /> Disappears 1 hour after it is seen
+        </p>
         {failed && !data ? (
           failed instanceof ApiError && failed.status === 404 ? (
             <div className="glass-card rounded-[22px] p-8">
@@ -234,7 +245,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
           Messaging is switched off for this person.
         </p>
       ) : (
-        <form onSubmit={send} className="glass flex items-end gap-2 rounded-[22px] p-2">
+        <form onSubmit={send} className="glass flex items-end gap-2 rounded-[24px] p-1.5 pl-3">
           <label htmlFor="dm-body" className="sr-only">
             Message
           </label>
@@ -251,14 +262,20 @@ export function ThreadScreen({ userId }: { userId: string }) {
                 void send(event);
               }
             }}
-            className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-[14.5px] outline-none placeholder:text-ink-muted/70"
+            className="max-h-32 min-h-10 flex-1 resize-none bg-transparent py-2.5 text-[16px] outline-none placeholder:text-ink-muted/70 md:text-[14.5px]"
           />
-          <Button type="submit" size="icon-sm" disabled={busy || !text.trim()} aria-label="Send">
+          <Button
+            type="submit"
+            size="icon-sm"
+            className="size-10 rounded-full"
+            disabled={busy || !text.trim()}
+            aria-label="Send"
+          >
             {busy ? <Spinner /> : <SendIcon aria-hidden="true" />}
           </Button>
         </form>
       )}
-      <p className="flex items-start justify-center gap-1.5 px-2 text-center text-[12px] leading-snug text-ink-muted">
+      <p className="flex items-start justify-center gap-1.5 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 text-center text-[11.5px] leading-snug text-ink-muted">
         <LockIcon aria-hidden="true" className="mt-0.5 size-3 shrink-0" />
         <span>
           Messages cannot be edited or unsent. They disappear 1 hour after the other person sees

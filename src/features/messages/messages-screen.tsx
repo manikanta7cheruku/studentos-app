@@ -34,7 +34,7 @@ export function MessagesScreen() {
   const state = useLoad(() => api.messages.threads(slug), [slug]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
       <PageHeader
         app
         title="Messages"

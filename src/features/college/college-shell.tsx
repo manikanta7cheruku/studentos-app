@@ -17,6 +17,7 @@ import {
   HouseIcon,
   MapPinnedIcon,
   MessageCircleHeartIcon,
+  MessageCircleIcon,
   LogOutIcon,
   PlusIcon,
   SettingsIcon,
@@ -28,6 +29,8 @@ import {
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { CreateSheet } from "@/components/app/create-sheet";
+import { api } from "@/lib/api/endpoints";
+import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
 import { useCollege } from "./college-provider";
@@ -97,6 +100,42 @@ function BellLink({ className }: { className?: string }) {
           className="tabular bg-brand absolute right-0.5 top-0.5 min-w-[16px] rounded-full px-1 text-center text-[10px] font-bold leading-[16px] text-white"
         >
           {unread > 99 ? "99+" : unread}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+/** Messages, one tap from every page. The badge counts messages waiting for me; it refreshes about every minute. */
+function MessagesLink({ className }: { className?: string }) {
+  const { slug } = useCollege();
+  const state = useLoad(() => api.messages.threads(slug), [slug]);
+  const { reload } = state;
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") reload();
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [reload]);
+  const waiting =
+    state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+  const label = waiting > 0 ? `Messages, ${waiting} waiting` : "Messages";
+  return (
+    <Link
+      href={`/c/${slug}/messages`}
+      aria-label={label}
+      className={cn(
+        "relative inline-flex size-10 items-center justify-center rounded-xl text-ink-muted transition-colors duration-200 hover:bg-white/[0.08] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        className,
+      )}
+    >
+      <MessageCircleIcon aria-hidden="true" className="size-[19px]" />
+      {waiting > 0 ? (
+        <span
+          aria-hidden="true"
+          className="tabular bg-brand absolute right-0.5 top-0.5 min-w-[16px] rounded-full px-1 text-center text-[10px] font-bold leading-[16px] text-white"
+        >
+          {waiting > 99 ? "99+" : waiting}
         </span>
       ) : null}
     </Link>
@@ -314,6 +353,8 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
+  // An open conversation uses the whole phone screen: no top bar, no dock, the box to write sits at the bottom.
+  const inChat = /\/messages\/[^/]+$/.test(pathname);
   const [creating, setCreating] = React.useState(false);
   const router = useRouter();
   // A new person finishes the short tour (name, username, sex, interests) before anything else.
@@ -435,7 +476,10 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-white/[0.07] px-3.5 py-5 md:flex">
         <div className="flex items-center justify-between px-1">
           <SpaceMenu />
-          <BellLink />
+          <div className="flex items-center">
+            <MessagesLink />
+            <BellLink />
+          </div>
         </div>
         <button
           type="button"
@@ -472,13 +516,19 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
         {/* Phone: the space I am in and the bell */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 px-4 md:hidden">
+        <header
+          className={cn(
+            "sticky top-0 z-30 h-14 items-center gap-1 px-4 md:hidden",
+            inChat ? "hidden" : "flex",
+          )}
+        >
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
           />
           <SpaceMenu />
           <div className="flex-1" />
+          <MessagesLink />
           <BellLink />
         </header>
 
@@ -490,14 +540,22 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
           onTouchCancel={onTouchEnd}
-          className="flex-1 touch-pan-y pb-[calc(6.5rem+var(--safe-bottom))] outline-none md:pb-16"
+          className={cn(
+            "flex-1 touch-pan-y outline-none md:pb-16",
+            inChat ? "pb-0" : "pb-[calc(6.5rem+var(--safe-bottom))]",
+          )}
         >
           {children}
         </main>
       </div>
 
       {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
-      <div className="pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 flex gap-2.5 md:hidden">
+      <div
+        className={cn(
+          "pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 gap-2.5 md:hidden",
+          inChat ? "hidden" : "flex",
+        )}
+      >
         <nav
           aria-label="College"
           className="glass-clear pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
@@ -548,4 +606,4 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export { UserMenu, BellLink };
+export { UserMenu, BellLink, MessagesLink };

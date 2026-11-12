@@ -14,10 +14,7 @@ import {
   MessageCircleIcon,
   MessageSquareHeartIcon,
   MapPinnedIcon,
-  PencilIcon,
-  SettingsIcon,
   ShieldCheckIcon,
-  SparklesIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -191,20 +188,14 @@ export function MeScreen() {
             person={{ ...state.data.profile, skills: state.data.skills }}
             actions={
               <>
-                <Button asChild className="rounded-full">
-                  <Link href={`/c/${slug}/me/edit`}>
-                    <PencilIcon aria-hidden="true" /> Edit profile
-                  </Link>
+                <Button asChild>
+                  <Link href={`/c/${slug}/me/edit`}>Edit profile</Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-full">
-                  <Link href={`/c/${slug}/me/skills`}>
-                    <SparklesIcon aria-hidden="true" /> Skills
-                  </Link>
+                <Button asChild variant="outline">
+                  <Link href={`/c/${slug}/me/skills`}>Skills</Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-full">
-                  <Link href={`/c/${slug}/me/settings`}>
-                    <SettingsIcon aria-hidden="true" /> Settings
-                  </Link>
+                <Button asChild variant="outline">
+                  <Link href={`/c/${slug}/me/settings`}>Settings</Link>
                 </Button>
               </>
             }

@@ -28,14 +28,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="glass-card rounded-[24px] p-5">
-      <h2 className="mb-3.5 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-ink-muted">
+    <section className="px-5 py-5 sm:px-6">
+      <h2 className="mb-2.5 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
         {title}
-        {count !== undefined ? (
-          <span className="tabular rounded-full bg-white/[0.08] px-2 py-0.5 text-[11px] text-ink">
-            {count}
-          </span>
-        ) : null}
+        {count !== undefined ? <span className="tabular text-ink-muted/80">{count}</span> : null}
       </h2>
       <div className="min-w-0">{children}</div>
     </section>
@@ -87,83 +83,82 @@ export function ProfileView({
         </div>
       </header>
 
-      {person.excited_by ? (
-        <Section title="What excites me">
-          <p className="max-w-prose text-pretty text-[17px] font-medium leading-snug">
-            {person.excited_by}
-          </p>
-        </Section>
-      ) : null}
-      {person.bio ? (
-        <Section title="About">
-          <p className="max-w-prose whitespace-pre-line text-[15px] leading-relaxed">
-            {person.bio}
-          </p>
-        </Section>
-      ) : null}
-      {person.career_goal ? (
-        <Section title="Career goal">
-          <p className="max-w-prose text-[15px] leading-relaxed">{person.career_goal}</p>
-        </Section>
-      ) : null}
-      {person.skills.length ? (
-        <Section title="Skills" count={person.skills.length}>
-          <ul className="grid gap-2.5 sm:grid-cols-2">
-            {person.skills.map((skill) => (
-              <li
-                key={skill.name}
-                className="flex flex-col gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-3"
-              >
-                <span className="flex items-start justify-between gap-2">
-                  <span className="text-[15px] font-semibold leading-snug">{skill.name}</span>
-                  {skill.evidence_url ? (
-                    <a
-                      href={skill.evidence_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`See my work for ${skill.name}`}
-                      className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-ink-muted outline-none transition-colors hover:bg-white/[0.15] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
-                    </a>
-                  ) : null}
-                </span>
-                <LevelDots level={skill.level} />
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-      {person.interests.length || person.tech_interests?.length ? (
-        <Section title="Interests">
-          <div className="flex flex-col gap-4">
-            {person.interests.length ? (
-              <div>
-                <p className="mb-2 text-[13px] font-semibold text-ink/90">For fun</p>
-                <ul className="flex flex-wrap gap-2">
-                  {person.interests.map((interest) => (
-                    <li key={interest}>
-                      <Chip>{interest}</Chip>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {person.tech_interests?.length ? (
-              <div>
-                <p className="mb-2 text-[13px] font-semibold text-ink/90">Tech and career</p>
-                <ul className="flex flex-wrap gap-2">
-                  {person.tech_interests.map((interest) => (
-                    <li key={interest}>
-                      <Chip>{interest}</Chip>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        </Section>
-      ) : null}
+      <div className="glass-card divide-y divide-white/[0.07] overflow-hidden rounded-[24px]">
+        {person.excited_by ? (
+          <Section title="What excites me">
+            <p className="max-w-prose text-pretty text-[16px] leading-relaxed">
+              {person.excited_by}
+            </p>
+          </Section>
+        ) : null}
+        {person.bio ? (
+          <Section title="About">
+            <p className="max-w-prose whitespace-pre-line text-[15px] leading-relaxed">
+              {person.bio}
+            </p>
+          </Section>
+        ) : null}
+        {person.career_goal ? (
+          <Section title="Career goal">
+            <p className="max-w-prose text-[15px] leading-relaxed">{person.career_goal}</p>
+          </Section>
+        ) : null}
+        {person.skills.length ? (
+          <Section title="Skills" count={person.skills.length}>
+            <ul className="grid gap-x-8 gap-y-3.5 sm:grid-cols-2">
+              {person.skills.map((skill) => (
+                <li key={skill.name} className="flex flex-col gap-1.5">
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="text-[15px] font-semibold leading-snug">{skill.name}</span>
+                    {skill.evidence_url ? (
+                      <a
+                        href={skill.evidence_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`See my work for ${skill.name}`}
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-ink-muted outline-none transition-colors hover:bg-white/[0.15] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
+                      </a>
+                    ) : null}
+                  </span>
+                  <LevelDots level={skill.level} />
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : null}
+        {person.interests.length || person.tech_interests?.length ? (
+          <Section title="Interests">
+            <div className="flex flex-col gap-4">
+              {person.interests.length ? (
+                <div>
+                  <p className="mb-2 text-[13px] font-semibold text-ink/90">For fun</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {person.interests.map((interest) => (
+                      <li key={interest}>
+                        <Chip>{interest}</Chip>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {person.tech_interests?.length ? (
+                <div>
+                  <p className="mb-2 text-[13px] font-semibold text-ink/90">Tech and career</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {person.tech_interests.map((interest) => (
+                      <li key={interest}>
+                        <Chip>{interest}</Chip>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </Section>
+        ) : null}
+      </div>
     </article>
   );
 }

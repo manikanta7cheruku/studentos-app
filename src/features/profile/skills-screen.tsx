@@ -19,6 +19,42 @@ import { LEVEL_LABELS } from "./skill-level";
 
 const MAX_SKILLS = 50;
 
+/** One tap suggestions, in groups. Each name is looked up in the skills list when tapped, so only real skills are added. */
+const SUGGESTIONS: { title: string; names: string[] }[] = [
+  {
+    title: "Social",
+    names: [
+      "Communication",
+      "Talkative",
+      "Public speaking",
+      "Teamwork",
+      "Leadership",
+      "Networking",
+      "Active listening",
+      "Empathy",
+      "Negotiation",
+      "Mentoring",
+      "Event hosting",
+      "Storytelling",
+    ],
+  },
+  {
+    title: "How you work",
+    names: [
+      "Time management",
+      "Problem solving",
+      "Creativity",
+      "Adaptability",
+      "Critical thinking",
+      "Organising",
+    ],
+  },
+  {
+    title: "Tech and creative",
+    names: ["Python", "React", "Figma", "Video editing", "Content writing", "Photography"],
+  },
+];
+
 type Row = { skill_id: string; name: string; level: number; evidence_url: string };
 
 const fromServer = (skills: MySkill[]): Row[] =>
@@ -36,6 +72,66 @@ export function skillsPayload(rows: Row[]) {
     level: row.level,
     ...(row.evidence_url.trim() ? { evidence_url: row.evidence_url.trim() } : {}),
   }));
+}
+
+function Suggestions({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: SkillHit) => void }) {
+  const [busy, setBusy] = React.useState<string | null>(null);
+  const [failed, setFailed] = React.useState<string | null>(null);
+
+  async function add(name: string) {
+    if (busy) return;
+    setBusy(name);
+    setFailed(null);
+    try {
+      const hits = await api.profile.searchSkills(name);
+      const hit = hits.find((item) => item.name.toLowerCase() === name.toLowerCase());
+      if (hit) onAdd(hit);
+      else setFailed(`${name} is not in the list yet. Try searching for it above.`);
+    } catch {
+      setFailed("We could not add that just now. Try again.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const groups = SUGGESTIONS.map((group) => ({
+    ...group,
+    names: group.names.filter((name) => !taken.has(`name:${name.toLowerCase()}`)),
+  })).filter((group) => group.names.length);
+  if (!groups.length) return null;
+  return (
+    <section aria-labelledby="suggested" className="flex flex-col gap-4">
+      <h2
+        id="suggested"
+        className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
+      >
+        Suggestions
+      </h2>
+      {groups.map((group) => (
+        <div key={group.title} className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">{group.title}</p>
+          <div role="group" aria-label={group.title} className="flex flex-wrap gap-2">
+            {group.names.map((name) => (
+              <button
+                key={name}
+                type="button"
+                disabled={busy !== null}
+                onClick={() => void add(name)}
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-white/[0.04] px-3.5 text-[13px] font-semibold text-ink-muted outline-none transition-[background-color,border-color,color,transform] duration-200 hover:border-white/25 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-60"
+              >
+                {busy === name ? "Adding…" : name}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {failed ? (
+        <p role="status" className="text-[13.5px] text-ink-muted">
+          {failed}
+        </p>
+      ) : null}
+    </section>
+  );
 }
 
 function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: SkillHit) => void }) {
@@ -217,6 +313,10 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
   const [saved, setSaved] = React.useState(false);
 
   const taken = React.useMemo(() => new Set(rows.map((r) => r.skill_id)), [rows]);
+  const takenNames = React.useMemo(
+    () => new Set(rows.map((r) => `name:${r.name.toLowerCase()}`)),
+    [rows],
+  );
   const dirty =
     JSON.stringify(skillsPayload(rows)) !== JSON.stringify(skillsPayload(fromServer(initial)));
 
@@ -269,6 +369,19 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
           <p>You have reached the limit of {MAX_SKILLS} skills.</p>
         </Banner>
       )}
+      {rows.length < MAX_SKILLS ? (
+        <Suggestions
+          taken={takenNames}
+          onAdd={(hit) => {
+            setSaved(false);
+            setRows((current) =>
+              current.some((r) => r.skill_id === hit.id)
+                ? current
+                : [...current, { skill_id: hit.id, name: hit.name, level: 3, evidence_url: "" }],
+            );
+          }}
+        />
+      ) : null}
 
       <section aria-labelledby="my-skills" className="flex flex-col gap-3">
         <h2

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { BanIcon, MessageCircleIcon, SearchIcon } from "lucide-react";
+import { BanIcon, SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -158,10 +158,8 @@ export function PersonScreen({ userId }: { userId: string }) {
             actions={
               state.data.is_self ? undefined : (
                 <>
-                  <Button asChild className="rounded-full">
-                    <Link href={`/c/${slug}/messages/${state.data.user_id}`}>
-                      <MessageCircleIcon aria-hidden="true" /> Message
-                    </Link>
+                  <Button asChild>
+                    <Link href={`/c/${slug}/messages/${state.data.user_id}`}>Message</Link>
                   </Button>
                   <ReportMenu
                     targetType="profile"
