@@ -18,7 +18,8 @@ import { useCollege } from "@/features/college";
 import { SUGGESTED_SKILLS as SUGGESTIONS } from "@/lib/suggested-skills";
 import { LEVEL_LABELS } from "./skill-level";
 
-const MAX_SKILLS = 50;
+// A short list says more than a long one: twelve is plenty for a profile.
+const MAX_SKILLS = 12;
 
 type Row = { skill_id: string; name: string; level: number; evidence_url: string };
 
@@ -331,7 +332,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
         />
       ) : (
         <Banner variant="info">
-          <p>You have reached the limit of {MAX_SKILLS} strengths.</p>
+          <p>That is the {MAX_SKILLS} strengths a profile can show. Remove one to add another.</p>
         </Banner>
       )}
       {rows.length < MAX_SKILLS ? (
@@ -353,7 +354,7 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
           id="my-strengths"
           className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
         >
-          Your strengths ({rows.length})
+          Your strengths ({rows.length} of {MAX_SKILLS})
         </h2>
         {rows.length === 0 ? (
           <p className="glass-card rounded-[22px] border-dashed p-6 text-[15px] text-ink-muted">

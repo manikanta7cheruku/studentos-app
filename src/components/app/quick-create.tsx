@@ -3,7 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { Dialog as DialogPrimitive } from "radix-ui";
-import { MessageCircleIcon, MessageCircleHeartIcon, StoreIcon, UsersIcon } from "lucide-react";
+import {
+  BellIcon,
+  InboxIcon,
+  MessageCircleIcon,
+  MessageSquareHeartIcon,
+  UsersRoundIcon,
+} from "lucide-react";
+import { cn } from "cn";
+import { api } from "@/lib/api/endpoints";
+import { useLoad } from "@/lib/use-load";
 
 /** How long a press must last to count as a hold, and how close two taps must be to count as a double tap. */
 export const HOLD_MS = 650;
@@ -11,7 +20,7 @@ export const DOUBLE_TAP_MS = 320;
 
 /**
  * Gestures for the + button. A tap opens the full list of things to create. A double tap, or a press held for about
- * two thirds of a second, opens the quick menu instead: the four things people start most often.
+ * two thirds of a second, opens the shortcuts instead: messages, requests, alerts, people and feedback.
  */
 export function usePlusGestures({ onTap, onQuick }: { onTap: () => void; onQuick: () => void }) {
   const timer = React.useRef<number | null>(null);
@@ -56,75 +65,186 @@ export function usePlusGestures({ onTap, onQuick }: { onTap: () => void; onQuick
   return { props, recentlyTapped };
 }
 
-/** A small glass menu with the four most used starts. It opens beside the + button and closes with a tap outside. */
+const HINT_KEY = "studentos.plusHint";
+const HINT_TIMES = 2;
+
+function readHintCount(): number {
+  try {
+    return Number(window.localStorage.getItem(HINT_KEY) ?? "0") || 0;
+  } catch {
+    return 0;
+  }
+}
+function writeHintCount(n: number) {
+  try {
+    window.localStorage.setItem(HINT_KEY, String(n));
+  } catch {
+    // No storage (a private window): the hint may show again, which is harmless.
+  }
+}
+/** The person used the shortcuts, so they know: stop showing the hint. */
+export function plusHintDone() {
+  writeHintCount(HINT_TIMES);
+}
+
+/**
+ * A small glass tip beside the + button: "double tap or hold for shortcuts". It shows the first two times someone opens
+ * the app after signing in (counted on this device), fades by itself after a few seconds, and never comes back once the
+ * shortcuts have been used.
+ */
+export function PlusHint({ enabled }: { enabled: boolean }) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (!enabled || readHintCount() >= HINT_TIMES) return;
+    const show = window.setTimeout(() => {
+      writeHintCount(readHintCount() + 1);
+      setVisible(true);
+    }, 1800);
+    const hide = window.setTimeout(() => setVisible(false), 1800 + 7000);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
+  }, [enabled]);
+  if (!enabled || !visible) return null;
+  return (
+    <>
+      {/* A soft ring that breathes around the + button on a phone. */}
+      <span
+        aria-hidden="true"
+        className="plus-ring pointer-events-none fixed bottom-[calc(0.75rem+var(--safe-bottom))] right-3 z-40 size-16 rounded-[22px] md:hidden"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible(false)}
+        className="glass-clear plus-hint fixed bottom-[calc(5.6rem+var(--safe-bottom))] right-3 z-40 max-w-[15.5rem] rounded-[20px] px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
+      >
+        <span className="block text-[13.5px] font-semibold">Shortcuts on the + button</span>
+        <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-muted">
+          Double tap it, or hold it, to jump to messages, requests and more.
+        </span>
+      </button>
+    </>
+  );
+}
+
+/**
+ * The shortcuts: not things to create (the + sheet has those) but where people go all day. A fan of clear glass pills that
+ * springs out of the + button over a barely dimmed page, so the page stays visible behind it.
+ */
 export function QuickCreate({
   slug,
+  unread,
   open,
   onOpenChange,
 }: {
   slug: string;
+  unread: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const items = [
-    {
-      href: `/c/${slug}/collaborate/new`,
-      title: "New plan",
-      text: "A match or a team",
-      icon: <UsersIcon aria-hidden="true" />,
-    },
-    {
-      href: `/c/${slug}/ideas/new`,
-      title: "Post a buzz",
-      text: "Say it in seconds",
-      icon: <MessageCircleHeartIcon aria-hidden="true" />,
-    },
-    {
-      href: `/c/${slug}/market/new`,
-      title: "Sell or rent",
-      text: "Books, bikes, gadgets",
-      icon: <StoreIcon aria-hidden="true" />,
-    },
-    {
-      href: `/c/${slug}/people`,
-      title: "Message someone",
-      text: "Find a classmate",
-      icon: <MessageCircleIcon aria-hidden="true" />,
-    },
-  ];
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="sheet-scrim fixed inset-0 z-50" />
+        <DialogPrimitive.Overlay className="quick-scrim fixed inset-0 z-50" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="glass-sheet fixed bottom-[calc(5.25rem+var(--safe-bottom))] right-3 z-50 w-[min(18rem,calc(100vw-1.5rem))] origin-bottom-right rounded-[26px] p-2 outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-90 data-[state=open]:slide-in-from-bottom-4 md:bottom-auto md:left-5 md:right-auto md:top-[8.25rem] md:origin-top-left"
+          className="fixed bottom-[calc(5.4rem+var(--safe-bottom))] right-3 z-50 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
-          <DialogPrimitive.Title className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-            Quick start
-          </DialogPrimitive.Title>
-          <ul className="stagger flex flex-col">
-            {items.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  prefetch={false}
-                  onClick={() => onOpenChange(false)}
-                  className="flex min-h-14 items-center gap-3 rounded-[18px] px-3 outline-none transition-[background-color,transform] duration-150 hover:bg-white/[0.08] focus-visible:bg-white/[0.1] active:scale-[0.98] [&_svg]:size-[18px]"
-                >
-                  <span className="bg-brand inline-flex size-10 shrink-0 items-center justify-center rounded-2xl text-white">
-                    {item.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[14.5px] font-semibold">{item.title}</span>
-                    <span className="block text-[12.5px] text-ink-muted">{item.text}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <DialogPrimitive.Title className="sr-only">Shortcuts</DialogPrimitive.Title>
+          <ShortcutList slug={slug} unread={unread} onPick={() => onOpenChange(false)} />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+  );
+}
+
+function ShortcutList({
+  slug,
+  unread,
+  onPick,
+}: {
+  slug: string;
+  unread: number;
+  onPick: () => void;
+}) {
+  // Only mounted while the menu is open, so the count is fetched when it is needed.
+  const threads = useLoad(() => api.messages.threads(slug), [slug]);
+  const waiting =
+    threads.status === "ready" ? threads.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+  const items = [
+    {
+      href: `/c/${slug}/messages`,
+      title: "Messages",
+      icon: <MessageCircleIcon aria-hidden="true" />,
+      count: waiting,
+    },
+    {
+      href: `/c/${slug}/collaborate/requests`,
+      title: "My requests",
+      icon: <InboxIcon aria-hidden="true" />,
+      count: 0,
+    },
+    {
+      href: `/c/${slug}/notifications`,
+      title: "Notifications",
+      icon: <BellIcon aria-hidden="true" />,
+      count: unread,
+    },
+    {
+      href: `/c/${slug}/people`,
+      title: "People",
+      icon: <UsersRoundIcon aria-hidden="true" />,
+      count: 0,
+    },
+    {
+      href: `/c/${slug}/feedback`,
+      title: "Send feedback",
+      icon: <MessageSquareHeartIcon aria-hidden="true" />,
+      count: 0,
+    },
+  ];
+  // The pills lean back along an arc, so the stack reads as a fan growing out of the button.
+  const lean = [0, 8, 16, 22, 26];
+  return (
+    <ul className="flex flex-col items-end gap-2.5 md:items-start">
+      {[...items].reverse().map((item, reversed) => {
+        const index = items.length - 1 - reversed;
+        return (
+          <li
+            key={item.href}
+            className="quick-pop"
+            style={{ animationDelay: `${index * 45}ms`, marginRight: lean[index] }}
+          >
+            <Link
+              href={item.href}
+              prefetch={false}
+              onClick={() => {
+                plusHintDone();
+                onPick();
+              }}
+              className="glass-clear group flex h-[52px] flex-row-reverse items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 outline-none transition-[transform,background-color] duration-200 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:flex-row md:pl-1.5 md:pr-5 [&_svg]:size-[18px]"
+            >
+              <span className="text-[14.5px] font-semibold">{item.title}</span>
+              <span
+                className={cn(
+                  "relative inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/[0.14] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors group-hover:bg-white/[0.22]",
+                )}
+              >
+                {item.icon}
+                {item.count > 0 ? (
+                  <span
+                    aria-label={`${item.count} new`}
+                    className="tabular bg-brand absolute -right-1 -top-1 min-w-[18px] rounded-full px-1 text-center text-[10px] font-bold leading-[18px] text-white"
+                  >
+                    {item.count > 99 ? "99+" : item.count}
+                  </span>
+                ) : null}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

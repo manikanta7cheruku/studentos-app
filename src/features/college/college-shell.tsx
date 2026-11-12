@@ -29,7 +29,12 @@ import {
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { CreateSheet } from "@/components/app/create-sheet";
-import { QuickCreate, usePlusGestures } from "@/components/app/quick-create";
+import {
+  PlusHint,
+  QuickCreate,
+  plusHintDone,
+  usePlusGestures,
+} from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
@@ -350,7 +355,7 @@ function SpaceMenu() {
 }
 
 export function CollegeShell({ children }: { children: React.ReactNode }) {
-  const { slug, profile: me } = useCollege();
+  const { slug, profile: me, unread } = useCollege();
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
@@ -362,6 +367,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   const plus = usePlusGestures({
     onTap: () => setCreating(true),
     onQuick: () => {
+      plusHintDone();
       setCreating(false);
       setQuick(true);
     },
@@ -375,6 +381,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       if (!recentlyTapped()) return;
       event.stopPropagation();
       event.preventDefault();
+      plusHintDone();
       setCreating(false);
       setQuick(true);
     };
@@ -627,7 +634,8 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
-      <QuickCreate slug={slug} open={quick} onOpenChange={setQuick} />
+      <QuickCreate slug={slug} unread={unread} open={quick} onOpenChange={setQuick} />
+      <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
     </div>
   );
 }
