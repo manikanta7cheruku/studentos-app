@@ -224,7 +224,11 @@ test("a member reports a team post and the admin dismisses the report", async ({
 
   await adminPage(page, "ADM6B");
   await page.goto(postPath);
-  await page.getByRole("button", { name: /report/i }).click();
+  await page
+    .getByRole("button", { name: /more options/i })
+    .first()
+    .click();
+  await page.getByRole("menuitem", { name: /report plan/i }).click();
   await page.getByRole("radio", { name: "Spam" }).check();
   await page.getByRole("button", { name: /send report/i }).click();
   await expect(page.getByText(/thank you/i)).toBeVisible();

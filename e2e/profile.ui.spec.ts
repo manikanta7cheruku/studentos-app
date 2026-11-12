@@ -66,8 +66,8 @@ test("edit the profile, add skills, and see them on my page", async ({ page }) =
 
   await page.getByRole("link", { name: /^strengths/i }).click();
   await page.getByLabel(/add a strength/i).fill("Pyth");
-  await page.getByRole("button", { name: /python/i }).click();
-  await expect(page.getByRole("heading", { name: /your strengths \(1\)/i })).toBeVisible();
+  await page.getByRole("button", { name: "Python", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /your strengths \(1 of 5\)/i })).toBeVisible();
   await expectNoSidewaysScroll(page);
   await page.getByRole("button", { name: /save strengths/i }).click();
   await expect(page).toHaveURL(/\/c\/alpha\/me$/);
