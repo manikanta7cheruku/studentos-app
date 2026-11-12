@@ -7,6 +7,7 @@ import { mapDbError } from "@/lib/db-error";
 
 export type PrivateDetails = {
   sex: "woman" | "man" | "non_binary" | "prefer_not_to_say" | null;
+  sex_public?: boolean;
   birth_year: number | null;
   phone: string | null;
   phone_visibility: "hidden" | "hosts";
@@ -25,4 +26,14 @@ export async function setPrivate(userId: string, patch: Record<string, unknown>)
     p_patch: patch,
   });
   if (error) throw mapDbError(error);
+}
+
+/** The gender other people may see: only when the person turned the switch on, never "prefer not to say". */
+export async function getPublicGender(userId: string): Promise<string | null> {
+  const { data, error } = await adminClient().rpc("profile_public_gender", { p_user: userId });
+  if (error) {
+    // Before the migration has run, nobody has chosen to show it.
+    return null;
+  }
+  return (data as string | null) ?? null;
 }

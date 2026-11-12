@@ -192,12 +192,12 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
       </FormField>
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">
-          Sex <span className="font-normal text-ink-muted">(required, private)</span>
+          Gender <span className="font-normal text-ink-muted">(required)</span>
         </p>
         <SexField value={sex} onChange={setSex} />
         {fields.sex ? <p className="text-[12.5px] font-medium text-danger">{fields.sex}</p> : null}
         <p className="text-[12.5px] text-ink-muted">
-          Only you see this. It helps keep women-only plans safe.
+          Private unless you choose to show it on your profile. It helps keep women-only plans safe.
         </p>
       </div>
       <FormField label="Birth year" help="Optional and private. We only keep the year.">

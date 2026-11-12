@@ -29,6 +29,7 @@ import {
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { CreateSheet } from "@/components/app/create-sheet";
+import { QuickCreate, usePlusGestures } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
@@ -356,6 +357,30 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   // An open conversation uses the whole phone screen: no top bar, no dock, the box to write sits at the bottom.
   const inChat = /\/messages\/[^/]+$/.test(pathname);
   const [creating, setCreating] = React.useState(false);
+  const [quick, setQuick] = React.useState(false);
+  // + : one tap opens everything you can create. A double tap or a hold opens the four quick starts.
+  const plus = usePlusGestures({
+    onTap: () => setCreating(true),
+    onQuick: () => {
+      setCreating(false);
+      setQuick(true);
+    },
+  });
+  const { recentlyTapped } = plus;
+  // The full sheet opens on the first tap and covers the button, so a quick second tap lands on its backdrop: treat it as
+  // the double tap it is.
+  React.useEffect(() => {
+    if (!creating) return;
+    const second = (event: PointerEvent) => {
+      if (!recentlyTapped()) return;
+      event.stopPropagation();
+      event.preventDefault();
+      setCreating(false);
+      setQuick(true);
+    };
+    window.addEventListener("pointerdown", second, true);
+    return () => window.removeEventListener("pointerdown", second, true);
+  }, [creating, recentlyTapped]);
   const router = useRouter();
   // A new person finishes the short tour (name, username, sex, interests) before anything else.
   const needsTour = me !== null && !me.onboarded;
@@ -483,7 +508,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         </div>
         <button
           type="button"
-          onClick={() => setCreating(true)}
+          {...plus.props}
           className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
         >
           <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
@@ -594,7 +619,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           aria-label="Create"
-          onClick={() => setCreating(true)}
+          {...plus.props}
           className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
         >
           <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
@@ -602,6 +627,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
+      <QuickCreate slug={slug} open={quick} onOpenChange={setQuick} />
     </div>
   );
 }

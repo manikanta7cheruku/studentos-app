@@ -3178,6 +3178,10 @@
                             }
                           ]
                         },
+                        "sex_public": {
+                          "default": false,
+                          "type": "boolean"
+                        },
                         "birth_year": {
                           "default": null,
                           "anyOf": [
@@ -3240,6 +3244,7 @@
                         "visibility",
                         "portfolio_public",
                         "sex",
+                        "sex_public",
                         "birth_year",
                         "phone",
                         "phone_visibility",
@@ -3424,6 +3429,9 @@
                       }
                     ]
                   },
+                  "sex_public": {
+                    "type": "boolean"
+                  },
                   "birth_year": {
                     "anyOf": [
                       {
@@ -3594,6 +3602,10 @@
                             }
                           ]
                         },
+                        "sex_public": {
+                          "default": false,
+                          "type": "boolean"
+                        },
                         "birth_year": {
                           "default": null,
                           "anyOf": [
@@ -3656,6 +3668,7 @@
                         "visibility",
                         "portfolio_public",
                         "sex",
+                        "sex_public",
                         "birth_year",
                         "phone",
                         "phone_visibility",
@@ -4541,6 +4554,23 @@
                             "null"
                           ]
                         },
+                        "gender": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "woman",
+                                "man",
+                                "non_binary",
+                                "prefer_not_to_say"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "career_goal": {
                           "type": [
                             "string",
@@ -4600,6 +4630,7 @@
                         "interests",
                         "tech_interests",
                         "excited_by",
+                        "gender",
                         "career_goal",
                         "program",
                         "grad_year",

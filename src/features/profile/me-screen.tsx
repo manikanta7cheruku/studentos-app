@@ -185,14 +185,18 @@ export function MeScreen() {
       ) : (
         <>
           <ProfileView
-            person={{ ...state.data.profile, skills: state.data.skills }}
+            person={{
+              ...state.data.profile,
+              gender: state.data.profile.sex_public ? state.data.profile.sex : null,
+              skills: state.data.skills,
+            }}
             actions={
               <>
                 <Button asChild>
                   <Link href={`/c/${slug}/me/edit`}>Edit profile</Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/skills`}>Strengths</Link>
+                  <Link href={`/c/${slug}/me/strengths`}>Strengths</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link href={`/c/${slug}/me/settings`}>Settings</Link>

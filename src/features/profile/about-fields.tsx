@@ -64,7 +64,7 @@ export function SexField({
 }) {
   return (
     <ChoiceChips
-      label="Sex"
+      label="Gender"
       value={(value ?? "") as Sex}
       onChange={onChange}
       options={SEX_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}

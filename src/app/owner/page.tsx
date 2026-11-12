@@ -131,7 +131,7 @@ export default async function OwnerOverview() {
         <Stat label="New feedback" value={people.feedback_new} note="in the Feedback page" />
       </div>
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
-        <Panel title="Sex (counts only)">
+        <Panel title="Gender (counts only)">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[14px]">
             {(
               [

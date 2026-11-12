@@ -12,6 +12,8 @@ export type ProfileViewData = {
   interests: string[];
   tech_interests?: string[];
   excited_by?: string | null;
+  /** Only set when the person chose to show it. */
+  gender?: string | null;
   career_goal: string | null;
   program?: string | null;
   grad_year?: number | null;
@@ -38,6 +40,12 @@ function Section({
   );
 }
 
+const GENDER_LABEL: Record<string, string> = {
+  woman: "Woman",
+  man: "Man",
+  non_binary: "Non-binary",
+};
+
 /** One profile, read only: the same layout for my own profile and for a classmate's. A glass hero, then cards. */
 export function ProfileView({
   person,
@@ -46,9 +54,11 @@ export function ProfileView({
   person: ProfileViewData;
   actions?: React.ReactNode;
 }) {
-  const meta = [person.program, person.grad_year ? `Class of ${person.grad_year}` : null].filter(
-    Boolean,
-  );
+  const meta = [
+    person.gender ? GENDER_LABEL[person.gender] : null,
+    person.program,
+    person.grad_year ? `Class of ${person.grad_year}` : null,
+  ].filter(Boolean);
   return (
     <article className="flex flex-col gap-4">
       <header className="glass-card relative overflow-hidden rounded-[28px]">

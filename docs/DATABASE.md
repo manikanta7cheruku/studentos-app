@@ -245,6 +245,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261127000000_gender_on_profile.sql` | `profile_private.sex_public` (off by default), `profile_public_gender`; `profile_private_get` and `_set` carry the new key |
 | `20261126000000_social_skills.sql` | social and working skills added to the `skills` catalog (Communication, Talkative, Leadership and others) |
 | `20261125000000_blocks_list_insights.sql` | `blocks_list`, `owner_insights` (counts only, for the owner dashboard) |
 | `20261124000000_photos.sql` | `board_posts.photo_path`, the `post-photos` storage bucket, `board_set_photo` |

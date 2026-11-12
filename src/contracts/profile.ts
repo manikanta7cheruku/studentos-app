@@ -29,6 +29,8 @@ export const profile = z.object({
   portfolio_public: z.boolean(),
   // Private, only in my own profile.
   sex: sexChoice.nullable().default(null),
+  // True when I chose to show my gender on my profile. Off by default.
+  sex_public: z.boolean().default(false),
   birth_year: z.number().int().min(1940).max(2030).nullable().default(null),
   phone: phoneNumber.nullable().default(null),
   phone_visibility: phoneVisibility.default("hidden"),
@@ -55,6 +57,7 @@ export const profilePatchBody = z
     visibility: profileVisibility,
     portfolio_public: z.boolean(),
     sex: sexChoice.nullable(),
+    sex_public: z.boolean(),
     birth_year: z.number().int().min(1940).max(2030).nullable(),
     phone: phoneNumber.nullable(),
     phone_visibility: phoneVisibility,
@@ -140,6 +143,8 @@ export const personProfileResponse = successEnvelope(
     interests: z.array(z.string()),
     tech_interests: z.array(z.string()).default([]),
     excited_by: z.string().nullable().default(null),
+    // Only when the person chose to show it (never "prefer not to say").
+    gender: sexChoice.nullable().default(null),
     career_goal: z.string().nullable(),
     program: z.string().nullable(),
     grad_year: z.number().int().nullable(),

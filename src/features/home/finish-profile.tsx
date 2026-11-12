@@ -45,7 +45,7 @@ export function FinishProfile() {
         <p className="text-[13px] text-ink-muted">
           Add your strengths so people can find you for their plans.{" "}
           <Link
-            href={`/c/${slug}/me/skills`}
+            href={`/c/${slug}/me/strengths`}
             className="font-semibold text-[#b9b4ee] underline-offset-4 hover:underline"
           >
             Add strengths

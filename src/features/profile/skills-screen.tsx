@@ -148,7 +148,7 @@ function SkillSearch({ taken, onAdd }: { taken: Set<string>; onAdd: (skill: Skil
             <p className="text-[13.5px] text-ink-muted">Searching…</p>
           ) : results.length === 0 ? (
             <p className="text-[13.5px] text-ink-muted">
-              No skill found for &ldquo;{trimmed}&rdquo;. Try another word.
+              Nothing found for &ldquo;{trimmed}&rdquo;. Try another word.
             </p>
           ) : (
             <ul className="glass-card divide-y divide-white/[0.07] overflow-hidden rounded-[20px]">
@@ -348,9 +348,9 @@ function SkillsEditor({ initial }: { initial: MySkill[] }) {
         />
       ) : null}
 
-      <section aria-labelledby="my-skills" className="flex flex-col gap-3">
+      <section aria-labelledby="my-strengths" className="flex flex-col gap-3">
         <h2
-          id="my-skills"
+          id="my-strengths"
           className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
         >
           Your strengths ({rows.length})
