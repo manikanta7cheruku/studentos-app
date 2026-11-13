@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   CalendarDaysIcon,
@@ -95,6 +96,7 @@ export function CreateSheet({
   const shown = slug === "global" ? choices.slice(0, 4) : choices;
 
   // Back closes the sheet; a tile opens its page with Back returning to where the person was.
+  const router = useRouter();
   const overlay = useOverlayHistory(open, onOpenChange);
   const sheet = React.useRef<HTMLDivElement>(null);
   const drag = React.useRef<{ y: number; t: number; moved: number } | null>(null);
@@ -195,7 +197,7 @@ export function CreateSheet({
                     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0)
                       return;
                     event.preventDefault();
-                    overlay.goTo(item.href);
+                    overlay.goTo(item.href, router.push);
                   }}
                   className="group flex h-full min-h-[5.75rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-3 outline-none transition-[background-color,border-color,transform] duration-200 hover:border-white/25 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
                 >

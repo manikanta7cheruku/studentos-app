@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   BellIcon,
@@ -163,6 +164,7 @@ export function QuickCreate({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const overlay = useOverlayHistory(open, onOpenChange);
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -173,7 +175,11 @@ export function QuickCreate({
           className="fixed bottom-[calc(5.4rem+var(--safe-bottom))] right-3 z-50 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
           <DialogPrimitive.Title className="sr-only">Shortcuts</DialogPrimitive.Title>
-          <ShortcutList slug={slug} unread={unread} onGo={overlay.goTo} />
+          <ShortcutList
+            slug={slug}
+            unread={unread}
+            onGo={(href) => overlay.goTo(href, router.push)}
+          />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

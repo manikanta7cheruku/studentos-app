@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 
 const KEY = "__overlay";
 
@@ -14,9 +13,8 @@ const KEY = "__overlay";
  * new page returns to where the person was, not to the overlay.
  */
 export function useOverlayHistory(open: boolean, onOpenChange: (open: boolean) => void) {
-  const router = useRouter();
   const mine = React.useRef<string | null>(null);
-  const pending = React.useRef<string | null>(null);
+  const pending = React.useRef<(() => void) | null>(null);
   const latest = React.useRef(onOpenChange);
   React.useEffect(() => {
     latest.current = onOpenChange;
@@ -31,9 +29,9 @@ export function useOverlayHistory(open: boolean, onOpenChange: (open: boolean) =
       // Back was pressed (or goTo asked for it): our entry is gone, so close the overlay.
       mine.current = null;
       latest.current(false);
-      const href = pending.current;
+      const go = pending.current;
       pending.current = null;
-      if (href) router.push(href);
+      go?.();
     };
     window.addEventListener("popstate", onPop);
     return () => {
@@ -44,18 +42,16 @@ export function useOverlayHistory(open: boolean, onOpenChange: (open: boolean) =
         window.history.back();
       }
     };
-  }, [open, router]);
+  }, [open]);
 
-  const goTo = React.useCallback(
-    (href: string) => {
-      if (mine.current) {
-        pending.current = href;
-        window.history.back();
-      } else {
-        router.push(href);
-      }
-    },
-    [router],
-  );
+  /** Leave the page from inside the overlay. `navigate` is the router's push; it runs once the overlay's entry is gone. */
+  const goTo = React.useCallback((href: string, navigate: (href: string) => void) => {
+    if (mine.current) {
+      pending.current = () => navigate(href);
+      window.history.back();
+    } else {
+      navigate(href);
+    }
+  }, []);
   return { goTo };
 }
