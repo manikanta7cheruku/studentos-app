@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { InstallApp } from "@/components/site/install-app";
+import { StandaloneRedirect } from "@/components/site/standalone-redirect";
 
 export const instant = false;
 
@@ -130,6 +131,7 @@ export default function Home() {
       >
         Skip to content
       </a>
+      <StandaloneRedirect />
       <SiteHeader landing />
 
       <main id="main-content">

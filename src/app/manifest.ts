@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "StudentOS",
     description: "Plans, debates and people from your campus.",
     id: "/",
-    start_url: "/",
+    start_url: "/start",
     display: "standalone",
     background_color: "#0b0b10",
     theme_color: "#0b0b10",
