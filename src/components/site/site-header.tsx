@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { DownloadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InstallApp } from "./install-app";
 import { Wordmark } from "@/features/auth/auth-frame";
 
 /** The top bar of the public pages (landing and the written pages). */
@@ -33,11 +33,7 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-            <a href={`${prefix}#app`}>
-              <DownloadIcon aria-hidden="true" /> Get the app
-            </a>
-          </Button>
+          <InstallApp size="sm" label="Download" className="hidden sm:inline-flex" />
           <Button asChild size="sm">
             <Link href="/signin">Sign in</Link>
           </Button>

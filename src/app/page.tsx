@@ -4,7 +4,7 @@ import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { StoreButtons } from "@/components/site/store-buttons";
+import { InstallApp } from "@/components/site/install-app";
 
 export const instant = false;
 
@@ -104,7 +104,7 @@ const FAQ = [
   },
   {
     q: "Is there a mobile app?",
-    a: "The Android and iOS apps are on their way. Until then StudentOS works in your phone browser.",
+    a: "Yes. Tap Download the app to add StudentOS to your home screen on iPhone or Android. It opens full screen with its own icon, and you can turn on alerts. No app store needed.",
   },
 ];
 
@@ -152,7 +152,7 @@ export default function Home() {
                   Get started <ArrowRightIcon aria-hidden="true" />
                 </Link>
               </Button>
-              <StoreButtons />
+              <InstallApp />
             </div>
           </div>
 
@@ -346,7 +346,7 @@ export default function Home() {
               The Android and iOS apps are coming soon. Until then, open StudentOS in your phone
               browser.
             </p>
-            <StoreButtons className="mt-8" />
+            <InstallApp className="mt-8" variant="default" />
           </div>
         </section>
 

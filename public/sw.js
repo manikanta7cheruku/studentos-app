@@ -1,8 +1,11 @@
 // StudentOS service worker. It only does one job: show phone and desktop alerts and open the right page when one is tapped.
-// It does not cache anything, so the app always loads fresh.
+// It does not cache anything, so the app always loads fresh. Its presence also lets the site be installed as an app.
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
+// Pass-through: lets browsers treat StudentOS as an installable app. Nothing is cached.
+self.addEventListener("fetch", () => {});
 
 self.addEventListener("push", (event) => {
   let data = {};
