@@ -29,6 +29,9 @@ type Choice = {
   soon?: boolean;
   /** A big tile across the whole row. */
   wide?: boolean;
+  /** More to read on a wide tile: a sentence, and a few examples as small tags. */
+  detail?: string;
+  tags?: string[];
 };
 
 /**
@@ -107,8 +110,24 @@ export function CreateSheet({
     by("/lost-found"),
     by("/collaborate"),
     by("/ideas"),
-    ...(slug === "global" ? [{ ...by("/debates"), wide: true }] : [by("/debates"), by("/turf")]),
-    { ...by("/events"), wide: true },
+    ...(slug === "global"
+      ? [
+          {
+            ...by("/debates"),
+            wide: true,
+            detail:
+              "Ask a question with two sides and a timer. People pick a side and make their case.",
+            tags: ["Campus life", "Movies", "Sports", "Tech"],
+          },
+        ]
+      : [by("/debates"), by("/turf")]),
+    {
+      ...by("/events"),
+      wide: true,
+      detail:
+        "Host something and let people say they are coming. Add the time, the place and how many seats.",
+      tags: ["Talk", "Fest", "Workshop", "Meetup", "Match day"],
+    },
   ];
 
   // Back closes the card; a tile opens its page with Back returning to where the person was.
@@ -134,7 +153,7 @@ export function CreateSheet({
               <XIcon aria-hidden="true" className="size-4" />
             </DialogPrimitive.Close>
           </div>
-          <ul className="grid auto-rows-fr grid-cols-2 gap-2">
+          <ul className="grid grid-cols-2 gap-2">
             {shown.map((item, index) => (
               <li
                 key={item.href}
@@ -150,7 +169,10 @@ export function CreateSheet({
                     event.preventDefault();
                     overlay.goTo(item.href, router.push);
                   }}
-                  className="group relative flex h-full min-h-[5.25rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.16] bg-white/[0.09] p-3 outline-none transition-[background-color,border-color,transform] duration-150 hover:border-white/30 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
+                  className={cn(
+                    "group relative flex h-full min-h-[5.25rem] gap-2 rounded-[18px] border border-white/[0.16] bg-white/[0.09] p-3 outline-none transition-[background-color,border-color,transform] duration-150 hover:border-white/30 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+                    item.wide ? "flex-row items-start gap-3" : "flex-col justify-between",
+                  )}
                 >
                   <span
                     className={cn(
@@ -169,9 +191,26 @@ export function CreateSheet({
                     <span className="block text-[14.5px] font-bold leading-tight text-white">
                       {item.title}
                     </span>
-                    <span className="mt-0.5 block truncate text-[12.5px] leading-snug text-white/70">
-                      {item.text}
+                    <span
+                      className={cn(
+                        "mt-0.5 block text-[12.5px] leading-snug text-white/70",
+                        item.wide ? "" : "truncate",
+                      )}
+                    >
+                      {item.wide && item.detail ? item.detail : item.text}
                     </span>
+                    {item.wide && item.tags ? (
+                      <span className="mt-2 flex flex-wrap gap-1.5">
+                        {item.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-white/[0.12] px-2 py-0.5 text-[11px] font-semibold text-white/85"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
                   </span>
                 </Link>
               </li>

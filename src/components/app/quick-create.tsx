@@ -187,7 +187,7 @@ export function QuickCreate({
         <DialogPrimitive.Overlay className="quick-scrim fixed inset-0 z-50" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="quick-panel fixed bottom-[calc(5.5rem+var(--safe-bottom))] right-3 z-50 w-[17.5rem] max-w-[calc(100vw-1.5rem)] outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
+          className="quick-panel glass-sheet-clear fixed bottom-[calc(5.5rem+var(--safe-bottom))] right-3 z-50 w-[17.5rem] max-w-[calc(100vw-1.5rem)] rounded-[26px] p-2 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
           <DialogPrimitive.Title className="sr-only">Shortcuts</DialogPrimitive.Title>
           <ShortcutList
@@ -351,7 +351,7 @@ function ShortcutList({
   ];
   let n = 0;
   return (
-    <div className="glass-sheet-clear rounded-[26px] p-2">
+    <div>
       <Heading>Waiting for you</Heading>
       <ul>
         {waitingFor.map((item) => (
