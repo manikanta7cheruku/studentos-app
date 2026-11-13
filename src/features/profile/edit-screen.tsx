@@ -21,7 +21,7 @@ import { compressImage } from "@/lib/compress-image";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import {
-  BirthYearPicker,
+  BirthYearField,
   CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
@@ -245,7 +245,6 @@ function EditForm({ saved }: { saved: Profile }) {
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
     if (tidy(form.college_name).length < 2) problems.college = "Type the name of your college.";
-    if (!tidy(form.branch)) problems.branch = "Pick your branch.";
     if (!form.grad_year) problems.year = "Pick the year you graduate.";
     if (form.phone.trim() && !PHONE_OK.test(normalisePhone(form.phone)))
       problems.phone = "Use the form +919876543210.";
@@ -383,20 +382,7 @@ function EditForm({ saved }: { saved: Profile }) {
             />
           ) : null}
         </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-[13px] font-semibold text-ink/90">
-            Birth year <span className="font-normal text-ink-muted">(optional)</span>
-          </p>
-          <BirthYearPicker value={form.birth_year} onChange={(next) => set("birth_year", next)} />
-          {form.birth_year ? (
-            <ToggleRow
-              checked={form.age_public}
-              onChange={(next) => set("age_public", next)}
-              title="Show my age on my profile"
-              text="Classmates see your age in years, never the year you were born. Off by default."
-            />
-          ) : null}
-        </div>
+        <BirthYearField value={form.birth_year} onChange={(next) => set("birth_year", next)} />
         <PhoneFields
           phone={form.phone}
           onPhone={(next) => set("phone", next)}

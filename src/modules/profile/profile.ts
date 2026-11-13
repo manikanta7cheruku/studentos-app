@@ -71,7 +71,6 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
       data.handle &&
       priv.sex &&
       data.college_name &&
-      data.branch &&
       data.grad_year &&
       interests.length + techInterests.length >= 1,
     ),

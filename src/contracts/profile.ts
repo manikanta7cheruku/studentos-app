@@ -45,7 +45,7 @@ export const profile = z.object({
   age_public: z.boolean().default(false),
   phone: phoneNumber.nullable().default(null),
   phone_visibility: phoneVisibility.default("hidden"),
-  // True when the name, a username, sex, college, branch, year and at least one interest are set. The app asks for them once, in a short tour.
+  // True when the name, a username, sex, college, year and at least one interest are set. The app asks for them once, in a short tour.
   onboarded: z.boolean().default(false),
   created_at: isoDateTime,
   updated_at: isoDateTime,

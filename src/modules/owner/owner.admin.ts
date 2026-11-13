@@ -1,3 +1,4 @@
+import { deleteAccount } from "@/modules/account/account.admin";
 import { adminClient } from "@/server/admin/supabase-admin";
 import { AppError } from "@/lib/errors";
 import { hashKey } from "@/lib/hash";
@@ -254,4 +255,79 @@ export async function setUserSuspended(actor: string, target: string, suspended:
     p_target: target,
     p_action: suspended ? "owner.user_suspended" : "owner.user_restored",
   });
+}
+
+export type OwnerUserFull = {
+  id: string;
+  email: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  suspended: boolean;
+  platform_admin: boolean;
+  spaces: { slug: string; name: string; role: string; status: string }[];
+  profile: {
+    display_name: string | null;
+    handle: string | null;
+    headline: string | null;
+    bio: string | null;
+    college_name: string | null;
+    branch: string | null;
+    grad_year: number | null;
+    interests: string[];
+    tech_interests: string[];
+    excited_by: string | null;
+    visibility: string | null;
+  };
+  private: {
+    sex: string | null;
+    sex_public: boolean;
+    birth_year: number | null;
+    age_public: boolean;
+    phone: string | null;
+    phone_visibility: string;
+  };
+  counts: {
+    buzz: number;
+    replies: number;
+    plans: number;
+    events: number;
+    upvotes: number;
+    challenges: number;
+    invited: number;
+    followers: number;
+  };
+};
+
+/** The whole record of each person, for the owner. The page that calls this writes the visit to the audit log. */
+export const usersFull = (q: string) =>
+  rpc<OwnerUserFull[]>("owner_users_full", { p_q: q, p_limit: 100 });
+
+/**
+ * Deletes accounts for good, one after the other (the same removal a person gets from "Delete my account"). The owner and other
+ * owners are skipped. An account that cannot go (for example the only admin of a college) is reported, not forced.
+ */
+export async function deleteUsers(actor: string, ids: string[]) {
+  const result = { deleted: 0, skipped: [] as { id: string; reason: string }[] };
+  for (const id of ids) {
+    if (id === actor || (await isPlatformAdmin(id))) {
+      result.skipped.push({ id, reason: "owner accounts cannot be deleted here" });
+      continue;
+    }
+    try {
+      await rpc("owner_user_audit", {
+        p_actor: actor,
+        p_target: id,
+        p_action: "owner.user_deleted",
+      });
+      await deleteAccount(id, crypto.randomUUID());
+      result.deleted += 1;
+    } catch (caught) {
+      const conflict = caught instanceof AppError && caught.code === "CONFLICT";
+      result.skipped.push({
+        id,
+        reason: conflict ? "the only admin of a college" : "could not be deleted",
+      });
+    }
+  }
+  return result;
 }

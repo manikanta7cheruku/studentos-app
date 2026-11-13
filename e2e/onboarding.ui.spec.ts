@@ -41,7 +41,6 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   // The college, the branch and the year are a must too
   await expect(page.getByText(/type the name of your college/i)).toBeVisible();
   await page.getByLabel(/^college/i).fill("Alpha College");
-  await page.getByRole("button", { name: "CSE", exact: true }).click();
   await page
     .getByRole("button", { name: String(new Date().getFullYear() + 2), exact: true })
     .click();

@@ -73,81 +73,124 @@ export function SexField({
 }
 
 /**
- * Birth year in two taps: pick a decade, then the year. No long list to scroll. It is optional, so "Prefer not to say" clears
- * it, and a small line says how old that makes you (only you see this).
+ * A year on one line: minus, the year, plus. Tap the year to type it. Empty until picked: the first tap on either button
+ * starts at `start`. Takes very little room, and never a long list to scroll.
  */
-export function BirthYearPicker({
+export function YearStepper({
+  label,
+  value,
+  min,
+  max,
+  start,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  min: number;
+  max: number;
+  start: number;
+  onChange: (value: number) => void;
+}) {
+  const [draft, setDraft] = React.useState<string | null>(null);
+  const shown = draft ?? (value === null ? "" : String(value));
+  const clamp = (year: number) => Math.min(max, Math.max(min, year));
+  const step = (by: number) => onChange(clamp((value ?? start - by) + by));
+  const button =
+    "inline-flex size-10 shrink-0 items-center justify-center rounded-full text-[18px] font-semibold leading-none text-ink-muted outline-none transition-[background-color,color,transform] duration-150 hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:opacity-30";
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className="inline-flex h-11 items-center rounded-full border border-white/[0.13] bg-white/[0.065] px-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
+    >
+      <button
+        type="button"
+        aria-label={`Earlier ${label.toLowerCase()}`}
+        onClick={() => step(-1)}
+        disabled={value !== null && value <= min}
+        className={button}
+      >
+        &minus;
+      </button>
+      <input
+        inputMode="numeric"
+        aria-label={label}
+        value={shown}
+        placeholder="Year"
+        maxLength={4}
+        onChange={(event) => {
+          const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
+          setDraft(digits);
+          if (digits.length === 4) {
+            onChange(clamp(Number(digits)));
+            setDraft(null);
+          }
+        }}
+        onBlur={() => setDraft(null)}
+        className="tabular w-16 bg-transparent text-center text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-ink-muted/60"
+      />
+      <button
+        type="button"
+        aria-label={`Later ${label.toLowerCase()}`}
+        onClick={() => step(1)}
+        disabled={value !== null && value >= max}
+        className={button}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+/** Birth year, optional and private: one small button until it is set, then the year on one line with a way to remove it. */
+export function BirthYearField({
   value,
   onChange,
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
 }) {
-  // Read once, so the choices do not move while the screen is open.
   const [thisYear] = React.useState(() => new Date().getFullYear());
-  const newest = thisYear - 10;
-  const oldest = thisYear - 60;
-  const decades: number[] = [];
-  for (let d = Math.floor(newest / 10) * 10; d >= Math.floor(oldest / 10) * 10; d -= 10)
-    decades.push(d);
-  const [chosen, setChosen] = React.useState<number>(
-    value ? Math.floor(value / 10) * 10 : Math.floor((thisYear - 19) / 10) * 10,
-  );
-  const years = Array.from({ length: 10 }, (_, index) => chosen + index).filter(
-    (year) => year <= newest && year >= oldest,
-  );
-  const chip =
-    "inline-flex h-9 shrink-0 items-center justify-center rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95";
   return (
-    <div className="flex flex-col gap-3">
-      <div
-        role="radiogroup"
-        aria-label="Decade"
-        className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none]"
-      >
-        {decades.map((decade) => (
-          <button
-            key={decade}
-            type="button"
-            role="radio"
-            aria-checked={chosen === decade}
-            onClick={() => setChosen(decade)}
-            className={cn(
-              chip,
-              chosen === decade
-                ? "border-white/30 bg-white/[0.16] text-ink"
-                : "border-white/10 bg-white/[0.04] text-ink-muted hover:text-ink",
-            )}
-          >
-            {decade}s
-          </button>
-        ))}
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[13px] font-semibold text-ink/90">
+          Birth year <span className="font-normal text-ink-muted">(optional)</span>
+        </p>
+        <p className="text-[12.5px] text-ink-muted" aria-live="polite">
+          {value
+            ? `${thisYear - value} years old. Only you see this.`
+            : "Private. We only keep the year."}
+        </p>
       </div>
-      <div role="radiogroup" aria-label="Birth year" className="grid grid-cols-5 gap-2">
-        {years.map((year) => (
+      {value === null ? (
+        <button
+          type="button"
+          onClick={() => onChange(thisYear - 19)}
+          className="inline-flex h-10 shrink-0 items-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-[13px] font-semibold text-ink-muted outline-none transition-[background-color,color,transform] hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        >
+          Add
+        </button>
+      ) : (
+        <div className="flex shrink-0 items-center gap-1.5">
+          <YearStepper
+            label="Birth year"
+            value={value}
+            min={thisYear - 60}
+            max={thisYear - 10}
+            start={thisYear - 19}
+            onChange={onChange}
+          />
           <button
-            key={year}
             type="button"
-            role="radio"
-            aria-checked={value === year}
-            onClick={() => onChange(value === year ? null : year)}
-            className={cn(
-              chip,
-              "tabular w-full px-0",
-              value === year
-                ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(8,6,30,0.55)]"
-                : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-            )}
+            aria-label="Remove birth year"
+            onClick={() => onChange(null)}
+            className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted outline-none hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {year}
+            <XIcon aria-hidden="true" className="size-4" />
           </button>
-        ))}
-      </div>
-      <p className="text-[12.5px] text-ink-muted" aria-live="polite">
-        {value
-          ? `Born ${value}, so ${thisYear - value} this year. Only you see this.`
-          : "Not shared. You can add it any time."}
-      </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -324,12 +367,6 @@ export const BRANCHES = [
   "B.Com / BBA",
 ] as const;
 
-/** Graduation years to pick from: last year (for people finishing) to five years ahead. */
-export function gradYears(): number[] {
-  const year = new Date().getFullYear();
-  return Array.from({ length: 7 }, (_, index) => year - 1 + index);
-}
-
 export const tidy = (text: string) => text.replace(/\s+/g, " ").trim();
 
 /**
@@ -381,7 +418,7 @@ export function StudyFields({
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">
-          Branch <span className="font-normal text-ink-muted">(required)</span>
+          Branch <span className="font-normal text-ink-muted">(optional)</span>
         </p>
         <div role="group" aria-label="Branch" className="flex flex-wrap gap-2">
           {BRANCHES.map((name) => (
@@ -424,26 +461,25 @@ export function StudyFields({
           <p className="text-[12.5px] font-medium text-danger">{errors.branch}</p>
         ) : null}
       </div>
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] font-semibold text-ink/90">
-          Graduating in <span className="font-normal text-ink-muted">(required)</span>
-        </p>
-        <div role="group" aria-label="Graduating in" className="flex flex-wrap gap-2">
-          {gradYears().map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={year === value}
-              onClick={() => onYear(value)}
-              className={cn(chip, "tabular", year === value ? on : off)}
-            >
-              {value}
-            </button>
-          ))}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold text-ink/90">
+            Graduating in <span className="font-normal text-ink-muted">(required)</span>
+          </p>
+          {errors.year ? (
+            <p className="text-[12.5px] font-medium text-danger">{errors.year}</p>
+          ) : (
+            <p className="text-[12.5px] text-ink-muted">The year you finish.</p>
+          )}
         </div>
-        {errors.year ? (
-          <p className="text-[12.5px] font-medium text-danger">{errors.year}</p>
-        ) : null}
+        <YearStepper
+          label="Graduation year"
+          value={year}
+          min={new Date().getFullYear() - 1}
+          max={new Date().getFullYear() + 8}
+          start={new Date().getFullYear() + 2}
+          onChange={onYear}
+        />
       </div>
     </div>
   );

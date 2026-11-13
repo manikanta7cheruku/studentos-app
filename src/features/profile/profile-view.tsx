@@ -105,9 +105,12 @@ function StrengthChip({
 export function ProfileView({
   person,
   actions,
+  isSelf = false,
 }: {
   person: ProfileViewData;
   actions?: React.ReactNode;
+  /** My own page: the Contributions section is always there, and says how to start when it is empty. */
+  isSelf?: boolean;
 }) {
   const education = [
     person.college_name,
@@ -186,7 +189,8 @@ export function ProfileView({
           </Section>
         ) : null}
         {counts &&
-        (counts.buzz ||
+        (isSelf ||
+          counts.buzz ||
           counts.replies ||
           counts.plans ||
           counts.events ||
@@ -211,6 +215,12 @@ export function ProfileView({
                 </div>
               ))}
             </dl>
+            {isSelf && !badges.length && !counts.buzz && !counts.replies && !counts.challenges ? (
+              <p className="mt-3 text-[13.5px] leading-snug text-ink-muted">
+                Nothing yet. Post a buzz, answer the weekly challenge or start a plan, and it shows
+                up here.
+              </p>
+            ) : null}
             {badges.length ? (
               <ul className="mt-4 flex flex-wrap gap-2" aria-label="Badges">
                 {badges.map((badge) => (

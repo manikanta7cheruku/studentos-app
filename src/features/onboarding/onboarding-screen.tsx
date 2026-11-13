@@ -17,7 +17,7 @@ import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { homeFor, useSession } from "@/features/session/session-provider";
 import {
-  BirthYearPicker,
+  BirthYearField,
   CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
@@ -213,7 +213,6 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
     if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
     if (tidy(college).length < 2) problems.college = "Type the name of your college.";
-    if (!tidy(branch)) problems.branch = "Pick your branch, or choose Other and type it.";
     if (!gradYear) problems.year = "Pick the year you graduate.";
     setFields(problems);
     if (Object.keys(problems).length) return;
@@ -226,7 +225,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         sex: sex!,
         birth_year: year,
         college_name: tidy(college),
-        branch: tidy(branch),
+        branch: tidy(branch) || null,
         grad_year: gradYear!,
       });
       onDone();
@@ -287,9 +286,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         onYear={setGradYear}
         errors={fields}
       />
-      <FormField label="Birth year" help="Optional and private. We only keep the year.">
-        <BirthYearPicker value={year} onChange={setYear} />
-      </FormField>
+      <BirthYearField value={year} onChange={setYear} />
       {error ? (
         <Banner variant="error">
           <p>{error}</p>

@@ -204,6 +204,7 @@ export function MeScreen() {
       ) : (
         <>
           <ProfileView
+            isSelf
             person={{
               ...state.data.profile,
               program: state.data.profile.branch,

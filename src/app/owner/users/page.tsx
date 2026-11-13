@@ -2,10 +2,10 @@ import { connection } from "next/server";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ConfirmForm } from "@/features/owner/confirm-form";
-import { OwnerTitle, Pill, Table, when } from "@/features/owner/owner-ui";
-import { users } from "@/modules/owner/owner.admin";
-import { userSuspendedAction } from "../actions";
+import { OwnerTitle } from "@/features/owner/owner-ui";
+import { UsersTable } from "@/features/owner/users-table";
+import { ownerAudit, usersFull } from "@/modules/owner/owner.admin";
+import { requireOpenOwner } from "@/modules/owner/owner-access";
 
 export const instant = false;
 
@@ -16,12 +16,15 @@ export default async function OwnerUsers({
 }) {
   await connection();
   const { q = "" } = await searchParams;
-  const rows = await users(q.slice(0, 80));
+  const owner = await requireOpenOwner();
+  const rows = await usersFull(q.slice(0, 80));
+  // Everything about a person is shown here, so each visit is written to the audit log.
+  await ownerAudit(owner.id, "owner.users_viewed", { count: rows.length, searched: q.length > 0 });
   return (
     <>
       <OwnerTitle
         title="Users"
-        text="Find an account by email or name. Suspending stops the account from signing in. It does not delete anything."
+        text="Everybody on the platform, with the whole record one tap away. Tick people to delete them, one or many. Suspending stops an account from signing in and deletes nothing."
       />
       <form method="get" className="mb-5 flex max-w-xl gap-2" role="search">
         <div className="relative flex-1">
@@ -32,7 +35,7 @@ export default async function OwnerUsers({
           <Input
             name="q"
             defaultValue={q}
-            placeholder="Email or name"
+            placeholder="Email, name, username, college or branch"
             aria-label="Search users"
             className="pl-10"
             autoComplete="off"
@@ -42,62 +45,12 @@ export default async function OwnerUsers({
           Search
         </Button>
       </form>
-      <Table
-        head={["Account", "Spaces", "Joined", "Last seen", "Status", ""]}
-        empty={q ? "Nobody matches that." : "No users yet."}
-      >
-        {rows.map((user) => {
-          const suspended = user.suspended;
-          return (
-            <tr key={user.id}>
-              <td>
-                <p className="font-semibold">{user.display_name || "No name yet"}</p>
-                <p className="break-all text-[12.5px] text-ink-muted">{user.email}</p>
-              </td>
-              <td className="text-[13px]">
-                {user.spaces.length === 0 ? (
-                  <span className="text-ink-muted">none</span>
-                ) : (
-                  user.spaces.map((space) => (
-                    <p key={space.slug}>
-                      {space.name}
-                      <span className="text-[12px] text-ink-muted">
-                        {" "}
-                        · {space.role === "college_admin" ? "admin" : space.role}
-                        {space.status === "active" ? "" : `, ${space.status}`}
-                      </span>
-                    </p>
-                  ))
-                )}
-              </td>
-              <td className="whitespace-nowrap text-[13px] text-ink-muted">
-                {when(user.created_at)}
-              </td>
-              <td className="whitespace-nowrap text-[13px] text-ink-muted">
-                {when(user.last_sign_in_at)}
-              </td>
-              <td>
-                <Pill value={suspended ? "suspended" : "active"} />
-              </td>
-              <td className="min-w-[14rem]">
-                <details>
-                  <summary className="cursor-pointer list-none text-[13px] font-semibold text-[#b9b4ee] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring">
-                    {suspended ? "Restore…" : "Suspend…"}
-                  </summary>
-                  <div className="mt-3">
-                    <ConfirmForm
-                      action={userSuspendedAction}
-                      hidden={{ id: user.id, suspend: suspended ? "false" : "true" }}
-                      submitLabel={suspended ? "Restore account" : "Suspend account"}
-                      danger={!suspended}
-                    />
-                  </div>
-                </details>
-              </td>
-            </tr>
-          );
-        })}
-      </Table>
+      <UsersTable
+        rows={rows}
+        ownerId={owner.id}
+        thisYear={new Date().getFullYear()}
+        emptyText={q ? "Nobody matches that." : "No users yet."}
+      />
     </>
   );
 }
