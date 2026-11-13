@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import { OutsideBadge } from "@/components/app/outside-badge";
 import { api, type Idea, type IdeaTopic } from "@/lib/api/endpoints";
 import { timeAgo } from "@/lib/time-ago";
@@ -283,7 +284,10 @@ export function IdeaCard({
             {idea.comment_count}
           </Link>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-0.5">
+          {!idea.is_owner && !outside && !full ? (
+            <ReportMenu targetType="idea" targetId={idea.id} what="buzz" className="size-7" />
+          ) : null}
           <ShareButton idea={idea} space={slug} />
         </div>
       </footer>

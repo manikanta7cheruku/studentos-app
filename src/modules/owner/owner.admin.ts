@@ -204,9 +204,42 @@ export type ReportRow = {
   reason: string;
   details: string | null;
   reporter_email: string | null;
+  reporter_name: string | null;
   created_at: string;
+  target_id: string | null;
+  /** A short piece of what was reported (the words, or the title). */
+  target_preview: string | null;
+  /** True when the author posted it anonymously. Other people never see who; the owner does. */
+  target_anonymous: boolean;
+  target_author_id: string | null;
+  target_author_name: string | null;
+  target_author_email: string | null;
 };
 export const reports = () => rpc<ReportRow[]>("owner_reports", { p_limit: 100 });
+
+export type AnonymousRow = {
+  kind: "buzz" | "comment" | "argument";
+  id: string;
+  body: string;
+  status: string;
+  created_at: string;
+  user_id: string | null;
+  name: string;
+  handle: string | null;
+  email: string | null;
+  college_slug: string;
+  college_name: string;
+  open_reports: number;
+};
+export const ANON_PAGE = 50;
+/** Everything posted anonymously (buzz, comments, debate arguments) with the real person behind it. Owner only. */
+export async function anonymousPosts(q: string, page: number) {
+  return rpc<{ total: number; rows: AnonymousRow[] }>("owner_anonymous", {
+    p_q: q,
+    p_limit: ANON_PAGE,
+    p_offset: page * ANON_PAGE,
+  });
+}
 
 export type Health = {
   database_bytes: number;
