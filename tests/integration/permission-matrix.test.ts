@@ -52,6 +52,19 @@ import {
 } from "@/app/api/v1/c/[slug]/admin/announcements/[id]/route";
 import { DELETE as unblockUser } from "@/app/api/v1/me/blocks/[userId]/route";
 import { GET as listBlocks } from "@/app/api/v1/me/blocks/route";
+import { GET as getInvite } from "@/app/api/v1/me/invite/route";
+import { POST as postReferral } from "@/app/api/v1/me/referral/route";
+import {
+  PUT as followPerson,
+  DELETE as unfollowPerson,
+} from "@/app/api/v1/me/follows/[userId]/route";
+import { GET as getChallenge } from "@/app/api/v1/challenges/current/route";
+import { PUT as answerChallenge } from "@/app/api/v1/challenges/current/entry/route";
+import {
+  PUT as applaudEntry,
+  DELETE as unapplaudEntry,
+} from "@/app/api/v1/challenge-entries/[id]/applause/route";
+import { POST as ideasPoll } from "@/app/api/v1/c/[slug]/ideas/[id]/poll/route";
 import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
 import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route";
 import { GET as skillSearch } from "@/app/api/v1/skills/route";
@@ -788,6 +801,15 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         { value: 1 },
         "/ideas",
         "/vote",
+        false,
+      ],
+      [
+        "IDE-10 POST /c/alpha/ideas/{id}/poll (unknown idea -> 404 for members)",
+        ideasPoll,
+        "POST",
+        { option: 0 },
+        "/ideas",
+        "/poll",
         false,
       ],
       [
@@ -1528,6 +1550,94 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status),
     expect: Object.fromEntries(allPrincipals.map((p) => [p, 400])) as Record<Principal, Expected>,
   })),
+  {
+    op: "INV-01 GET /me/invite (my own code -> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(getInvite, { method: "GET", path: "/api/v1/me/invite", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "INV-02 POST /me/referral (an unknown code is ignored -> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(postReferral, {
+        method: "POST",
+        path: "/api/v1/me/referral",
+        json: { code: "zzzzzzzz" },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "FOL-01 PUT /me/follows/{stranger} (no such person -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(followPerson, {
+        method: "PUT",
+        path: `/api/v1/me/follows/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "FOL-01 DELETE /me/follows/{stranger} (no such person -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(unfollowPerson, {
+        method: "DELETE",
+        path: `/api/v1/me/follows/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "CHL-01 GET /challenges/current (-> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(getChallenge, { method: "GET", path: "/api/v1/challenges/current", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(200),
+  },
+  {
+    op: "CHL-02 PUT /challenges/current/entry (empty answer -> 400 for everyone signed in)",
+    call: (cookie) =>
+      call(answerChallenge, {
+        method: "PUT",
+        path: "/api/v1/challenges/current/entry",
+        json: { body: "" },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
+  },
+  {
+    op: "CHL-03 PUT /challenge-entries/{stranger}/applause (no such answer -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(applaudEntry, {
+        method: "PUT",
+        path: `/api/v1/challenge-entries/${id}/applause`,
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "CHL-03 DELETE /challenge-entries/{stranger}/applause (no such answer -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const id = randomUUID();
+      return call(unapplaudEntry, {
+        method: "DELETE",
+        path: `/api/v1/challenge-entries/${id}/applause`,
+        params: { id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
   {
     op: "RPT-05 GET /me/blocks (my own list -> 200 for everyone signed in)",
     call: (cookie) =>

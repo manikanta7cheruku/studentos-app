@@ -82,6 +82,12 @@ export function CreateSheet({
     },
   ];
 
+  // Turf, the Marketplace and Lost and found belong to one campus, so Global does not offer them.
+  const shown =
+    slug === "global"
+      ? choices.slice(0, 3).filter((choice) => !choice.href.includes("/turf/"))
+      : choices;
+
   const sheet = React.useRef<HTMLDivElement>(null);
   const drag = React.useRef<{ y: number; t: number; moved: number } | null>(null);
 
@@ -168,7 +174,7 @@ export function CreateSheet({
             </div>
           </div>
           <ul className="grid auto-rows-fr grid-cols-2 gap-2.5">
-            {choices.map((item, index) => (
+            {shown.map((item, index) => (
               <li
                 key={item.href}
                 className="sheet-tile"

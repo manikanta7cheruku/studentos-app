@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 // The private details (sex, birth year, number) come from the server only. Not needed for what these tests check.
+vi.mock("../../social/social.admin", () => ({
+  getContributions: async () => null,
+  getFollowInfo: async () => ({ followers: 0, following: 0, i_follow: false }),
+}));
 vi.mock("../profile-private.admin", () => ({
   getPrivate: async () => ({
     sex: null,

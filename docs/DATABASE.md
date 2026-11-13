@@ -245,6 +245,9 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261131000000_challenges_contributions.sql` | `challenge_entries`, `challenge_applause`, `challenge_*` functions, `profile_contributions` |
+| `20261130000000_buzz_polls_anonymous.sql` | `ideas.is_anonymous`, `poll_options`, `prompt_key`, `idea_comments.is_anonymous`, `idea_poll_votes`, `anon_alias`, `idea_poll_vote`; `idea_create`, `idea_comment_create`, `idea_json`, `idea_comment_json` rewritten |
+| `20261129000000_college_invites_follows.sql` | `profiles.college_name`, `branch`, `grad_year`; `user_invite_codes`, `referrals`, `invite_info`, `referral_apply`; `follows`, `follow_set`, `follow_info` |
 | `20261128000000_age_on_profile.sql` | `profile_private.age_public` (off by default), `profile_public_details` (gender and age for other people); `profile_private_get` and `_set` carry the key |
 | `20261127000000_gender_on_profile.sql` | `profile_private.sex_public` (off by default), `profile_public_gender`; `profile_private_get` and `_set` carry the new key |
 | `20261126000000_social_skills.sql` | social and working skills added to the `skills` catalog (Communication, Talkative, Leadership and others) |

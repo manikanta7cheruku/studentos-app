@@ -6,6 +6,7 @@ import { mapDbError } from "@/lib/db-error";
 import { toIso } from "@/lib/api";
 import { serverEnv } from "@/lib/env";
 import { getPrivate, setPrivate } from "./profile-private.admin";
+import { getContributions, getFollowInfo } from "../social/social.admin";
 
 export async function getMyProfile(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
@@ -32,7 +33,11 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     }
   }
 
-  const priv = await getPrivate(userId);
+  const [priv, contributions, follow] = await Promise.all([
+    getPrivate(userId),
+    getContributions(userId),
+    getFollowInfo(userId, userId),
+  ]);
   const interests: string[] = data.interests ?? [];
   const techInterests: string[] = data.tech_interests ?? [];
   return {
@@ -48,6 +53,12 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     career_goal: data.career_goal ?? null,
     visibility: (data.visibility as "college" | "hidden") ?? "college",
     portfolio_public: Boolean(data.portfolio_public),
+    college_name: (data.college_name as string | null) ?? null,
+    branch: (data.branch as string | null) ?? null,
+    grad_year: (data.grad_year as number | null) ?? null,
+    followers: follow.followers,
+    following: follow.following,
+    contributions,
     sex: priv.sex,
     sex_public: Boolean(priv.sex_public),
     age_public: Boolean(priv.age_public),
@@ -59,6 +70,9 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
       data.display_name?.trim() &&
       data.handle &&
       priv.sex &&
+      data.college_name &&
+      data.branch &&
+      data.grad_year &&
       interests.length + techInterests.length >= 1,
     ),
     created_at: toIso(data.created_at)!,
@@ -80,6 +94,9 @@ export async function updateMyProfile(
   if (patch.tech_interests !== undefined) updatePayload.tech_interests = patch.tech_interests;
   if (patch.excited_by !== undefined) updatePayload.excited_by = patch.excited_by;
   if (patch.career_goal !== undefined) updatePayload.career_goal = patch.career_goal;
+  if (patch.college_name !== undefined) updatePayload.college_name = patch.college_name;
+  if (patch.branch !== undefined) updatePayload.branch = patch.branch;
+  if (patch.grad_year !== undefined) updatePayload.grad_year = patch.grad_year;
   if (patch.visibility !== undefined) updatePayload.visibility = patch.visibility;
   if (patch.portfolio_public !== undefined) updatePayload.portfolio_public = patch.portfolio_public;
 

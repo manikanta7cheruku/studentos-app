@@ -11,6 +11,7 @@ import * as moderation from "./moderation";
 import * as opportunities from "./opportunities";
 import * as profile from "./profile";
 import * as setup from "./setup";
+import * as social from "./social";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 import * as venues from "./venues";
@@ -147,6 +148,30 @@ export const endpoints: Endpoint[] = [
   e("NTF-02", "POST", "/me/notifications/read", "ses", "Mark some or all as read", {
     body: engagement.notificationReadBody,
     response: engagement.notificationReadResponse,
+  }),
+  e("FOL-01", "PUT", "/me/follows/{userId}", "ses", "Follow a person", {
+    response: social.followResponse,
+  }),
+  e("FOL-01", "DELETE", "/me/follows/{userId}", "ses", "Stop following a person", {
+    response: social.followResponse,
+  }),
+  e("INV-01", "GET", "/me/invite", "ses", "My invite code", { response: social.inviteResponse }),
+  e("INV-02", "POST", "/me/referral", "ses", "I joined through an invite link", {
+    body: social.referralBody,
+    response: social.referralResponse,
+  }),
+  e("CHL-01", "GET", "/challenges/current", "ses", "This week's challenge and its answers", {
+    response: social.challengeCurrentResponse,
+  }),
+  e("CHL-02", "PUT", "/challenges/current/entry", "ses", "Answer this week's challenge", {
+    body: social.challengeEntryBody,
+    response: social.challengeEntryResponse,
+  }),
+  e("CHL-03", "PUT", "/challenge-entries/{id}/applause", "ses", "Applaud an answer", {
+    response: social.challengeEntryResponse,
+  }),
+  e("CHL-03", "DELETE", "/challenge-entries/{id}/applause", "ses", "Take my applause back", {
+    response: social.challengeEntryResponse,
   }),
   e("RPT-05", "GET", "/me/blocks", "ses", "The people I blocked", {
     response: engagement.blocksListResponse,
@@ -433,6 +458,10 @@ export const endpoints: Endpoint[] = [
   }),
   e("IDE-04", "PUT", "/c/{slug}/ideas/{id}/vote", "mem", "Vote on an idea (1, -1 or 0)", {
     body: ideas.ideaVoteBody,
+    response: ideas.ideaResponse,
+  }),
+  e("IDE-10", "POST", "/c/{slug}/ideas/{id}/poll", "mem", "Pick an option of a poll", {
+    body: ideas.ideaPollVoteBody,
     response: ideas.ideaResponse,
   }),
   e("IDE-05", "DELETE", "/c/{slug}/ideas/{id}", "mem", "Remove an idea (author or moderator)", {

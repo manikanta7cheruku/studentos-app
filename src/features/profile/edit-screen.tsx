@@ -27,6 +27,8 @@ import {
   PHONE_OK,
   PhoneFields,
   SexField,
+  StudyFields,
+  tidy,
   TECH_INTERESTS,
   normalisePhone,
   type Sex,
@@ -46,6 +48,9 @@ export function profileChanges(
     interests: string[];
     tech_interests?: string[];
     excited_by?: string;
+    college_name?: string;
+    branch?: string;
+    grad_year?: number | null;
     sex?: Sex | null;
     sex_public?: boolean;
     age_public?: boolean;
@@ -72,6 +77,12 @@ export function profileChanges(
   if (form.excited_by !== undefined && text(form.excited_by) !== saved.excited_by)
     patch.excited_by = text(form.excited_by);
   if (form.sex !== undefined && form.sex !== saved.sex) patch.sex = form.sex;
+  if (form.college_name !== undefined && tidy(form.college_name) !== (saved.college_name ?? ""))
+    patch.college_name = tidy(form.college_name) || null;
+  if (form.branch !== undefined && tidy(form.branch) !== (saved.branch ?? ""))
+    patch.branch = tidy(form.branch) || null;
+  if (form.grad_year !== undefined && form.grad_year !== saved.grad_year)
+    patch.grad_year = form.grad_year;
   if (form.age_public !== undefined && form.age_public !== saved.age_public)
     patch.age_public = form.age_public;
   if (form.sex_public !== undefined && form.sex_public !== saved.sex_public)
@@ -209,6 +220,9 @@ function EditForm({ saved }: { saved: Profile }) {
     interests: saved.interests,
     tech_interests: saved.tech_interests,
     excited_by: saved.excited_by ?? "",
+    college_name: saved.college_name ?? "",
+    branch: saved.branch ?? "",
+    grad_year: saved.grad_year,
     sex: saved.sex as Sex | null,
     sex_public: saved.sex_public,
     age_public: saved.age_public,
@@ -230,6 +244,9 @@ function EditForm({ saved }: { saved: Profile }) {
     if (!form.display_name.trim()) problems.display_name = "Enter the name classmates will see.";
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
+    if (tidy(form.college_name).length < 2) problems.college = "Type the name of your college.";
+    if (!tidy(form.branch)) problems.branch = "Pick your branch.";
+    if (!form.grad_year) problems.year = "Pick the year you graduate.";
     if (form.phone.trim() && !PHONE_OK.test(normalisePhone(form.phone)))
       problems.phone = "Use the form +919876543210.";
     setFields(problems);
@@ -312,6 +329,17 @@ function EditForm({ saved }: { saved: Profile }) {
             rows={2}
           />
         </FormField>
+      </Section>
+      <Section title="Your college" text="Shown on your profile.">
+        <StudyFields
+          college={form.college_name}
+          branch={form.branch}
+          year={form.grad_year}
+          onCollege={(next) => set("college_name", next)}
+          onBranch={(next) => set("branch", next)}
+          onYear={(next) => set("grad_year", next)}
+          errors={fields}
+        />
       </Section>
       <Section title="Interests" text="Pick a few. Add your own below each list.">
         <InterestChips

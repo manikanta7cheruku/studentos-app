@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
+import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
@@ -22,6 +23,8 @@ import {
   PHONE_OK,
   PhoneFields,
   SexField,
+  StudyFields,
+  tidy,
   TECH_INTERESTS,
   normalisePhone,
   type Sex,
@@ -52,13 +55,25 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
   const session = useSession();
   const mine = useLoad(() => api.profile.get(), []);
   const [step, setStep] = React.useState(0);
+  // A brand new person first sees why the app is worth it; someone only finishing their profile skips that.
+  const [intro, setIntro] = React.useState(true);
 
   if (session.status === "signed-out") {
     router.replace("/signin?next=%2Fwelcome");
     return null;
   }
 
-  const finish = () => {
+  const finish = async () => {
+    // Count the invitation (if the person came through a friend's link), once.
+    const code = takeReferral();
+    if (code) {
+      try {
+        await api.invite.apply(code);
+      } catch {
+        // The invitation is a nicety: never hold the person back for it.
+      }
+      clearReferral();
+    }
     // A full page load, not a soft move: the app then reads the finished profile fresh, so it can never think the tour is
     // still to do (a soft move could keep the old answer until a reload).
     window.location.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
@@ -96,6 +111,8 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
         <Banner variant="error">
           <p>We could not load your profile. Please reload the page.</p>
         </Banner>
+      ) : intro && !mine.data.handle ? (
+        <Why onStart={() => setIntro(false)} />
       ) : step === 0 ? (
         <AboutYou saved={mine.data} onDone={() => setStep(1)} />
       ) : step === 1 ? (
@@ -124,11 +141,64 @@ function StepTitle({ title, text }: { title: string; text: string }) {
   );
 }
 
+const WHY = [
+  {
+    title: "Find your people",
+    text: "Teammates for a project, a fourth for football, someone who knows the subject you are stuck on.",
+  },
+  {
+    title: "Ask and get real answers",
+    text: "Post a question or a poll. Students from your college and beyond answer, with your name or without.",
+  },
+  {
+    title: "Nothing sticks around",
+    text: "Messages disappear an hour after they are read. You choose what others see about you.",
+  },
+] as const;
+
+function Why({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="font-heading text-[2rem] font-extrabold leading-tight tracking-tight">
+          Welcome to <span className="text-brand">StudentOS</span>
+        </h1>
+        <p className="mt-2 text-[15px] text-ink-muted">
+          The place for students to meet, ask, plan and help each other. Here is why it is worth
+          your time.
+        </p>
+      </div>
+      <ul className="stagger flex flex-col gap-3">
+        {WHY.map((item, index) => (
+          <li key={item.title} className="glass-card flex gap-4 rounded-[22px] p-4">
+            <span className="bg-brand tabular inline-flex size-9 shrink-0 items-center justify-center rounded-xl font-heading text-[15px] font-extrabold text-white">
+              {index + 1}
+            </span>
+            <span>
+              <span className="block text-[16px] font-bold leading-tight">{item.title}</span>
+              <span className="mt-1 block text-[13.5px] leading-snug text-ink-muted">
+                {item.text}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Button size="lg" onClick={onStart}>
+        Get started
+      </Button>
+      <p className="text-center text-[12.5px] text-ink-muted">It takes about a minute.</p>
+    </div>
+  );
+}
+
 function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
   const [name, setName] = React.useState(saved.display_name);
   const [handle, setHandle] = React.useState(saved.handle ?? suggestHandle(saved.display_name));
   const [sex, setSex] = React.useState<Sex | null>(saved.sex);
   const [year, setYear] = React.useState<number | null>(saved.birth_year);
+  const [college, setCollege] = React.useState(saved.college_name ?? "");
+  const [branch, setBranch] = React.useState(saved.branch ?? "");
+  const [gradYear, setGradYear] = React.useState<number | null>(saved.grad_year);
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -142,6 +212,9 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     if (!HANDLE.test(clean))
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
     if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
+    if (tidy(college).length < 2) problems.college = "Type the name of your college.";
+    if (!tidy(branch)) problems.branch = "Pick your branch, or choose Other and type it.";
+    if (!gradYear) problems.year = "Pick the year you graduate.";
     setFields(problems);
     if (Object.keys(problems).length) return;
     setBusy(true);
@@ -152,6 +225,9 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         handle: clean,
         sex: sex!,
         birth_year: year,
+        college_name: tidy(college),
+        branch: tidy(branch),
+        grad_year: gradYear!,
       });
       onDone();
     } catch (caught) {
@@ -202,6 +278,15 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
           Private unless you choose to show it on your profile. It helps keep women-only plans safe.
         </p>
       </div>
+      <StudyFields
+        college={college}
+        branch={branch}
+        year={gradYear}
+        onCollege={setCollege}
+        onBranch={setBranch}
+        onYear={setGradYear}
+        errors={fields}
+      />
       <FormField label="Birth year" help="Optional and private. We only keep the year.">
         <BirthYearPicker value={year} onChange={setYear} />
       </FormField>
@@ -405,7 +490,7 @@ function Tour({ onDone }: { onDone: () => void }) {
     <div className="flex flex-col gap-5">
       <StepTitle
         title="You are in."
-        text="Here is what you can do. The + button is always there to start something."
+        text="Here is what you can do. The + button is always there to start something. Double tap it for shortcuts."
       />
       <ul className="flex flex-col gap-2.5">
         {TOUR.map((item) => (

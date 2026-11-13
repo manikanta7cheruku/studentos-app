@@ -16,6 +16,7 @@ import {
   type Venue,
 } from "@/lib/api/endpoints";
 import { CampusNotice } from "./campus-notice";
+import { DailyCards } from "./daily-cards";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -124,8 +125,8 @@ export function HomeScreen() {
     [],
   );
   const publicEvents = usePublicLoad(() => api.events.list(GLOBAL_SLUG, { when: "upcoming" }), []);
-  const publicVenues = usePublicLoad(() => api.venues.list(GLOBAL_SLUG), []);
 
+  const isGlobal = slug === GLOBAL_SLUG;
   const first = profile?.display_name.split(/\s+/)[0] ?? "there";
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -149,12 +150,11 @@ export function HomeScreen() {
       items.push({ kind: "plan", at: post.created_at, post, outside: true });
     for (const event of (publicEvents ?? []).slice(0, 8))
       items.push({ kind: "event", at: event.created_at, event, outside: true });
-    // Turf and courts sit with the plans: a place to play, and a way to book it.
-    if (venues.status === "ready")
+    // Turf and courts sit with the plans: a place to play, and a way to book it. Only in a college: a ground belongs to one
+    // campus, so Global has none and what is public does not show up here either.
+    if (!isGlobal && venues.status === "ready")
       for (const venue of venues.data.slice(0, 6))
         items.push({ kind: "venue", at: venue.created_at, venue, outside: false });
-    for (const venue of (publicVenues ?? []).slice(0, 4))
-      items.push({ kind: "venue", at: venue.created_at, venue, outside: true });
   }
   if (tab !== "plans" && ideas.status === "ready") {
     for (const idea of ideas.data.data)
@@ -164,7 +164,7 @@ export function HomeScreen() {
     for (const idea of publicIdeas?.data ?? [])
       items.push({ kind: "idea", at: idea.created_at, idea, outside: true });
   }
-  if (tab === "all") {
+  if (tab === "all" && !isGlobal) {
     for (const source of [market, lost]) {
       if (source.status === "ready")
         for (const post of source.data.data)
@@ -210,6 +210,8 @@ export function HomeScreen() {
       </header>
 
       <CampusNotice />
+
+      <DailyCards />
 
       <FinishProfile />
 

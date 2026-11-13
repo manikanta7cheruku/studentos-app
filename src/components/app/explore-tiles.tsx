@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CalendarDaysIcon, MapPinnedIcon, PackageSearchIcon, StoreIcon } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  MapPinnedIcon,
+  PackageSearchIcon,
+  StoreIcon,
+  TrophyIcon,
+} from "lucide-react";
 
 /** Three ways into the community boards: Events, Lost and found, and the Marketplace. */
 export function ExploreTiles({ slug }: { slug: string }) {
@@ -29,9 +35,22 @@ export function ExploreTiles({ slug }: { slug: string }) {
       icon: <StoreIcon />,
     },
   ];
+  // Turf, Lost and found and the Marketplace belong to one campus: Global shows Events and the weekly challenge instead.
+  const shown =
+    slug === "global"
+      ? [
+          tiles[0]!,
+          {
+            href: `/c/${slug}/challenges`,
+            title: "Challenge",
+            text: "This week's, for everyone",
+            icon: <TrophyIcon />,
+          },
+        ]
+      : tiles;
   return (
     <ul className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {tiles.map((tile) => (
+      {shown.map((tile) => (
         <li key={tile.href}>
           <Link
             href={tile.href}

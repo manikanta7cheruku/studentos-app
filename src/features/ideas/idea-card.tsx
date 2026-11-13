@@ -7,9 +7,11 @@ import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { OutsideBadge } from "@/components/app/outside-badge";
 import { api, type Idea, type IdeaTopic } from "@/lib/api/endpoints";
+import { promptByKey } from "@/lib/daily-prompts";
 import { timeAgo } from "@/lib/time-ago";
 import { useCollege } from "@/features/college";
 import { primeLoad } from "@/lib/use-load";
+import { IdeaPoll } from "./idea-poll";
 
 export const TOPIC_LABEL: Record<IdeaTopic, string> = {
   campus: "Campus life",
@@ -192,12 +194,18 @@ export function IdeaCard({
       <header className="flex items-center gap-2">
         <Avatar name={idea.author.display_name} size="xs" />
         <p className="flex min-w-0 flex-1 items-baseline gap-1.5 leading-tight">
-          <Link
-            href={`/c/${slug}/people/${idea.author.user_id}`}
-            className="relative z-10 max-w-[60%] shrink-0 truncate text-[13px] font-semibold hover:underline"
-          >
-            {idea.author.display_name}
-          </Link>
+          {idea.is_anonymous ? (
+            <span className="max-w-[60%] shrink-0 truncate text-[13px] font-semibold">
+              {idea.author.display_name}
+            </span>
+          ) : (
+            <Link
+              href={`/c/${slug}/people/${idea.author.user_id}`}
+              className="relative z-10 max-w-[60%] shrink-0 truncate text-[13px] font-semibold hover:underline"
+            >
+              {idea.author.display_name}
+            </Link>
+          )}
           <span className="min-w-0 truncate text-[12px] text-ink-muted">
             {idea.author.headline ? `· ${idea.author.headline} ` : ""}· {timeAgo(idea.created_at)}
           </span>
@@ -210,6 +218,11 @@ export function IdeaCard({
         ) : null}
       </header>
       <div>
+        {promptByKey(idea.prompt_key) ? (
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#b9b4ee]">
+            Question of the day
+          </p>
+        ) : null}
         {idea.title ? (
           <h2 className="text-balance text-[15px] font-bold leading-snug">
             {full ? (
@@ -240,6 +253,7 @@ export function IdeaCard({
           </p>
         ) : null}
       </div>
+      {idea.poll ? <IdeaPoll idea={idea} space={slug} onChange={onChange} /> : null}
       <footer className="relative z-10 flex items-center gap-1.5">
         <VoteButtons idea={idea} space={slug} onChange={onChange} />
         {full ? (

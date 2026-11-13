@@ -105,6 +105,13 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | RPT-03 | POST `/c/{slug}/admin/reports/{id}/action` | Dismiss/hide/warn/suspend | mod | P0 | ✓ | TC-RPT-03 |
 | RPT-04 | PUT/DELETE `/me/blocks/{user_id}` | Block/unblock | mem(1) | P1 | | TC-RPT-04 |
 | RPT-05 | GET `/me/blocks` | The people I blocked | ses | P1 | | TC-RPT-05 |
+| FOL-01 | PUT/DELETE `/me/follows/{user_id}` | Follow, stop following | ses | P2 | | TC-FOL-01 |
+| INV-01 | GET `/me/invite` | My invite code | ses | P2 | | TC-INV-01 |
+| INV-02 | POST `/me/referral` | I joined through a link | ses | P2 | | TC-INV-02 |
+| CHL-01 | GET `/challenges/current` | This week's challenge | ses | P2 | | TC-CHL-01 |
+| CHL-02 | PUT `/challenges/current/entry` | Answer it | ses | P2 | | TC-CHL-02 |
+| CHL-03 | PUT/DELETE `/challenge-entries/{id}/applause` | Applaud | ses | P2 | | TC-CHL-03 |
+| IDE-10 | POST `/c/{slug}/ideas/{id}/poll` | Pick a poll option | mem(1) | P2 | | TC-IDE-10 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
 | ADM-02 | PATCH `/platform/colleges/{id}` | Status/branding (suspend) | plat | P0 | | TC-ADM-02 |
 | ADM-03 | GET/PATCH `/c/{slug}/admin/settings` | Tenant settings & flags | adm | P0 | | TC-ADM-03 |
@@ -481,4 +488,22 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 **Disappearing messages:** a message is deleted 1 hour after the other person opens it, or 3 days after it was sent if it is never opened. Only text is allowed. Nothing else is stored.
 
 **Notifications:** one new type. `dm.received` tells a person that someone sent them a message (payload has `from`). It is sent for the first unopened message of a conversation only, so a flood stays quiet.
+
+## 16. Following, invites, challenges, polls and anonymous posts (R3-D27 to D-29)
+
+| ID | Request | Notes |
+|---|---|---|
+| FOL-01 | PUT / DELETE `/api/v1/me/follows/{userId}` | Follow, or stop following. One way, no approval. Safe to repeat. 400 for yourself, 404 for someone who does not exist or blocked you. Answers `{ followers, following, i_follow }` |
+| INV-01 | GET `/api/v1/me/invite` | `{ code, invited }`. The code (8 letters and numbers) is made the first time. An invite link is `/?ref=<code>` |
+| INV-02 | POST `/api/v1/me/referral` | `{ code }`. Records once that I joined through that code, never for myself. An unknown code is ignored: `{ applied: false }` |
+| CHL-01 | GET `/api/v1/challenges/current` | This week's challenge (same for everybody, ISO week, UTC) with `entries` (most applauded first, up to 30, people I blocked left out), `my_entry` and `completed` |
+| CHL-02 | PUT `/api/v1/challenges/current/entry` | `{ body }` 1 to 300. One answer a week: answering again changes it. Needs an active membership, Global included |
+| CHL-03 | PUT / DELETE `/api/v1/challenge-entries/{id}/applause` | Applaud an answer, or take it back. 400 for your own, 404 for an unknown one |
+| IDE-10 | POST `/api/v1/c/{slug}/ideas/{id}/poll` | `{ option }` 0 to 3. Picking again changes the pick. 404 when the buzz has no poll, 400 for an option that does not exist. Answers with the idea |
+
+**Profile:** `college_name`, `branch` and `grad_year` are required for the welcome tour (`onboarded`). Anyone who can see a profile sees them. The profile of a person also has `followers`, `following`, `i_follow` and `contributions` (buzz, replies, plans, events, upvotes, challenges, invited). Anonymous posts never count.
+
+**Anonymous posts (IDE-01, IDE-06):** `anonymous: true` hides the author. Other people see `Anonymous <animal>` (the same animal for the same person inside one buzz) and a nil user id. The author and moderators can still be found in the database. `is_anonymous` is on the idea and the comment.
+
+**Polls (IDE-01):** `poll` is 2 to 4 options of 1 to 40 characters. The idea then has `poll: { options: [{ text, votes }], my_option, total }`. `prompt_key` (q0, q1, ...) marks a buzz that answers the question of the day (the list is in `src/lib/daily-prompts.ts`).
 

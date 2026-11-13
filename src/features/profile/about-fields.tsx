@@ -309,3 +309,142 @@ export function PhoneFields({
     </div>
   );
 }
+
+export const BRANCHES = [
+  "CSE",
+  "IT",
+  "AI & DS",
+  "ECE",
+  "EEE",
+  "Mechanical",
+  "Civil",
+  "MBA",
+  "BCA / MCA",
+  "B.Sc",
+  "B.Com / BBA",
+] as const;
+
+/** Graduation years to pick from: last year (for people finishing) to five years ahead. */
+export function gradYears(): number[] {
+  const year = new Date().getFullYear();
+  return Array.from({ length: 7 }, (_, index) => year - 1 + index);
+}
+
+export const tidy = (text: string) => text.replace(/\s+/g, " ").trim();
+
+/**
+ * Where I study: the college (typed), the branch (a chip, or my own) and the year I graduate (a chip). All three are required.
+ * Typed because Global is open to everybody, so this is how people tell where each other come from.
+ */
+export function StudyFields({
+  college,
+  branch,
+  year,
+  onCollege,
+  onBranch,
+  onYear,
+  errors = {},
+}: {
+  college: string;
+  branch: string;
+  year: number | null;
+  onCollege: (value: string) => void;
+  onBranch: (value: string) => void;
+  onYear: (value: number) => void;
+  errors?: Record<string, string | undefined>;
+}) {
+  const known = (BRANCHES as readonly string[]).includes(branch);
+  const [other, setOther] = React.useState(branch !== "" && !known);
+  const chip =
+    "inline-flex h-9 shrink-0 items-center rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95";
+  const on = "bg-brand border-transparent text-white";
+  const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
+  const collegeId = React.useId();
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={collegeId} className="text-[13px] font-semibold text-ink/90">
+          College <span className="font-normal text-ink-muted">(required)</span>
+        </label>
+        <Input
+          id={collegeId}
+          value={college}
+          onChange={(event) => onCollege(event.target.value)}
+          maxLength={120}
+          autoComplete="organization"
+          placeholder="Type your college name"
+          aria-invalid={errors.college ? true : undefined}
+        />
+        <p className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}>
+          {errors.college ?? "Shown on your profile so people know where you are from."}
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className="text-[13px] font-semibold text-ink/90">
+          Branch <span className="font-normal text-ink-muted">(required)</span>
+        </p>
+        <div role="group" aria-label="Branch" className="flex flex-wrap gap-2">
+          {BRANCHES.map((name) => (
+            <button
+              key={name}
+              type="button"
+              aria-pressed={branch === name && !other}
+              onClick={() => {
+                setOther(false);
+                onBranch(name);
+              }}
+              className={cn(chip, branch === name && !other ? on : off)}
+            >
+              {name}
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-pressed={other}
+            onClick={() => {
+              setOther(true);
+              if (known) onBranch("");
+            }}
+            className={cn(chip, other ? on : off)}
+          >
+            Other
+          </button>
+        </div>
+        {other ? (
+          <Input
+            aria-label="Your branch"
+            value={branch}
+            onChange={(event) => onBranch(event.target.value)}
+            maxLength={60}
+            placeholder="Your branch or course"
+            autoFocus
+          />
+        ) : null}
+        {errors.branch ? (
+          <p className="text-[12.5px] font-medium text-danger">{errors.branch}</p>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className="text-[13px] font-semibold text-ink/90">
+          Graduating in <span className="font-normal text-ink-muted">(required)</span>
+        </p>
+        <div role="group" aria-label="Graduating in" className="flex flex-wrap gap-2">
+          {gradYears().map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={year === value}
+              onClick={() => onYear(value)}
+              className={cn(chip, "tabular", year === value ? on : off)}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+        {errors.year ? (
+          <p className="text-[12.5px] font-medium text-danger">{errors.year}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}

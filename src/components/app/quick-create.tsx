@@ -8,6 +8,7 @@ import {
   InboxIcon,
   MessageCircleIcon,
   MessageSquareHeartIcon,
+  TrophyIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { cn } from "cn";
@@ -210,6 +211,12 @@ function ShortcutList({
       count: unread,
     },
     {
+      href: `/c/${slug}/challenges`,
+      title: "Weekly challenge",
+      icon: <TrophyIcon aria-hidden="true" />,
+      count: 0,
+    },
+    {
       href: `/c/${slug}/people`,
       title: "People",
       icon: <UsersRoundIcon aria-hidden="true" />,
@@ -223,7 +230,7 @@ function ShortcutList({
     },
   ];
   // The pills lean back along an arc, so the stack reads as a fan growing out of the button.
-  const lean = [0, 8, 16, 22, 26];
+  const lean = [0, 6, 12, 18, 22, 24];
   return (
     <ul className="flex flex-col items-end gap-2.5 md:items-start">
       {[...items].reverse().map((item, reversed) => {

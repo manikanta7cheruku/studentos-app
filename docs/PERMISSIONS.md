@@ -33,6 +33,14 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | NTF-01 | GET | /me/notifications | ses | none |
 | NTF-02 | POST | /me/notifications/read | ses | write limit |
 | RPT-05 | GET | /me/blocks | ses | read limit |
+| FOL-01 | PUT | /me/follows/{userId} | ses | write limit |
+| FOL-01 | DELETE | /me/follows/{userId} | ses | write limit |
+| INV-01 | GET | /me/invite | ses | read limit |
+| INV-02 | POST | /me/referral | ses | write limit |
+| CHL-01 | GET | /challenges/current | ses | read limit |
+| CHL-02 | PUT | /challenges/current/entry | ses | write limit |
+| CHL-03 | PUT | /challenge-entries/{id}/applause | ses | write limit |
+| CHL-03 | DELETE | /challenge-entries/{id}/applause | ses | write limit |
 | RPT-04 | PUT | /me/blocks/{userId} | ses | write limit |
 | RPT-04 | DELETE | /me/blocks/{userId} | ses | write limit |
 | WL-01 | POST | /waitlist | pub | 5/h per IP |
@@ -97,6 +105,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | IDE-06 | POST | /c/{slug}/ideas/{id}/comments | mem | write limit, 40 an hour |
 | IDE-07 | GET | /c/{slug}/ideas/{id}/comments | mem | read limit |
 | IDE-08 | DELETE | /c/{slug}/ideas/{id}/comments/{commentId} | mem | author, or moderator and admin |
+| IDE-10 | POST | /c/{slug}/ideas/{id}/poll | mem | write limit |
 | IDE-09 | PUT | /c/{slug}/ideas/{id}/comments/{commentId}/vote | mem | write limit |
 | MSG-01 | GET | /c/{slug}/messages | mem | read limit, my own conversations |
 | MSG-02 | GET | /c/{slug}/messages/{userId} | mem | read limit, both people active members and not blocked |

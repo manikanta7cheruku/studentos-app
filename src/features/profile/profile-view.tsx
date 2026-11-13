@@ -2,6 +2,7 @@ import * as React from "react";
 import { ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
+import { badgesFor, type Counts } from "./badges";
 import { Chip, levelLabel } from "./skill-level";
 
 export type ProfileViewData = {
@@ -18,8 +19,12 @@ export type ProfileViewData = {
   /** Age in years. Only set when the person chose to show it. */
   age?: number | null;
   career_goal: string | null;
+  college_name?: string | null;
   program?: string | null;
   grad_year?: number | null;
+  followers?: number;
+  following?: number;
+  contributions?: Counts | null;
   skills: { name: string; level: number; evidence_url?: string | null }[];
 };
 
@@ -104,12 +109,17 @@ export function ProfileView({
   person: ProfileViewData;
   actions?: React.ReactNode;
 }) {
-  const meta = [
-    person.gender ? GENDER_LABEL[person.gender] : null,
-    person.age ? `${person.age} years` : null,
+  const education = [
+    person.college_name,
     person.program,
     person.grad_year ? `Class of ${person.grad_year}` : null,
   ].filter(Boolean);
+  const meta = [
+    person.gender ? GENDER_LABEL[person.gender] : null,
+    person.age ? `${person.age} years` : null,
+  ].filter(Boolean);
+  const counts = person.contributions ?? null;
+  const badges = counts ? badgesFor(counts) : [];
   return (
     <article className="flex flex-col gap-4">
       <header className="glass-card relative overflow-hidden rounded-[28px]">
@@ -132,8 +142,19 @@ export function ProfileView({
                 {person.headline}
               </p>
             ) : null}
+            {education.length ? (
+              <p className="mt-1.5 text-[13.5px] font-medium text-ink/85">
+                {education.join(" · ")}
+              </p>
+            ) : null}
             {meta.length ? (
-              <p className="mt-1.5 text-[13.5px] text-ink-muted">{meta.join(" · ")}</p>
+              <p className="mt-0.5 text-[13px] text-ink-muted">{meta.join(" · ")}</p>
+            ) : null}
+            {person.followers !== undefined ? (
+              <p className="tabular mt-2 text-[13px] text-ink-muted">
+                <b className="text-ink">{person.followers}</b> followers ·{" "}
+                <b className="text-ink">{person.following ?? 0}</b> following
+              </p>
             ) : null}
           </div>
           {actions ? (
@@ -162,6 +183,47 @@ export function ProfileView({
         {person.career_goal ? (
           <Section title="Career goal">
             <p className="max-w-prose text-[15px] leading-relaxed">{person.career_goal}</p>
+          </Section>
+        ) : null}
+        {counts &&
+        (counts.buzz ||
+          counts.replies ||
+          counts.plans ||
+          counts.events ||
+          counts.upvotes ||
+          counts.challenges ||
+          counts.invited) ? (
+          <Section title="Contributions">
+            <dl className="grid grid-cols-4 gap-y-3 text-center">
+              {(
+                [
+                  ["Buzz", counts.buzz],
+                  ["Replies", counts.replies],
+                  ["Upvotes", counts.upvotes],
+                  ["Challenges", counts.challenges],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <dd className="tabular font-heading text-[1.35rem] font-extrabold leading-none">
+                    {value}
+                  </dd>
+                  <dt className="mt-1 text-[11.5px] text-ink-muted">{label}</dt>
+                </div>
+              ))}
+            </dl>
+            {badges.length ? (
+              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Badges">
+                {badges.map((badge) => (
+                  <li
+                    key={badge.key}
+                    title={badge.text}
+                    className="inline-flex h-8 items-center rounded-full border border-[#8f86f0]/40 bg-[#8f86f0]/15 px-3 text-[12.5px] font-semibold"
+                  >
+                    {badge.label}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </Section>
         ) : null}
         {person.skills.length ? (

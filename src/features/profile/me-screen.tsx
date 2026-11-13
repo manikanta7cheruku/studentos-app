@@ -15,6 +15,8 @@ import {
   MessageSquareHeartIcon,
   MapPinnedIcon,
   ShieldCheckIcon,
+  TrophyIcon,
+  UserPlusIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -123,26 +125,43 @@ function MoreMenu() {
       icon: <CalendarDaysIcon />,
     },
     {
-      href: `/c/${slug}/turf`,
-      label: "Turf and courts",
-      text: "Book a ground, find players",
-      icon: <MapPinnedIcon />,
+      href: `/c/${slug}/challenges`,
+      label: "Weekly challenge",
+      text: "Do it, earn a badge",
+      icon: <TrophyIcon />,
     },
-    {
-      href: `/c/${slug}/lost-found`,
-      label: "Lost and found",
-      text: "Lost it? Found it?",
-      icon: <PackageSearchIcon />,
-    },
-    {
-      href: `/c/${slug}/market`,
-      label: "Marketplace",
-      text: "Buy, sell, rent, free",
-      icon: <StoreIcon />,
-    },
+    // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
+    ...(slug !== "global"
+      ? [
+          {
+            href: `/c/${slug}/turf`,
+            label: "Turf and courts",
+            text: "Book a ground, find players",
+            icon: <MapPinnedIcon />,
+          },
+          {
+            href: `/c/${slug}/lost-found`,
+            label: "Lost and found",
+            text: "Lost it? Found it?",
+            icon: <PackageSearchIcon />,
+          },
+          {
+            href: `/c/${slug}/market`,
+            label: "Marketplace",
+            text: "Buy, sell, rent, free",
+            icon: <StoreIcon />,
+          },
+        ]
+      : []),
     { href: `/c/${slug}/career`, label: "Careers", text: "Coming soon", icon: <BriefcaseIcon /> },
   ];
   const account: MoreRow[] = [
+    {
+      href: `/c/${slug}/me/settings#invite`,
+      label: "Invite friends",
+      text: "Share your link",
+      icon: <UserPlusIcon />,
+    },
     {
       href: `/c/${slug}/feedback`,
       label: "Send feedback",
@@ -187,6 +206,7 @@ export function MeScreen() {
           <ProfileView
             person={{
               ...state.data.profile,
+              program: state.data.profile.branch,
               gender: state.data.profile.sex_public ? state.data.profile.sex : null,
               age:
                 state.data.profile.age_public && state.data.profile.birth_year

@@ -37,6 +37,10 @@ export type AdminAnnouncement = Data<typeof c.adminAnnouncementListResponse>[num
 export type AdminOpportunity = Data<typeof c.adminOpportunityListResponse>[number];
 export type Report = Data<typeof c.reportQueueResponse>[number];
 export type Idea = Data<typeof c.ideaListResponse>[number];
+export type IdeaPoll = NonNullable<Idea["poll"]>;
+export type Contributions = NonNullable<Profile["contributions"]>;
+export type ChallengeCurrent = Data<typeof c.challengeCurrentResponse>;
+export type ChallengeEntry = Data<typeof c.challengeEntryResponse>;
 export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
@@ -234,6 +238,40 @@ export const api = {
         schema: c.eventResponse.shape.data,
       }),
   },
+  follows: {
+    set: (userId: string, on: boolean) =>
+      apiClient(j(`/me/follows/${userId}`), {
+        method: on ? "PUT" : "DELETE",
+        schema: c.followResponse.shape.data,
+      }),
+  },
+
+  invite: {
+    get: () => apiClient(j("/me/invite"), { schema: c.inviteResponse.shape.data }),
+    apply: (code: string) =>
+      apiClient(j("/me/referral"), {
+        method: "POST",
+        body: { code },
+        schema: c.referralResponse.shape.data,
+      }),
+  },
+
+  challenges: {
+    current: () =>
+      apiClient(j("/challenges/current"), { schema: c.challengeCurrentResponse.shape.data }),
+    answer: (body: string) =>
+      apiClient(j("/challenges/current/entry"), {
+        method: "PUT",
+        body: { body },
+        schema: c.challengeEntryResponse.shape.data,
+      }),
+    applaud: (id: string, on: boolean) =>
+      apiClient(j(`/challenge-entries/${id}/applause`), {
+        method: on ? "PUT" : "DELETE",
+        schema: c.challengeEntryResponse.shape.data,
+      }),
+  },
+
   blocks: {
     list: () => apiClient(j("/me/blocks"), { schema: c.blocksListResponse.shape.data }),
     unblock: (userId: string) =>
@@ -449,7 +487,7 @@ export const api = {
     comment: (
       slug: string,
       id: string,
-      body: { body: string; parent_id?: string | null },
+      body: { body: string; parent_id?: string | null; anonymous?: boolean },
       key?: string,
     ) =>
       apiClient(j(`/c/${slug}/ideas/${id}/comments`), {
@@ -457,6 +495,12 @@ export const api = {
         body,
         idempotent: key ?? true,
         schema: c.ideaCommentResponse.shape.data,
+      }),
+    pollVote: (slug: string, id: string, option: number) =>
+      apiClient(j(`/c/${slug}/ideas/${id}/poll`), {
+        method: "POST",
+        body: { option },
+        schema: c.ideaResponse.shape.data,
       }),
     removeComment: (slug: string, id: string, commentId: string) =>
       apiClient(j(`/c/${slug}/ideas/${id}/comments/${commentId}`), {

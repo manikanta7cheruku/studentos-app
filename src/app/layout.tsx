@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { MSWProvider } from "@/mocks";
 import { OfflineBanner } from "@/components/app/offline-banner";
+import { ReferralCapture } from "@/features/auth/referral-capture";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
     <html lang="en" className={`${bricolage.variable} ${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <OfflineBanner />
+        <ReferralCapture />
         <MSWProvider>{children}</MSWProvider>
       </body>
     </html>

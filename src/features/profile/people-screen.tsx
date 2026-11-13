@@ -247,10 +247,48 @@ async function blockThem(userId: string, say: (text: string) => void) {
   }
 }
 
+function FollowButton({
+  userId,
+  initial,
+  onCounts,
+}: {
+  userId: string;
+  initial: boolean;
+  onCounts: (counts: { followers: number }) => void;
+}) {
+  const [following, setFollowing] = React.useState(initial);
+  const [busy, setBusy] = React.useState(false);
+  async function toggle() {
+    if (busy) return;
+    const next = !following;
+    setBusy(true);
+    setFollowing(next);
+    try {
+      const info = await api.follows.set(userId, next);
+      onCounts({ followers: info.followers });
+    } catch {
+      setFollowing(!next);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Button
+      variant={following ? "outline" : "default"}
+      onClick={() => void toggle()}
+      aria-pressed={following}
+    >
+      {following ? "Following" : "Follow"}
+    </Button>
+  );
+}
+
 export function PersonScreen({ userId }: { userId: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.people.one(slug, userId), [slug, userId]);
   const [note, setNote] = React.useState("");
+  // The follower count changes at once when I follow or stop following.
+  const [counts, setCounts] = React.useState<{ followers: number } | null>(null);
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <Link
@@ -283,11 +321,19 @@ export function PersonScreen({ userId }: { userId: string }) {
             </p>
           ) : null}
           <ProfileView
-            person={state.data}
+            person={{
+              ...state.data,
+              followers: counts?.followers ?? state.data.followers,
+            }}
             actions={
               state.data.is_self ? undefined : (
                 <>
-                  <Button asChild>
+                  <FollowButton
+                    userId={state.data.user_id}
+                    initial={state.data.i_follow}
+                    onCounts={(counts) => setCounts(counts)}
+                  />
+                  <Button asChild variant="outline">
                     <Link href={`/c/${slug}/messages/${state.data.user_id}`}>Message</Link>
                   </Button>
                   <ReportMenu
