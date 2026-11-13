@@ -136,9 +136,9 @@ export function ProfileView({
         {/* A soft colour behind the picture, so the top is not flat. */}
         <div
           aria-hidden="true"
-          className="bg-brand h-24 opacity-70 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(143,134,240,0.5)_0%,rgba(143,134,240,0.28)_30%,rgba(224,134,106,0.12)_60%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.6)_40%,rgba(0,0,0,0.2)_75%,transparent_100%)]"
         />
-        <div className="-mt-12 flex flex-col items-center gap-3 px-5 pb-6 text-center sm:items-start sm:text-left">
+        <div className="relative flex flex-col items-center gap-3 px-5 pt-10 pb-6 text-center sm:items-start sm:text-left">
           <span className="rounded-full p-1 ring-4 ring-[#0b0b10]/60">
             <Avatar name={person.display_name} src={person.avatar_url} size="xl" />
           </span>
