@@ -8,7 +8,7 @@ import {
   InboxIcon,
   MessageCircleIcon,
   MessageSquareHeartIcon,
-  TrophyIcon,
+  ScaleIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { cn } from "cn";
@@ -211,9 +211,9 @@ function ShortcutList({
       count: unread,
     },
     {
-      href: `/c/${slug}/challenges`,
-      title: "Weekly challenge",
-      icon: <TrophyIcon aria-hidden="true" />,
+      href: `/c/${slug}/debates`,
+      title: "Debates",
+      icon: <ScaleIcon aria-hidden="true" />,
       count: 0,
     },
     {

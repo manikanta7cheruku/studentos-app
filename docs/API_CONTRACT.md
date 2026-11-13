@@ -108,10 +108,18 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | FOL-01 | PUT/DELETE `/me/follows/{user_id}` | Follow, stop following | ses | P2 | | TC-FOL-01 |
 | INV-01 | GET `/me/invite` | My invite code | ses | P2 | | TC-INV-01 |
 | INV-02 | POST `/me/referral` | I joined through a link | ses | P2 | | TC-INV-02 |
-| CHL-01 | GET `/challenges/current` | This week's challenge | ses | P2 | | TC-CHL-01 |
-| CHL-02 | PUT `/challenges/current/entry` | Answer it | ses | P2 | | TC-CHL-02 |
-| CHL-03 | PUT/DELETE `/challenge-entries/{id}/applause` | Applaud | ses | P2 | | TC-CHL-03 |
 | IDE-10 | POST `/c/{slug}/ideas/{id}/poll` | Pick a poll option | mem(1) | P2 | | TC-IDE-10 |
+| DEB-01 | POST `/c/{slug}/debates` | Start a debate | mem(1) | P2 | | TC-DEB-01 |
+| DEB-02 | GET `/c/{slug}/debates` | List debates | mem(1) | P2 | | TC-DEB-02 |
+| DEB-03 | GET `/c/{slug}/debates/{id}` | One debate | mem(1) | P2 | | TC-DEB-03 |
+| DEB-04 | PUT `/c/{slug}/debates/{id}/side` | Join a side | mem(1) | P2 | | TC-DEB-04 |
+| DEB-05 | POST `/c/{slug}/debates/{id}/arguments` | Post an argument | mem(1) | P2 | | TC-DEB-05 |
+| DEB-06 | GET `/c/{slug}/debates/{id}/arguments` | The arguments | mem(1) | P2 | | TC-DEB-06 |
+| DEB-07 | PUT `/c/{slug}/debates/{id}/arguments/{argId}/vote` | A strong point | mem(1) | P2 | | TC-DEB-07 |
+| DEB-08 | DELETE `/c/{slug}/debates/{id}` | Remove a debate | mem(1) | P2 | | TC-DEB-08 |
+| DEB-09 | DELETE `/c/{slug}/debates/{id}/arguments/{argId}` | Remove an argument | mem(1) | P2 | | TC-DEB-09 |
+| FOL-02 | GET `/me/connections` | My followers, or who I follow | ses | P2 | | TC-FOL-02 |
+| COL-02 | GET `/colleges/suggest` | College names to pick from | ses | P2 | | TC-COL-02 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
 | ADM-02 | PATCH `/platform/colleges/{id}` | Status/branding (suspend) | plat | P0 | | TC-ADM-02 |
 | ADM-03 | GET/PATCH `/c/{slug}/admin/settings` | Tenant settings & flags | adm | P0 | | TC-ADM-03 |
@@ -489,21 +497,28 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 
 **Notifications:** one new type. `dm.received` tells a person that someone sent them a message (payload has `from`). It is sent for the first unopened message of a conversation only, so a flood stays quiet.
 
-## 16. Following, invites, challenges, polls and anonymous posts (R3-D27 to D-29)
+## 16. Following, invites, debates, polls and anonymous posts (R3-D27 to D-32)
 
 | ID | Request | Notes |
 |---|---|---|
-| FOL-01 | PUT / DELETE `/api/v1/me/follows/{userId}` | Follow, or stop following. One way, no approval. Safe to repeat. 400 for yourself, 404 for someone who does not exist or blocked you. Answers `{ followers, following, i_follow }` |
+| FOL-01 | PUT / DELETE `/api/v1/me/follows/{userId}` | Follow, or stop following. One way, no approval. Safe to repeat. 400 for yourself, 404 for someone who does not exist or blocked you. Answers `{ followers, following, i_follow }` (the counts are of the person asking, who is the only one who may see them) |
+| FOL-02 | GET `/api/v1/me/connections?kind=followers|following` | My followers, or the people I follow. Only my own lists: nobody else sees who follows whom, and another person's profile has no follower counts, only `i_follow` |
+| COL-02 | GET `/api/v1/colleges/suggest?q=` | College names that already exist (colleges on the platform, then what other people typed). 2 letters or more, at most 8 |
 | INV-01 | GET `/api/v1/me/invite` | `{ code, invited }`. The code (8 letters and numbers) is made the first time. An invite link is `/?ref=<code>` |
 | INV-02 | POST `/api/v1/me/referral` | `{ code }`. Records once that I joined through that code, never for myself. An unknown code is ignored: `{ applied: false }` |
-| CHL-01 | GET `/api/v1/challenges/current` | This week's challenge (same for everybody, ISO week, UTC) with `entries` (most applauded first, up to 30, people I blocked left out), `my_entry` and `completed` |
-| CHL-02 | PUT `/api/v1/challenges/current/entry` | `{ body }` 1 to 300. One answer a week: answering again changes it. Needs an active membership, Global included |
-| CHL-03 | PUT / DELETE `/api/v1/challenge-entries/{id}/applause` | Applaud an answer, or take it back. 400 for your own, 404 for an unknown one |
 | IDE-10 | POST `/api/v1/c/{slug}/ideas/{id}/poll` | `{ option }` 0 to 3. Picking again changes the pick. 404 when the buzz has no poll, 400 for an option that does not exist. Answers with the idea |
+| DEB-01 | POST `/api/v1/c/{slug}/debates` | IDEM. `title` 5 to 140, optional `body` up to 600, `topic` (movies, sports, tech, campus, politics, music, food, other), two different sides of 1 to 30 characters, `hours` 1, 6, 24, 72 or 168. 201 with the debate. 429 at 3 a day |
+| DEB-02 | GET `/api/v1/c/{slug}/debates?status=live|ended|all&topic=&limit=&cursor=` | Newest first with a cursor. Removed debates, people who left and blocked people never appear |
+| DEB-03 | GET `/api/v1/c/{slug}/debates/{id}` | One debate: `a_count`, `b_count`, `my_side`, `ended`, `ends_at`. It closes by itself when `ends_at` passes (worked out from the clock, nothing runs). The side with more people wins (equal is a tie) |
+| DEB-04 | PUT `/api/v1/c/{slug}/debates/{id}/side` | `{ side: 0 | 1 }`. Join a side or change it while live. 409 after the end |
+| DEB-05 | POST `/api/v1/c/{slug}/debates/{id}/arguments` | IDEM. `body` 1 to 600, `anonymous`. Goes under my side: 400 when I have none, 409 after the end, 429 at 30 an hour |
+| DEB-06 | GET `/api/v1/c/{slug}/debates/{id}/arguments` | The strongest first, all in one answer. People I blocked are left out |
+| DEB-07 | PUT `/api/v1/c/{slug}/debates/{id}/arguments/{argId}/vote` | `{ value: 1 | 0 }`. A strong point, or take it back. Not your own (400). 409 after the end |
+| DEB-08 | DELETE `/api/v1/c/{slug}/debates/{id}` | The author, or a moderator or admin (audit logged) |
+| DEB-09 | DELETE `/api/v1/c/{slug}/debates/{id}/arguments/{argId}` | The author, or a moderator or admin (audit logged) |
 
-**Profile:** `college_name`, `branch` and `grad_year` are required for the welcome tour (`onboarded`). Anyone who can see a profile sees them. The profile of a person also has `followers`, `following`, `i_follow` and `contributions` (buzz, replies, plans, events, upvotes, challenges, invited). Anonymous posts never count.
+**Profile:** `college_name` and `grad_year` are required for the welcome tour (`onboarded`); `branch` is optional. `college_name` is refused when it is plainly not a name (see `src/lib/college-name.ts`: too short, mostly symbols, repeated letters, keyboard runs, words like test or none). Anyone who can see a profile sees them. A person's own profile has `followers`, `following` and `contributions` (buzz, replies, plans, events, upvotes, debates, invited). Another person's profile has `i_follow` and `contributions` but never follower counts. Anonymous posts never count.
 
-**Anonymous posts (IDE-01, IDE-06):** `anonymous: true` hides the author. Other people see `Anonymous <animal>` (the same animal for the same person inside one buzz) and a nil user id. The author and moderators can still be found in the database. `is_anonymous` is on the idea and the comment.
+**Anonymous posts (IDE-01, IDE-06, DEB-05):** `anonymous: true` hides the author. Other people see `Anonymous <animal>` (the same animal for the same person inside one buzz or debate) and a nil user id. The author and moderators can still be found in the database. `is_anonymous` is on the idea, the comment and the argument.
 
 **Polls (IDE-01):** `poll` is 2 to 4 options of 1 to 40 characters. The idea then has `poll: { options: [{ text, votes }], my_option, total }`. `prompt_key` (q0, q1, ...) marks a buzz that answers the question of the day (the list is in `src/lib/daily-prompts.ts`).
-

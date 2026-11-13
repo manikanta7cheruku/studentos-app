@@ -73,7 +73,7 @@ function Details({ user, thisYear }: { user: OwnerUserFull; thisYear: number }) 
             ["Plans", user.counts.plans],
             ["Events", user.counts.events],
             ["Upvotes", user.counts.upvotes],
-            ["Challenges", user.counts.challenges],
+            ["Debates", user.counts.debates],
             ["Invited", user.counts.invited],
             ["Followers", user.counts.followers],
           ] as const

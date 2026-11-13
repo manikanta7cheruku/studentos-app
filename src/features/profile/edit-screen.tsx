@@ -17,6 +17,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type Profile } from "@/lib/api/endpoints";
+import { collegeNameProblem } from "@/lib/college-name";
 import { compressImage } from "@/lib/compress-image";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
@@ -244,7 +245,9 @@ function EditForm({ saved }: { saved: Profile }) {
     if (!form.display_name.trim()) problems.display_name = "Enter the name classmates will see.";
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
-    if (tidy(form.college_name).length < 2) problems.college = "Type the name of your college.";
+    const collegeProblem = collegeNameProblem(form.college_name);
+    if (!tidy(form.college_name)) problems.college = "Type the name of your college.";
+    else if (collegeProblem) problems.college = collegeProblem;
     if (!form.grad_year) problems.year = "Pick the year you graduate.";
     if (form.phone.trim() && !PHONE_OK.test(normalisePhone(form.phone)))
       problems.phone = "Use the form +919876543210.";

@@ -11,7 +11,7 @@ import {
   CalendarDaysIcon,
   PackageSearchIcon,
   StoreIcon,
-  TrophyIcon,
+  ScaleIcon,
   ChevronDownIcon,
   ChevronsUpDownIcon,
   GlobeIcon,
@@ -63,7 +63,7 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
   if (college.modules.campus && slug !== GLOBAL_SLUG)
     more.push({ href: `${base}/campus`, label: "Campus", icon: <Building2Icon /> });
   more.push({ href: `${base}/events`, label: "Events", icon: <CalendarDaysIcon /> });
-  more.push({ href: `${base}/challenges`, label: "Challenge", icon: <TrophyIcon /> });
+  more.push({ href: `${base}/debates`, label: "Debates", icon: <ScaleIcon /> });
   // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
   if (slug !== GLOBAL_SLUG) {
     more.push({ href: `${base}/turf`, label: "Turf and courts", icon: <MapPinnedIcon /> });

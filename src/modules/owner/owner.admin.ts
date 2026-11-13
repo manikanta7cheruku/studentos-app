@@ -292,7 +292,7 @@ export type OwnerUserFull = {
     plans: number;
     events: number;
     upvotes: number;
-    challenges: number;
+    debates: number;
     invited: number;
     followers: number;
   };

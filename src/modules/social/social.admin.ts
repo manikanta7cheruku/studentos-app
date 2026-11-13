@@ -1,10 +1,9 @@
 import { adminClient } from "@/server/admin/supabase-admin";
 import { toIso } from "@/lib/api";
 import { mapDbError } from "@/lib/db-error";
-import { challengeFor, weekEndsAt, weekKey } from "@/lib/challenges";
 
-// Wrappers around the SQL functions for following, invite links, weekly challenges and contributions
-// (migrations 20261129000000 and 20261131000000). Only the server calls them, always with the verified user.
+// Wrappers around the SQL functions for following, invite links and contributions
+// (migrations 20261129000000, 20261133000000 and 20261134000000). Only the server calls them, always with the verified user.
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await adminClient().rpc(fn, args);
@@ -18,7 +17,7 @@ export type Contributions = {
   plans: number;
   events: number;
   upvotes: number;
-  challenges: number;
+  debates: number;
   invited: number;
 };
 export type FollowInfo = { followers: number; following: number; i_follow: boolean };
@@ -64,77 +63,31 @@ export async function getStudyDetails(userId: string) {
   };
 }
 
-type EntryRow = {
-  id: string;
-  body: string;
-  created_at: string;
-  is_mine: boolean;
-  applause: number;
-  i_applauded: boolean;
-  author: { user_id: string; display_name: string; avatar_path: string | null };
-};
-
-function entryOut(row: EntryRow) {
-  const { avatar_path, ...author } = row.author;
-  const avatar_url = avatar_path
-    ? avatar_path.startsWith("http")
-      ? avatar_path
-      : adminClient().storage.from("avatars").getPublicUrl(avatar_path).data.publicUrl
-    : null;
-  return { ...row, created_at: toIso(row.created_at) as string, author: { ...author, avatar_url } };
+export async function listConnections(userId: string, kind: "followers" | "following") {
+  const rows = await rpc<
+    | {
+        user_id: string;
+        display_name: string;
+        headline: string | null;
+        avatar_path: string | null;
+        since: string;
+      }[]
+    | null
+  >("follow_list", { p_user: userId, p_kind: kind, p_limit: 200 });
+  return (rows ?? []).map((row) => ({
+    user_id: row.user_id,
+    display_name: row.display_name,
+    headline: row.headline,
+    avatar_url: row.avatar_path
+      ? row.avatar_path.startsWith("http")
+        ? row.avatar_path
+        : adminClient().storage.from("avatars").getPublicUrl(row.avatar_path).data.publicUrl
+      : null,
+    since: toIso(row.since) as string,
+  }));
 }
 
-export async function currentChallenge(actor: string) {
-  const key = weekKey();
-  const [rows, done] = await Promise.all([
-    rpc<EntryRow[] | null>("challenge_list", { p_actor: actor, p_week: key, p_limit: 30 }),
-    adminClient()
-      .from("challenge_entries")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", actor),
-  ]);
-  const entries = (rows ?? []).map(entryOut);
-  let mine = entries.find((entry) => entry.is_mine) ?? null;
-  if (!mine) {
-    // My answer may be beyond the first 30: look it up on its own.
-    const own = await adminClient()
-      .from("challenge_entries")
-      .select("id")
-      .eq("user_id", actor)
-      .eq("week_key", key)
-      .maybeSingle();
-    if (own.data?.id) {
-      const row = await rpc<EntryRow | null>("challenge_entry_json", {
-        p_entry: own.data.id,
-        p_actor: actor,
-      });
-      mine = row ? entryOut(row) : null;
-    }
-  }
-  return {
-    week_key: key,
-    ...challengeFor(key),
-    ends_at: weekEndsAt(),
-    entries,
-    my_entry: mine,
-    completed: done.count ?? 0,
-  };
-}
-
-export async function submitChallenge(actor: string, body: string) {
-  const row = await rpc<EntryRow>("challenge_submit", {
-    p_user: actor,
-    p_week: weekKey(),
-    p_body: body,
-  });
-  return entryOut(row);
-}
-
-export async function applaudEntry(actor: string, entry: string, on: boolean) {
-  const row = await rpc<EntryRow>("challenge_applaud", {
-    p_actor: actor,
-    p_entry: entry,
-    p_on: on,
-  });
-  return entryOut(row);
+export async function suggestColleges(q: string): Promise<string[]> {
+  const data = await rpc<string[] | null>("college_name_suggest", { p_q: q });
+  return data ?? [];
 }

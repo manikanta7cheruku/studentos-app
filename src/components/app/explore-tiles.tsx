@@ -4,7 +4,7 @@ import {
   MapPinnedIcon,
   PackageSearchIcon,
   StoreIcon,
-  TrophyIcon,
+  ScaleIcon,
 } from "lucide-react";
 
 /** Three ways into the community boards: Events, Lost and found, and the Marketplace. */
@@ -41,10 +41,10 @@ export function ExploreTiles({ slug }: { slug: string }) {
       ? [
           tiles[0]!,
           {
-            href: `/c/${slug}/challenges`,
-            title: "Challenge",
-            text: "This week's, for everyone",
-            icon: <TrophyIcon />,
+            href: `/c/${slug}/debates`,
+            title: "Debates",
+            text: "Pick a side",
+            icon: <ScaleIcon />,
           },
         ]
       : tiles;

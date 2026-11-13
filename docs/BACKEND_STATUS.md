@@ -17,7 +17,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Team Finder | TMF-01, TMF-02, TMF-03, TMF-04, TMF-05, TMF-06, TMF-07, TMF-08, TMF-09, TMF-10 | posts, roles, requests, decisions |
 | Career | OPP-01, OPP-02, OPP-03, OPP-04, REM-01 | curated opportunities, saved, reminders |
 | Application tracker | APP-01, APP-02, APP-03, APP-04 | my applications, edit with a version check, status changes with a history (built by R3 in Day 7, private to the person) |
-| Following, invites, challenges | FOL-01, INV-01, INV-02, CHL-01, CHL-02, CHL-03, IDE-10 | follows, invite links, weekly challenges with applause, polls on buzz (built by R3, Day 18) |
+| Following, invites, debates | FOL-01, FOL-02, INV-01, INV-02, COL-02, IDE-10, DEB-01, DEB-02, DEB-03, DEB-04, DEB-05, DEB-06, DEB-07, DEB-08, DEB-09 | follows (private lists), invite links, college name suggestions, polls on buzz, topic debates that close by themselves (built by R3, Day 18) |
 | Ideas and college setup | IDE-01, IDE-02, IDE-03, IDE-04, IDE-05, IDE-06, IDE-07, IDE-08, IDE-09, COL-01 | ideas with votes and replies, and college creation with a one-time owner code (built by R3 in Day 11); Team Finder gets the kinds sport and event and a place |
 | Events and board | EVT-01, EVT-02, EVT-03, EVT-04, EVT-05, BRD-01, BRD-02, BRD-03, BRD-04, BRD-05, BRD-06, BRD-07 | events with RSVPs, Lost and found and the Marketplace with private messages (built by R3 in Day 12, no payments) |
 | Open join and removal | TMF-11, TMF-12, ADM-13, ADM-14 | one tap join with a host note and a list of who joined, and removing content with a reason that reaches the author (built by R3 in Day 14) |

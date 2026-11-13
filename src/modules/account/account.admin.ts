@@ -69,8 +69,7 @@ export async function viewPerson(actor: string, college: string, target: string)
     // What the person wrote on their profile wins over what the college membership says.
     program: study.branch ?? (person as { program?: string | null }).program ?? null,
     grad_year: study.grad_year ?? (person as { grad_year?: number | null }).grad_year ?? null,
-    followers: follow.followers,
-    following: follow.following,
+    // Who follows whom is private: only whether I follow this person.
     i_follow: follow.i_follow,
     contributions,
   };

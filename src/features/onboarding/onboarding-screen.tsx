@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
+import { collegeNameProblem } from "@/lib/college-name";
 import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
@@ -212,7 +213,9 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     if (!HANDLE.test(clean))
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
     if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
-    if (tidy(college).length < 2) problems.college = "Type the name of your college.";
+    const collegeProblem = collegeNameProblem(college);
+    if (!tidy(college)) problems.college = "Type the name of your college.";
+    else if (collegeProblem) problems.college = collegeProblem;
     if (!gradYear) problems.year = "Pick the year you graduate.";
     setFields(problems);
     if (Object.keys(problems).length) return;

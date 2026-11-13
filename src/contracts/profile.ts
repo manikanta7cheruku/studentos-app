@@ -1,5 +1,6 @@
 import { contributions } from "./social";
 import { z } from "zod";
+import { collegeNameProblem } from "../lib/college-name";
 import { httpsUrl, isoDateTime, successEnvelope, uuid } from "./common";
 
 // PRF-01 GET / PATCH /api/v1/me/profile
@@ -65,7 +66,15 @@ export const profilePatchBody = z
     tech_interests: z.array(z.string().trim().min(1).max(40)).max(20),
     excited_by: z.string().trim().max(200).nullable(),
     career_goal: z.string().trim().max(200).nullable(),
-    college_name: z.string().trim().min(2).max(120).nullable(),
+    college_name: z
+      .string()
+      .trim()
+      .min(2)
+      .max(120)
+      .refine((value) => collegeNameProblem(value) === null, {
+        message: "That does not look like a college name",
+      })
+      .nullable(),
     branch: z.string().trim().min(1).max(60).nullable(),
     grad_year: z.number().int().min(2000).max(2100).nullable(),
     visibility: profileVisibility,
@@ -165,8 +174,7 @@ export const personProfileResponse = successEnvelope(
     career_goal: z.string().nullable(),
     college_name: z.string().nullable().default(null),
     branch: z.string().nullable().default(null),
-    followers: z.number().int().min(0).default(0),
-    following: z.number().int().min(0).default(0),
+    // Whether I follow this person. Follower counts are only ever shown to the person themselves.
     i_follow: z.boolean().default(false),
     contributions: contributions.nullable().default(null),
     program: z.string().nullable(),

@@ -7,7 +7,7 @@ export type Counts = {
   plans: number;
   events: number;
   upvotes: number;
-  challenges: number;
+  debates: number;
   invited: number;
 };
 
@@ -15,12 +15,12 @@ export type Badge = { key: string; label: string; text: string };
 
 export function badgesFor(counts: Counts): Badge[] {
   const out: Badge[] = [];
-  if (counts.challenges >= 10)
-    out.push({ key: "champion", label: "Champion", text: "Finished 10 challenges" });
-  else if (counts.challenges >= 4)
-    out.push({ key: "regular", label: "Regular", text: "Finished 4 challenges" });
-  else if (counts.challenges >= 1)
-    out.push({ key: "challenger", label: "Challenger", text: "Finished a challenge" });
+  if (counts.debates >= 15)
+    out.push({ key: "champion", label: "Debate champion", text: "Took part 15 times in debates" });
+  else if (counts.debates >= 5)
+    out.push({ key: "regular", label: "Debate regular", text: "Took part 5 times in debates" });
+  else if (counts.debates >= 1)
+    out.push({ key: "debater", label: "Debater", text: "Took part in a debate" });
   if (counts.upvotes >= 20)
     out.push({ key: "helpful", label: "Helpful", text: "Got 20 upvotes from others" });
   if (counts.plans >= 3)

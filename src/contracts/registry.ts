@@ -5,6 +5,7 @@ import * as auth from "./auth";
 import * as common from "./common";
 import * as board from "./board";
 import * as engagement from "./engagement";
+import * as debates from "./debates";
 import * as events from "./events";
 import * as ideas from "./ideas";
 import * as moderation from "./moderation";
@@ -160,18 +161,13 @@ export const endpoints: Endpoint[] = [
     body: social.referralBody,
     response: social.referralResponse,
   }),
-  e("CHL-01", "GET", "/challenges/current", "ses", "This week's challenge and its answers", {
-    response: social.challengeCurrentResponse,
+  e("COL-02", "GET", "/colleges/suggest", "ses", "College names to pick from while typing", {
+    query: social.collegeSuggestQuery,
+    response: social.collegeSuggestResponse,
   }),
-  e("CHL-02", "PUT", "/challenges/current/entry", "ses", "Answer this week's challenge", {
-    body: social.challengeEntryBody,
-    response: social.challengeEntryResponse,
-  }),
-  e("CHL-03", "PUT", "/challenge-entries/{id}/applause", "ses", "Applaud an answer", {
-    response: social.challengeEntryResponse,
-  }),
-  e("CHL-03", "DELETE", "/challenge-entries/{id}/applause", "ses", "Take my applause back", {
-    response: social.challengeEntryResponse,
+  e("FOL-02", "GET", "/me/connections", "ses", "My followers, or the people I follow", {
+    query: social.connectionsQuery,
+    response: social.connectionsResponse,
   }),
   e("RPT-05", "GET", "/me/blocks", "ses", "The people I blocked", {
     response: engagement.blocksListResponse,
@@ -460,6 +456,51 @@ export const endpoints: Endpoint[] = [
     body: ideas.ideaVoteBody,
     response: ideas.ideaResponse,
   }),
+  e("DEB-01", "POST", "/c/{slug}/debates", "mem", "Start a debate", {
+    body: debates.debateCreateBody,
+    response: debates.debateResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("DEB-02", "GET", "/c/{slug}/debates", "mem", "List debates (live or ended, by topic)", {
+    query: debates.debateListQuery,
+    response: debates.debateListResponse,
+  }),
+  e("DEB-03", "GET", "/c/{slug}/debates/{id}", "mem", "One debate", {
+    response: debates.debateResponse,
+  }),
+  e("DEB-04", "PUT", "/c/{slug}/debates/{id}/side", "mem", "Join a side, or change it", {
+    body: debates.debateSideBody,
+    response: debates.debateResponse,
+  }),
+  e("DEB-05", "POST", "/c/{slug}/debates/{id}/arguments", "mem", "Post an argument under my side", {
+    body: debates.debateArgumentCreateBody,
+    response: debates.debateArgumentResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("DEB-06", "GET", "/c/{slug}/debates/{id}/arguments", "mem", "The arguments of a debate", {
+    response: debates.debateArgumentListResponse,
+  }),
+  e(
+    "DEB-07",
+    "PUT",
+    "/c/{slug}/debates/{id}/arguments/{argId}/vote",
+    "mem",
+    "A strong point, or take it back",
+    { body: debates.debateArgumentVoteBody, response: debates.debateArgumentResponse },
+  ),
+  e("DEB-08", "DELETE", "/c/{slug}/debates/{id}", "mem", "Remove a debate (author or moderator)", {
+    response: debates.debateDeleteResponse,
+  }),
+  e(
+    "DEB-09",
+    "DELETE",
+    "/c/{slug}/debates/{id}/arguments/{argId}",
+    "mem",
+    "Remove an argument (author or moderator)",
+    { response: debates.debateDeleteResponse },
+  ),
   e("IDE-10", "POST", "/c/{slug}/ideas/{id}/poll", "mem", "Pick an option of a poll", {
     body: ideas.ideaPollVoteBody,
     response: ideas.ideaResponse,

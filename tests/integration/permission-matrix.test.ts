@@ -58,13 +58,21 @@ import {
   PUT as followPerson,
   DELETE as unfollowPerson,
 } from "@/app/api/v1/me/follows/[userId]/route";
-import { GET as getChallenge } from "@/app/api/v1/challenges/current/route";
-import { PUT as answerChallenge } from "@/app/api/v1/challenges/current/entry/route";
-import {
-  PUT as applaudEntry,
-  DELETE as unapplaudEntry,
-} from "@/app/api/v1/challenge-entries/[id]/applause/route";
 import { POST as ideasPoll } from "@/app/api/v1/c/[slug]/ideas/[id]/poll/route";
+import { GET as debatesList, POST as debatesCreate } from "@/app/api/v1/c/[slug]/debates/route";
+import {
+  DELETE as debatesRemove,
+  GET as debatesGet,
+} from "@/app/api/v1/c/[slug]/debates/[id]/route";
+import { PUT as debatesSide } from "@/app/api/v1/c/[slug]/debates/[id]/side/route";
+import {
+  GET as debateArgumentsList,
+  POST as debateArgumentsCreate,
+} from "@/app/api/v1/c/[slug]/debates/[id]/arguments/route";
+import { DELETE as debateArgumentsRemove } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/route";
+import { PUT as debateArgumentVote } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/vote/route";
+import { GET as myConnections } from "@/app/api/v1/me/connections/route";
+import { GET as suggestColleges } from "@/app/api/v1/colleges/suggest/route";
 import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
 import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route";
 import { GET as skillSearch } from "@/app/api/v1/skills/route";
@@ -733,6 +741,24 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     [
       ["IDE-02 GET /c/alpha/ideas (members)", ideasList, "GET", undefined, "/ideas", 200, false],
       [
+        "DEB-02 GET /c/alpha/debates (members)",
+        debatesList,
+        "GET",
+        undefined,
+        "/debates",
+        200,
+        false,
+      ],
+      [
+        "DEB-01 POST /c/alpha/debates (an empty body is the probe -> 400 for members)",
+        debatesCreate,
+        "POST",
+        {},
+        "/debates",
+        400,
+        true,
+      ],
+      [
         "IDE-01 POST /c/alpha/ideas (an empty body is the probe -> 400 for members)",
         ideasCreate,
         "POST",
@@ -802,6 +828,51 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         "/ideas",
         "/vote",
         false,
+      ],
+      [
+        "DEB-03 GET /c/alpha/debates/{id} (unknown debate -> 404 for members)",
+        debatesGet,
+        "GET",
+        undefined,
+        "/debates",
+        "",
+        false,
+      ],
+      [
+        "DEB-08 DELETE /c/alpha/debates/{id} (unknown debate -> 404 for members)",
+        debatesRemove,
+        "DELETE",
+        undefined,
+        "/debates",
+        "",
+        false,
+      ],
+      [
+        "DEB-04 PUT /c/alpha/debates/{id}/side (unknown debate -> 404 for members)",
+        debatesSide,
+        "PUT",
+        { side: 0 },
+        "/debates",
+        "/side",
+        false,
+      ],
+      [
+        "DEB-06 GET /c/alpha/debates/{id}/arguments (unknown debate -> 404 for members)",
+        debateArgumentsList,
+        "GET",
+        undefined,
+        "/debates",
+        "/arguments",
+        false,
+      ],
+      [
+        "DEB-05 POST /c/alpha/debates/{id}/arguments (unknown debate -> 404 for members)",
+        debateArgumentsCreate,
+        "POST",
+        { body: "My point" },
+        "/debates",
+        "/arguments",
+        true,
       ],
       [
         "IDE-10 POST /c/alpha/ideas/{id}/poll (unknown idea -> 404 for members)",
@@ -955,6 +1026,53 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "DEB-09 DELETE /c/alpha/debates/{id}/arguments/{argId} (unknown argument -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const argId = randomUUID();
+      return call(debateArgumentsRemove, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/debates/${id}/arguments/${argId}`,
+        params: { slug: "alpha", id, argId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "DEB-07 PUT /c/alpha/debates/{id}/arguments/{argId}/vote (unknown argument -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const argId = randomUUID();
+      return call(debateArgumentVote, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/debates/${id}/arguments/${argId}/vote`,
+        json: { value: 1 },
+        params: { slug: "alpha", id, argId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "FOL-02 GET /me/connections (my own lists -> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(myConnections, { method: "GET", path: "/api/v1/me/connections", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(200),
+  },
+  {
+    op: "COL-02 GET /colleges/suggest (-> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(suggestColleges, {
+        method: "GET",
+        path: "/api/v1/colleges/suggest?q=alpha",
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(200),
   },
   {
     op: "COL-01 POST /colleges/setup (any signed in person; an empty body is the probe -> 400)",
@@ -1594,51 +1712,6 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     expect: signedIn(404),
   },
   {
-    op: "CHL-01 GET /challenges/current (-> 200 for everyone signed in)",
-    call: (cookie) =>
-      call(getChallenge, { method: "GET", path: "/api/v1/challenges/current", cookie }).then(
-        (r) => r.status,
-      ),
-    expect: signedIn(200),
-  },
-  {
-    op: "CHL-02 PUT /challenges/current/entry (empty answer -> 400 for everyone signed in)",
-    call: (cookie) =>
-      call(answerChallenge, {
-        method: "PUT",
-        path: "/api/v1/challenges/current/entry",
-        json: { body: "" },
-        cookie,
-      }).then((r) => r.status),
-    expect: signedIn(400),
-  },
-  {
-    op: "CHL-03 PUT /challenge-entries/{stranger}/applause (no such answer -> 404 for everyone signed in)",
-    call: (cookie) => {
-      const id = randomUUID();
-      return call(applaudEntry, {
-        method: "PUT",
-        path: `/api/v1/challenge-entries/${id}/applause`,
-        params: { id },
-        cookie,
-      }).then((r) => r.status);
-    },
-    expect: signedIn(404),
-  },
-  {
-    op: "CHL-03 DELETE /challenge-entries/{stranger}/applause (no such answer -> 404 for everyone signed in)",
-    call: (cookie) => {
-      const id = randomUUID();
-      return call(unapplaudEntry, {
-        method: "DELETE",
-        path: `/api/v1/challenge-entries/${id}/applause`,
-        params: { id },
-        cookie,
-      }).then((r) => r.status);
-    },
-    expect: signedIn(404),
-  },
-  {
     op: "RPT-05 GET /me/blocks (my own list -> 200 for everyone signed in)",
     call: (cookie) =>
       call(listBlocks, { method: "GET", path: "/api/v1/me/blocks", cookie }).then((r) => r.status),
@@ -1761,6 +1834,10 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
 describe("real endpoints follow the permission matrix", () => {
   for (const endpoint of endpoints) {
     describe(endpoint.op, () => {
+      // Each person may write 60 times a minute. With this many rows the run would reach that, so every row starts fresh.
+      beforeAll(async () => {
+        await clearRateLimits();
+      });
       it("covers every principal", () => {
         expect(Object.keys(endpoint.expect).sort()).toEqual([...allPrincipals].sort());
       });

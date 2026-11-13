@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
@@ -22,6 +23,7 @@ export type ProfileViewData = {
   college_name?: string | null;
   program?: string | null;
   grad_year?: number | null;
+  /** Only my own page has these (nobody else sees who follows whom). */
   followers?: number;
   following?: number;
   contributions?: Counts | null;
@@ -106,11 +108,14 @@ export function ProfileView({
   person,
   actions,
   isSelf = false,
+  connectionsHref,
 }: {
   person: ProfileViewData;
   actions?: React.ReactNode;
   /** My own page: the Contributions section is always there, and says how to start when it is empty. */
   isSelf?: boolean;
+  /** Where the followers and following lists are (my own page only). */
+  connectionsHref?: string;
 }) {
   const education = [
     person.college_name,
@@ -153,10 +158,21 @@ export function ProfileView({
             {meta.length ? (
               <p className="mt-0.5 text-[13px] text-ink-muted">{meta.join(" · ")}</p>
             ) : null}
-            {person.followers !== undefined ? (
+            {person.followers !== undefined && connectionsHref ? (
               <p className="tabular mt-2 text-[13px] text-ink-muted">
-                <b className="text-ink">{person.followers}</b> followers ·{" "}
-                <b className="text-ink">{person.following ?? 0}</b> following
+                <Link
+                  href={`${connectionsHref}?kind=followers`}
+                  className="rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <b className="text-ink">{person.followers}</b> followers
+                </Link>{" "}
+                ·{" "}
+                <Link
+                  href={`${connectionsHref}?kind=following`}
+                  className="rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <b className="text-ink">{person.following ?? 0}</b> following
+                </Link>
               </p>
             ) : null}
           </div>
@@ -195,7 +211,7 @@ export function ProfileView({
           counts.plans ||
           counts.events ||
           counts.upvotes ||
-          counts.challenges ||
+          counts.debates ||
           counts.invited) ? (
           <Section title="Contributions">
             <dl className="grid grid-cols-4 gap-y-3 text-center">
@@ -204,7 +220,7 @@ export function ProfileView({
                   ["Buzz", counts.buzz],
                   ["Replies", counts.replies],
                   ["Upvotes", counts.upvotes],
-                  ["Challenges", counts.challenges],
+                  ["Debates", counts.debates],
                 ] as const
               ).map(([label, value]) => (
                 <div key={label}>
@@ -215,10 +231,9 @@ export function ProfileView({
                 </div>
               ))}
             </dl>
-            {isSelf && !badges.length && !counts.buzz && !counts.replies && !counts.challenges ? (
+            {isSelf && !badges.length && !counts.buzz && !counts.replies && !counts.debates ? (
               <p className="mt-3 text-[13.5px] leading-snug text-ink-muted">
-                Nothing yet. Post a buzz, answer the weekly challenge or start a plan, and it shows
-                up here.
+                Nothing yet. Post a buzz, join a debate or start a plan, and it shows up here.
               </p>
             ) : null}
             {badges.length ? (

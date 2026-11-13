@@ -110,6 +110,8 @@ export const reportTargetType = z.enum([
   "event",
   "listing",
   "venue",
+  "debate",
+  "debate_argument",
 ]);
 export const reportReason = z.enum([
   "spam",

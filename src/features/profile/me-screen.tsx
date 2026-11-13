@@ -15,7 +15,7 @@ import {
   MessageSquareHeartIcon,
   MapPinnedIcon,
   ShieldCheckIcon,
-  TrophyIcon,
+  ScaleIcon,
   UserPlusIcon,
   UsersRoundIcon,
 } from "lucide-react";
@@ -125,10 +125,10 @@ function MoreMenu() {
       icon: <CalendarDaysIcon />,
     },
     {
-      href: `/c/${slug}/challenges`,
-      label: "Weekly challenge",
-      text: "Do it, earn a badge",
-      icon: <TrophyIcon />,
+      href: `/c/${slug}/debates`,
+      label: "Debates",
+      text: "Pick a side, make your point",
+      icon: <ScaleIcon />,
     },
     // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
     ...(slug !== "global"
@@ -205,6 +205,7 @@ export function MeScreen() {
         <>
           <ProfileView
             isSelf
+            connectionsHref={`/c/${slug}/me/connections`}
             person={{
               ...state.data.profile,
               program: state.data.profile.branch,

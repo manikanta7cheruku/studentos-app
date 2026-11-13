@@ -39,8 +39,10 @@ export type Report = Data<typeof c.reportQueueResponse>[number];
 export type Idea = Data<typeof c.ideaListResponse>[number];
 export type IdeaPoll = NonNullable<Idea["poll"]>;
 export type Contributions = NonNullable<Profile["contributions"]>;
-export type ChallengeCurrent = Data<typeof c.challengeCurrentResponse>;
-export type ChallengeEntry = Data<typeof c.challengeEntryResponse>;
+export type Debate = Data<typeof c.debateListResponse>[number];
+export type DebateTopic = z.infer<typeof c.debateTopic>;
+export type DebateArgument = Data<typeof c.debateArgumentListResponse>[number];
+export type Connection = Data<typeof c.connectionsResponse>[number];
 export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
@@ -81,6 +83,11 @@ export const api = {
   },
 
   colleges: {
+    suggest: (q: string, signal?: AbortSignal) =>
+      apiClient(j(`/colleges/suggest?q=${encodeURIComponent(q)}`), {
+        schema: c.collegeSuggestResponse.shape.data,
+        signal,
+      }),
     mine: () => apiClient(j("/me/memberships"), { schema: c.myMembershipsResponse.shape.data }),
     // A person with a one-time setup code from the platform owner makes their own college.
     setup: (body: z.input<typeof c.collegeSetupBody>) =>
@@ -239,6 +246,8 @@ export const api = {
       }),
   },
   follows: {
+    list: (kind: "followers" | "following") =>
+      apiClient(j(`/me/connections?kind=${kind}`), { schema: c.connectionsResponse.shape.data }),
     set: (userId: string, on: boolean) =>
       apiClient(j(`/me/follows/${userId}`), {
         method: on ? "PUT" : "DELETE",
@@ -256,19 +265,66 @@ export const api = {
       }),
   },
 
-  challenges: {
-    current: () =>
-      apiClient(j("/challenges/current"), { schema: c.challengeCurrentResponse.shape.data }),
-    answer: (body: string) =>
-      apiClient(j("/challenges/current/entry"), {
-        method: "PUT",
-        body: { body },
-        schema: c.challengeEntryResponse.shape.data,
+  debates: {
+    list: (
+      slug: string,
+      filters: {
+        status?: "live" | "ended" | "all";
+        topic?: DebateTopic;
+        cursor?: string;
+        limit?: number;
+      } = {},
+    ) => {
+      const query = new URLSearchParams();
+      query.set("status", filters.status ?? "live");
+      if (filters.topic) query.set("topic", filters.topic);
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      query.set("limit", String(filters.limit ?? 20));
+      return apiFetchEnvelope(j(`/c/${slug}/debates?${query}`), {
+        schema: c.debateListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}`), { schema: c.debateResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.debateCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/debates`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.debateResponse.shape.data,
       }),
-    applaud: (id: string, on: boolean) =>
-      apiClient(j(`/challenge-entries/${id}/applause`), {
-        method: on ? "PUT" : "DELETE",
-        schema: c.challengeEntryResponse.shape.data,
+    remove: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}`), {
+        method: "DELETE",
+        schema: c.debateDeleteResponse.shape.data,
+      }),
+    pickSide: (slug: string, id: string, side: 0 | 1) =>
+      apiClient(j(`/c/${slug}/debates/${id}/side`), {
+        method: "PUT",
+        body: { side },
+        schema: c.debateResponse.shape.data,
+      }),
+    arguments: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments`), {
+        schema: c.debateArgumentListResponse.shape.data,
+      }),
+    argue: (slug: string, id: string, body: { body: string; anonymous?: boolean }, key?: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.debateArgumentResponse.shape.data,
+      }),
+    strongPoint: (slug: string, id: string, argumentId: string, value: 0 | 1) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments/${argumentId}/vote`), {
+        method: "PUT",
+        body: { value },
+        schema: c.debateArgumentResponse.shape.data,
+      }),
+    removeArgument: (slug: string, id: string, argumentId: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments/${argumentId}`), {
+        method: "DELETE",
+        schema: c.debateDeleteResponse.shape.data,
       }),
   },
 

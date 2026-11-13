@@ -6,6 +6,7 @@ import { cn } from "cn";
 import { ChoiceChips } from "@/components/ui/choice-chips";
 import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@/components/app/toggle-row";
+import { api } from "@/lib/api/endpoints";
 
 // The pieces of "about you" that the tour and the edit screen share: sex, birth year, two kinds of interests, and the mobile
 // number with who may see it.
@@ -397,6 +398,27 @@ export function StudyFields({
   const on = "bg-brand border-transparent text-white";
   const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
   const collegeId = React.useId();
+  // Names that already exist, while typing, so spellings stay the same and nobody has to invent one.
+  const [suggested, setSuggested] = React.useState<{ query: string; names: string[] } | null>(null);
+  const typed = tidy(college);
+  React.useEffect(() => {
+    if (typed.length < 2) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      api.colleges
+        .suggest(typed, controller.signal)
+        .then((names) => setSuggested({ query: typed, names }))
+        .catch(() => undefined);
+    }, 250);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [typed]);
+  const names =
+    suggested && suggested.query === typed
+      ? suggested.names.filter((name) => name.toLowerCase() !== typed.toLowerCase())
+      : [];
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -415,6 +437,24 @@ export function StudyFields({
         <p className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}>
           {errors.college ?? "Shown on your profile so people know where you are from."}
         </p>
+        {names.length ? (
+          <div
+            role="group"
+            aria-label="Colleges already on StudentOS"
+            className="flex flex-wrap gap-2"
+          >
+            {names.map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => onCollege(name)}
+                className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-ink-muted outline-none transition-[border-color,color] hover:border-white/25 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">

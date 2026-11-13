@@ -2,8 +2,7 @@ import { z } from "zod";
 import { isoDateTime, successEnvelope, uuid } from "./common";
 
 // ---------------------------------------------------------------------------
-// Following (FOL-01), invite links (INV-01, INV-02), weekly challenges (CHL-01 to CHL-03) and the contributions shown on a
-// profile. Rules: docs/API_CONTRACT.md section 16.
+// Following (FOL-01, FOL-02), invite links (INV-01, INV-02) and the contributions shown on a profile. Rules: docs/API_CONTRACT.md section 16.
 // ---------------------------------------------------------------------------
 
 // What a person gave. Counts only. Anonymous posts never count.
@@ -13,7 +12,8 @@ export const contributions = z.object({
   plans: z.number().int().min(0),
   events: z.number().int().min(0),
   upvotes: z.number().int().min(0),
-  challenges: z.number().int().min(0),
+  // Debates started, plus arguments made (never anonymous ones).
+  debates: z.number().int().min(0),
   invited: z.number().int().min(0),
 });
 
@@ -33,33 +33,20 @@ export const inviteResponse = successEnvelope(inviteInfo);
 export const referralBody = z.strictObject({ code: z.string().trim().min(4).max(20) });
 export const referralResponse = successEnvelope(z.object({ applied: z.boolean() }));
 
-// CHL-01 GET /api/v1/challenges/current
-export const challengeEntry = z.object({
-  id: uuid,
-  body: z.string(),
-  created_at: isoDateTime,
-  is_mine: z.boolean(),
-  applause: z.number().int().min(0),
-  i_applauded: z.boolean(),
-  author: z.object({
-    user_id: uuid,
-    display_name: z.string(),
-    avatar_url: z.string().nullable(),
-  }),
+// FOL-02 GET /api/v1/me/connections?kind=followers|following: the people who follow me, or whom I follow. Only my own lists:
+// nobody else can see who follows whom.
+export const connectionKind = z.enum(["followers", "following"]);
+export const connectionsQuery = z.strictObject({ kind: connectionKind.default("followers") });
+export const connection = z.object({
+  user_id: uuid,
+  display_name: z.string(),
+  headline: z.string().nullable(),
+  avatar_url: z.string().nullable(),
+  since: isoDateTime,
 });
-export const challengeCurrent = z.object({
-  week_key: z.string(),
-  title: z.string(),
-  text: z.string(),
-  ends_at: isoDateTime,
-  entries: z.array(challengeEntry),
-  my_entry: challengeEntry.nullable(),
-  // How many challenges I have done in all.
-  completed: z.number().int().min(0),
-});
-export const challengeCurrentResponse = successEnvelope(challengeCurrent);
+export const connectionsResponse = successEnvelope(z.array(connection));
 
-// CHL-02 PUT /api/v1/challenges/current/entry   { "body": "..." }: my answer to this week's challenge (changes it if I already did).
-export const challengeEntryBody = z.strictObject({ body: z.string().trim().min(1).max(300) });
-export const challengeEntryResponse = successEnvelope(challengeEntry);
-// CHL-03 PUT or DELETE /api/v1/challenge-entries/{id}/applause: applaud an answer, or take it back. Not your own.
+// COL-02 GET /api/v1/colleges/suggest?q=: college names that already exist (the colleges on the platform, then what other people
+// typed), to pick from while typing. At most 8. Needs 2 letters.
+export const collegeSuggestQuery = z.strictObject({ q: z.string().trim().min(2).max(60) });
+export const collegeSuggestResponse = successEnvelope(z.array(z.string()));
