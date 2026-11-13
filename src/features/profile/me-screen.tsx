@@ -90,8 +90,8 @@ function MoreMenu() {
     },
     {
       href: `/c/${slug}/collaborate/requests`,
-      label: "My requests",
-      text: "Plans you asked to join",
+      label: "Team requests",
+      text: "Answer people, and see yours",
       icon: <InboxIcon />,
     },
     {

@@ -208,7 +208,7 @@ function ShortcutList({
     },
     {
       href: `/c/${slug}/collaborate/requests`,
-      title: "My requests",
+      title: "Team requests",
       icon: <InboxIcon aria-hidden="true" />,
       count: 0,
     },
