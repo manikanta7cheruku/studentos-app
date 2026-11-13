@@ -16881,10 +16881,6 @@
                       "minLength": 1,
                       "maxLength": 40
                     }
-                  },
-                  "prompt_key": {
-                    "type": "string",
-                    "pattern": "^q\\d{1,3}$"
                   }
                 },
                 "additionalProperties": false
@@ -16951,13 +16947,6 @@
                         "is_anonymous": {
                           "default": false,
                           "type": "boolean"
-                        },
-                        "prompt_key": {
-                          "default": null,
-                          "type": [
-                            "string",
-                            "null"
-                          ]
                         },
                         "poll": {
                           "default": null,
@@ -17053,7 +17042,6 @@
                         "is_owner",
                         "my_vote",
                         "is_anonymous",
-                        "prompt_key",
                         "poll",
                         "author"
                       ],
@@ -17306,13 +17294,6 @@
                             "default": false,
                             "type": "boolean"
                           },
-                          "prompt_key": {
-                            "default": null,
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
                           "poll": {
                             "default": null,
                             "anyOf": [
@@ -17407,7 +17388,6 @@
                           "is_owner",
                           "my_vote",
                           "is_anonymous",
-                          "prompt_key",
                           "poll",
                           "author"
                         ],
@@ -17588,13 +17568,6 @@
                           "default": false,
                           "type": "boolean"
                         },
-                        "prompt_key": {
-                          "default": null,
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
                         "poll": {
                           "default": null,
                           "anyOf": [
@@ -17689,7 +17662,6 @@
                         "is_owner",
                         "my_vote",
                         "is_anonymous",
-                        "prompt_key",
                         "poll",
                         "author"
                       ],
@@ -18014,13 +17986,6 @@
                           "default": false,
                           "type": "boolean"
                         },
-                        "prompt_key": {
-                          "default": null,
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
                         "poll": {
                           "default": null,
                           "anyOf": [
@@ -18115,7 +18080,6 @@
                         "is_owner",
                         "my_vote",
                         "is_anonymous",
-                        "prompt_key",
                         "poll",
                         "author"
                       ],
@@ -20340,13 +20304,6 @@
                           "default": false,
                           "type": "boolean"
                         },
-                        "prompt_key": {
-                          "default": null,
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        },
                         "poll": {
                           "default": null,
                           "anyOf": [
@@ -20441,7 +20398,6 @@
                         "is_owner",
                         "my_vote",
                         "is_anonymous",
-                        "prompt_key",
                         "poll",
                         "author"
                       ],

@@ -28,7 +28,6 @@ export async function createIdea(
     topic: string;
     anonymous?: boolean;
     poll?: string[];
-    prompt_key?: string;
   },
 ) {
   return out(
@@ -40,7 +39,6 @@ export async function createIdea(
       p_topic: input.topic,
       p_anonymous: input.anonymous ?? false,
       p_poll: input.poll ?? null,
-      p_prompt: input.prompt_key ?? null,
     }),
   );
 }

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
-import { badgesFor, type Counts } from "./badges";
+import type { Counts } from "./badges";
+import { ContributionsPanel } from "./contributions-panel";
 import { Chip, levelLabel } from "./skill-level";
 
 export type ProfileViewData = {
@@ -127,7 +128,6 @@ export function ProfileView({
     person.age ? `${person.age} years` : null,
   ].filter(Boolean);
   const counts = person.contributions ?? null;
-  const badges = counts ? badgesFor(counts) : [];
   return (
     <article className="flex flex-col gap-4">
       <header className="glass-card relative overflow-hidden rounded-[28px]">
@@ -204,53 +204,6 @@ export function ProfileView({
             <p className="max-w-prose text-[15px] leading-relaxed">{person.career_goal}</p>
           </Section>
         ) : null}
-        {counts &&
-        (isSelf ||
-          counts.buzz ||
-          counts.replies ||
-          counts.plans ||
-          counts.events ||
-          counts.upvotes ||
-          counts.debates ||
-          counts.invited) ? (
-          <Section title="Contributions">
-            <dl className="grid grid-cols-4 gap-y-3 text-center">
-              {(
-                [
-                  ["Buzz", counts.buzz],
-                  ["Replies", counts.replies],
-                  ["Upvotes", counts.upvotes],
-                  ["Debates", counts.debates],
-                ] as const
-              ).map(([label, value]) => (
-                <div key={label}>
-                  <dd className="tabular font-heading text-[1.35rem] font-extrabold leading-none">
-                    {value}
-                  </dd>
-                  <dt className="mt-1 text-[11.5px] text-ink-muted">{label}</dt>
-                </div>
-              ))}
-            </dl>
-            {isSelf && !badges.length && !counts.buzz && !counts.replies && !counts.debates ? (
-              <p className="mt-3 text-[13.5px] leading-snug text-ink-muted">
-                Nothing yet. Post a buzz, join a debate or start a plan, and it shows up here.
-              </p>
-            ) : null}
-            {badges.length ? (
-              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Badges">
-                {badges.map((badge) => (
-                  <li
-                    key={badge.key}
-                    title={badge.text}
-                    className="inline-flex h-8 items-center rounded-full border border-[#8f86f0]/40 bg-[#8f86f0]/15 px-3 text-[12.5px] font-semibold"
-                  >
-                    {badge.label}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </Section>
-        ) : null}
         {person.skills.length ? (
           <Section title="Strengths" count={person.skills.length}>
             <ul className="flex flex-wrap gap-2">
@@ -295,6 +248,7 @@ export function ProfileView({
           </Section>
         ) : null}
       </div>
+      {counts ? <ContributionsPanel counts={counts} isSelf={isSelf} /> : null}
     </article>
   );
 }

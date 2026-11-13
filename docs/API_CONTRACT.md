@@ -521,4 +521,4 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 
 **Anonymous posts (IDE-01, IDE-06, DEB-05):** `anonymous: true` hides the author. Other people see `Anonymous <animal>` (the same animal for the same person inside one buzz or debate) and a nil user id. The author and moderators can still be found in the database. `is_anonymous` is on the idea, the comment and the argument.
 
-**Polls (IDE-01):** `poll` is 2 to 4 options of 1 to 40 characters. The idea then has `poll: { options: [{ text, votes }], my_option, total }`. `prompt_key` (q0, q1, ...) marks a buzz that answers the question of the day (the list is in `src/lib/daily-prompts.ts`).
+**Polls (IDE-01):** `poll` is 2 to 4 options of 1 to 40 characters. The idea then has `poll: { options: [{ text, votes }], my_option, total }`.

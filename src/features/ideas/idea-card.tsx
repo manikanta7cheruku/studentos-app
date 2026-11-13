@@ -7,7 +7,6 @@ import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { OutsideBadge } from "@/components/app/outside-badge";
 import { api, type Idea, type IdeaTopic } from "@/lib/api/endpoints";
-import { promptByKey } from "@/lib/daily-prompts";
 import { timeAgo } from "@/lib/time-ago";
 import { useCollege } from "@/features/college";
 import { primeLoad } from "@/lib/use-load";
@@ -218,11 +217,6 @@ export function IdeaCard({
         ) : null}
       </header>
       <div>
-        {promptByKey(idea.prompt_key) ? (
-          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#b9b4ee]">
-            Question of the day
-          </p>
-        ) : null}
         {idea.title ? (
           <h2 className="text-balance text-[15px] font-bold leading-snug">
             {full ? (

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { PlusIcon, SendIcon, SparklesIcon, XIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { PlusIcon, SendIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { Spinner } from "@/components/app/spinner";
 import { ToggleRow } from "@/components/app/toggle-row";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type IdeaTopic } from "@/lib/api/endpoints";
-import { promptByKey } from "@/lib/daily-prompts";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
 import { SpacePicker } from "@/features/college/space-picker";
@@ -38,10 +37,7 @@ type Mode = "post" | "poll";
 export function IdeaNewScreen() {
   const { slug } = useCollege();
   const router = useRouter();
-  const params = useSearchParams();
   const attempt = useAttempt();
-  const promptKey = /^q\d{1,3}$/.test(params.get("prompt") ?? "") ? params.get("prompt")! : null;
-  const promptText = promptByKey(promptKey);
   const [space, setSpace] = React.useState(slug);
   const [mode, setMode] = React.useState<Mode>("post");
   const [title, setTitle] = React.useState("");
@@ -55,7 +51,7 @@ export function IdeaNewScreen() {
 
   const filled = options.map((option) => option.trim()).filter(Boolean);
   const pollOk = mode !== "poll" || (filled.length >= 2 && body.trim().length > 0);
-  const empty = promptText ? !body.trim() : !title.trim() && !body.trim();
+  const empty = !title.trim() && !body.trim();
   const blocked = empty || !pollOk;
 
   async function submit(event: React.FormEvent) {
@@ -67,12 +63,11 @@ export function IdeaNewScreen() {
       const idea = await api.ideas.create(
         space,
         {
-          title: promptText ?? title.trim(),
+          title: title.trim(),
           body: body.trim(),
           topic,
           anonymous,
           ...(mode === "poll" ? { poll: filled } : {}),
-          ...(promptKey ? { prompt_key: promptKey } : {}),
         },
         attempt.get(),
       );
@@ -92,46 +87,33 @@ export function IdeaNewScreen() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader title="New buzz" back={{ href: `/c/${slug}/ideas`, label: "Buzz" }} />
       <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
-        {promptText ? (
-          <div className="glass-card relative overflow-hidden rounded-[22px] p-4">
-            <span
-              aria-hidden="true"
-              className="bg-brand pointer-events-none absolute -right-8 -top-10 size-28 rounded-full opacity-30 blur-2xl"
-            />
-            <p className="relative flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-              <SparklesIcon aria-hidden="true" className="size-3.5" /> Question of the day
-            </p>
-            <p className="relative mt-1 text-[16px] font-bold leading-snug">{promptText}</p>
-          </div>
-        ) : (
-          <div role="group" aria-label="Kind of buzz" className="flex gap-2">
-            {(
-              [
-                ["post", "Post"],
-                ["poll", "Poll"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={mode === value}
-                onClick={() => setMode(value)}
-                className={cn(
-                  chip,
-                  mode === value
-                    ? "bg-brand border-transparent text-white"
-                    : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div role="group" aria-label="Kind of buzz" className="flex gap-2">
+          {(
+            [
+              ["post", "Post"],
+              ["poll", "Poll"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={mode === value}
+              onClick={() => setMode(value)}
+              className={cn(
+                chip,
+                mode === value
+                  ? "bg-brand border-transparent text-white"
+                  : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="thought-body" className="sr-only">
-            {mode === "poll" ? "Your question" : promptText ? "Your answer" : "Your buzz"}
+            {mode === "poll" ? "Your question" : "Your buzz"}
           </label>
           <textarea
             id="thought-body"
@@ -146,13 +128,7 @@ export function IdeaNewScreen() {
             maxLength={BODY_MAX}
             rows={mode === "poll" ? 3 : 6}
             autoFocus
-            placeholder={
-              mode === "poll"
-                ? "Ask your question"
-                : promptText
-                  ? "Write your answer"
-                  : "What's on your mind?"
-            }
+            placeholder={mode === "poll" ? "Ask your question" : "What's on your mind?"}
             className="min-h-28 w-full resize-y rounded-[18px] border border-white/10 bg-white/[0.045] p-4 text-[16px] leading-relaxed outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-ink-muted/70 hover:border-white/25 focus-visible:border-[#8f86f0]/70 focus-visible:shadow-[0_0_0_3px_rgba(143,134,240,0.22)]"
           />
           {body.length > BODY_MAX - 200 ? (
@@ -160,7 +136,7 @@ export function IdeaNewScreen() {
               {body.length} / {BODY_MAX}
             </p>
           ) : null}
-          {!body && !promptText && mode === "post" ? (
+          {!body && mode === "post" ? (
             <div className="flex flex-wrap gap-2" aria-label="Ideas to start from">
               {STARTERS.map((starter) => (
                 <button
@@ -225,54 +201,52 @@ export function IdeaNewScreen() {
           text="Others see “Anonymous” and an animal name. If someone reports it, moderators can still see who posted. Keep it respectful, no adult content."
         />
 
-        {!promptText ? (
-          <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              aria-expanded={more}
-              onClick={() => setMore((value) => !value)}
-              className="w-fit text-[13.5px] font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-            >
-              {more ? "Hide title and topic" : "Add a title or a topic (optional)"}
-            </button>
-            {more ? (
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="thought-title" className="sr-only">
-                    Title
-                  </label>
-                  <input
-                    id="thought-title"
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    maxLength={TITLE_MAX}
-                    placeholder="A title, if you like"
-                    className="w-full bg-transparent font-heading text-[1.3rem] font-extrabold leading-tight tracking-tight outline-none placeholder:text-ink-muted/50"
-                  />
-                </div>
-                <fieldset className="flex flex-wrap gap-2">
-                  <legend className="sr-only">Topic</legend>
-                  {TOPICS.map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={topic === value}
-                      onClick={() => setTopic(value)}
-                      className={cn(
-                        chip,
-                        topic === value
-                          ? "bg-brand border-transparent text-white"
-                          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-                      )}
-                    >
-                      {TOPIC_LABEL[value]}
-                    </button>
-                  ))}
-                </fieldset>
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            aria-expanded={more}
+            onClick={() => setMore((value) => !value)}
+            className="w-fit text-[13.5px] font-semibold text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+          >
+            {more ? "Hide title and topic" : "Add a title or a topic (optional)"}
+          </button>
+          {more ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="thought-title" className="sr-only">
+                  Title
+                </label>
+                <input
+                  id="thought-title"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  maxLength={TITLE_MAX}
+                  placeholder="A title, if you like"
+                  className="w-full bg-transparent font-heading text-[1.3rem] font-extrabold leading-tight tracking-tight outline-none placeholder:text-ink-muted/50"
+                />
               </div>
-            ) : null}
-          </div>
-        ) : null}
+              <fieldset className="flex flex-wrap gap-2">
+                <legend className="sr-only">Topic</legend>
+                {TOPICS.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={topic === value}
+                    onClick={() => setTopic(value)}
+                    className={cn(
+                      chip,
+                      topic === value
+                        ? "bg-brand border-transparent text-white"
+                        : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+                    )}
+                  >
+                    {TOPIC_LABEL[value]}
+                  </button>
+                ))}
+              </fieldset>
+            </div>
+          ) : null}
+        </div>
 
         {error ? (
           <Banner variant="error">

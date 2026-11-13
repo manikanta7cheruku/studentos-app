@@ -17,11 +17,6 @@ export const ideaCreateBody = z
     anonymous: z.boolean().default(false),
     // A poll: two to four short options.
     poll: z.array(z.string().trim().min(1).max(40)).min(2).max(4).optional(),
-    // Set when the buzz answers the question of the day (see lib/daily-prompts.ts).
-    prompt_key: z
-      .string()
-      .regex(/^q\d{1,3}$/)
-      .optional(),
   })
   .refine((value) => value.title.length + value.body.length > 0, {
     message: "Write something",
@@ -49,7 +44,6 @@ export const idea = z.object({
   my_vote: z.number().int().min(-1).max(1),
   // Posted without a name: the author is then "Anonymous <animal>" with a nil user id.
   is_anonymous: z.boolean().default(false),
-  prompt_key: z.string().nullable().default(null),
   poll: ideaPoll.nullable().default(null),
   author: z.object({
     user_id: uuid,
