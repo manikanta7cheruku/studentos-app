@@ -326,9 +326,6 @@ export function HomeScreen() {
             <Button asChild variant="ghost" size="sm">
               <Link href={`/c/${slug}/ideas`}>All buzz</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`/c/${slug}/market`}>Market</Link>
-            </Button>
           </div>
         ) : null}
       </div>

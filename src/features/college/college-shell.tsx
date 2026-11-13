@@ -38,6 +38,7 @@ import {
   usePlusGestures,
 } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
+import { recentlyOnboarded } from "@/lib/just-onboarded";
 import { Tour } from "@/features/tour/tour";
 import { markTourDone, useTourDone } from "@/features/tour/tour-state";
 import { useLoad } from "@/lib/use-load";
@@ -454,9 +455,36 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // A new person finishes the short tour (name, username, sex, interests) before anything else.
   const needsTour = me !== null && !me.onboarded;
+  const { refreshProfile } = useCollege();
   React.useEffect(() => {
-    if (needsTour) router.replace(`/welcome?next=${encodeURIComponent(pathname)}`);
-  }, [needsTour, pathname, router]);
+    if (!needsTour) return;
+    const back = `/welcome?next=${encodeURIComponent(pathname)}`;
+    if (!recentlyOnboarded()) {
+      router.replace(back);
+      return;
+    }
+    // The tour was finished a moment ago. If the profile still reads as not finished, that is probably a stale answer: ask
+    // again a few times before sending anyone back to the start.
+    let cancelled = false;
+    void (async () => {
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 700));
+        if (cancelled) return;
+        try {
+          if ((await api.profile.get()).onboarded) {
+            await refreshProfile();
+            return;
+          }
+        } catch {
+          // try again
+        }
+      }
+      if (!cancelled) router.replace(back);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [needsTour, pathname, router, refreshProfile]);
   const mainRef = React.useRef<HTMLElement>(null);
   // Which way the last move between tabs went (1 forward, -1 back), so the next page slides in from that side.
   const direction = React.useRef<1 | -1 | 0>(0);

@@ -142,13 +142,13 @@ function MoreMenu() {
           {
             href: `/c/${slug}/lost-found`,
             label: "Lost and found",
-            text: "Lost it? Found it?",
+            text: "Coming soon, with the colleges",
             icon: <PackageSearchIcon />,
           },
           {
             href: `/c/${slug}/market`,
             label: "Marketplace",
-            text: "Buy, sell, rent, free",
+            text: "Coming soon: sell or rent to students",
             icon: <StoreIcon />,
           },
         ]

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { COMING_SOON } from "@/lib/features";
 import {
   CalendarDaysIcon,
   MapPinnedIcon,
@@ -6,6 +7,10 @@ import {
   StoreIcon,
   ScaleIcon,
 } from "lucide-react";
+
+const soon = (href: string) =>
+  (href.endsWith("/market") && COMING_SOON.marketplace) ||
+  (href.endsWith("/lost-found") && COMING_SOON.lostFound);
 
 /** Three ways into the community boards: Events, Lost and found, and the Marketplace. */
 export function ExploreTiles({ slug }: { slug: string }) {
@@ -35,7 +40,7 @@ export function ExploreTiles({ slug }: { slug: string }) {
       icon: <StoreIcon />,
     },
   ];
-  // Turf, Lost and found and the Marketplace belong to one campus: Global shows Events and the weekly challenge instead.
+  // Turf belongs to one campus, so Global does not list it. Lost and found and the Marketplace are listed everywhere, marked Soon.
   const shown =
     slug === "global"
       ? [
@@ -46,6 +51,8 @@ export function ExploreTiles({ slug }: { slug: string }) {
             text: "Pick a side",
             icon: <ScaleIcon />,
           },
+          tiles[2]!,
+          tiles[3]!,
         ]
       : tiles;
   return (
@@ -58,6 +65,11 @@ export function ExploreTiles({ slug }: { slug: string }) {
           >
             {tile.icon}
             {tile.title}
+            {soon(tile.href) ? (
+              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#f0c36a]">
+                Soon
+              </span>
+            ) : null}
           </Link>
         </li>
       ))}

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDaysIcon, MapPinnedIcon, MessageCircleHeartIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon, ClockIcon, MessageCircleHeartIcon, UsersIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
@@ -12,6 +12,7 @@ import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
 import { collegeNameProblem, placeProblem } from "@/lib/college-name";
+import { markJustOnboarded } from "@/lib/just-onboarded";
 import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
@@ -58,6 +59,8 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
   const [step, setStep] = React.useState(0);
   // A brand new person first sees why the app is worth it; someone only finishing their profile skips that.
   const [intro, setIntro] = React.useState(true);
+  const [finishing, setFinishing] = React.useState(false);
+  const [finishError, setFinishError] = React.useState<string | null>(null);
 
   if (session.status === "signed-out") {
     router.replace("/signin?next=%2Fwelcome");
@@ -65,18 +68,40 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
   }
 
   const finish = async () => {
-    // Count the invitation (if the person came through a friend's link), once.
+    if (finishing) return;
+    setFinishing(true);
+    setFinishError(null);
+    // Count the invitation (if the person came through a friend's link), once. It never holds the person back for long.
     const code = takeReferral();
     if (code) {
-      try {
-        await api.invite.apply(code);
-      } catch {
-        // The invitation is a nicety: never hold the person back for it.
-      }
-      clearReferral();
+      await Promise.race([
+        api.invite.apply(code).then(
+          () => clearReferral(),
+          () => clearReferral(),
+        ),
+        new Promise((resolve) => window.setTimeout(resolve, 1500)),
+      ]);
     }
-    // A full page load, not a soft move: the app then reads the finished profile fresh, so it can never think the tour is
-    // still to do (a soft move could keep the old answer until a reload).
+    // Make sure the finished profile reads back as finished before leaving. If it does not, say so here, instead of sending
+    // the person on to a page that would send them straight back.
+    let finished = false;
+    for (let attempt = 0; attempt < 4 && !finished; attempt += 1) {
+      try {
+        finished = (await api.profile.get()).onboarded;
+      } catch {
+        finished = false;
+      }
+      if (!finished) await new Promise((resolve) => window.setTimeout(resolve, 600));
+    }
+    if (!finished) {
+      setFinishError(
+        "We could not confirm your profile yet. Check your name, username, college and interests, then try again.",
+      );
+      setFinishing(false);
+      return;
+    }
+    markJustOnboarded();
+    // A full page load, not a soft move: the app then reads the finished profile fresh.
     window.location.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
   };
 
@@ -121,7 +146,7 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
       ) : step === 2 ? (
         <MoreAboutYou saved={mine.data} onDone={() => setStep(3)} onSkip={() => setStep(3)} />
       ) : (
-        <Tour onDone={finish} />
+        <Tour onDone={finish} busy={finishing} error={finishError} onReview={() => setStep(0)} />
       )}
     </main>
   );
@@ -476,21 +501,31 @@ const TOUR = [
   {
     icon: <CalendarDaysIcon aria-hidden="true" />,
     title: "Events",
-    text: "Official events from your college and personal ones from students.",
-  },
-  {
-    icon: <MapPinnedIcon aria-hidden="true" />,
-    title: "Turf and courts",
-    text: "Find a ground, pick a free hour, ask to book it.",
+    text: "Official events from colleges and personal ones from students.",
   },
   {
     icon: <MessageCircleHeartIcon aria-hidden="true" />,
-    title: "Buzz and Market",
-    text: "Say anything in seconds. Buy, sell, or find what you lost.",
+    title: "Buzz and Debates",
+    text: "Say anything in seconds, or pick a side and argue your point.",
+  },
+  {
+    icon: <ClockIcon aria-hidden="true" />,
+    title: "Coming soon",
+    text: "Your college space, the Marketplace and Lost and found open as we team up with colleges.",
   },
 ];
 
-function Tour({ onDone }: { onDone: () => void }) {
+function Tour({
+  onDone,
+  busy,
+  error,
+  onReview,
+}: {
+  onDone: () => void;
+  busy: boolean;
+  error: string | null;
+  onReview: () => void;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <StepTitle
@@ -513,8 +548,20 @@ function Tour({ onDone }: { onDone: () => void }) {
           </li>
         ))}
       </ul>
-      <Button size="lg" onClick={onDone}>
-        Let&rsquo;s go
+      {error ? (
+        <Banner variant="error">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={onReview}
+            className="mt-1 text-[13px] font-semibold underline underline-offset-2"
+          >
+            Review my details
+          </button>
+        </Banner>
+      ) : null}
+      <Button size="lg" onClick={onDone} disabled={busy}>
+        {busy ? <Spinner /> : null} Let&rsquo;s go
       </Button>
     </div>
   );

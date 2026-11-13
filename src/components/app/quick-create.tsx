@@ -19,6 +19,7 @@ import {
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useOverlayHistory } from "@/lib/use-overlay-history";
+import { COMING_SOON } from "@/lib/features";
 import { GlassTip } from "./glass-tip";
 
 /** How long a press must last to count as a hold, and how long to wait for a second tap. */
@@ -207,7 +208,13 @@ export function QuickCreate({
   );
 }
 
-type Shortcut = { href: string; title: string; icon: React.ReactNode; count?: number };
+type Shortcut = {
+  href: string;
+  title: string;
+  icon: React.ReactNode;
+  count?: number;
+  soon?: boolean;
+};
 
 function Row({
   item,
@@ -237,6 +244,11 @@ function Row({
         <span className="min-w-0 flex-1 truncate text-left text-[14.5px] font-semibold leading-none">
           {item.title}
         </span>
+        {item.soon ? (
+          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-[#f0c36a]">
+            Soon
+          </span>
+        ) : null}
         {item.count && item.count > 0 ? (
           <span
             aria-label={`${item.count} waiting`}
@@ -311,17 +323,19 @@ function ShortcutList({
             title: "Turf and courts",
             icon: <MapPinnedIcon aria-hidden="true" />,
           },
-          {
-            href: `/c/${slug}/lost-found`,
-            title: "Lost and found",
-            icon: <PackageSearchIcon aria-hidden="true" />,
-          },
-          {
-            href: `/c/${slug}/market`,
-            title: "Marketplace",
-            icon: <StoreIcon aria-hidden="true" />,
-          },
         ]),
+    {
+      href: `/c/${slug}/lost-found`,
+      title: "Lost and found",
+      icon: <PackageSearchIcon aria-hidden="true" />,
+      soon: COMING_SOON.lostFound,
+    },
+    {
+      href: `/c/${slug}/market`,
+      title: "Marketplace",
+      icon: <StoreIcon aria-hidden="true" />,
+      soon: COMING_SOON.marketplace,
+    },
   ];
   const more: Shortcut[] = [
     {

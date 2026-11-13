@@ -15,6 +15,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { cn } from "cn";
+import { COMING_SOON } from "@/lib/features";
 import { useOverlayHistory } from "@/lib/use-overlay-history";
 
 type Choice = {
@@ -24,6 +25,8 @@ type Choice = {
   icon: React.ReactNode;
   /** Two colours for the icon tile. */
   tint: string;
+  /** Not open yet: the tile says Soon and opens the page that explains it. */
+  soon?: boolean;
 };
 
 /**
@@ -77,14 +80,16 @@ export function CreateSheet({
       tint: "from-[#7a5fd6] to-[#4f6fe0]",
     },
     {
-      href: `/c/${slug}/market/new`,
+      href: COMING_SOON.marketplace ? `/c/${slug}/market` : `/c/${slug}/market/new`,
+      soon: COMING_SOON.marketplace,
       title: "Sell or rent",
       text: "Books, bikes, more",
       icon: <StoreIcon aria-hidden="true" />,
       tint: "from-[#2fb98a] to-[#2f90b9]",
     },
     {
-      href: `/c/${slug}/lost-found/new`,
+      href: COMING_SOON.lostFound ? `/c/${slug}/lost-found` : `/c/${slug}/lost-found/new`,
+      soon: COMING_SOON.lostFound,
       title: "Lost and found",
       text: "Post it, get a reply",
       icon: <PackageSearchIcon aria-hidden="true" />,
@@ -92,8 +97,9 @@ export function CreateSheet({
     },
   ];
 
-  // Turf, the Marketplace and Lost and found belong to one campus, so Global does not offer them.
-  const shown = slug === "global" ? choices.slice(0, 4) : choices;
+  // Turf belongs to one campus, so Global does not offer it. The Marketplace and Lost and found show everywhere, marked Soon.
+  const shown =
+    slug === "global" ? choices.filter((item) => !item.href.includes("/turf")) : choices;
 
   // Back closes the card; a tile opens its page with Back returning to where the person was.
   const router = useRouter();
@@ -145,8 +151,13 @@ export function CreateSheet({
                     {item.icon}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[14.5px] font-bold leading-tight text-white">
+                    <span className="flex items-center gap-1.5 text-[14.5px] font-bold leading-tight text-white">
                       {item.title}
+                      {item.soon ? (
+                        <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-[#f0c36a]">
+                          Soon
+                        </span>
+                      ) : null}
                     </span>
                     <span className="mt-0.5 block truncate text-[12.5px] leading-snug text-white/70">
                       {item.text}
