@@ -116,8 +116,13 @@ export function IdeasScreen() {
         <div
           role="group"
           aria-label="Order"
-          className="inline-flex shrink-0 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5"
+          className="relative grid shrink-0 grid-cols-2 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5"
         >
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/2)] rounded-full bg-white/[0.16] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
+            style={{ transform: `translateX(${sort === "new" ? 0 : 100}%)` }}
+          />
           {(["new", "top"] as const).map((value) => (
             <button
               key={value}
@@ -125,8 +130,8 @@ export function IdeasScreen() {
               aria-pressed={sort === value}
               onClick={() => setSort(value)}
               className={cn(
-                "h-7 rounded-full px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                sort === value ? "bg-white/[0.16] text-ink" : "text-ink-muted hover:text-ink",
+                "relative z-10 h-7 min-w-[3.6rem] rounded-full px-3.5 text-[12.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring",
+                sort === value ? "text-ink" : "text-ink-muted hover:text-ink",
               )}
             >
               {value === "new" ? "New" : "Top"}

@@ -30,6 +30,24 @@ export function QuickPost({ onPosted }: { onPosted: () => void }) {
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
   const area = React.useRef<HTMLTextAreaElement>(null);
+  const box = React.useRef<HTMLFormElement>(null);
+
+  // Tapping anywhere outside, or Escape, folds it back. A half written buzz stays in the box.
+  React.useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => {
+      if (box.current && !box.current.contains(event.target as Node)) setOpen(false);
+    };
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
 
   async function post(event: React.FormEvent) {
     event.preventDefault();
@@ -44,6 +62,7 @@ export function QuickPost({ onPosted }: { onPosted: () => void }) {
       setAnonymous(false);
       setTopic("other");
       setOpen(false);
+      area.current?.blur();
       setDone(true);
       window.setTimeout(() => setDone(false), 2500);
       onPosted();
@@ -62,40 +81,41 @@ export function QuickPost({ onPosted }: { onPosted: () => void }) {
   const name = profile?.display_name ?? "You";
   return (
     <form
+      ref={box}
       onSubmit={post}
       className="glass-card flex flex-col gap-3 rounded-[20px] p-3 transition-[box-shadow] duration-200 focus-within:shadow-[0_0_0_3px_rgba(143,134,240,0.18)]"
     >
       <div className="flex items-start gap-3">
         <Avatar name={name} src={profile?.avatar_url ?? null} size="sm" />
-        {open ? (
-          <>
-            <label htmlFor="quick-buzz" className="sr-only">
-              Your buzz
-            </label>
-            <textarea
-              id="quick-buzz"
-              ref={area}
-              autoFocus
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              maxLength={MAX}
-              rows={3}
-              placeholder="What is on your mind?"
-              className="min-h-[72px] flex-1 resize-none bg-transparent pt-1.5 text-[16px] outline-none placeholder:text-ink-muted/70 md:text-[14.5px]"
-            />
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="h-9 flex-1 rounded-full bg-white/[0.06] px-4 text-left text-[14px] text-ink-muted outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {done ? "Posted. Share another?" : "What is on your mind?"}
-          </button>
-        )}
+        <label htmlFor="quick-buzz" className="sr-only">
+          Your buzz
+        </label>
+        <textarea
+          id="quick-buzz"
+          ref={area}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          onFocus={() => setOpen(true)}
+          maxLength={MAX}
+          rows={1}
+          placeholder={done ? "Posted. Share another?" : "What is on your mind?"}
+          className={cn(
+            "flex-1 resize-none overflow-hidden bg-transparent text-[16px] outline-none transition-[height,background-color,padding,border-radius] duration-300 ease-out placeholder:text-ink-muted/70 motion-reduce:transition-none md:text-[14.5px]",
+            open
+              ? "h-24 rounded-xl px-1 pt-1.5"
+              : "h-9 cursor-pointer rounded-full bg-white/[0.06] px-4 pt-[7px] hover:bg-white/10",
+          )}
+        />
       </div>
-      {open ? (
-        <>
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+          open ? "grid-rows-[1fr] opacity-100" : "pointer-events-none grid-rows-[0fr] opacity-0",
+        )}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
           <div
             role="group"
             aria-label="Topic"
@@ -142,15 +162,24 @@ export function QuickPost({ onPosted }: { onPosted: () => void }) {
             <span className="tabular ml-auto shrink-0 text-[11.5px] text-ink-muted">
               {text.length}/{MAX}
             </span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setOpen(false);
+                setText("");
+                setError(null);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" size="sm" disabled={busy || !text.trim()}>
               {busy ? <Spinner /> : <SendIcon aria-hidden="true" />} Post
             </Button>
           </div>
-        </>
-      ) : null}
+        </div>
+      </div>
     </form>
   );
 }
