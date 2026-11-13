@@ -577,6 +577,14 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
+      {/* A soft fade under the dock, so scrolled content melts away instead of colliding with the bar. */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(6rem+var(--safe-bottom))] bg-gradient-to-t from-[#0b0b10]/70 via-[#0b0b10]/30 to-transparent md:hidden",
+          inChat && "hidden",
+        )}
+      />
       {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
       <div
         className={cn(
@@ -586,12 +594,12 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       >
         <nav
           aria-label="College"
-          className="glass-clear pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
+          className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
         >
           {/* One highlight that travels to the open tab. */}
           <span
             aria-hidden="true"
-            className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-2xl bg-white/[0.17] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
+            className="glass-thumb absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-2xl transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
             style={{
               transform: `translateX(${Math.max(tabIndex, 0) * 100}%)`,
               opacity: tabIndex >= 0 ? 1 : 0,
