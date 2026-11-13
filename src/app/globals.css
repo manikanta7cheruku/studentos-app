@@ -594,3 +594,10 @@ select option {
     background: rgba(6, 6, 12, 0.7);
   }
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

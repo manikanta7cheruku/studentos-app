@@ -23,7 +23,7 @@ export function DailyCards() {
     <section aria-label="Live debate">
       <Link
         href={hottest ? `/c/${slug}/debates/${hottest.id}` : `/c/${slug}/debates`}
-        className="lift glass-card group relative flex flex-col gap-2 overflow-hidden rounded-[22px] p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="lift glass-card group relative flex flex-col gap-2 overflow-hidden rounded-[22px] px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span
           aria-hidden="true"

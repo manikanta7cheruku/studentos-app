@@ -17,7 +17,8 @@ import {
 } from "@/lib/api/endpoints";
 import { CampusNotice } from "./campus-notice";
 import { DailyCards } from "./daily-cards";
-import { NetworkCard } from "./network-card";
+import { NetworkStrip, PeopleToMeet } from "./network-card";
+import { HappeningSoon, pickSoonest } from "./happening-soon";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -127,6 +128,13 @@ export function HomeScreen() {
   );
   const publicEvents = usePublicLoad(() => api.events.list(GLOBAL_SLUG, { when: "upcoming" }), []);
 
+  const [now] = React.useState(() => Date.now());
+  const soon = pickSoonest(
+    slug,
+    events.status === "ready" ? events.data : [],
+    plans.status === "ready" ? plans.data.data : [],
+    now,
+  );
   const isGlobal = slug === GLOBAL_SLUG;
   const first = profile?.display_name.split(/\s+/)[0] ?? "there";
   const today = new Date().toLocaleDateString(undefined, {
@@ -212,15 +220,19 @@ export function HomeScreen() {
 
       <CampusNotice />
 
+      <HappeningSoon soon={soon} now={now} />
+
       <DailyCards />
 
-      <NetworkCard />
+      <NetworkStrip />
 
       <FinishProfile />
 
       <ExploreTiles slug={slug} />
 
       <FeedTabs tab={tab} onChange={setTab} />
+
+      {tab === "all" ? <PeopleToMeet /> : null}
 
       <div aria-live="polite">
         {loading && items.length === 0 ? (

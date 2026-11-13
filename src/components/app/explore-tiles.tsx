@@ -49,20 +49,15 @@ export function ExploreTiles({ slug }: { slug: string }) {
         ]
       : tiles;
   return (
-    <ul className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <ul className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 md:mx-0 md:px-0">
       {shown.map((tile) => (
-        <li key={tile.href}>
+        <li key={tile.href} className="shrink-0">
           <Link
             href={tile.href}
-            className="lift glass-card group flex h-full flex-col items-start gap-3 rounded-[22px] p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="glass-clear inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-4 [&_svg]:text-[#b9b4ee]"
           >
-            <span className="bg-brand inline-flex size-10 items-center justify-center rounded-xl text-white [&_svg]:size-5">
-              {tile.icon}
-            </span>
-            <span>
-              <span className="block text-[15px] font-bold">{tile.title}</span>
-              <span className="block text-[12.5px] text-ink-muted">{tile.text}</span>
-            </span>
+            {tile.icon}
+            {tile.title}
           </Link>
         </li>
       ))}
