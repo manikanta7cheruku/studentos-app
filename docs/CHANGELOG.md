@@ -41,3 +41,4 @@
 | 2026-11-13 | R3 anonymous posts and the owner | Owner Anonymous page, richer Reports page, report from the Buzz list (D-66). | R3 |
 | 2026-11-13 | R3 debates round 2 | Top argument preview on cards, Hot right now, compact sides after joining (D-67). | R3 |
 | 2026-11-13 | R3 updates, team requests, feedback | Notification links, live refresh and day groups; Team requests with inline answers; feedback with kind cards, counter and draft (D-68). | R3 |
+| 2026-11-13 | R3 navigation | Profile picture top right, dock with Debates and Network, brighter open tab, one-time tip (D-69). | R3 |

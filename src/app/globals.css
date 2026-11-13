@@ -311,14 +311,6 @@ input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]):focu
     transparent 46%
   );
 }
-/* The highlight under the open tab: a small bubble of brighter glass. */
-.glass-thumb {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.13));
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 6px 14px -4px rgba(0, 0, 0, 0.4);
-}
 /* The brand gradient as a fill, and a soft lavender for emphasised words. */
 @utility bg-brand {
   background-image: var(--grad);

@@ -23,8 +23,8 @@ import {
   PlusIcon,
   SettingsIcon,
   ShieldCheckIcon,
-  UserRoundIcon,
   UsersIcon,
+  UserRoundIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { cn } from "cn";
@@ -57,20 +57,19 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
     { href: `${base}/home`, label: "Home", icon: <HouseIcon /> },
     { href: `${base}/collaborate`, label: "Plans", icon: <UsersIcon /> },
     { href: `${base}/ideas`, label: "Buzz", icon: <MessageCircleHeartIcon /> },
-    { href: `${base}/me`, label: "You", icon: <UserRoundIcon /> },
+    { href: `${base}/debates`, label: "Debates", icon: <ScaleIcon /> },
+    { href: `${base}/people`, label: "Network", icon: <UsersRoundIcon /> },
   ];
   const more: NavItem[] = [];
   if (college.modules.campus && slug !== GLOBAL_SLUG)
     more.push({ href: `${base}/campus`, label: "Campus", icon: <Building2Icon /> });
   more.push({ href: `${base}/events`, label: "Events", icon: <CalendarDaysIcon /> });
-  more.push({ href: `${base}/debates`, label: "Debates", icon: <ScaleIcon /> });
   // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
   if (slug !== GLOBAL_SLUG) {
     more.push({ href: `${base}/turf`, label: "Turf and courts", icon: <MapPinnedIcon /> });
     more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
     more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
   }
-  more.push({ href: `${base}/people`, label: "Network", icon: <UsersRoundIcon /> });
   more.push({ href: `${base}/career`, label: "Careers", icon: <BriefcaseIcon /> });
   if (isModerator) more.push({ href: `${base}/admin`, label: "Admin", icon: <ShieldCheckIcon /> });
   return { tabs, more };
@@ -160,6 +159,28 @@ function MessagesLink({ className }: { className?: string }) {
   );
 }
 
+/** My picture in the top bar: it opens my profile. A ring shows when I am on it. */
+function ProfileLink({ className }: { className?: string }) {
+  const { slug, profile } = useCollege();
+  const pathname = usePathname();
+  const on = pathname === `/c/${slug}/me` || pathname.startsWith(`/c/${slug}/me/`);
+  const name = profile?.display_name ?? "You";
+  return (
+    <Link
+      href={`/c/${slug}/me`}
+      aria-label="Your profile"
+      aria-current={on ? "page" : undefined}
+      className={cn(
+        "ml-1 inline-flex size-10 items-center justify-center rounded-full outline-none transition-[box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+        on && "shadow-[0_0_0_2px_rgba(143,134,240,0.9)]",
+        className,
+      )}
+    >
+      <Avatar name={name} src={profile?.avatar_url ?? null} size="sm" />
+    </Link>
+  );
+}
+
 function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
   const { slug, profile, membership } = useCollege();
   const session = useSession();
@@ -231,6 +252,15 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
             </>
           ) : null}
+          <DropdownMenu.Item asChild>
+            <Link
+              href={`/c/${slug}/me`}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 outline-none data-[highlighted]:bg-accent-soft"
+            >
+              <UserRoundIcon aria-hidden="true" className="size-[18px] text-ink-muted" />
+              Your profile
+            </Link>
+          </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
             <Link
               href={`/c/${slug}/me/settings`}
@@ -558,6 +588,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           <div className="flex-1" />
           <MessagesLink />
           <BellLink />
+          <ProfileLink />
         </header>
 
         <main
@@ -594,17 +625,8 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
       >
         <nav
           aria-label="College"
-          className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
+          className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-5 items-center rounded-[22px] p-1.5"
         >
-          {/* One highlight that travels to the open tab. */}
-          <span
-            aria-hidden="true"
-            className="glass-thumb absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-2xl transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
-            style={{
-              transform: `translateX(${Math.max(tabIndex, 0) * 100}%)`,
-              opacity: tabIndex >= 0 ? 1 : 0,
-            }}
-          />
           {tabs.map((item, index) => {
             const current = isCurrent(pathname, item);
             return (
@@ -617,8 +639,10 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                 }}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-[20px] [&_svg]:shrink-0",
-                  current ? "text-white" : "text-white/60 hover:text-white/90",
+                  "group relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[9.5px] font-semibold tracking-tight outline-none transition-[color,transform] duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 min-[350px]:text-[10px] [&_svg]:size-[20px] [&_svg]:shrink-0 [&_svg]:transition-[filter,transform] [&_svg]:duration-300",
+                  current
+                    ? "text-white [&_svg]:scale-110 [&_svg]:drop-shadow-[0_0_9px_rgba(176,166,255,0.85)]"
+                    : "text-white/50 hover:text-white/85",
                 )}
               >
                 <span aria-hidden="true">{item.icon}</span>
@@ -639,8 +663,50 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
 
       <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
       <QuickCreate slug={slug} unread={unread} open={quick} onOpenChange={setQuick} />
+      <ProfileTip enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
       <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
     </div>
+  );
+}
+
+const PROFILE_TIP_KEY = "studentos.profileTip";
+
+/** Once, for people who knew the old You tab: "Your profile is now your picture, top right". It fades by itself. */
+function ProfileTip({ enabled }: { enabled: boolean }) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    if (!enabled) return;
+    try {
+      if (window.localStorage.getItem(PROFILE_TIP_KEY) === "1") return;
+    } catch {
+      return;
+    }
+    const show = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(PROFILE_TIP_KEY, "1");
+      } catch {
+        // No storage: the tip may show again, which is harmless.
+      }
+      setVisible(true);
+    }, 2500);
+    const hide = window.setTimeout(() => setVisible(false), 2500 + 6500);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
+  }, [enabled]);
+  if (!enabled || !visible) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => setVisible(false)}
+      className="glass-clear plus-hint fixed right-3 top-[3.9rem] z-40 max-w-[14rem] rounded-[18px] px-3.5 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+    >
+      <span className="block text-[13px] font-semibold">Your profile moved</span>
+      <span className="mt-0.5 block text-[12px] leading-snug text-ink-muted">
+        Tap your picture, top right, for your profile and settings.
+      </span>
+    </button>
   );
 }
 
