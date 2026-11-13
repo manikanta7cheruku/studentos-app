@@ -52,22 +52,28 @@ export function usePush() {
 
   React.useEffect(() => {
     let live = true;
-    void detect()
-      .catch(() => "unsupported" as PushState)
-      .then((next) => live && setState(next));
+    const check = () =>
+      void detect()
+        .catch(() => "unsupported" as PushState)
+        .then((next) => live && setState(next));
+    check();
+    // Someone who allowed alerts in their phone settings comes back to the app: pick that up at once.
+    const onVisible = () => document.visibilityState === "visible" && check();
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       live = false;
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
-  const enable = React.useCallback(async () => {
+  const enable = React.useCallback(async (): Promise<boolean> => {
     setBusy(true);
     setError(null);
     try {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setState(permission === "denied" ? "blocked" : "off");
-        return;
+        return false;
       }
       await navigator.serviceWorker.register("/sw.js", { scope: "/" });
       const registration = await navigator.serviceWorker.ready;
@@ -84,8 +90,10 @@ export function usePush() {
         keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
       });
       setState("on");
+      return true;
     } catch {
       setError("We could not turn alerts on. Please try again.");
+      return false;
     } finally {
       setBusy(false);
     }

@@ -77,7 +77,7 @@ export function InstallApp({
   size = "lg",
   variant = "outline",
   className = "",
-  label = "Download the app",
+  label = "Add to your phone",
 }: {
   size?: "sm" | "lg";
   variant?: "outline" | "default" | "secondary";
@@ -123,7 +123,7 @@ export function InstallApp({
       <Dialog open={help} onOpenChange={setHelp}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Get StudentOS on your phone</DialogTitle>
+            <DialogTitle>Add StudentOS to your phone</DialogTitle>
             <DialogDescription>
               It is free, takes a few seconds and needs no app store. It opens full screen with its
               own icon.

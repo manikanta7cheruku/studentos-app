@@ -27,7 +27,6 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type NotificationItem } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { PushPrompt } from "./push-alerts";
 import { notificationHref as linkFor } from "@/lib/notification-link";
 
 // The person's own notifications (NTF-01, NTF-02). A notification is a title and a sentence; the type decides where
@@ -202,7 +201,6 @@ export function NotificationsScreen() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
       <PageHeader app title="Updates" />
-      <PushPrompt />
       <div className="flex items-center gap-2">
         <GlideTabs
           label="Which updates"
