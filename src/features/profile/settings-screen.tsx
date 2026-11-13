@@ -487,6 +487,10 @@ function SpacesSection() {
   );
 }
 
+// What a friend reads when the link is shared in a chat: what it is, that it is free, and how to get it on a phone.
+const INVITE_TEXT =
+  "I am using StudentOS to find plans, join debates and meet people on campus. It is free, and you can add it to your phone in two taps, no app store needed. Join me:";
+
 /** My invite link, to share in a group chat. Shows how many friends joined through it. */
 function InviteSection() {
   const state = useLoad(() => api.invite.get(), []);
@@ -513,12 +517,12 @@ function InviteSection() {
       if (navigator.share) {
         await navigator.share({
           title: "Join me on StudentOS",
-          text: "Plans, buzz and people from college. Join me:",
+          text: INVITE_TEXT,
           url: link,
         });
         return;
       }
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(`${INVITE_TEXT}\n${link}`);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {

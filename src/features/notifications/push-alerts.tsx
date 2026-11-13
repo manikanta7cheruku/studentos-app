@@ -5,14 +5,15 @@ import { BellRingIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/endpoints";
+import { AlertsHelp } from "./alerts-help";
 import { usePush, type PushState } from "./use-push";
 
 function hint(state: PushState): string {
   switch (state) {
     case "install":
-      return "On iPhone, add StudentOS to your Home Screen first (Share, then Add to Home Screen), then turn this on.";
+      return "On iPhone, alerts work after StudentOS is added to your Home Screen.";
     case "blocked":
-      return "Alerts are blocked for StudentOS in your browser settings. Allow notifications there, then come back.";
+      return "Alerts are blocked for StudentOS on this device.";
     case "unsupported":
       return "This browser cannot show alerts. Try Chrome on Android or the installed app.";
     default:
@@ -24,6 +25,7 @@ function hint(state: PushState): string {
 export function PushAlertsRow() {
   const { state, busy, error, enable, disable } = usePush();
   const id = React.useId();
+  const [helpOpen, setHelpOpen] = React.useState(false);
   const [testing, setTesting] = React.useState(false);
   const [testNote, setTestNote] = React.useState<string | null>(null);
   if (state === "unavailable") return null;
@@ -51,6 +53,15 @@ export function PushAlertsRow() {
         <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
           <span className="block font-medium text-ink">Alerts on this device</span>
           <span className="block text-[13px] text-ink-muted">{error ?? hint(state)}</span>
+          {state === "blocked" || state === "install" ? (
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className="mt-1.5 text-[13px] font-medium text-ink underline underline-offset-4"
+            >
+              Show me how
+            </button>
+          ) : null}
         </label>
         <Switch
           id={id}
@@ -59,6 +70,7 @@ export function PushAlertsRow() {
           onCheckedChange={(value) => void (value ? enable() : disable())}
         />
       </div>
+      <AlertsHelp open={helpOpen} onOpenChange={setHelpOpen} state={state} retry={enable} />
       {state === "on" ? (
         <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] py-2.5">
           <span className="min-w-0 flex-1 text-[13px] text-ink-muted">
@@ -103,8 +115,8 @@ function nudgeDue(): boolean {
 
 const NUDGE_TEXT: Record<"off" | "blocked" | "install", string> = {
   off: "Get alerts for messages and plans",
-  blocked: "Alerts are blocked. Allow Notifications in your browser settings.",
-  install: "For alerts, add StudentOS to your Home Screen.",
+  blocked: "Alerts are blocked on this device.",
+  install: "Add StudentOS to your Home Screen for alerts.",
 };
 
 /**
@@ -114,6 +126,7 @@ const NUDGE_TEXT: Record<"off" | "blocked" | "install", string> = {
 export function PushNudge({ enabled }: { enabled: boolean }) {
   const { state, busy, enable } = usePush();
   const [shown, setShown] = React.useState(false);
+  const [helpOpen, setHelpOpen] = React.useState(false);
   const wanted = state === "off" || state === "blocked" || state === "install";
 
   React.useEffect(() => {
@@ -123,7 +136,7 @@ export function PushNudge({ enabled }: { enabled: boolean }) {
     return () => window.clearTimeout(timer);
   }, [enabled, wanted]);
 
-  if (!shown || !enabled || !wanted) return null;
+  if (!(shown || helpOpen) || !enabled || !wanted) return null;
   const copy = NUDGE_TEXT[state as "off" | "blocked" | "install"];
 
   function later() {
@@ -140,31 +153,51 @@ export function PushNudge({ enabled }: { enabled: boolean }) {
   }
 
   return (
-    <div
-      role="dialog"
-      aria-label="Alerts"
-      className="page-enter glass-card fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-sm items-center gap-2.5 rounded-full py-2 pl-3.5 pr-2 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:bottom-6 md:left-auto md:right-6 md:mx-0"
-    >
-      <BellRingIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
-      <p className="min-w-0 flex-1 text-[13px] leading-snug">{copy}</p>
-      {state === "off" ? (
-        <Button
-          size="sm"
-          className="h-8 rounded-full px-3.5 text-[12.5px]"
-          disabled={busy}
-          onClick={() => void turnOn()}
-        >
-          Turn on
-        </Button>
-      ) : null}
-      <button
-        type="button"
-        aria-label={state === "off" ? "Not now" : "Got it"}
-        onClick={later}
-        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/10 hover:text-ink"
+    <>
+      <AlertsHelp
+        open={helpOpen}
+        onOpenChange={(next) => {
+          setHelpOpen(next);
+          if (!next) later();
+        }}
+        state={state}
+        retry={enable}
+      />
+      <div
+        role="dialog"
+        aria-label="Alerts"
+        className="page-enter glass-card fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-sm items-center gap-2.5 rounded-full py-2 pl-3.5 pr-2 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:bottom-6 md:left-auto md:right-6 md:mx-0"
       >
-        <XIcon aria-hidden="true" className="size-4" />
-      </button>
-    </div>
+        <BellRingIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+        <p className="min-w-0 flex-1 text-[13px] leading-snug">{copy}</p>
+        {state === "off" ? (
+          <Button
+            size="sm"
+            className="h-8 rounded-full px-3.5 text-[12.5px]"
+            disabled={busy}
+            onClick={() => void turnOn()}
+          >
+            Turn on
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-full px-3.5 text-[12.5px]"
+            onClick={() => setHelpOpen(true)}
+          >
+            Show me how
+          </Button>
+        )}
+        <button
+          type="button"
+          aria-label={state === "off" ? "Not now" : "Got it"}
+          onClick={later}
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/10 hover:text-ink"
+        >
+          <XIcon aria-hidden="true" className="size-4" />
+        </button>
+      </div>
+    </>
   );
 }
