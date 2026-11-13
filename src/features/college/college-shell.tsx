@@ -117,7 +117,7 @@ function BellLink({ className }: { className?: string }) {
   );
 }
 
-/** Messages, one tap from every page. The badge counts messages waiting for me; it refreshes about every minute. */
+/** Messages, one tap from every page. The badge counts messages waiting for me; it refreshes every 15 seconds and when the app comes back to the front. */
 function MessagesLink({ className }: { className?: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.messages.threads(slug), [slug]);
@@ -125,8 +125,15 @@ function MessagesLink({ className }: { className?: string }) {
   React.useEffect(() => {
     const timer = window.setInterval(() => {
       if (document.visibilityState === "visible") reload();
-    }, 60_000);
-    return () => window.clearInterval(timer);
+    }, 15_000);
+    const back = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    document.addEventListener("visibilitychange", back);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", back);
+    };
   }, [reload]);
   const waiting =
     state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;

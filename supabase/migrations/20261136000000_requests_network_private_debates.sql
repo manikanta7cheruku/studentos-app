@@ -230,6 +230,7 @@ declare
   v_can boolean := true;
   v_blocked boolean := false;
   v_again timestamptz;
+  v_exists boolean;
 begin
   perform public.tf_assert_member(p_actor, p_college, false);
   if p_with is null or p_with = p_actor
@@ -243,7 +244,8 @@ begin
   end if;
   select * into v_thread from public.dm_threads t
    where t.college_id = p_college and t.user_a = least(p_actor, p_with) and t.user_b = greatest(p_actor, p_with);
-  if found then
+  v_exists := found;   -- the updates below reset FOUND, so remember it now
+  if v_exists then
     v_status := public.dm_effective(v_thread);
     if v_status = 'pending' and v_thread.requester_id = p_actor then
       v_can := false;                -- waiting for an answer
@@ -252,7 +254,7 @@ begin
       v_again := v_thread.decided_at + interval '5 days';
     end if;
   end if;
-  if found and not v_blocked then
+  if v_exists and not v_blocked then
     if v_status = 'accepted' then
       update public.dm_messages
          set opened_at = now(), expires_at = least(expires_at, now() + interval '1 hour')
@@ -274,7 +276,7 @@ begin
         'i_requested', v_thread.requester_id = p_actor,
         'expires_at', v_thread.request_expires_at,
         'can_request_again_at', v_again) end,
-    'messages', case when not found or v_blocked then '[]'::jsonb else coalesce((
+    'messages', case when not v_exists or v_blocked then '[]'::jsonb else coalesce((
       select jsonb_agg(jsonb_build_object(
                'id', m.id, 'mine', m.sender_id = p_actor, 'body', m.body,
                'created_at', m.created_at, 'opened_at', m.opened_at, 'expires_at', m.expires_at)

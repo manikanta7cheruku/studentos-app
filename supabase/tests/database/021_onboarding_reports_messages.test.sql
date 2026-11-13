@@ -51,6 +51,7 @@ select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000
 select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000004'), 0, 'the sender has nothing unread');
 select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 1, 'opening the conversation shows the request');
 select is((public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'request' ->> 'status'), 'pending', 'it is a pending request');
+select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 1, 'and reading it again still shows it (a poll must not blank the chat)');
 select is((select count(*)::int from public.dm_messages where sender_id = 'aaaaaaaa-1000-4000-8000-000000000003' and opened_at is not null and expires_at <= now() + interval '61 minutes'), 0, 'reading a request does not start the 1 hour clock');
 select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 0, 'and they are not unread any more');
 -- The receiver writes back, which accepts the request
