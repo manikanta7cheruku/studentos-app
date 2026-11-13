@@ -490,7 +490,7 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 
 | ID | Request | Notes |
 |---|---|---|
-| MSG-01 | GET `/api/v1/c/{slug}/messages` | My conversations that still have a message: the person, `unread` (messages from them not opened yet) and `last_at`. The words are not listed |
+| MSG-01 | GET `/api/v1/c/{slug}/messages` | My conversations: the person, `unread` (messages from them not opened yet), `message_count` (messages still there; a chat stays in the list at 0 after its messages have disappeared) and `last_at` (the last time anything happened). The words are not listed |
 | MSG-02 | GET `/api/v1/c/{slug}/messages/{userId}` | One conversation. Opening it marks their messages as opened, so they disappear 1 hour later. `can_message` is false when one of us blocked the other. 404 for someone who is not an active member of the college |
 | MSG-03 | POST `/api/v1/c/{slug}/messages/{userId}` | IDEM. `{ "body": "1 to 500 characters" }`. Text only. 201. 403 `FORBIDDEN` when blocked, 429 `RATE_LIMITED` at 60 an hour or 20 unopened messages waiting at the same person |
 | MSG-04 | POST `/api/v1/c/{slug}/messages/{userId}/report` | `{ "reason": "harassment", "details": "optional" }`. Reports the person. The recent messages are copied into the report. 409 `CONFLICT` for a second open report |

@@ -30,6 +30,7 @@ type InboxRow = {
   requester_id: string | null;
   request_expires_at: string | null;
   decided_at: string | null;
+  message_count: number;
 };
 
 function kindOf(row: InboxRow, actor: string) {
@@ -49,6 +50,7 @@ export async function listThreads(actor: string, college: string) {
     unread: row.unread,
     last_at: toIso(row.last_at) as string,
     kind: kindOf(row, actor),
+    message_count: row.message_count ?? 0,
     expires_at: row.request_expires_at ? toIso(row.request_expires_at) : null,
     can_request_again_at:
       row.status === "declined" && row.decided_at

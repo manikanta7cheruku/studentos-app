@@ -245,6 +245,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261140000000_chats_stay_in_list.sql` | `dm_threads.last_activity_at` (kept up to date by a trigger), `dm_inbox` keeps an accepted chat in the list when its messages are gone and returns `message_count` |
 | `20261139000000_debate_top_argument.sql` | `debate_json` also returns `top_argument` |
 | `20261138000000_network_connection_list.sql` | `network_connection_list` (my connections in one college) |
 | `20261137000000_owner_anonymous_reports.sql` | `owner_anonymous` (every anonymous buzz, comment and argument with the real person, for the owner), `owner_reports` now shows what was reported and who wrote it |
