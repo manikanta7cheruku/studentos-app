@@ -381,6 +381,8 @@ export function StudyFields({
   onCollege,
   onBranch,
   onYear,
+  place,
+  onPlace,
   errors = {},
 }: {
   college: string;
@@ -389,6 +391,8 @@ export function StudyFields({
   onCollege: (value: string) => void;
   onBranch: (value: string) => void;
   onYear: (value: number) => void;
+  place?: string;
+  onPlace?: (value: string) => void;
   errors?: Record<string, string | undefined>;
 }) {
   const known = (BRANCHES as readonly string[]).includes(branch);
@@ -398,6 +402,7 @@ export function StudyFields({
   const on = "bg-brand border-transparent text-white";
   const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
   const collegeId = React.useId();
+  const placeId = React.useId();
   // Names that already exist, while typing, so spellings stay the same and nobody has to invent one.
   const [suggested, setSuggested] = React.useState<{ query: string; names: string[] } | null>(null);
   const typed = tidy(college);
@@ -521,6 +526,25 @@ export function StudyFields({
           onChange={onYear}
         />
       </div>
+      {onPlace ? (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={placeId} className="text-[13px] font-semibold text-ink/90">
+            Where do you live <span className="font-normal text-ink-muted">(optional)</span>
+          </label>
+          <Input
+            id={placeId}
+            value={place ?? ""}
+            onChange={(event) => onPlace(event.target.value)}
+            maxLength={80}
+            autoComplete="address-level2"
+            placeholder="Your city or area"
+            aria-invalid={errors.place ? true : undefined}
+          />
+          <p className={cn("text-[12.5px]", errors.place ? "text-danger" : "text-ink-muted")}>
+            {errors.place ?? "Helps classmates nearby find you. Only the name of the place."}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

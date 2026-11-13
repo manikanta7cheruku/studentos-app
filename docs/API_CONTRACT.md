@@ -118,6 +118,10 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | DEB-07 | PUT `/c/{slug}/debates/{id}/arguments/{argId}/vote` | A strong point | mem(1) | P2 | | TC-DEB-07 |
 | DEB-08 | DELETE `/c/{slug}/debates/{id}` | Remove a debate | mem(1) | P2 | | TC-DEB-08 |
 | DEB-09 | DELETE `/c/{slug}/debates/{id}/arguments/{argId}` | Remove an argument | mem(1) | P2 | | TC-DEB-09 |
+| DEB-10 | PUT `/c/{slug}/debates/{id}/invites` | Invite more people to a private debate | mem(1) | P2 | | TC-DEB-10 |
+| NET-01 | GET `/c/{slug}/network/suggestions` | People to meet | mem(1) | P2 | | TC-NET-01 |
+| NET-02 | GET `/me/network` | How big my network is | ses | P2 | | TC-NET-02 |
+| MSG-05 | POST `/c/{slug}/messages/{userId}/decline` | Not interested in a request | mem(1) | P2 | | TC-MSG-05 |
 | FOL-02 | GET `/me/connections` | My followers, or who I follow | ses | P2 | | TC-FOL-02 |
 | COL-02 | GET `/colleges/suggest` | College names to pick from | ses | P2 | | TC-COL-02 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
@@ -134,7 +138,7 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | ADM-12 | POST `/c/{slug}/admin/export` | Tenant data export | adm | P1 | ✓ | TC-ADM-12 |
 | SYS-01 | GET `/api/health` / `/api/ready` | Liveness / readiness | pub | P0 | | TC-SYS-01 |
 | WL-01 | POST `/waitlist` | Landing waitlist | pub | P1 | ✓ | TC-WL-01 |
-| EVT-*, LNF-*, MKP-*, NTE-*, ACT-*, SKX-*, CAR-*, REP-*, NET-* | reserved | Tier 2/3 modules | | P2/P3 | | defined when scheduled |
+| EVT-*, LNF-*, MKP-*, NTE-*, ACT-*, SKX-*, CAR-*, REP-* | reserved | Tier 2/3 modules | | P2/P3 | | defined when scheduled |
 
 Every operation has: **side effects** - notifications (TMF-08, ADM-07, RPT-03), audit rows (all `adm`/`mod`/`plat` mutations), analytics events (doc 06 §11). **DB effects** are in doc 13 and the service layer docs per task.
 
@@ -489,13 +493,16 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 | MSG-02 | GET `/api/v1/c/{slug}/messages/{userId}` | One conversation. Opening it marks their messages as opened, so they disappear 1 hour later. `can_message` is false when one of us blocked the other. 404 for someone who is not an active member of the college |
 | MSG-03 | POST `/api/v1/c/{slug}/messages/{userId}` | IDEM. `{ "body": "1 to 500 characters" }`. Text only. 201. 403 `FORBIDDEN` when blocked, 429 `RATE_LIMITED` at 60 an hour or 20 unopened messages waiting at the same person |
 | MSG-04 | POST `/api/v1/c/{slug}/messages/{userId}/report` | `{ "reason": "harassment", "details": "optional" }`. Reports the person. The recent messages are copied into the report. 409 `CONFLICT` for a second open report |
+| MSG-05 | POST `/api/v1/c/{slug}/messages/{userId}/decline` | "Not interested" in a request I received. The sender is told, kindly, that I am not available right now, and may ask again after 5 days. The request message is deleted. 404 when there is no open request from that person |
 | FDB-01 | POST `/api/v1/me/feedback` | `{ "kind": "idea" \| "problem" \| "other", "message": "5 to 1500", "page": "/c/alpha/turf" }`. Any signed in person. 201. 429 `RATE_LIMITED` at 10 a day |
 | PHO-01 | POST `/api/v1/c/{slug}/photos/upload-url` | `{ "content_type": "image/webp" \| "image/jpeg" \| "image/png", "file_size": 180000 }`. A one time upload link and the `path` (it starts with my own id). 400 above 1 MB |
 | BRD-08 | PUT `/api/v1/c/{slug}/board/{id}/photo` | `{ "path": "<path from PHO-01>" \| null }`. The author attaches or removes the photo of a market or lost and found post. 403 for anyone else, 400 for a path that does not start with the author's id. Board posts now carry `photo_url` |
 
+**Message requests (MSG-01 to MSG-05):** a first message to someone I have no chat with is a *request*. Two people who follow each other skip it. The receiver sees it under Requests and chooses *Continue chatting* (writing back accepts it) or *Not interested* (MSG-05). A request lasts **3 days**; after that the status is `expired` and a new one may be sent. After *not interested* the sender may ask again after **5 days** (409 `CONFLICT` before that). While a request is waiting the sender cannot send more (409). Daily cap: 10 new requests, 3 for an account under 2 days old (429 `RATE_LIMITED`). `kind` on MSG-01 is `chat`, `request_received`, `request_sent`, `declined` or `expired`; MSG-02 adds `other` details (headline, college, branch, year), `request` and `can_message`; MSG-03 answers `request: true` when it started a request.
+
 **Disappearing messages:** a message is deleted 1 hour after the other person opens it, or 3 days after it was sent if it is never opened. Only text is allowed. Nothing else is stored.
 
-**Notifications:** one new type. `dm.received` tells a person that someone sent them a message (payload has `from`). It is sent for the first unopened message of a conversation only, so a flood stays quiet.
+**Notifications:** `dm.received` tells a person that someone sent them a message (payload has `from`). It is sent for the first unopened message of a conversation only, so a flood stays quiet.
 
 ## 16. Following, invites, debates, polls and anonymous posts (R3-D27 to D-32)
 
@@ -516,6 +523,11 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 | DEB-07 | PUT `/api/v1/c/{slug}/debates/{id}/arguments/{argId}/vote` | `{ value: 1 | 0 }`. A strong point, or take it back. Not your own (400). 409 after the end |
 | DEB-08 | DELETE `/api/v1/c/{slug}/debates/{id}` | The author, or a moderator or admin (audit logged) |
 | DEB-09 | DELETE `/api/v1/c/{slug}/debates/{id}/arguments/{argId}` | The author, or a moderator or admin (audit logged) |
+| DEB-10 | PUT `/api/v1/c/{slug}/debates/{id}/invites` | `{ user_ids: [1 to 50] }`. The author adds people to an invite-only debate (never after it ended). Each gets a `debate.invited` notification. 403 for anyone but the author, 400 for a public debate |
+| NET-01 | GET `/api/v1/c/{slug}/network/suggestions?limit=6` | People to meet (1 to 12): not connected, not asked, not blocked. Ranked by shared interests, mutual connections, branch and college, with a daily shuffle. Each has `shared_interests` and `mutual` |
+| NET-02 | GET `/api/v1/me/network` | `{ connections, requests_sent, requests_received }`. A connection is an accepted chat or two people who follow each other |
+
+**Private debates (DEB-01, DEB-10):** `visibility: "invite"` with `invite_user_ids` (1 to 50) makes a debate only the author and the invited can see or join (others get 404). `invited_count` is shown to the author only. **Place:** `place` on the profile is an optional city or area (2 to 80 characters, same checks as the college name). **Network strength:** tiers at 3, 6, 10, 20, 35, 50, 75 and 100 connections are shown on Home; rewards for them come after launch. Notification type `debate.invited` tells a person they were invited to a private debate (payload has the debate id and title).
 
 **Profile:** `college_name` and `grad_year` are required for the welcome tour (`onboarded`); `branch` is optional. `college_name` is refused when it is plainly not a name (see `src/lib/college-name.ts`: too short, mostly symbols, repeated letters, keyboard runs, words like test or none). Anyone who can see a profile sees them. A person's own profile has `followers`, `following` and `contributions` (buzz, replies, plans, events, upvotes, debates, invited). Another person's profile has `i_follow` and `contributions` but never follower counts. Anonymous posts never count.
 

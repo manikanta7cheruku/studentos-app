@@ -42,6 +42,10 @@ export type Contributions = NonNullable<Profile["contributions"]>;
 export type Debate = Data<typeof c.debateListResponse>[number];
 export type DebateTopic = z.infer<typeof c.debateTopic>;
 export type DebateArgument = Data<typeof c.debateArgumentListResponse>[number];
+export type NetworkSuggestion = Data<typeof c.networkSuggestionsResponse>[number];
+export type NetworkStats = Data<typeof c.networkStatsResponse>;
+export type DmThread = Data<typeof c.dmThreadResponse>;
+export type DmThreadItem = Data<typeof c.dmThreadListResponse>[number];
 export type Connection = Data<typeof c.connectionsResponse>[number];
 export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
@@ -188,6 +192,7 @@ export const api = {
           college_name: string | null;
           branch: string | null;
           grad_year: number | null;
+          place: string | null;
         }[]
       >,
     one: (slug: string, userId: string) =>
@@ -259,6 +264,14 @@ export const api = {
       }),
   },
 
+  network: {
+    suggestions: (slug: string, limit = 6) =>
+      apiClient(j(`/c/${slug}/network/suggestions?limit=${limit}`), {
+        schema: c.networkSuggestionsResponse.shape.data,
+      }),
+    mine: () => apiClient(j("/me/network"), { schema: c.networkStatsResponse.shape.data }),
+  },
+
   invite: {
     get: () => apiClient(j("/me/invite"), { schema: c.inviteResponse.shape.data }),
     apply: (code: string) =>
@@ -301,6 +314,12 @@ export const api = {
       apiClient(j(`/c/${slug}/debates/${id}`), {
         method: "DELETE",
         schema: c.debateDeleteResponse.shape.data,
+      }),
+    invite: (slug: string, id: string, userIds: string[]) =>
+      apiClient(j(`/c/${slug}/debates/${id}/invites`), {
+        method: "PUT",
+        body: { user_ids: userIds },
+        schema: c.debateResponse.shape.data,
       }),
     pickSide: (slug: string, id: string, side: 0 | 1) =>
       apiClient(j(`/c/${slug}/debates/${id}/side`), {
@@ -364,6 +383,11 @@ export const api = {
         body: { body },
         idempotent: key ?? true,
         schema: c.dmSendResponse.shape.data,
+      }),
+    decline: (slug: string, userId: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}/decline`), {
+        method: "POST",
+        schema: c.dmDeclineResponse.shape.data,
       }),
     report: (slug: string, userId: string, body: z.input<typeof c.dmReportBody>) =>
       apiClient(j(`/c/${slug}/messages/${userId}/report`), {

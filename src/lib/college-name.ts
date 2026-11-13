@@ -54,3 +54,38 @@ export function collegeNameProblem(raw: string): string | null {
   if (bare.some((word) => !/[aeiou]/i.test(word))) return say;
   return null;
 }
+
+/** The same checks for the place a person lives in (a city or an area). Shorter names are fine here. */
+export function placeProblem(raw: string): string | null {
+  const name = raw.replace(/\s+/g, " ").trim();
+  const say =
+    "That does not look like a place. Type your city or area, for example \u201cHyderabad\u201d.";
+  if (name.length < 2 || name.length > 80) return say;
+  const marked = [...name].filter((ch) => /[\p{L}\p{M}]/u.test(ch));
+  if (marked.length / name.replace(/\s/g, "").length < 0.7) return say;
+  if (/(\p{L})\1{3,}/iu.test(name)) return say;
+  const lower = name.toLowerCase();
+  if (
+    [
+      "test",
+      "none",
+      "na",
+      "n/a",
+      "nil",
+      "nothing",
+      "xyz",
+      "abc",
+      "asdf",
+      "home",
+      "here",
+      "earth",
+    ].includes(lower)
+  )
+    return say;
+  if (KEYBOARD_MASH.some((run) => lower.replace(/[^a-z]/g, "").includes(run))) return say;
+  const bare = name
+    .split(/[^A-Za-z]+/)
+    .filter((word) => word.length >= 3 && word !== word.toUpperCase());
+  if (bare.some((word) => !/[aeiou]/i.test(word))) return say;
+  return null;
+}

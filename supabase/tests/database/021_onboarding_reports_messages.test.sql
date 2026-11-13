@@ -45,21 +45,37 @@ select throws_ok($$select public.dm_send('bbbbbbbb-1000-4000-8000-000000000001',
 select throws_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004', '')$$, '23514', null, 'an empty message is refused');
 select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004', 'Coming for football tonight?')$$, 'a classmate can send a message');
 select is((select count(*)::int from public.notifications where user_id = 'aaaaaaaa-1000-4000-8000-000000000004' and type = 'dm.received'), 1, 'the other person is told');
-select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004', 'And bring water')$$, 'a second message is fine');
-select is((select count(*)::int from public.notifications where user_id = 'aaaaaaaa-1000-4000-8000-000000000004' and type = 'dm.received'), 1, 'but it does not ring again');
-select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 2, 'two messages are waiting');
+select throws_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004', 'And bring water')$$, 'P0001', 'CONFLICT', 'a second message while the request waits is refused');
+select is((select count(*)::int from public.notifications where user_id = 'aaaaaaaa-1000-4000-8000-000000000004' and type = 'dm.received'), 1, 'and nothing rings again');
+select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 1, 'one message is waiting');
 select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000004'), 0, 'the sender has nothing unread');
-select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 2, 'opening the conversation shows both');
-select is((select count(*)::int from public.dm_messages where sender_id = 'aaaaaaaa-1000-4000-8000-000000000003' and opened_at is not null and expires_at <= now() + interval '61 minutes'), 2, 'opened messages now expire within the hour');
+select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 1, 'opening the conversation shows the request');
+select is((public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'request' ->> 'status'), 'pending', 'it is a pending request');
+select is((select count(*)::int from public.dm_messages where sender_id = 'aaaaaaaa-1000-4000-8000-000000000003' and opened_at is not null and expires_at <= now() + interval '61 minutes'), 0, 'reading a request does not start the 1 hour clock');
 select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 0, 'and they are not unread any more');
+-- The receiver writes back, which accepts the request
+select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Yes, see you there')$$, 'writing back accepts the request');
+select is((public.dm_thread('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004') -> 'request' ->> 'status'), null, 'the chat is now a normal one');
+-- A request that is declined: the sender waits 5 days
+select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Hi, can we talk about the plan?')$$, 'a moderator can send a request too');
+select throws_ok($$select public.dm_decline('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003')$$, 'P0001', 'NOT_FOUND', 'the sender cannot decline their own request');
+select lives_ok($$select public.dm_decline('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000002')$$, 'the receiver says not interested');
+select is((select status from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 'declined', 'the sender sees it was declined');
+select throws_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Please?')$$, 'P0001', 'CONFLICT', 'asking again straight away is refused');
+update public.dm_threads set decided_at = now() - interval '6 days' where status = 'declined';
+select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Hi again, no pressure')$$, 'after 5 days the sender may ask again');
+select is((select status from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000002'), 'pending', 'and it is a request again');
+update public.dm_threads set request_expires_at = now() - interval '1 minute' where status = 'pending';
+select is((select status from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 'expired', 'a request nobody answers runs out');
+select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Trying once more')$$, 'and a new one can be sent');
 -- Reporting copies the recent messages into the report
 select is((public.dm_report('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'harassment', null) ->> 'status'), 'open', 'a conversation can be reported');
 select ok((select details like '%Messages:%football%' from public.reports where reporter_id = 'aaaaaaaa-1000-4000-8000-000000000004' and target_id = 'aaaaaaaa-1000-4000-8000-000000000003' and target_type = 'profile'), 'the report carries a copy of the messages');
 select throws_ok($$select public.dm_report('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'spam', null)$$, 'P0001', 'CONFLICT', 'a second open report about the same person is refused');
 -- Expired messages are deleted
-update public.dm_messages set expires_at = now() - interval '1 minute' where sender_id = 'aaaaaaaa-1000-4000-8000-000000000003';
+update public.dm_messages set expires_at = now() - interval '1 minute';
 select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 0, 'an expired message is already hidden');
-select ok(public.dm_purge() >= 2, 'the hourly job deletes them for good');
+select ok(public.dm_purge() >= 1, 'the hourly job deletes them for good');
 select is((select count(*)::int from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001')), 0, 'and the conversation leaves the inbox');
 
 -- ===== reports for a buzz, and the moderator hides it ========================

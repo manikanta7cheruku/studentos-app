@@ -33,6 +33,13 @@ export const debateCreateBody = z
     side_a: z.string().trim().min(1).max(30),
     side_b: z.string().trim().min(1).max(30),
     hours: debateHours,
+    // 'invite' makes it private: only the people in `invite_user_ids` (and the author) can see it or take part.
+    visibility: z.enum(["public", "invite"]).default("public"),
+    invite_user_ids: z.array(uuid).max(50).default([]),
+  })
+  .refine((value) => value.visibility === "public" || value.invite_user_ids.length > 0, {
+    message: "Invite at least one person",
+    path: ["invite_user_ids"],
   })
   .refine((value) => value.side_a.toLowerCase() !== value.side_b.toLowerCase(), {
     message: "The two sides must be different",
@@ -57,6 +64,9 @@ export const debate = z.object({
   my_side: z.number().int().min(0).max(1).nullable(),
   argument_count: z.number().int().min(0),
   is_owner: z.boolean(),
+  visibility: z.enum(["public", "invite"]).default("public"),
+  // Only the author sees how many people were invited.
+  invited_count: z.number().int().nullable().default(null),
   author: z.object({ user_id: uuid, display_name: z.string() }),
 });
 export const debateResponse = successEnvelope(debate);
@@ -102,3 +112,7 @@ export const debateArgumentVoteBody = z.strictObject({
 
 // DEB-08 DELETE /api/v1/c/{slug}/debates/{id} and DEB-09 DELETE .../arguments/{argumentId}: the author, or a moderator or admin.
 export const debateDeleteResponse = successEnvelope(z.object({ deleted: z.literal(true) }));
+
+// DEB-10 PUT /api/v1/c/{slug}/debates/{id}/invites   { "user_ids": [...] }: the author invites more people to an invite only debate
+// (50 in all). People who are already in are skipped. Everyone invited gets a notification (debate.invited).
+export const debateInvitesBody = z.strictObject({ user_ids: z.array(uuid).min(1).max(50) });

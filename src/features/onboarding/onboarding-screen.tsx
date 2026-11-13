@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
-import { collegeNameProblem } from "@/lib/college-name";
+import { collegeNameProblem, placeProblem } from "@/lib/college-name";
 import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
@@ -200,6 +200,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
   const [college, setCollege] = React.useState(saved.college_name ?? "");
   const [branch, setBranch] = React.useState(saved.branch ?? "");
   const [gradYear, setGradYear] = React.useState<number | null>(saved.grad_year);
+  const [place, setPlace] = React.useState(saved.place ?? "");
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -217,6 +218,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     if (!tidy(college)) problems.college = "Type the name of your college.";
     else if (collegeProblem) problems.college = collegeProblem;
     if (!gradYear) problems.year = "Pick the year you graduate.";
+    if (tidy(place) && placeProblem(place)) problems.place = placeProblem(place)!;
     setFields(problems);
     if (Object.keys(problems).length) return;
     setBusy(true);
@@ -230,6 +232,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         college_name: tidy(college),
         branch: tidy(branch) || null,
         grad_year: gradYear!,
+        place: tidy(place) || null,
       });
       onDone();
     } catch (caught) {
@@ -287,6 +290,8 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         onCollege={setCollege}
         onBranch={setBranch}
         onYear={setGradYear}
+        place={place}
+        onPlace={setPlace}
         errors={fields}
       />
       <BirthYearField value={year} onChange={setYear} />

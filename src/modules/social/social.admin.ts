@@ -57,13 +57,14 @@ export async function applyReferral(user: string, code: string) {
 export async function getStudyDetails(userId: string) {
   const { data } = await adminClient()
     .from("profiles")
-    .select("college_name, branch, grad_year")
+    .select("college_name, branch, grad_year, place")
     .eq("user_id", userId)
     .maybeSingle();
   return {
     college_name: (data?.college_name as string | null) ?? null,
     branch: (data?.branch as string | null) ?? null,
     grad_year: (data?.grad_year as number | null) ?? null,
+    place: (data?.place as string | null) ?? null,
   };
 }
 

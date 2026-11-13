@@ -65,6 +65,7 @@ export async function viewPerson(actor: string, college: string, target: string)
     gender: shown.gender,
     age: shown.age,
     college_name: study.college_name,
+    place: study.place,
     branch: study.branch,
     // What the person wrote on their profile wins over what the college membership says.
     program: study.branch ?? (person as { program?: string | null }).program ?? null,

@@ -2,10 +2,26 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CheckIcon, FlameIcon, SendIcon, Trash2Icon, TrophyIcon } from "lucide-react";
+import {
+  CheckIcon,
+  FlameIcon,
+  LockIcon,
+  SendIcon,
+  Trash2Icon,
+  TrophyIcon,
+  UserPlusIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
 import { PersonLink } from "@/components/app/person-link";
@@ -20,6 +36,7 @@ import { timeAgo } from "@/lib/time-ago";
 import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { InvitePicker, type Picked } from "./invite-picker";
 import { DEBATE_TOPIC_LABEL, SidesBar, leader, resultLine, timeLeft, useNow } from "./debate-parts";
 
 const SIDE_TINT = ["bg-[#8f86f0]/20 text-[#d6d1fb]", "bg-[#e0866a]/20 text-[#f6c7b6]"] as const;
@@ -302,6 +319,10 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
         menu={menu}
       />
 
+      {debate.visibility === "invite" && debate.is_owner && live ? (
+        <InviteMore slug={slug} debateId={debate.id} count={debate.invited_count ?? 0} />
+      ) : null}
+
       {asking ? (
         <Banner variant="error">
           <p className="flex flex-wrap items-center gap-3">
@@ -327,7 +348,14 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           className="bg-brand pointer-events-none absolute -right-10 -top-12 size-36 rounded-full opacity-25 blur-3xl"
         />
         <p className="relative flex items-center justify-between gap-3 text-[11.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-          <span>{DEBATE_TOPIC_LABEL[debate.topic]}</span>
+          <span className="inline-flex items-center gap-2">
+            {DEBATE_TOPIC_LABEL[debate.topic]}
+            {debate.visibility === "invite" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10.5px] text-ink">
+                <LockIcon aria-hidden="true" className="size-3" /> Private
+              </span>
+            ) : null}
+          </span>
           <span className={cn("normal-case tracking-normal", live ? "text-[#f0a58c]" : "")}>
             {live ? timeLeft(debate.ends_at, now) : "Closed"}
           </span>
@@ -524,6 +552,69 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           Pick a side above to join the debate and post your argument.
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** The author of a private debate adds more people while it is still live. */
+function InviteMore({ slug, debateId, count }: { slug: string; debateId: string; count: number }) {
+  const [open, setOpen] = React.useState(false);
+  const [picked, setPicked] = React.useState<Picked[]>([]);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [done, setDone] = React.useState(false);
+
+  async function save() {
+    if (busy || picked.length === 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.debates.invite(
+        slug,
+        debateId,
+        picked.map((p) => p.user_id),
+      );
+      setDone(true);
+      setPicked([]);
+      setOpen(false);
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not invite them. Please try again."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="glass-clear flex items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-[13px]">
+      <span className="text-ink-muted">
+        {done ? "Invites sent. " : ""}
+        Invite only · {count} invited
+      </span>
+      <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>
+        <UserPlusIcon aria-hidden="true" /> Invite more
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invite more people</DialogTitle>
+            <DialogDescription>They get a notification and can join the debate.</DialogDescription>
+          </DialogHeader>
+          <InvitePicker slug={slug} picked={picked} onChange={setPicked} />
+          {error ? <p className="text-[13px] text-red-300">{error}</p> : null}
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void save()}
+              disabled={busy || picked.length === 0}
+            >
+              {busy ? <Spinner /> : null} Invite
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

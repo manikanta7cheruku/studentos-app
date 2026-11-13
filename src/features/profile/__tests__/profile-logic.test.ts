@@ -22,6 +22,7 @@ const saved = {
   college_name: null,
   branch: null,
   grad_year: null,
+  place: null,
   followers: 0,
   following: 0,
   contributions: null,

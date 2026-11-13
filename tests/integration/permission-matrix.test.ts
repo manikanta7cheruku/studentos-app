@@ -71,6 +71,10 @@ import {
 } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/route";
 import { DELETE as debateArgumentsRemove } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/route";
 import { PUT as debateArgumentVote } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/vote/route";
+import { POST as messagesDecline } from "@/app/api/v1/c/[slug]/messages/[userId]/decline/route";
+import { GET as networkSuggestions } from "@/app/api/v1/c/[slug]/network/suggestions/route";
+import { GET as myNetwork } from "@/app/api/v1/me/network/route";
+import { PUT as debateInvites } from "@/app/api/v1/c/[slug]/debates/[id]/invites/route";
 import { GET as myConnections } from "@/app/api/v1/me/connections/route";
 import { GET as suggestColleges } from "@/app/api/v1/colleges/suggest/route";
 import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
@@ -1051,6 +1055,50 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         path: `/api/v1/c/alpha/debates/${id}/arguments/${argId}/vote`,
         json: { value: 1 },
         params: { slug: "alpha", id, argId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-05 POST /c/alpha/messages/{userId}/decline (no open request -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messagesDecline, {
+        method: "POST",
+        path: `/api/v1/c/alpha/messages/${userId}/decline`,
+        params: { slug: "alpha", userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "NET-01 GET /c/alpha/network/suggestions (members -> 200)",
+    call: (cookie: string | undefined) =>
+      call(networkSuggestions, {
+        method: "GET",
+        path: "/api/v1/c/alpha/network/suggestions",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "NET-02 GET /me/network (my own numbers -> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(myNetwork, { method: "GET", path: "/api/v1/me/network", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "DEB-10 PUT /c/alpha/debates/{id}/invites (unknown debate -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(debateInvites, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/debates/${id}/invites`,
+        json: { user_ids: [randomUUID()] },
+        params: { slug: "alpha", id },
         cookie,
       }).then((r) => r.status);
     },

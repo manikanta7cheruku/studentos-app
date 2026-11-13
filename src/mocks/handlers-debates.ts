@@ -23,6 +23,8 @@ type MockDebate = {
   b_count: number;
   my_side: Side | null;
   argument_count: number;
+  visibility?: "public" | "invite";
+  invited_count?: number;
   author: { user_id: string; display_name: string };
 };
 type MockArgument = {
@@ -134,6 +136,8 @@ const argumentsList: MockArgument[] = [
 
 const shape = (debate: MockDebate) => ({
   ...debate,
+  visibility: debate.visibility ?? "public",
+  invited_count: debate.visibility === "invite" ? (debate.invited_count ?? 0) : null,
   ended: new Date(debate.ends_at).getTime() <= Date.now(),
   is_owner: debate.author.display_name === "You",
 });
@@ -189,6 +193,8 @@ export const debateHandlers = [
       side_a: string;
       side_b: string;
       hours: number;
+      visibility?: "public" | "invite";
+      invite_user_ids?: string[];
     };
     const made: MockDebate = {
       id: id(100 + debates.length),
@@ -203,6 +209,8 @@ export const debateHandlers = [
       b_count: 0,
       my_side: null,
       argument_count: 0,
+      visibility: body.visibility ?? "public",
+      invited_count: body.invite_user_ids?.length ?? 0,
       author: { user_id: person(10), display_name: "You" },
     };
     debates.unshift(made);
@@ -217,6 +225,13 @@ export const debateHandlers = [
     if (at < 0) return notFound();
     debates.splice(at, 1);
     return HttpResponse.json({ data: { deleted: true }, meta: META });
+  }),
+  http.put("*/api/v1/c/:slug/debates/:id/invites", async ({ params, request }) => {
+    const found = debates.find((debate) => debate.id === params.id);
+    if (!found) return notFound();
+    const body = (await request.json()) as { user_ids: string[] };
+    found.invited_count = (found.invited_count ?? 0) + body.user_ids.length;
+    return HttpResponse.json({ data: { invited: body.user_ids.length }, meta: META });
   }),
   http.put("*/api/v1/c/:slug/debates/:id/side", async ({ params, request }) => {
     const found = debates.find((debate) => debate.id === params.id);

@@ -1,6 +1,6 @@
 import { contributions } from "./social";
 import { z } from "zod";
-import { collegeNameProblem } from "../lib/college-name";
+import { collegeNameProblem, placeProblem } from "../lib/college-name";
 import { httpsUrl, isoDateTime, successEnvelope, uuid } from "./common";
 
 // PRF-01 GET / PATCH /api/v1/me/profile
@@ -31,6 +31,8 @@ export const profile = z.object({
   college_name: z.string().min(2).max(120).nullable().default(null),
   branch: z.string().min(1).max(60).nullable().default(null),
   grad_year: z.number().int().min(2000).max(2100).nullable().default(null),
+  // The city or area I live in. Optional.
+  place: z.string().min(2).max(80).nullable().default(null),
   // Counts for my own page.
   followers: z.number().int().min(0).default(0),
   following: z.number().int().min(0).default(0),
@@ -77,6 +79,15 @@ export const profilePatchBody = z
       .nullable(),
     branch: z.string().trim().min(1).max(60).nullable(),
     grad_year: z.number().int().min(2000).max(2100).nullable(),
+    place: z
+      .string()
+      .trim()
+      .min(2)
+      .max(80)
+      .refine((value) => placeProblem(value) === null, {
+        message: "That does not look like a place",
+      })
+      .nullable(),
     visibility: profileVisibility,
     portfolio_public: z.boolean(),
     sex: sexChoice.nullable(),
@@ -174,6 +185,7 @@ export const personProfileResponse = successEnvelope(
     career_goal: z.string().nullable(),
     college_name: z.string().nullable().default(null),
     branch: z.string().nullable().default(null),
+    place: z.string().nullable().default(null),
     // Whether I follow this person. Follower counts are only ever shown to the person themselves.
     i_follow: z.boolean().default(false),
     contributions: contributions.nullable().default(null),

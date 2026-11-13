@@ -56,7 +56,10 @@ export function DebateCard({ debate, now, slug }: { debate: Debate; now: number;
         className="lift glass-card flex flex-col gap-3 rounded-[22px] p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="flex items-center justify-between gap-3 text-[11.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-          <span>{DEBATE_TOPIC_LABEL[debate.topic]}</span>
+          <span>
+            {DEBATE_TOPIC_LABEL[debate.topic]}
+            {debate.visibility === "invite" ? " · Private" : ""}
+          </span>
           <span
             className={cn(
               "inline-flex items-center gap-1.5 normal-case tracking-normal",

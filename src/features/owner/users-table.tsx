@@ -37,6 +37,10 @@ function Details({ user, thisYear }: { user: OwnerUserFull; thisYear: number }) 
         <Field label="Headline">{user.profile.headline}</Field>
         <Field label="College">{user.profile.college_name}</Field>
         <Field label="Branch">{user.profile.branch}</Field>
+        <Field label="Lives in">{user.profile.place}</Field>
+        <Field label="Career goal">{user.profile.career_goal}</Field>
+        <Field label="Profile picture">{user.profile.avatar ? "yes" : "no"}</Field>
+        <Field label="Finished the tour">{user.profile.onboarded ? "yes" : "no"}</Field>
         <Field label="Graduating">
           {user.profile.grad_year ? String(user.profile.grad_year) : ""}
         </Field>
@@ -76,6 +80,7 @@ function Details({ user, thisYear }: { user: OwnerUserFull; thisYear: number }) 
             ["Debates", user.counts.debates],
             ["Invited", user.counts.invited],
             ["Followers", user.counts.followers],
+            ["Following", user.counts.following],
           ] as const
         ).map(([label, value]) => (
           <div key={label}>
@@ -85,6 +90,20 @@ function Details({ user, thisYear }: { user: OwnerUserFull; thisYear: number }) 
             <dt className="mt-1 text-[11.5px] text-ink-muted">{label}</dt>
           </div>
         ))}
+      </dl>
+      <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Field label="Network">
+          {`${user.network.connections} connections · ${user.network.requests_sent} requests sent · ${user.network.requests_received} waiting for them`}
+        </Field>
+        <Field label="Messages sent">{String(user.activity.messages_sent)}</Field>
+        <Field label="Private debates started">{String(user.activity.private_debates)}</Field>
+        <Field label="Strengths added">{String(user.activity.skills)}</Field>
+        <Field label="Feedback sent">{String(user.activity.feedback)}</Field>
+        <Field label="Reports filed">{String(user.activity.reports_filed)}</Field>
+        <Field label="Reports about them">{String(user.activity.reports_against)}</Field>
+        <Field label="Crowd numbers">
+          {`${user.counts.crowd_debates} crowd debates · ${user.counts.filled_plans} filled plans · ${user.counts.big_events} big events`}
+        </Field>
       </dl>
       {user.platform_admin ? (
         <p className="text-[13px] text-ink-muted">

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ScaleIcon } from "lucide-react";
+import { LockIcon, ScaleIcon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { api, type DebateTopic } from "@/lib/api/endpoints";
 import { useAttempt } from "@/lib/use-attempt";
 import { useCollege } from "@/features/college";
 import { SpacePicker } from "@/features/college/space-picker";
+import { InvitePicker, type Picked } from "./invite-picker";
 import { DEBATE_TOPICS, DEBATE_TOPIC_LABEL } from "./debate-parts";
 
 const HOURS = [
@@ -51,6 +52,8 @@ export function DebateNewScreen() {
   const [sideA, setSideA] = React.useState("Agree");
   const [sideB, setSideB] = React.useState("Disagree");
   const [hours, setHours] = React.useState<number>(24);
+  const [priv, setPriv] = React.useState(false);
+  const [invited, setInvited] = React.useState<Picked[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [fields, setFields] = React.useState<Record<string, string>>({});
@@ -64,6 +67,7 @@ export function DebateNewScreen() {
     if (!sideA.trim() || !sideB.trim()) problems.sides = "Name both sides.";
     else if (sideA.trim().toLowerCase() === sideB.trim().toLowerCase())
       problems.sides = "The two sides must be different.";
+    if (priv && invited.length === 0) problems.invites = "Pick at least one person to invite.";
     setFields(problems);
     if (Object.keys(problems).length) return;
     setBusy(true);
@@ -78,6 +82,9 @@ export function DebateNewScreen() {
           side_a: sideA.trim(),
           side_b: sideB.trim(),
           hours: hours as 1 | 6 | 24 | 72 | 168,
+          ...(priv
+            ? { visibility: "invite" as const, invite_user_ids: invited.map((p) => p.user_id) }
+            : {}),
         },
         attempt.get(),
       );
@@ -207,7 +214,49 @@ export function DebateNewScreen() {
           </p>
         </fieldset>
 
-        <SpacePicker value={space} onChange={setSpace} />
+        <SpacePicker
+          value={space}
+          onChange={(next) => {
+            setSpace(next);
+            if (next === "global") setPriv(false);
+            setInvited([]);
+          }}
+        />
+
+        {space !== "global" ? (
+          <fieldset className="flex flex-col gap-2.5">
+            <legend className="mb-1 text-[13px] font-semibold text-ink/90">Who can join?</legend>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                aria-pressed={!priv}
+                onClick={() => setPriv(false)}
+                className={cn(chip, !priv ? on : off)}
+              >
+                Everyone
+              </button>
+              <button
+                type="button"
+                aria-pressed={priv}
+                onClick={() => setPriv(true)}
+                className={cn(chip, priv ? on : off)}
+              >
+                <LockIcon aria-hidden="true" className="mr-1.5 size-3.5" /> Invite only
+              </button>
+            </div>
+            {priv ? (
+              <>
+                <p className="text-[12.5px] text-ink-muted">
+                  Only the people you pick can see it or take part. They get a notification.
+                </p>
+                <InvitePicker slug={space} picked={invited} onChange={setInvited} />
+                {fields.invites ? (
+                  <p className="text-[12.5px] font-medium text-danger">{fields.invites}</p>
+                ) : null}
+              </>
+            ) : null}
+          </fieldset>
+        ) : null}
 
         {error ? (
           <Banner variant="error">

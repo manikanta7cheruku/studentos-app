@@ -36,7 +36,9 @@ const allInterests = (person: Person) => [
 
 function PersonRow({ person, mine, slug }: { person: Person; mine: Set<string>; slug: string }) {
   const shared = allInterests(person).filter((interest) => mine.has(lower(interest)));
-  const meta = [person.college_name, person.branch, person.grad_year].filter(Boolean).join(" · ");
+  const meta = [person.college_name, person.branch, person.grad_year, person.place]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <li className="glass-card flex items-center gap-3.5 rounded-[22px] p-3.5 pr-3">
       <Link

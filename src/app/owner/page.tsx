@@ -1,7 +1,7 @@
 import { connection } from "next/server";
 import Link from "next/link";
 import { OwnerTitle, Panel, Stat } from "@/features/owner/owner-ui";
-import { insights, overview, signups } from "@/modules/owner/owner.admin";
+import { insights, networkInsights, overview, signups } from "@/modules/owner/owner.admin";
 
 export const instant = false;
 
@@ -33,7 +33,12 @@ function Chart({ days }: { days: { day: string; n: number }[] }) {
 
 export default async function OwnerOverview() {
   await connection();
-  const [data, days, people] = await Promise.all([overview(), signups(30), insights()]);
+  const [data, days, people, net] = await Promise.all([
+    overview(),
+    signups(30),
+    insights(),
+    networkInsights(),
+  ]);
   const pct = (n: number) => (people.users ? Math.round((n / people.users) * 100) : 0);
   const alerts: { text: string; href: string }[] = [];
   if (data.reports_open > 0)
@@ -109,6 +114,25 @@ export default async function OwnerOverview() {
             ))}
           </dl>
         </Panel>
+      </div>
+
+      <h2 className="mb-3 mt-8 text-[15px] font-bold">Network, debates and requests</h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat
+          label="Debates"
+          value={net.debates_total}
+          note={`${net.debates_live} live · ${net.debates_private} private`}
+        />
+        <Stat label="Arguments" value={net.arguments} note="in all debates" />
+        <Stat
+          label="Message requests"
+          value={net.requests_pending}
+          note={`${net.requests_accepted} accepted · ${net.requests_declined} not interested · ${net.requests_expired} ran out`}
+        />
+        <Stat label="Follows" value={net.follows} note={`${net.mutual_follows} mutual`} />
+        <Stat label="Buzz" value={net.buzz} />
+        <Stat label="Plans" value={net.plans} />
+        <Stat label="Gave a place" value={net.with_place} note="where they live" />
       </div>
 
       <h2 className="mb-3 mt-8 text-[15px] font-bold">People and profiles</h2>

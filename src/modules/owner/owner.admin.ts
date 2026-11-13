@@ -273,10 +273,14 @@ export type OwnerUserFull = {
     college_name: string | null;
     branch: string | null;
     grad_year: number | null;
+    place: string | null;
     interests: string[];
     tech_interests: string[];
     excited_by: string | null;
+    career_goal: string | null;
     visibility: string | null;
+    avatar: boolean;
+    onboarded: boolean;
   };
   private: {
     sex: string | null;
@@ -294,13 +298,50 @@ export type OwnerUserFull = {
     upvotes: number;
     debates: number;
     invited: number;
+    crowd_debates: number;
+    filled_plans: number;
+    big_events: number;
+    member_days: number;
     followers: number;
+    following: number;
+  };
+  network: { connections: number; requests_sent: number; requests_received: number };
+  activity: {
+    messages_sent: number;
+    private_debates: number;
+    skills: number;
+    feedback: number;
+    reports_filed: number;
+    reports_against: number;
   };
 };
 
-/** The whole record of each person, for the owner. The page that calls this writes the visit to the audit log. */
-export const usersFull = (q: string) =>
-  rpc<OwnerUserFull[]>("owner_users_full", { p_q: q, p_limit: 100 });
+export const USERS_PAGE = 50;
+
+/** The whole record of each person, one page at a time, for the owner. The page that calls this writes the visit to the audit log. */
+export const usersFull = (q: string, page = 0) =>
+  rpc<{ total: number; rows: OwnerUserFull[] }>("owner_users_full", {
+    p_q: q,
+    p_limit: USERS_PAGE,
+    p_offset: page * USERS_PAGE,
+  });
+
+export type NetworkInsights = {
+  debates_total: number;
+  debates_live: number;
+  debates_private: number;
+  arguments: number;
+  requests_pending: number;
+  requests_accepted: number;
+  requests_declined: number;
+  requests_expired: number;
+  follows: number;
+  mutual_follows: number;
+  with_place: number;
+  buzz: number;
+  plans: number;
+};
+export const networkInsights = () => rpc<NetworkInsights>("owner_network_insights");
 
 /**
  * Deletes accounts for good, one after the other (the same removal a person gets from "Delete my account"). The owner and other

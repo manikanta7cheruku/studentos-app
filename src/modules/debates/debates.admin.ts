@@ -33,6 +33,8 @@ export async function createDebate(
     side_a: string;
     side_b: string;
     hours: number;
+    visibility?: "public" | "invite";
+    invite_user_ids?: string[];
   },
 ) {
   return outDebate(
@@ -45,6 +47,8 @@ export async function createDebate(
       p_side_a: input.side_a,
       p_side_b: input.side_b,
       p_hours: input.hours,
+      p_visibility: input.visibility ?? "public",
+      p_invites: input.invite_user_ids ?? [],
     }),
   );
 }
@@ -140,4 +144,20 @@ export async function voteArgument(actor: string, college: string, argument: str
 export async function removeArgument(actor: string, college: string, argument: string) {
   await rpc("debate_argument_remove", { p_actor: actor, p_college: college, p_argument: argument });
   return { deleted: true as const };
+}
+
+export async function inviteToDebate(
+  actor: string,
+  college: string,
+  debate: string,
+  users: string[],
+) {
+  return outDebate(
+    await rpc<Dated & { ends_at: string }>("debate_invite_add", {
+      p_actor: actor,
+      p_college: college,
+      p_debate: debate,
+      p_users: users,
+    }),
+  );
 }

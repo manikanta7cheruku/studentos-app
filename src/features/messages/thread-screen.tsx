@@ -6,6 +6,9 @@ import {
   BanIcon,
   CheckIcon,
   ChevronLeftIcon,
+  HourglassIcon,
+  MessageCircleIcon,
+  ThumbsDownIcon,
   FlagIcon,
   LockIcon,
   SendIcon,
@@ -56,6 +59,8 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const [blocked, setBlocked] = React.useState(false);
   const [reporting, setReporting] = React.useState(false);
   const bottom = React.useRef<HTMLDivElement>(null);
+  const [declining, setDeclining] = React.useState(false);
+  const [chosen, setChosen] = React.useState(false);
 
   const { reload } = state;
   React.useEffect(() => {
@@ -95,6 +100,27 @@ export function ThreadScreen({ userId }: { userId: string }) {
     }
   }
 
+  async function decline() {
+    if (declining) return;
+    setDeclining(true);
+    setError(null);
+    try {
+      await api.messages.decline(slug, userId);
+      reload();
+    } catch (caught) {
+      setError(friendlyMessage(caught, "We could not do that. Please try again."));
+    } finally {
+      setDeclining(false);
+    }
+  }
+
+  function continueChat() {
+    const first = other?.display_name.split(" ")[0] ?? "there";
+    setChosen(true);
+    setText((old) => old || `Hi ${first}, nice to meet you!`);
+    window.setTimeout(() => document.getElementById("dm-body")?.focus(), 0);
+  }
+
   async function block() {
     try {
       await api.blocks.block(userId);
@@ -106,6 +132,16 @@ export function ThreadScreen({ userId }: { userId: string }) {
   }
 
   const other = data?.other;
+  const req = data?.request ?? null;
+  const incoming = req?.status === "pending" && !req.i_requested;
+  const waiting = req?.status === "pending" && req.i_requested;
+  const cooling =
+    req?.status === "declined" &&
+    req.i_requested &&
+    !!req.can_request_again_at &&
+    new Date(req.can_request_again_at).getTime() > now;
+  const canWrite =
+    data?.can_message !== false && !blocked && !waiting && !cooling && (!incoming || chosen);
   return (
     <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8">
       <header className="glass flex items-center gap-1.5 rounded-[22px] p-2">
@@ -172,6 +208,59 @@ export function ThreadScreen({ userId }: { userId: string }) {
         <p className="mx-auto mb-1 flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted">
           <TimerIcon aria-hidden="true" className="size-3" /> Disappears 1 hour after it is seen
         </p>
+        {other && incoming ? (
+          <section className="glass-card flex flex-col gap-3 rounded-[22px] p-4">
+            <p className="text-[15px] font-bold">{other.display_name} wants to chat</p>
+            <p className="text-[13px] text-ink-muted">
+              {[other.headline, other.branch, other.college_name, other.grad_year]
+                .filter(Boolean)
+                .join(" · ") || "A classmate"}
+              . Their message is below. You choose whether to reply, and they will not see that you
+              read it until you do.
+            </p>
+            {chosen ? null : (
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" onClick={continueChat}>
+                  <MessageCircleIcon aria-hidden="true" /> Continue chatting
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void decline()}
+                  disabled={declining}
+                >
+                  <ThumbsDownIcon aria-hidden="true" /> Not interested
+                </Button>
+              </div>
+            )}
+          </section>
+        ) : null}
+        {other && waiting ? (
+          <p className="glass-card flex items-start gap-2 rounded-[18px] px-4 py-3 text-[13.5px] text-ink-muted">
+            <HourglassIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            <span>
+              Request sent. {other.display_name} has until{" "}
+              <b className="text-ink">
+                {req?.expires_at ? new Date(req.expires_at).toLocaleDateString() : "3 days"}
+              </b>{" "}
+              to reply. You can send one message until they do.
+            </span>
+          </p>
+        ) : null}
+        {other && req?.status === "declined" && req.i_requested ? (
+          <p className="glass-card rounded-[18px] px-4 py-3 text-[13.5px] text-ink-muted">
+            {other.display_name} is not available to chat right now. That is not about you, people
+            have limited time.{" "}
+            {cooling && req.can_request_again_at
+              ? `You can ask again on ${new Date(req.can_request_again_at).toLocaleDateString()}.`
+              : "You can send a new request now."}
+          </p>
+        ) : null}
+        {other && req?.status === "expired" ? (
+          <p className="glass-card rounded-[18px] px-4 py-3 text-[13.5px] text-ink-muted">
+            No reply yet. You can send a new request.
+          </p>
+        ) : null}
         {failed && !data ? (
           failed instanceof ApiError && failed.status === 404 ? (
             <div className="glass-card rounded-[22px] p-8">
@@ -188,9 +277,11 @@ export function ThreadScreen({ userId }: { userId: string }) {
           </div>
         ) : data.messages.length === 0 ? (
           <p className="my-6 text-center text-[14px] text-ink-muted">
-            {data.can_message
-              ? "Nothing here. Say hello. What you write disappears after it is read."
-              : "You cannot message this person."}
+            {incoming || waiting || cooling
+              ? ""
+              : data.can_message
+                ? "Nothing here. Say hello. What you write disappears after it is read."
+                : "You cannot message this person."}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -240,11 +331,11 @@ export function ThreadScreen({ userId }: { userId: string }) {
           <p>{error}</p>
         </Banner>
       ) : null}
-      {data?.can_message === false || blocked ? (
+      {(data?.can_message === false && !cooling && !waiting) || blocked ? (
         <p className="text-center text-[13px] text-ink-muted">
           Messaging is switched off for this person.
         </p>
-      ) : (
+      ) : !canWrite ? null : (
         <form
           onSubmit={send}
           className="glass flex items-end gap-2 rounded-[24px] p-1.5 pl-3 transition-[border-color,box-shadow] duration-200 focus-within:border-[#8f86f0]/70 focus-within:shadow-[0_0_0_3px_rgba(143,134,240,0.22)]"

@@ -24,6 +24,7 @@ export type ProfileViewData = {
   college_name?: string | null;
   program?: string | null;
   grad_year?: number | null;
+  place?: string | null;
   /** Only my own page has these (nobody else sees who follows whom). */
   followers?: number;
   following?: number;
@@ -126,6 +127,7 @@ export function ProfileView({
   const meta = [
     person.gender ? GENDER_LABEL[person.gender] : null,
     person.age ? `${person.age} years` : null,
+    person.place ? `Lives in ${person.place}` : null,
   ].filter(Boolean);
   const counts = person.contributions ?? null;
   return (

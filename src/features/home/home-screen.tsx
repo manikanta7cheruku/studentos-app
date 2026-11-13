@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/endpoints";
 import { CampusNotice } from "./campus-notice";
 import { DailyCards } from "./daily-cards";
+import { NetworkCard } from "./network-card";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -212,6 +213,8 @@ export function HomeScreen() {
       <CampusNotice />
 
       <DailyCards />
+
+      <NetworkCard />
 
       <FinishProfile />
 

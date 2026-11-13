@@ -2321,7 +2321,8 @@
                               "venue.booking_confirmed",
                               "venue.booking_declined",
                               "venue.booking_cancelled",
-                              "dm.received"
+                              "dm.received",
+                              "debate.invited"
                             ]
                           },
                           "payload": {
@@ -2995,6 +2996,305 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/network/suggestions": {
+      "get": {
+        "operationId": "NET-01_get",
+        "tags": [
+          "NET"
+        ],
+        "summary": "NET-01: People to meet",
+        "x-who": "mem",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "user_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "headline": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "avatar_url": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "college_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "branch": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "grad_year": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "shared_interests": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "mutual": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "display_name",
+                          "headline",
+                          "avatar_url",
+                          "college_name",
+                          "branch",
+                          "grad_year",
+                          "shared_interests",
+                          "mutual"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/network": {
+      "get": {
+        "operationId": "NET-02_get",
+        "tags": [
+          "NET"
+        ],
+        "summary": "NET-02: My connections and open requests",
+        "x-who": "ses",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "connections": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "requests_sent": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "requests_received": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "connections",
+                        "requests_sent",
+                        "requests_received"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -3873,6 +4173,19 @@
                             }
                           ]
                         },
+                        "place": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 80
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "followers": {
                           "default": 0,
                           "type": "integer",
@@ -4068,6 +4381,7 @@
                         "college_name",
                         "branch",
                         "grad_year",
+                        "place",
                         "followers",
                         "following",
                         "contributions",
@@ -4264,6 +4578,18 @@
                         "type": "integer",
                         "minimum": 2000,
                         "maximum": 2100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "place": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
                       },
                       {
                         "type": "null"
@@ -4484,6 +4810,19 @@
                             }
                           ]
                         },
+                        "place": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 80
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "followers": {
                           "default": 0,
                           "type": "integer",
@@ -4679,6 +5018,7 @@
                         "college_name",
                         "branch",
                         "grad_year",
+                        "place",
                         "followers",
                         "following",
                         "contributions",
@@ -5622,6 +5962,13 @@
                             "null"
                           ]
                         },
+                        "place": {
+                          "default": null,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "i_follow": {
                           "default": false,
                           "type": "boolean"
@@ -5770,6 +6117,7 @@
                         "career_goal",
                         "college_name",
                         "branch",
+                        "place",
                         "i_follow",
                         "contributions",
                         "program",
@@ -18348,6 +18696,24 @@
                         "const": 168
                       }
                     ]
+                  },
+                  "visibility": {
+                    "default": "public",
+                    "type": "string",
+                    "enum": [
+                      "public",
+                      "invite"
+                    ]
+                  },
+                  "invite_user_ids": {
+                    "default": [],
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
                   }
                 },
                 "required": [
@@ -18445,6 +18811,27 @@
                         "is_owner": {
                           "type": "boolean"
                         },
+                        "visibility": {
+                          "default": "public",
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "invite"
+                          ]
+                        },
+                        "invited_count": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -18479,6 +18866,8 @@
                         "my_side",
                         "argument_count",
                         "is_owner",
+                        "visibility",
+                        "invited_count",
                         "author"
                       ],
                       "additionalProperties": false
@@ -18745,6 +19134,27 @@
                           "is_owner": {
                             "type": "boolean"
                           },
+                          "visibility": {
+                            "default": "public",
+                            "type": "string",
+                            "enum": [
+                              "public",
+                              "invite"
+                            ]
+                          },
+                          "invited_count": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
                           "author": {
                             "type": "object",
                             "properties": {
@@ -18779,6 +19189,8 @@
                           "my_side",
                           "argument_count",
                           "is_owner",
+                          "visibility",
+                          "invited_count",
                           "author"
                         ],
                         "additionalProperties": false
@@ -18982,6 +19394,27 @@
                         "is_owner": {
                           "type": "boolean"
                         },
+                        "visibility": {
+                          "default": "public",
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "invite"
+                          ]
+                        },
+                        "invited_count": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -19016,6 +19449,8 @@
                         "my_side",
                         "argument_count",
                         "is_owner",
+                        "visibility",
+                        "invited_count",
                         "author"
                       ],
                       "additionalProperties": false
@@ -19359,6 +19794,27 @@
                         "is_owner": {
                           "type": "boolean"
                         },
+                        "visibility": {
+                          "default": "public",
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "invite"
+                          ]
+                        },
+                        "invited_count": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -19393,6 +19849,8 @@
                         "my_side",
                         "argument_count",
                         "is_owner",
+                        "visibility",
+                        "invited_count",
                         "author"
                       ],
                       "additionalProperties": false
@@ -20055,6 +20513,291 @@
                         "i_upvoted",
                         "is_anonymous",
                         "by_debate_author",
+                        "author"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/debates/{id}/invites": {
+      "put": {
+        "operationId": "DEB-10_put",
+        "tags": [
+          "DEB"
+        ],
+        "summary": "DEB-10: Invite more people to a private debate",
+        "x-who": "mem",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_ids": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  }
+                },
+                "required": [
+                  "user_ids"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "body": {
+                          "type": "string"
+                        },
+                        "topic": {
+                          "type": "string",
+                          "enum": [
+                            "movies",
+                            "sports",
+                            "tech",
+                            "campus",
+                            "politics",
+                            "music",
+                            "food",
+                            "other"
+                          ]
+                        },
+                        "side_a": {
+                          "type": "string"
+                        },
+                        "side_b": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "ends_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "ended": {
+                          "type": "boolean"
+                        },
+                        "a_count": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "b_count": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "my_side": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "argument_count": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "is_owner": {
+                          "type": "boolean"
+                        },
+                        "visibility": {
+                          "default": "public",
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "invite"
+                          ]
+                        },
+                        "invited_count": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "author": {
+                          "type": "object",
+                          "properties": {
+                            "user_id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "display_name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "user_id",
+                            "display_name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "title",
+                        "body",
+                        "topic",
+                        "side_a",
+                        "side_b",
+                        "created_at",
+                        "ends_at",
+                        "ended",
+                        "a_count",
+                        "b_count",
+                        "my_side",
+                        "argument_count",
+                        "is_owner",
+                        "visibility",
+                        "invited_count",
                         "author"
                       ],
                       "additionalProperties": false
@@ -21479,6 +22222,43 @@
                             "type": "string",
                             "format": "date-time",
                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "kind": {
+                            "default": "chat",
+                            "type": "string",
+                            "enum": [
+                              "chat",
+                              "request_received",
+                              "request_sent",
+                              "declined",
+                              "expired"
+                            ]
+                          },
+                          "expires_at": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "can_request_again_at": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -21486,7 +22266,10 @@
                           "display_name",
                           "avatar_url",
                           "unread",
-                          "last_at"
+                          "last_at",
+                          "kind",
+                          "expires_at",
+                          "can_request_again_at"
                         ],
                         "additionalProperties": false
                       }
@@ -21624,12 +22407,105 @@
                                     "string",
                                     "null"
                                   ]
+                                },
+                                "headline": {
+                                  "default": null,
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "college_name": {
+                                  "default": null,
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "branch": {
+                                  "default": null,
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "grad_year": {
+                                  "default": null,
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
                                 }
                               },
                               "required": [
                                 "user_id",
                                 "display_name",
-                                "avatar_url"
+                                "avatar_url",
+                                "headline",
+                                "college_name",
+                                "branch",
+                                "grad_year"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "request": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "declined",
+                                    "expired"
+                                  ]
+                                },
+                                "i_requested": {
+                                  "type": "boolean"
+                                },
+                                "expires_at": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "can_request_again_at": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "status",
+                                "i_requested",
+                                "expires_at",
+                                "can_request_again_at"
                               ],
                               "additionalProperties": false
                             },
@@ -21694,6 +22570,7 @@
                       },
                       "required": [
                         "other",
+                        "request",
                         "can_message",
                         "messages"
                       ],
@@ -21857,12 +22734,17 @@
                           "type": "string",
                           "format": "date-time",
                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "request": {
+                          "default": false,
+                          "type": "boolean"
                         }
                       },
                       "required": [
                         "id",
                         "created_at",
-                        "expires_at"
+                        "expires_at",
+                        "request"
                       ],
                       "additionalProperties": false
                     },
@@ -22099,6 +22981,131 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN or MEMBERSHIP_NOT_ACTIVE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NOT_FOUND (also for another college)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c/{slug}/messages/{userId}/decline": {
+      "post": {
+        "operationId": "MSG-05_post",
+        "tags": [
+          "MSG"
+        ],
+        "summary": "MSG-05: Not interested in a message request",
+        "x-who": "mem",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "declined"
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

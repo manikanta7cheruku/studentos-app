@@ -14,10 +14,17 @@ const person = z.object({
 });
 
 // MSG-01 GET /api/v1/c/{slug}/messages: my conversations that still have a message. The words are not in the list.
+// How a conversation stands: a normal chat, a request I received (waiting for me), a request I sent (waiting for them), one they
+// were not interested in, or one that ran out after 3 days.
+export const dmKind = z.enum(["chat", "request_received", "request_sent", "declined", "expired"]);
 export const dmThreadItem = person.extend({
   // Messages from them that I have not opened yet.
   unread: z.number().int().min(0),
   last_at: isoDateTime,
+  kind: dmKind.default("chat"),
+  // When a request runs out, and (after "not interested") when the sender may ask again.
+  expires_at: isoDateTime.nullable().default(null),
+  can_request_again_at: isoDateTime.nullable().default(null),
 });
 export const dmThreadListResponse = successEnvelope(z.array(dmThreadItem));
 
@@ -31,9 +38,25 @@ export const dmMessage = z.object({
   opened_at: isoDateTime.nullable(),
   expires_at: isoDateTime,
 });
+// The state of the request in a conversation (null for a normal chat). A request: one message, 3 days to answer.
+export const dmRequestState = z.object({
+  status: z.enum(["pending", "declined", "expired"]),
+  i_requested: z.boolean(),
+  expires_at: isoDateTime.nullable(),
+  // After "not interested": the day the sender may ask again (5 days later).
+  can_request_again_at: isoDateTime.nullable(),
+});
 export const dmThreadResponse = successEnvelope(
   z.object({
-    other: person.nullable(),
+    other: person
+      .extend({
+        headline: z.string().nullable().default(null),
+        college_name: z.string().nullable().default(null),
+        branch: z.string().nullable().default(null),
+        grad_year: z.number().int().nullable().default(null),
+      })
+      .nullable(),
+    request: dmRequestState.nullable().default(null),
     // false when one of us blocked the other.
     can_message: z.boolean(),
     messages: z.array(dmMessage),
@@ -43,7 +66,13 @@ export const dmThreadResponse = successEnvelope(
 // MSG-03 POST /api/v1/c/{slug}/messages/{userId} (IDEM)
 export const dmSendBody = z.strictObject({ body: z.string().trim().min(1).max(500) });
 export const dmSendResponse = successEnvelope(
-  z.object({ id: uuid, created_at: isoDateTime, expires_at: isoDateTime }),
+  z.object({
+    id: uuid,
+    created_at: isoDateTime,
+    expires_at: isoDateTime,
+    // True when this message started a request (the other person has to accept first).
+    request: z.boolean().default(false),
+  }),
 );
 
 // MSG-04 POST /api/v1/c/{slug}/messages/{userId}/report: reports the person. The recent messages are copied into the report.
@@ -51,3 +80,7 @@ export const dmReportBody = z.strictObject({
   reason: reportReason,
   details: z.string().trim().max(500).optional(),
 });
+
+// MSG-05 POST /api/v1/c/{slug}/messages/{userId}/decline: "not interested" in a request I received. The sender is told, kindly,
+// that I am not available right now. They can ask again after 5 days. 404 when there is no open request from that person.
+export const dmDeclineResponse = successEnvelope(z.object({ status: z.literal("declined") }));

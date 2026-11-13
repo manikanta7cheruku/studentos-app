@@ -56,6 +56,7 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     college_name: (data.college_name as string | null) ?? null,
     branch: (data.branch as string | null) ?? null,
     grad_year: (data.grad_year as number | null) ?? null,
+    place: (data.place as string | null) ?? null,
     followers: follow.followers,
     following: follow.following,
     contributions,
@@ -96,6 +97,7 @@ export async function updateMyProfile(
   if (patch.college_name !== undefined) updatePayload.college_name = patch.college_name;
   if (patch.branch !== undefined) updatePayload.branch = patch.branch;
   if (patch.grad_year !== undefined) updatePayload.grad_year = patch.grad_year;
+  if (patch.place !== undefined) updatePayload.place = patch.place;
   if (patch.visibility !== undefined) updatePayload.visibility = patch.visibility;
   if (patch.portfolio_public !== undefined) updatePayload.portfolio_public = patch.portfolio_public;
 
@@ -248,6 +250,7 @@ export type DirectoryPerson = {
   college_name: string | null;
   branch: string | null;
   grad_year: number | null;
+  place: string | null;
 };
 
 export async function getMemberProfile(
@@ -331,6 +334,7 @@ export async function getVisibleCollegePeople(
     college_name?: string | null;
     branch?: string | null;
     grad_year?: number | null;
+    place?: string | null;
   };
 
   const rows = (data ?? []) as unknown as DirectoryRow[];
@@ -356,6 +360,7 @@ export async function getVisibleCollegePeople(
       college_name: row.college_name ?? null,
       branch: row.branch ?? null,
       grad_year: row.grad_year ?? null,
+      place: row.place ?? null,
     };
   });
 }
