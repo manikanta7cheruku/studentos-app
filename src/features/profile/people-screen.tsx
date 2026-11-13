@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   BanIcon,
+  CheckIcon,
   ChevronRightIcon,
   HourglassIcon,
   SearchIcon,
@@ -180,6 +181,10 @@ function InterestFilter({
     setDraft((current) =>
       current.includes(name) ? current.filter((item) => item !== name) : [...current, name],
     );
+  function show() {
+    setDraft(selected);
+    setOpen(true);
+  }
   return (
     <Dialog
       open={open}
@@ -191,7 +196,7 @@ function InterestFilter({
       <Button
         type="button"
         variant="outline"
-        onClick={() => setOpen(true)}
+        onClick={show}
         className="h-11 shrink-0 rounded-[14px]"
         aria-label={
           selected.length ? `Interests, ${selected.length} chosen` : "Filter by interests"
@@ -206,57 +211,72 @@ function InterestFilter({
         ) : null}
       </Button>
       <DialogContent>
-        <DialogHeader>
+        <span
+          aria-hidden="true"
+          className="mx-auto -mt-2 h-1 w-10 rounded-full bg-white/20 sm:hidden"
+        />
+        <DialogHeader className="gap-1 pr-8">
           <DialogTitle>Filter by interests</DialogTitle>
-          <DialogDescription>Show people who share at least one of these.</DialogDescription>
+          <DialogDescription className="text-[13.5px]">
+            Show people who share at least one of these.
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex max-h-[55vh] flex-col gap-5 overflow-y-auto pr-1">
-          {(
-            [
-              ["For fun", CASUAL_INTERESTS],
-              ["Tech and career", TECH_INTERESTS],
-            ] as const
-          ).map(([title, list]) => (
-            <div key={title} className="flex flex-col gap-2">
-              <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink-muted">
-                {title}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {list.map((name) => {
-                  const on = draft.includes(name);
-                  return (
-                    <button
-                      key={name}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggle(name)}
-                      className={cn(
-                        "inline-flex h-9 items-center rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
-                        on
-                          ? "bg-brand border-transparent text-white"
-                          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-                      )}
-                    >
-                      {name}
-                    </button>
-                  );
-                })}
+        <div className="-mx-5 max-h-[52vh] overflow-y-auto overscroll-contain px-5 pt-1 pb-8 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-32px),transparent)]">
+          <div className="flex flex-col gap-5">
+            {(
+              [
+                ["For fun", CASUAL_INTERESTS],
+                ["Tech and career", TECH_INTERESTS],
+              ] as const
+            ).map(([title, list]) => (
+              <div key={title} className="flex flex-col gap-2.5">
+                <p className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted">
+                  {title}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {list.map((name) => {
+                    const on = draft.includes(name);
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => toggle(name)}
+                        className={cn(
+                          "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform,padding] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring active:scale-95 motion-reduce:transition-none",
+                          on
+                            ? "bg-brand border-transparent pl-3 text-white"
+                            : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+                        )}
+                      >
+                        {on ? <CheckIcon aria-hidden="true" className="size-3.5" /> : null}
+                        {name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => setDraft([])}>
+        <DialogFooter className="-mx-5 -mb-5 flex-row items-center gap-3 border-white/10 bg-transparent px-5 py-3 max-sm:pb-[calc(0.75rem+var(--safe-bottom))] sm:justify-between">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setDraft([])}
+            disabled={draft.length === 0}
+          >
             Clear
           </Button>
           <Button
             type="button"
+            className="flex-1 sm:flex-none"
             onClick={() => {
               onChange(draft);
               setOpen(false);
             }}
           >
-            Show people
+            {draft.length ? `Show people (${draft.length})` : "Show everyone"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -357,10 +377,25 @@ export function PeopleScreen() {
     ["similar", "Similar"],
     ...(myCollege ? ([["college", "College"]] as [Tab, string][]) : []),
   ];
-  const index = Math.max(
-    0,
-    tabs.findIndex(([value]) => value === tab),
-  );
+  const tabList = React.useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = React.useState({ left: 0, width: 0 });
+  // The highlight takes the exact size and place of the chosen tab, so it always covers its own text and nothing more.
+  const tabCount = tabs.length;
+  React.useEffect(() => {
+    const list = tabList.current;
+    if (!list) return;
+    const measure = () => {
+      const chosen = list.querySelector<HTMLElement>('[aria-selected="true"]');
+      if (chosen) setThumb({ left: chosen.offsetLeft, width: chosen.offsetWidth });
+    };
+    const frame = window.requestAnimationFrame(measure);
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [tab, tabCount]);
   const loading =
     tab === "connections" ? links.status === "loading" : state.status === "loading" && !last;
   const failed =
@@ -434,17 +469,18 @@ export function PeopleScreen() {
 
       <div className="flex flex-col gap-2">
         <div
+          ref={tabList}
           role="tablist"
           aria-label="Who to show"
-          className="no-scrollbar relative grid overflow-x-auto rounded-full border border-white/10 bg-white/[0.04] p-1"
-          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+          className="no-scrollbar relative flex overflow-x-auto rounded-full border border-white/10 bg-white/[0.04] p-1"
         >
           <span
             aria-hidden="true"
-            className="absolute inset-y-1 left-1 rounded-full bg-white/[0.16] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
+            className="absolute inset-y-1 left-0 rounded-full bg-white/[0.16] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-[transform,width] duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
             style={{
-              width: `calc((100% - 0.5rem) / ${tabs.length})`,
-              transform: `translateX(${index * 100}%)`,
+              width: thumb.width,
+              transform: `translateX(${thumb.left}px)`,
+              opacity: thumb.width ? 1 : 0,
             }}
           />
           {tabs.map(([value, label]) => (
@@ -455,7 +491,7 @@ export function PeopleScreen() {
               aria-selected={tab === value}
               onClick={() => setTab(value)}
               className={cn(
-                "relative z-10 h-8 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring",
+                "relative z-10 h-8 flex-1 whitespace-nowrap rounded-full px-4 text-[13px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring",
                 tab === value ? "text-ink" : "text-ink-muted hover:text-ink",
               )}
             >
