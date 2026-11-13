@@ -3925,6 +3925,30 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991
+                                },
+                                "crowd_debates": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "filled_plans": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "big_events": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "member_days": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
                                 }
                               },
                               "required": [
@@ -3934,7 +3958,11 @@
                                 "events",
                                 "upvotes",
                                 "debates",
-                                "invited"
+                                "invited",
+                                "crowd_debates",
+                                "filled_plans",
+                                "big_events",
+                                "member_days"
                               ],
                               "additionalProperties": false
                             },
@@ -4508,6 +4536,30 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991
+                                },
+                                "crowd_debates": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "filled_plans": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "big_events": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "member_days": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
                                 }
                               },
                               "required": [
@@ -4517,7 +4569,11 @@
                                 "events",
                                 "upvotes",
                                 "debates",
-                                "invited"
+                                "invited",
+                                "crowd_debates",
+                                "filled_plans",
+                                "big_events",
+                                "member_days"
                               ],
                               "additionalProperties": false
                             },
@@ -5610,6 +5666,30 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991
+                                },
+                                "crowd_debates": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "filled_plans": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "big_events": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "member_days": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
                                 }
                               },
                               "required": [
@@ -5619,7 +5699,11 @@
                                 "events",
                                 "upvotes",
                                 "debates",
-                                "invited"
+                                "invited",
+                                "crowd_debates",
+                                "filled_plans",
+                                "big_events",
+                                "member_days"
                               ],
                               "additionalProperties": false
                             },

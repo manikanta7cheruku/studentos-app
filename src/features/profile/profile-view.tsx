@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
-import type { Counts } from "./badges";
+import type { Counts } from "./standing";
 import { ContributionsPanel } from "./contributions-panel";
 import { Chip, levelLabel } from "./skill-level";
 

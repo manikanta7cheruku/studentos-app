@@ -94,7 +94,7 @@ describe("hidden-profile rule enforcement", () => {
     expect(rpc).toHaveBeenCalledWith("directory_list", {
       p_college: college,
       p_q: "Kab",
-      p_limit: 50,
+      p_limit: 100,
     });
     expect(people).toHaveLength(1);
     expect(people[0]?.user_id).toBe(userB);

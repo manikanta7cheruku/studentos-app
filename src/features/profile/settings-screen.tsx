@@ -155,7 +155,7 @@ function PrivacySection() {
         <Choice
           checked={visible}
           label="Show my profile to my college"
-          help="Verified members can find you in People. Turn it off to hide your profile from everyone."
+          help="Verified members can find you in the Network. Turn it off to hide your profile from everyone."
           onChange={(next) => {
             setOverride((o) => ({ ...o, visible: next }));
             void run(

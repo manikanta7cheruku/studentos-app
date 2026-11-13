@@ -19,6 +19,10 @@ export type Contributions = {
   upvotes: number;
   debates: number;
   invited: number;
+  crowd_debates: number;
+  filled_plans: number;
+  big_events: number;
+  member_days: number;
 };
 export type FollowInfo = { followers: number; following: number; i_follow: boolean };
 

@@ -104,8 +104,8 @@ function MoreMenu() {
   const explore: MoreRow[] = [
     {
       href: `/c/${slug}/people`,
-      label: "People",
-      text: "Find classmates",
+      label: "Network",
+      text: "Meet students, find your people",
       icon: <UsersRoundIcon />,
     },
     ...(college.modules.campus && slug !== "global"

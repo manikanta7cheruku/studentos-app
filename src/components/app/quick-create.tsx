@@ -218,7 +218,7 @@ function ShortcutList({
     },
     {
       href: `/c/${slug}/people`,
-      title: "People",
+      title: "Network",
       icon: <UsersRoundIcon aria-hidden="true" />,
       count: 0,
     },

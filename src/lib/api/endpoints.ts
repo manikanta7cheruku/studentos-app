@@ -184,6 +184,10 @@ export const api = {
           headline: string | null;
           avatar_url: string | null;
           interests: string[];
+          tech_interests: string[];
+          college_name: string | null;
+          branch: string | null;
+          grad_year: number | null;
         }[]
       >,
     one: (slug: string, userId: string) =>

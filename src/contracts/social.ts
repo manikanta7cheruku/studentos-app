@@ -15,6 +15,11 @@ export const contributions = z.object({
   // Debates started, plus arguments made (never anonymous ones).
   debates: z.number().int().min(0),
   invited: z.number().int().min(0),
+  // The hard-to-fake things the level and badges are built from.
+  crowd_debates: z.number().int().min(0).default(0),
+  filled_plans: z.number().int().min(0).default(0),
+  big_events: z.number().int().min(0).default(0),
+  member_days: z.number().int().min(0).default(0),
 });
 
 // FOL-01 PUT or DELETE /api/v1/me/follows/{userId}: follow, or stop following. One way, no approval. Safe to repeat.

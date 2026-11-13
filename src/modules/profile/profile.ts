@@ -244,6 +244,10 @@ export type DirectoryPerson = {
   headline: string | null;
   avatar_url: string | null;
   interests: string[];
+  tech_interests: string[];
+  college_name: string | null;
+  branch: string | null;
+  grad_year: number | null;
 };
 
 export async function getMemberProfile(
@@ -310,7 +314,7 @@ export async function getVisibleCollegePeople(
   const { data, error } = await supabase.rpc("directory_list", {
     p_college: collegeId,
     p_q: options.query ?? null,
-    p_limit: 50,
+    p_limit: 100,
   });
   if (error) {
     throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
@@ -323,6 +327,10 @@ export async function getVisibleCollegePeople(
     headline: string | null;
     avatar_path: string | null;
     interests: string[] | null;
+    tech_interests?: string[] | null;
+    college_name?: string | null;
+    branch?: string | null;
+    grad_year?: number | null;
   };
 
   const rows = (data ?? []) as unknown as DirectoryRow[];
@@ -344,6 +352,10 @@ export async function getVisibleCollegePeople(
       headline: row.headline ?? null,
       avatar_url: avatarUrl,
       interests: row.interests ?? [],
+      tech_interests: row.tech_interests ?? [],
+      college_name: row.college_name ?? null,
+      branch: row.branch ?? null,
+      grad_year: row.grad_year ?? null,
     };
   });
 }

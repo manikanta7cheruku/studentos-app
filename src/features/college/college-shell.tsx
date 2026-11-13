@@ -70,7 +70,7 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
     more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
     more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
   }
-  more.push({ href: `${base}/people`, label: "People", icon: <UsersRoundIcon /> });
+  more.push({ href: `${base}/people`, label: "Network", icon: <UsersRoundIcon /> });
   more.push({ href: `${base}/career`, label: "Careers", icon: <BriefcaseIcon /> });
   if (isModerator) more.push({ href: `${base}/admin`, label: "Admin", icon: <ShieldCheckIcon /> });
   return { tabs, more };

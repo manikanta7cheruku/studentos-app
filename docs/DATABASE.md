@@ -245,6 +245,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261135000000_standing_and_directory.sql` | `profile_contributions` also returns `crowd_debates`, `filled_plans`, `big_events`, `member_days` (and `invited` counts only friends who finished the tour); `directory_list` returns college, branch, year and tech interests and searches more fields |
 | `20261134000000_follow_list_college_names.sql` | `follow_list`, `college_name_suggest` |
 | `20261133000000_debates.sql` | `debates`, `debate_sides`, `debate_arguments`, `debate_argument_votes`, `debate_*` functions; the challenge tables are dropped; `profile_contributions` counts debates; reports and moderation reach debates and arguments |
 | `20261132000000_owner_users_full.sql` | `owner_users_full` (the whole record of each user, for the owner dashboard) |
