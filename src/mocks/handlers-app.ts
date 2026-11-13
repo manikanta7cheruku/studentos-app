@@ -11,7 +11,29 @@ import ten08 from "@/contracts/fixtures/ten-08.success.json";
 // built on them keeps working against the real API. Real behaviour is tested against the real backend
 // (e2e/*.ui.spec.ts and tests/integration).
 const META = { request_id: "req_mock_app" };
-let profile = { ...prf01.data };
+// Sample numbers for the Standing panel: a few months in, a handful of upvotes, so it shows a level in the middle.
+const sampleContributions = {
+  buzz: 12,
+  replies: 34,
+  plans: 3,
+  events: 1,
+  upvotes: 84,
+  debates: 9,
+  invited: 2,
+  crowd_debates: 1,
+  filled_plans: 1,
+  big_events: 0,
+  member_days: 60,
+};
+let profile = {
+  ...prf01.data,
+  college_name: "Alpha College",
+  branch: "CSE",
+  grad_year: 2028,
+  followers: 12,
+  following: 9,
+  contributions: sampleContributions,
+};
 // Sample catalog: the suggested strengths plus the fixture's skills. Ids are made from the name, so they stay the same.
 const catalog = new Map<string, { id: string; name: string; category: string | null }>();
 const addToCatalog = (name: string, category: string | null) => {

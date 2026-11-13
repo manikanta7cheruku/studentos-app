@@ -116,6 +116,52 @@ export const peopleHandlers = [
   }),
   http.get("*/api/v1/c/:slug/people/:userId", ({ params }) => {
     const found = people.find((person) => person.user_id === params.userId) ?? people[0]!;
-    return HttpResponse.json({ data: { ...found, is_self: false }, meta: META });
+    const index = people.indexOf(found);
+    // A different amount of standing for each sample person, so the panel can be seen at several levels.
+    const contributions = [
+      {
+        buzz: 30,
+        replies: 120,
+        plans: 6,
+        events: 3,
+        upvotes: 310,
+        debates: 22,
+        invited: 6,
+        crowd_debates: 3,
+        filled_plans: 3,
+        big_events: 2,
+        member_days: 150,
+      },
+      {
+        buzz: 4,
+        replies: 9,
+        plans: 1,
+        events: 0,
+        upvotes: 12,
+        debates: 2,
+        invited: 0,
+        crowd_debates: 0,
+        filled_plans: 0,
+        big_events: 0,
+        member_days: 20,
+      },
+      {
+        buzz: 0,
+        replies: 0,
+        plans: 0,
+        events: 0,
+        upvotes: 0,
+        debates: 0,
+        invited: 0,
+        crowd_debates: 0,
+        filled_plans: 0,
+        big_events: 0,
+        member_days: 3,
+      },
+    ][index % 3];
+    return HttpResponse.json({
+      data: { ...found, is_self: false, i_follow: false, contributions },
+      meta: META,
+    });
   }),
 ];
