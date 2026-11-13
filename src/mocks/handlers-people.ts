@@ -104,13 +104,17 @@ export const peopleHandlers = [
           person.display_name.toLowerCase().includes(q) ||
           person.interests.some((interest) => interest.toLowerCase().includes(q)),
       )
-      .map(({ user_id, display_name, handle, headline, avatar_url, interests }) => ({
-        user_id,
-        display_name,
-        handle,
-        headline,
-        avatar_url,
-        interests,
+      .map((person) => ({
+        user_id: person.user_id,
+        display_name: person.display_name,
+        handle: person.handle,
+        headline: person.headline,
+        avatar_url: person.avatar_url,
+        interests: person.interests,
+        tech_interests: person.tech_interests,
+        college_name: person.college_name,
+        branch: person.branch,
+        grad_year: person.grad_year,
       }));
     return HttpResponse.json({ data: items, meta: META });
   }),

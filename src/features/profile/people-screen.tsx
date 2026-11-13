@@ -28,7 +28,11 @@ import { ProfileView } from "./profile-view";
 type Person = Awaited<ReturnType<typeof api.people.list>>[number];
 
 const lower = (text: string) => text.toLowerCase();
-const allInterests = (person: Person) => [...person.interests, ...person.tech_interests];
+// An older server (or sample data) may not send the tech interests: treat that as none.
+const allInterests = (person: Person) => [
+  ...(person.interests ?? []),
+  ...(person.tech_interests ?? []),
+];
 
 function PersonRow({ person, mine, slug }: { person: Person; mine: Set<string>; slug: string }) {
   const shared = allInterests(person).filter((interest) => mine.has(lower(interest)));
@@ -192,7 +196,9 @@ export function PeopleScreen() {
   const mine = React.useMemo(
     () =>
       new Set(
-        me.status === "ready" ? [...me.data.interests, ...me.data.tech_interests].map(lower) : [],
+        me.status === "ready"
+          ? [...me.data.interests, ...(me.data.tech_interests ?? [])].map(lower)
+          : [],
       ),
     [me],
   );
