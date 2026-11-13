@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DownloadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/features/auth/auth-frame";
 
@@ -6,7 +7,7 @@ import { Wordmark } from "@/features/auth/auth-frame";
 export function SiteHeader({ landing = false }: { landing?: boolean }) {
   const prefix = landing ? "" : "/";
   return (
-    <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[rgba(11,11,16,0.72)] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[rgba(11,11,16,0.7)] backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
         <Link
           href="/"
@@ -16,24 +17,31 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
         </Link>
         <nav
           aria-label="Main"
-          className="hidden items-center gap-7 text-[14px] text-ink-muted md:flex"
+          className="hidden items-center gap-8 text-[14px] text-ink-muted lg:flex"
         >
-          <a href={`${prefix}#features`} className="hover:text-ink">
+          <a href={`${prefix}#features`} className="transition-colors hover:text-ink">
             Features
           </a>
-          <a href={`${prefix}#how`} className="hover:text-ink">
-            How it works
-          </a>
-          <a href={`${prefix}#privacy`} className="hover:text-ink">
+          <a href={`${prefix}#privacy`} className="transition-colors hover:text-ink">
             Privacy
           </a>
-          <a href={`${prefix}#faq`} className="hover:text-ink">
+          <a href={`${prefix}#how`} className="transition-colors hover:text-ink">
+            How it works
+          </a>
+          <a href={`${prefix}#faq`} className="transition-colors hover:text-ink">
             FAQ
           </a>
         </nav>
-        <Button asChild size="sm">
-          <Link href="/signin">Sign in</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+            <a href={`${prefix}#app`}>
+              <DownloadIcon aria-hidden="true" /> Get the app
+            </a>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/signin">Sign in</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
