@@ -150,6 +150,16 @@ The workflow `.github/workflows/maintenance.yml` calls the maintenance endpoint 
 
 Then Actions, Maintenance, Run workflow, and open the run: `HTTP 200` and the counts are printed. A target without settings is skipped, not failed.
 
+### Phone alerts (optional, YOU, one time)
+
+Alerts reach a phone or desktop when StudentOS is closed. They use the Web Push standard, so there is no store account and no cost.
+
+1. Make a key pair on your computer: `npx web-push generate-vapid-keys`. Keep the private key secret.
+2. In the hosting settings (Vercel) add `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (public key), `VAPID_PRIVATE_KEY` (private key) and optionally `VAPID_SUBJECT` (your site address, `https://...`). Redeploy. Do not change the pair later: every device would have to turn alerts on again.
+3. Apply migration `20261141000000_push_alerts.sql` (`npx supabase db push`).
+4. Optional safety net: also call `POST /api/internal/push` every minute or so with the same `Authorization: Bearer <CRON_SECRET>` as the maintenance job. Alerts are already sent right after a change is saved, so this only catches the rare missed one.
+5. Test on a real phone: Settings, Alerts, turn on, then have a second account send a message request. On iPhone the person must first add StudentOS to the Home Screen (Share, Add to Home Screen).
+
 ## 9. Backups and the restore drill (YOU run with R5, R2 prepared)
 
 Rules and numbers: `docs/BACKUP_AND_RELEASE_RUNBOOK.md` (RPO 24 hours, RTO 4 hours for the pilot). Before real students:

@@ -78,7 +78,7 @@ select throws_ok($$select public.dm_report('aaaaaaaa-1000-4000-8000-000000000004
 update public.dm_messages set expires_at = now() - interval '1 minute';
 select is(jsonb_array_length(public.dm_thread('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003') -> 'messages'), 0, 'an expired message is already hidden');
 select ok(public.dm_purge() >= 1, 'the hourly job deletes them for good');
-select is((select count(*)::int from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001')), 0, 'and the conversation leaves the inbox');
+select is((select message_count from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001') where other_id = 'aaaaaaaa-1000-4000-8000-000000000003'), 0, 'the messages are gone but the conversation stays in the list');
 
 -- ===== reports for a buzz, and the moderator hides it ========================
 insert into t select 'idea', (public.idea_create('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', '', 'Buy cheap followers here', 'other') ->> 'id');

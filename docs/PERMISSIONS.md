@@ -15,6 +15,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | --- | --- | --- | --- | --- |
 | SYS-01 | GET | /api/health | pub | none |
 | SYS-01 | GET | /api/ready | pub | none |
+| SYS-03 | POST | /api/internal/push | cron | secret in `Authorization: Bearer` (CRON_SECRET), never a cookie |
 | SYS-02 | POST | /api/internal/maintenance | cron | secret in `Authorization: Bearer` (CRON_SECRET), never a cookie |
 | AUTH-01 | POST | /auth/otp/request | pub | 5/h per email, 20/h per IP |
 | AUTH-02 | POST | /auth/otp/verify | pub | lock after 5 wrong codes |
@@ -135,6 +136,9 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | APP-04 | POST | /me/applications/{id}/status | ses | write limit |
 | REM-01 | GET | /me/reminder-settings | ses | none |
 | REM-01 | PUT | /me/reminder-settings | ses | write limit |
+| PSH-01 | POST | /me/push | ses | write limit |
+| PSH-03 | POST | /me/push/test | ses | write limit |
+| PSH-02 | DELETE | /me/push | ses | write limit |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
 | RPT-01 | POST | /c/{slug}/reports | mem | write limit |
 | ANN-02 | GET | /c/{slug}/admin/announcements | mod | admin bucket |

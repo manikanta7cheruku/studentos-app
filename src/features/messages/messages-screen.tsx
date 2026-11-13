@@ -47,6 +47,7 @@ function statusLine(t: DmThreadItem): string {
     case "expired":
       return "No reply yet · you can send a new request";
     default:
+      if (t.message_count === 0) return `No messages right now · ${timeAgo(t.last_at)}`;
       return `${
         t.unread > 0 ? `${t.unread} new ${t.unread === 1 ? "message" : "messages"}` : "Opened"
       } · ${timeAgo(t.last_at)}`;

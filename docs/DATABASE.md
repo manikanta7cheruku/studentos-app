@@ -64,6 +64,8 @@ erDiagram
 **team_post_role_skills**: PK(`role_id`,`skill_id`).
 **join_requests**: `id` · `college_id` · `post_id` · `role_id` · `applicant_id` · `message` (≤500) · `status` (`pending`,`accepted`,`declined`,`withdrawn`,`cancelled`) · `decided_by`,`decided_at` · UQ(`role_id`,`applicant_id`) WHERE status in (`pending`,`accepted`) *(partial unique)*.
 
+**push_subscriptions** (closed table, server only): `id` · `user_id` · `endpoint` (unique, https) · `p256dh` · `auth` · `user_agent` · `created_at`. One row per device that allows alerts; at most 5 per person.
+
 ### 2.4 Career
 **job_applications** (owner-only, no `college_id`): `id` · `user_id` · `company` (≤120) · `role_title` (≤120) · `source_url` · `status` (`saved`,`applied`,`assessment`,`interview`,`offer`,`rejected`,`withdrawn`) · `deadline` date · `applied_on` date · `notes` text (≤4000) · `opportunity_id` FK null · `version` int (optimistic concurrency) · timestamps · IDX(`user_id`,`status`,`deadline`).
 **application_events**: `id` · `application_id` · `from_status`,`to_status` · `at` · `note`.
@@ -245,6 +247,8 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261141000000_push_alerts.sql` | `push_subscriptions` (closed table: one row per device that allows alerts), `notifications.pushed_at`, `push_subscribe`, `push_unsubscribe`, `push_claim`, `push_drop` |
+| `20261140000000_chats_stay_in_list.sql` | `dm_threads.last_activity_at` (kept up to date by a trigger), `dm_inbox` keeps an accepted chat in the list when its messages are gone and returns `message_count` |
 | `20261139000000_debate_top_argument.sql` | `debate_json` also returns `top_argument` |
 | `20261138000000_network_connection_list.sql` | `network_connection_list` (my connections in one college) |
 | `20261137000000_owner_anonymous_reports.sql` | `owner_anonymous` (every anonymous buzz, comment and argument with the real person, for the owner), `owner_reports` now shows what was reported and who wrote it |

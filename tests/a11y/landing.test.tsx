@@ -40,7 +40,7 @@ describe("accessibility of landing page / (axe and landmarks)", () => {
     render(<Home />);
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings).toHaveLength(1);
-    expect(headings[0]?.textContent).toBe("Your campus, in your pocket.");
+    expect(headings[0]?.textContent).toBe("Everything on campus,in one place.");
   });
 
   it("has no serious or critical accessibility problems", async () => {

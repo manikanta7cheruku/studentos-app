@@ -1,5 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
+import { Logo } from "@/components/app/logo";
 import { cn } from "cn";
 
 type AuthFrameProps = {
@@ -26,10 +27,7 @@ export function Wordmark({ className }: { className?: string }) {
         className,
       )}
     >
-      <span
-        aria-hidden="true"
-        className="bg-brand inline-block size-[22px] rounded-[7px] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
-      />
+      <Logo size={26} />
       StudentOS
     </span>
   );

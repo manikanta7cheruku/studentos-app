@@ -4,6 +4,7 @@ import * as React from "react";
 import { ApiError } from "@/lib/api-client";
 import { api, type MyCollege } from "@/lib/api/endpoints";
 import { homePath } from "@/lib/home-path";
+import { forgetThisDevice } from "@/features/notifications/push-device";
 
 // Who is signed in, and which colleges they belong to. One request (GET /me/memberships) answers both:
 // 401 means signed out, a list (possibly empty) means signed in. Screens read it with useSession().
@@ -87,6 +88,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = React.useCallback(async () => {
+    await forgetThisDevice();
     try {
       await api.auth.logout();
     } catch {

@@ -22,6 +22,8 @@ export const dmThreadItem = person.extend({
   unread: z.number().int().min(0),
   last_at: isoDateTime,
   kind: dmKind.default("chat"),
+  // How many messages are still there. A chat stays in the list at 0 once its messages have disappeared.
+  message_count: z.number().int().min(0).default(0),
   // When a request runs out, and (after "not interested") when the sender may ask again.
   expires_at: isoDateTime.nullable().default(null),
   can_request_again_at: isoDateTime.nullable().default(null),

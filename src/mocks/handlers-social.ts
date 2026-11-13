@@ -67,6 +67,7 @@ export const socialHandlers = [
       unread: messages.filter((m) => !m.mine && !m.opened_at).length,
       last_at: messages[messages.length - 1]!.created_at,
       kind: kindOf(userId),
+      message_count: messages.length,
       expires_at:
         states[userId] === "pending_in" || states[userId] === "pending_out"
           ? inMinutes(60 * 24 * 3)
