@@ -166,6 +166,9 @@ export const endpoints: Endpoint[] = [
     query: network.networkSuggestionsQuery,
     response: network.networkSuggestionsResponse,
   }),
+  e("NET-03", "GET", "/c/{slug}/network/connections", "mem", "People I am connected to", {
+    response: network.networkConnectionsResponse,
+  }),
   e("NET-02", "GET", "/me/network", "ses", "My connections and open requests", {
     response: network.networkStatsResponse,
   }),

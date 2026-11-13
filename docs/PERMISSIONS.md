@@ -121,6 +121,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | MSG-05 | POST | /c/{slug}/messages/{userId}/decline | mem | write limit, only the person who received the request |
 | NET-01 | GET | /c/{slug}/network/suggestions | mem | read limit |
 | NET-02 | GET | /me/network | ses | read limit, my own numbers |
+| NET-03 | GET | /c/{slug}/network/connections | mem | read limit, my own connections |
 | DEB-10 | PUT | /c/{slug}/debates/{id}/invites | mem | write limit, author only |
 | FDB-01 | POST | /me/feedback | ses | write limit, 10 a day |
 | PHO-01 | POST | /c/{slug}/photos/upload-url | mem | write limit, 1 MB at most |

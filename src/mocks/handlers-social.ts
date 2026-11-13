@@ -181,6 +181,23 @@ export const socialHandlers = [
       meta: META,
     }),
   ),
+  http.get("*/api/v1/c/:slug/network/connections", () =>
+    HttpResponse.json({
+      data: [
+        {
+          user_id: id(12),
+          display_name: "Arjun Reddy",
+          headline: "Robotics club",
+          avatar_url: null,
+          college_name: "Sample College",
+          branch: "ECE",
+          grad_year: 2027,
+          place: "Hyderabad",
+        },
+      ],
+      meta: META,
+    }),
+  ),
   http.get("*/api/v1/me/network", () =>
     HttpResponse.json({
       data: { connections: 4, requests_sent: 1, requests_received: 1 },

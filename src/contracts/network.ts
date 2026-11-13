@@ -32,3 +32,17 @@ export const networkStats = z.object({
   requests_received: z.number().int().min(0),
 });
 export const networkStatsResponse = successEnvelope(networkStats);
+
+// NET-03 GET /api/v1/c/{slug}/network/connections: the people I am connected to in this space (a chat they accepted, or two
+// people who follow each other), by name. Active members only, never blocked people.
+export const networkConnection = z.object({
+  user_id: uuid,
+  display_name: z.string(),
+  headline: z.string().nullable(),
+  avatar_url: z.string().nullable(),
+  college_name: z.string().nullable(),
+  branch: z.string().nullable(),
+  grad_year: z.number().int().nullable(),
+  place: z.string().nullable().default(null),
+});
+export const networkConnectionsResponse = successEnvelope(z.array(networkConnection));

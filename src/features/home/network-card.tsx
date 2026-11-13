@@ -19,7 +19,7 @@ import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { networkProgress, openers } from "./network-tiers";
 
-function Ring({
+export function Ring({
   fraction,
   size = 64,
   children,
@@ -92,7 +92,7 @@ export function NetworkStrip() {
 }
 
 /** People to meet: small cards in a row you can swipe, each with a one-tap hello. */
-export function PeopleToMeet() {
+export function PeopleToMeet({ onSent }: { onSent?: () => void } = {}) {
   const { slug } = useCollege();
   const people = useLoad(() => api.network.suggestions(slug, 6), [slug]);
   const [target, setTarget] = React.useState<NetworkSuggestion | null>(null);
@@ -147,19 +147,20 @@ export function PeopleToMeet() {
         onSent={(id) => {
           setSent((old) => new Set(old).add(id));
           setTarget(null);
+          onSent?.();
         }}
       />
     </section>
   );
 }
 
-function SayHi({
+export function SayHi({
   person,
   slug,
   onClose,
   onSent,
 }: {
-  person: NetworkSuggestion | null;
+  person: { user_id: string; display_name: string; shared_interests: string[] } | null;
   slug: string;
   onClose: () => void;
   onSent: (id: string) => void;

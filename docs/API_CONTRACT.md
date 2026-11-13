@@ -123,6 +123,7 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | NET-02 | GET `/me/network` | How big my network is | ses | P2 | | TC-NET-02 |
 | MSG-05 | POST `/c/{slug}/messages/{userId}/decline` | Not interested in a request | mem(1) | P2 | | TC-MSG-05 |
 | FOL-02 | GET `/me/connections` | My followers, or who I follow | ses | P2 | | TC-FOL-02 |
+| NET-03 | GET `/c/{slug}/network/connections` | People I am connected to | mem(1) | P2 | | TC-NET-03 |
 | COL-02 | GET `/colleges/suggest` | College names to pick from | ses | P2 | | TC-COL-02 |
 | ADM-01 | POST `/platform/colleges` | Create tenant | plat | P0 | ✓ | TC-ADM-01 |
 | ADM-02 | PATCH `/platform/colleges/{id}` | Status/branding (suspend) | plat | P0 | | TC-ADM-02 |
@@ -526,6 +527,7 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 | DEB-10 | PUT `/api/v1/c/{slug}/debates/{id}/invites` | `{ user_ids: [1 to 50] }`. The author adds people to an invite-only debate (never after it ended). Each gets a `debate.invited` notification. 403 for anyone but the author, 400 for a public debate |
 | NET-01 | GET `/api/v1/c/{slug}/network/suggestions?limit=6` | People to meet (1 to 12): not connected, not asked, not blocked. Ranked by shared interests, mutual connections, branch and college, with a daily shuffle. Each has `shared_interests` and `mutual` |
 | NET-02 | GET `/api/v1/me/network` | `{ connections, requests_sent, requests_received }`. A connection is an accepted chat or two people who follow each other |
+| NET-03 | GET `/api/v1/c/{slug}/network/connections` | The people I am connected to in this space (an accepted chat, or two people who follow each other): name, headline, college, branch, year, place. Active members only, never blocked people |
 
 **Private debates (DEB-01, DEB-10):** `visibility: "invite"` with `invite_user_ids` (1 to 50) makes a debate only the author and the invited can see or join (others get 404). `invited_count` is shown to the author only. **Place:** `place` on the profile is an optional city or area (2 to 80 characters, same checks as the college name). **Network strength:** tiers at 3, 6, 10, 20, 35, 50, 75 and 100 connections are shown on Home; rewards for them come after launch. Notification type `debate.invited` tells a person they were invited to a private debate (payload has the debate id and title).
 

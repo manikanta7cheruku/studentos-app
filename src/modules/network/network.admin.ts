@@ -47,3 +47,33 @@ export async function myNetwork(user: string) {
     { p_user: user },
   );
 }
+
+export async function connectionList(actor: string, college: string) {
+  const rows = await rpc<
+    | {
+        user_id: string;
+        display_name: string;
+        headline: string | null;
+        avatar_path: string | null;
+        college_name: string | null;
+        branch: string | null;
+        grad_year: number | null;
+        place: string | null;
+      }[]
+    | null
+  >("network_connection_list", { p_actor: actor, p_college: college });
+  return (rows ?? []).map((row) => ({
+    user_id: row.user_id,
+    display_name: row.display_name,
+    headline: row.headline,
+    avatar_url: row.avatar_path
+      ? row.avatar_path.startsWith("http")
+        ? row.avatar_path
+        : adminClient().storage.from("avatars").getPublicUrl(row.avatar_path).data.publicUrl
+      : null,
+    college_name: row.college_name,
+    branch: row.branch,
+    grad_year: row.grad_year,
+    place: row.place,
+  }));
+}

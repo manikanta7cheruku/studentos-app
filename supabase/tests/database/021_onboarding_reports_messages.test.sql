@@ -56,6 +56,7 @@ select is((select unread from public.dm_inbox('aaaaaaaa-1000-4000-8000-000000000
 -- The receiver writes back, which accepts the request
 select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Yes, see you there')$$, 'writing back accepts the request');
 select is((public.dm_thread('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000004') -> 'request' ->> 'status'), null, 'the chat is now a normal one');
+select is((select count(*)::int from public.network_connection_list('aaaaaaaa-1000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001') where user_id = 'aaaaaaaa-1000-4000-8000-000000000004'), 1, 'an accepted chat is a connection');
 -- A request that is declined: the sender waits 5 days
 select lives_ok($$select public.dm_send('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', 'Hi, can we talk about the plan?')$$, 'a moderator can send a request too');
 select throws_ok($$select public.dm_decline('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003')$$, 'P0001', 'NOT_FOUND', 'the sender cannot decline their own request');

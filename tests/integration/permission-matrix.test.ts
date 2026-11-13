@@ -73,6 +73,7 @@ import { DELETE as debateArgumentsRemove } from "@/app/api/v1/c/[slug]/debates/[
 import { PUT as debateArgumentVote } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/vote/route";
 import { POST as messagesDecline } from "@/app/api/v1/c/[slug]/messages/[userId]/decline/route";
 import { GET as networkSuggestions } from "@/app/api/v1/c/[slug]/network/suggestions/route";
+import { GET as networkConnections } from "@/app/api/v1/c/[slug]/network/connections/route";
 import { GET as myNetwork } from "@/app/api/v1/me/network/route";
 import { PUT as debateInvites } from "@/app/api/v1/c/[slug]/debates/[id]/invites/route";
 import { GET as myConnections } from "@/app/api/v1/me/connections/route";
@@ -1079,6 +1080,17 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       call(networkSuggestions, {
         method: "GET",
         path: "/api/v1/c/alpha/network/suggestions",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "NET-03 GET /c/alpha/network/connections (members -> 200)",
+    call: (cookie: string | undefined) =>
+      call(networkConnections, {
+        method: "GET",
+        path: "/api/v1/c/alpha/network/connections",
         params: { slug: "alpha" },
         cookie,
       }).then((r) => r.status),

@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { BanIcon, SearchIcon, SlidersHorizontalIcon } from "lucide-react";
+import {
+  BanIcon,
+  ChevronRightIcon,
+  HourglassIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +24,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
-import { api } from "@/lib/api/endpoints";
+import { api, type DmThreadItem } from "@/lib/api/endpoints";
+import { Ring, SayHi, PeopleToMeet } from "@/features/home/network-card";
+import { networkProgress } from "@/features/home/network-tiers";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportMenu } from "@/features/admin-console/report-menu";
@@ -34,30 +42,83 @@ const allInterests = (person: Person) => [
   ...(person.tech_interests ?? []),
 ];
 
-function PersonRow({ person, mine, slug }: { person: Person; mine: Set<string>; slug: string }) {
-  const shared = allInterests(person).filter((interest) => mine.has(lower(interest)));
+type RowPerson = {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  headline: string | null;
+  handle?: string | null;
+  college_name: string | null;
+  branch: string | null;
+  grad_year: number | null;
+  place?: string | null;
+  interests?: string[];
+  tech_interests?: string[];
+};
+
+/** How I stand with a person: connected, waiting for them, waiting for me, not available right now, or nothing yet. */
+type Standing = "connected" | "sent" | "received" | "declined" | "none";
+
+function standingOf(
+  id: string,
+  connected: Set<string>,
+  threads: Map<string, DmThreadItem>,
+  sentNow: Set<string>,
+): Standing {
+  if (connected.has(id)) return "connected";
+  const thread = threads.get(id);
+  if (thread?.kind === "chat") return "connected";
+  if (thread?.kind === "request_received") return "received";
+  if (thread?.kind === "request_sent" || sentNow.has(id)) return "sent";
+  if (
+    thread?.kind === "declined" &&
+    thread.can_request_again_at &&
+    new Date(thread.can_request_again_at).getTime() > Date.now()
+  )
+    return "declined";
+  return "none";
+}
+
+function PersonRow({
+  person,
+  mine,
+  slug,
+  standing,
+  onHi,
+}: {
+  person: RowPerson;
+  mine: Set<string>;
+  slug: string;
+  standing: Standing;
+  onHi: (person: RowPerson) => void;
+}) {
+  const shared = [...(person.interests ?? []), ...(person.tech_interests ?? [])].filter(
+    (interest) => mine.has(lower(interest)),
+  );
   const meta = [person.college_name, person.branch, person.grad_year, person.place]
     .filter(Boolean)
     .join(" · ");
+  const chip =
+    "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold";
   return (
-    <li className="glass-card flex items-center gap-3.5 rounded-[22px] p-3.5 pr-3">
+    <li className="glass-card flex items-center gap-3 rounded-[20px] p-3 pr-3">
       <Link
         href={`/c/${slug}/people/${person.user_id}`}
-        className="flex min-w-0 flex-1 items-center gap-3.5 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <Avatar name={person.display_name} src={person.avatar_url} size="lg" />
+        <Avatar name={person.display_name} src={person.avatar_url} size="md" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[15.5px] font-bold leading-tight">
+          <span className="block truncate text-[15px] font-bold leading-tight">
             {person.display_name}
           </span>
-          <span className="mt-0.5 block truncate text-[13.5px] text-ink-muted">
-            {person.headline ?? (person.handle ? `@${person.handle}` : "New on StudentOS")}
+          <span className="block truncate text-[13px] text-ink-muted">
+            {person.headline ?? (person.handle ? `@${person.handle}` : meta || "New on StudentOS")}
           </span>
-          {meta ? (
-            <span className="mt-0.5 block truncate text-[12.5px] text-ink-muted/80">{meta}</span>
+          {person.headline && meta ? (
+            <span className="block truncate text-[12px] text-ink-muted/80">{meta}</span>
           ) : null}
           {shared.length ? (
-            <span className="mt-1.5 block truncate text-[12.5px]">
+            <span className="mt-0.5 block truncate text-[12px]">
               <span className="font-semibold text-[#b9b4ee]">{shared.length} in common</span>
               <span className="text-ink-muted">
                 {" · "}
@@ -68,14 +129,39 @@ function PersonRow({ person, mine, slug }: { person: Person; mine: Set<string>; 
           ) : null}
         </span>
       </Link>
-      <Button asChild variant="outline" size="sm" className="shrink-0">
-        <Link
-          href={`/c/${slug}/messages/${person.user_id}`}
-          aria-label={`Message ${person.display_name}`}
+      {standing === "connected" ? (
+        <Button asChild variant="outline" size="sm" className="shrink-0">
+          <Link
+            href={`/c/${slug}/messages/${person.user_id}`}
+            aria-label={`Message ${person.display_name}`}
+          >
+            Message
+          </Link>
+        </Button>
+      ) : standing === "sent" ? (
+        <span className={cn(chip, "bg-white/[0.06] text-ink-muted")}>
+          <HourglassIcon aria-hidden="true" className="size-3.5" /> Requested
+        </span>
+      ) : standing === "received" ? (
+        <Button asChild size="sm" className="shrink-0">
+          <Link href={`/c/${slug}/messages/${person.user_id}`}>
+            Respond <ChevronRightIcon aria-hidden="true" />
+          </Link>
+        </Button>
+      ) : standing === "declined" ? (
+        <span className={cn(chip, "bg-white/[0.06] text-ink-muted")}>Not now</span>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={() => onHi(person)}
+          aria-label={`Say hi to ${person.display_name}`}
         >
-          Message
-        </Link>
-      </Button>
+          Say hi
+        </Button>
+      )}
     </li>
   );
 }
@@ -178,15 +264,20 @@ function InterestFilter({
   );
 }
 
-type Tab = "all" | "similar" | "college";
+type Tab = "all" | "similar" | "college" | "connections";
 
-/** The Network: students of this space who chose to be visible. Search, a few clear tabs, and an interests filter in a sheet. */
+/**
+ * The Network: how strong mine is, the people I am connected to, and everyone who chose to be visible. Search, tabs with a gliding
+ * highlight, an interests filter in a sheet, and one clear action on each person (Say hi, Requested, Respond, Message).
+ */
 export function PeopleScreen() {
   const { slug, college } = useCollege();
   const [query, setQuery] = React.useState("");
   const [term, setTerm] = React.useState("");
   const [tab, setTab] = React.useState<Tab>("all");
   const [interests, setInterests] = React.useState<string[]>([]);
+  const [hi, setHi] = React.useState<RowPerson | null>(null);
+  const [sentNow, setSentNow] = React.useState<Set<string>>(() => new Set());
 
   React.useEffect(() => {
     const timer = window.setTimeout(() => setTerm(query.trim()), 300);
@@ -195,6 +286,9 @@ export function PeopleScreen() {
 
   const state = useLoad(() => api.people.list(slug, term || undefined), [slug, term]);
   const me = useLoad(() => api.profile.get(), []);
+  const stats = useLoad(() => api.network.mine(), []);
+  const links = useLoad(() => api.network.connections(slug), [slug]);
+  const threads = useLoad(() => api.messages.threads(slug), [slug]);
   const mine = React.useMemo(
     () =>
       new Set(
@@ -206,33 +300,119 @@ export function PeopleScreen() {
   );
   const myCollege = me.status === "ready" ? (me.data.college_name ?? "") : "";
 
-  const everyone = state.status === "ready" ? state.data : [];
+  // Keep the last list on screen while a new search loads, so the page does not flash.
+  const [last, setLast] = React.useState<Person[] | null>(null);
+  if (state.status === "ready" && last !== state.data) setLast(state.data);
+  const myId = me.status === "ready" ? me.data.user_id : null;
+  const everyone = (state.status === "ready" ? state.data : (last ?? [])).filter(
+    (person) => person.user_id !== myId,
+  );
+  const refreshing = state.status === "loading" && last !== null;
+
+  const connected = React.useMemo(
+    () => new Set(links.status === "ready" ? links.data.map((p) => p.user_id) : []),
+    [links],
+  );
+  const threadMap = React.useMemo(
+    () =>
+      new Map((threads.status === "ready" ? threads.data : []).map((t) => [t.user_id, t] as const)),
+    [threads],
+  );
+
   const overlap = (person: Person) => allInterests(person).filter((i) => mine.has(lower(i))).length;
   const picked = interests.map(lower);
-  const shown = everyone
-    .filter((person) => {
-      if (picked.length && !allInterests(person).some((i) => picked.includes(lower(i))))
-        return false;
-      if (tab === "similar") return overlap(person) > 0;
-      if (tab === "college")
-        return Boolean(myCollege) && lower(person.college_name ?? "") === lower(myCollege);
-      return true;
-    })
-    .sort((x, y) => (tab === "similar" ? overlap(y) - overlap(x) : 0));
+  const fromConnections: RowPerson[] =
+    links.status === "ready"
+      ? links.data
+          .filter(
+            (p) =>
+              !term ||
+              [p.display_name, p.headline, p.college_name, p.branch, p.place]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase()
+                .includes(term.toLowerCase()),
+          )
+          .map((p) => everyone.find((x) => x.user_id === p.user_id) ?? p)
+      : [];
+  const shown: RowPerson[] =
+    tab === "connections"
+      ? fromConnections
+      : everyone
+          .filter((person) => {
+            if (picked.length && !allInterests(person).some((i) => picked.includes(lower(i))))
+              return false;
+            if (tab === "similar") return overlap(person) > 0;
+            if (tab === "college")
+              return Boolean(myCollege) && lower(person.college_name ?? "") === lower(myCollege);
+            return true;
+          })
+          .sort((x, y) => (tab === "similar" ? overlap(y) - overlap(x) : 0));
 
+  const count = stats.status === "ready" ? stats.data.connections : (connected.size ?? 0);
+  const progress = networkProgress(count);
   const tabs: [Tab, string][] = [
     ["all", "Everyone"],
-    ["similar", "Similar to you"],
-    ...(myCollege ? ([["college", "My college"]] as [Tab, string][]) : []),
+    ["connections", "Connected"],
+    ["similar", "Similar"],
+    ...(myCollege ? ([["college", "College"]] as [Tab, string][]) : []),
   ];
+  const index = Math.max(
+    0,
+    tabs.findIndex(([value]) => value === tab),
+  );
+  const loading =
+    tab === "connections" ? links.status === "loading" : state.status === "loading" && !last;
+  const failed =
+    tab === "connections"
+      ? links.status === "error"
+        ? links.error
+        : null
+      : state.status === "error"
+        ? state.error
+        : null;
+  const reloadAll = () => {
+    threads.reload();
+    stats.reload();
+    links.reload();
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
-      <PageHeader
-        eyebrow={college.name}
-        title="Network"
-        description="Students you can meet, learn from and build with."
-      />
+      <PageHeader eyebrow={college.name} title="Network" />
+
+      {stats.status === "ready" ? (
+        <section
+          aria-label="Network strength"
+          className="glass-card flex items-center gap-3.5 rounded-[20px] px-4 py-3"
+        >
+          <Ring fraction={progress.fraction} size={48}>
+            {count}
+          </Ring>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">
+              Network strength
+            </p>
+            <p className="truncate text-[15px] font-bold leading-snug">
+              {progress.tier ? progress.tier.name : "Just getting started"}
+            </p>
+            <p className="truncate text-[12.5px] text-ink-muted">
+              {progress.next
+                ? `Meet ${progress.left} more ${progress.left === 1 ? "person" : "people"} to reach ${progress.next.name}`
+                : "You are at the top. Keep it going."}
+            </p>
+          </div>
+          {stats.data.requests_received > 0 ? (
+            <Link
+              href={`/c/${slug}/messages`}
+              className="bg-brand shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold text-white"
+            >
+              {stats.data.requests_received} waiting
+            </Link>
+          ) : null}
+        </section>
+      ) : null}
+
       <div className="flex gap-2">
         <div className="relative flex-1">
           <SearchIcon
@@ -244,19 +424,29 @@ export function PeopleScreen() {
             aria-label="Search the network"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Name, college, branch or interest"
+            placeholder="Search name, branch, interest"
             className="pl-11"
             autoComplete="off"
           />
         </div>
         <InterestFilter selected={interests} onChange={setInterests} />
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+
+      <div className="flex flex-col gap-2">
         <div
           role="tablist"
           aria-label="Who to show"
-          className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1"
+          className="no-scrollbar relative grid overflow-x-auto rounded-full border border-white/10 bg-white/[0.04] p-1"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
         >
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-1 left-1 rounded-full bg-white/[0.16] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
+            style={{
+              width: `calc((100% - 0.5rem) / ${tabs.length})`,
+              transform: `translateX(${index * 100}%)`,
+            }}
+          />
           {tabs.map(([value, label]) => (
             <button
               key={value}
@@ -265,38 +455,41 @@ export function PeopleScreen() {
               aria-selected={tab === value}
               onClick={() => setTab(value)}
               className={cn(
-                "h-8 rounded-full px-4 text-[13px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                tab === value ? "bg-white/[0.16] text-ink" : "text-ink-muted hover:text-ink",
+                "relative z-10 h-8 whitespace-nowrap rounded-full px-3 text-[13px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring",
+                tab === value ? "text-ink" : "text-ink-muted hover:text-ink",
               )}
             >
               {label}
             </button>
           ))}
         </div>
-        {state.status === "ready" ? (
-          <p className="tabular text-[12.5px] text-ink-muted" aria-live="polite">
-            {shown.length} {shown.length === 1 ? "person" : "people"}
-            {interests.length ? (
-              <>
-                {" · "}
-                <button
-                  type="button"
-                  onClick={() => setInterests([])}
-                  className="rounded font-semibold text-[#b9b4ee] underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Clear interests
-                </button>
-              </>
-            ) : null}
-          </p>
-        ) : null}
+        <p className="tabular min-h-[1.1rem] text-[12.5px] text-ink-muted" aria-live="polite">
+          {!loading && !failed ? (
+            <>
+              {shown.length} {shown.length === 1 ? "person" : "people"}
+              {interests.length ? (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={() => setInterests([])}
+                    className="rounded font-semibold text-[#b9b4ee] underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Clear interests
+                  </button>
+                </>
+              ) : null}
+            </>
+          ) : null}
+        </p>
       </div>
+
       <div aria-live="polite">
-        {state.status === "loading" ? (
+        {loading ? (
           <div aria-busy="true" className="flex flex-col gap-3">
             {[0, 1, 2, 3].map((n) => (
-              <div key={n} className="glass-card flex items-center gap-4 rounded-[22px] p-4">
-                <Skeleton className="size-12 rounded-full" />
+              <div key={n} className="glass-card flex items-center gap-4 rounded-[20px] p-4">
+                <Skeleton className="size-11 rounded-full" />
                 <div className="flex-1">
                   <Skeleton className="h-5 w-1/3" />
                   <Skeleton className="mt-2 h-4 w-2/3" />
@@ -304,29 +497,85 @@ export function PeopleScreen() {
               </div>
             ))}
           </div>
-        ) : state.status === "error" ? (
-          <LoadError error={state.error} onRetry={state.reload} what="the network" />
-        ) : shown.length === 0 ? (
-          <div className="glass-card rounded-[22px] p-8">
-            <p className="text-lg font-semibold">
-              {term ? `Nobody found for \u201c${term}\u201d.` : "Nobody to show here yet."}
-            </p>
-            <p className="mt-1 text-ink-muted">
-              {tab === "similar"
-                ? "Add more interests to your profile and similar people will appear."
-                : term || interests.length
-                  ? "Try a different search, or clear the interests."
-                  : "People show up here when they choose to be visible."}
-            </p>
-          </div>
+        ) : failed ? (
+          <LoadError
+            error={failed}
+            onRetry={
+              tab === "connections" ? links.reload : (state as { reload: () => void }).reload
+            }
+            what="the network"
+          />
         ) : (
-          <ul className="stagger flex flex-col gap-2.5">
-            {shown.map((person) => (
-              <PersonRow key={person.user_id} person={person} mine={mine} slug={slug} />
-            ))}
-          </ul>
+          <>
+            {tab === "all" && !term && !interests.length && everyone.length > 8 ? (
+              <div className="mb-4">
+                <PeopleToMeet onSent={reloadAll} />
+              </div>
+            ) : null}
+            {shown.length === 0 ? (
+              <div className="glass-card rounded-[22px] p-8">
+                <p className="text-lg font-semibold">
+                  {term
+                    ? `Nobody found for \u201c${term}\u201d.`
+                    : tab === "connections"
+                      ? "No connections yet."
+                      : "Nobody to show here yet."}
+                </p>
+                <p className="mt-1 text-ink-muted">
+                  {tab === "connections"
+                    ? "Say hi to someone. When they reply, they appear here."
+                    : tab === "similar"
+                      ? "Add more interests to your profile and similar people will appear."
+                      : term || interests.length
+                        ? "Try a different search, or clear the interests."
+                        : "People show up here when they choose to be visible."}
+                </p>
+              </div>
+            ) : (
+              <ul
+                key={tab}
+                className={cn(
+                  "stagger flex flex-col gap-2.5 transition-opacity duration-200",
+                  refreshing && "opacity-60",
+                )}
+              >
+                {shown.map((person) => (
+                  <PersonRow
+                    key={person.user_id}
+                    person={person}
+                    mine={mine}
+                    slug={slug}
+                    standing={standingOf(person.user_id, connected, threadMap, sentNow)}
+                    onHi={setHi}
+                  />
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
+
+      <SayHi
+        key={hi?.user_id ?? "none"}
+        person={
+          hi
+            ? {
+                user_id: hi.user_id,
+                display_name: hi.display_name,
+                shared_interests: [...(hi.interests ?? []), ...(hi.tech_interests ?? [])].filter(
+                  (i) => mine.has(lower(i)),
+                ),
+              }
+            : null
+        }
+        slug={slug}
+        onClose={() => setHi(null)}
+        onSent={(id) => {
+          setSentNow((old) => new Set(old).add(id));
+          setHi(null);
+          reloadAll();
+        }}
+      />
     </div>
   );
 }

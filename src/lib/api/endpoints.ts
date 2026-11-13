@@ -43,6 +43,7 @@ export type Debate = Data<typeof c.debateListResponse>[number];
 export type DebateTopic = z.infer<typeof c.debateTopic>;
 export type DebateArgument = Data<typeof c.debateArgumentListResponse>[number];
 export type NetworkSuggestion = Data<typeof c.networkSuggestionsResponse>[number];
+export type NetworkConnection = Data<typeof c.networkConnectionsResponse>[number];
 export type NetworkStats = Data<typeof c.networkStatsResponse>;
 export type DmThread = Data<typeof c.dmThreadResponse>;
 export type DmThreadItem = Data<typeof c.dmThreadListResponse>[number];
@@ -268,6 +269,10 @@ export const api = {
     suggestions: (slug: string, limit = 6) =>
       apiClient(j(`/c/${slug}/network/suggestions?limit=${limit}`), {
         schema: c.networkSuggestionsResponse.shape.data,
+      }),
+    connections: (slug: string) =>
+      apiClient(j(`/c/${slug}/network/connections`), {
+        schema: c.networkConnectionsResponse.shape.data,
       }),
     mine: () => apiClient(j("/me/network"), { schema: c.networkStatsResponse.shape.data }),
   },
