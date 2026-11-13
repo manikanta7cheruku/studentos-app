@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowDownIcon, ArrowUpIcon, CheckIcon, MessageCircleIcon, ShareIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  MessageCircleIcon,
+  ShareIcon,
+  VenetianMaskIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
 import { OutsideBadge } from "@/components/app/outside-badge";
@@ -98,7 +105,9 @@ export function VotePill({
         onClick={() => void vote(-1)}
         className={cn(
           button,
-          mine === -1 ? "bg-white/15 text-ink" : "text-ink-muted hover:bg-white/10 hover:text-ink",
+          mine === -1
+            ? "bg-white/15 text-ink"
+            : "text-ink-muted/50 hover:bg-white/10 hover:text-ink",
         )}
       >
         <ArrowDownIcon aria-hidden="true" className="size-[15px]" />
@@ -191,10 +200,19 @@ export function IdeaCard({
       )}
     >
       <header className="flex items-center gap-2">
-        <Avatar name={idea.author.display_name} size="xs" />
+        {idea.is_anonymous ? (
+          <span
+            aria-hidden="true"
+            className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-ink-muted"
+          >
+            <VenetianMaskIcon className="size-3.5" />
+          </span>
+        ) : (
+          <Avatar name={idea.author.display_name} size="xs" />
+        )}
         <p className="flex min-w-0 flex-1 items-baseline gap-1.5 leading-tight">
           {idea.is_anonymous ? (
-            <span className="max-w-[60%] shrink-0 truncate text-[13px] font-semibold">
+            <span className="max-w-[60%] shrink-0 truncate text-[13px] font-semibold italic text-ink/80">
               {idea.author.display_name}
             </span>
           ) : (
