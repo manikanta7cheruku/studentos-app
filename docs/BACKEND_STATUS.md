@@ -23,7 +23,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Open join and removal | TMF-11, TMF-12, ADM-13, ADM-14 | one tap join with a host note and a list of who joined, and removing content with a reason that reaches the author (built by R3 in Day 14) |
 | Turf booking | VEN-01, VEN-02, VEN-03, VEN-04, VEN-05, VEN-06, VEN-07, VEN-08, VEN-09, VEN-10 | a directory of turfs and courts, booking requests that the manager confirms by hand, and notes to both sides (built by R3 in Day 16, no payments) |
 | Network | NET-01, NET-02, NET-03 | people to meet and my network size (built Day 19) |
-| Phone alerts | PSH-01, PSH-02 | a device allows alerts and every new notification is also pushed to it (built in R3 Day 80) |
+| Phone alerts | PSH-01, PSH-02, PSH-03 | a device allows alerts and every new notification is also pushed to it (built in R3 Day 80) |
 | Messages, feedback and photos | MSG-01, MSG-02, MSG-03, MSG-04, MSG-05, FDB-01, PHO-01, BRD-08 | disappearing text messages between classmates, a feedback note to the team, and one shrunk photo on a market or lost and found post (built by R3 in Day 17) |
 
 ## 2. Not built

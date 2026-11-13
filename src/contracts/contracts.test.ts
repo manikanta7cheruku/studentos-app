@@ -87,6 +87,7 @@ const operations: Record<string, Kinds> = {
   "opp-04-put": { success: c.savedOpportunityResponse },
   "opp-04-delete": { success: c.savedOpportunityResponse },
   "psh-01": { request: c.pushSubscribeBody, success: c.pushResponse },
+  "psh-03": { success: c.pushTestResponse },
   "psh-02": { request: c.pushUnsubscribeBody, success: c.pushResponse },
   "rem-01": { request: c.reminderSettingsBody, success: c.reminderSettingsResponse },
   "wl-01": { request: c.waitlistBody, success: c.waitlistResponse },

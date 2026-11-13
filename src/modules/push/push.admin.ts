@@ -33,6 +33,12 @@ export async function removePushSubscription(userId: string, endpoint: string) {
   if (error) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
 }
 
+/** "Sign out everywhere": every device of this person stops getting alerts. */
+export async function removeAllPushSubscriptions(userId: string) {
+  const { error } = await adminClient().from("push_subscriptions").delete().eq("user_id", userId);
+  if (error) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
+}
+
 type Claimed = {
   notification_id: string;
   user_id: string;
@@ -62,6 +68,49 @@ function vapidSubject(): string {
   return /^(https:|mailto:)/.test(wanted) ? wanted : "mailto:alerts@localhost.test";
 }
 
+function configureVapid() {
+  setVapidDetails(
+    vapidSubject(),
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+    process.env.VAPID_PRIVATE_KEY as string,
+  );
+}
+
+/** Sends one test alert to every device of this person. Answers how many devices took it. */
+export async function sendTestAlert(userId: string): Promise<number> {
+  if (!pushConfigured()) return 0;
+  configureVapid();
+  const { data, error } = await adminClient()
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .eq("user_id", userId);
+  if (error) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
+  const gone: string[] = [];
+  let sent = 0;
+  await Promise.all(
+    (data ?? []).map(async (row) => {
+      try {
+        await sendNotification(
+          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
+          JSON.stringify({
+            title: "Test alert",
+            body: "Alerts are working on this device.",
+            url: "/",
+            tag: "test",
+          }),
+          { TTL: 600, urgency: "high" },
+        );
+        sent += 1;
+      } catch (failure) {
+        const status = (failure as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) gone.push(row.id);
+      }
+    }),
+  );
+  if (gone.length > 0) await adminClient().rpc("push_drop", { p_ids: gone });
+  return sent;
+}
+
 let running = false;
 let lastRun = 0;
 
@@ -77,11 +126,7 @@ export async function dispatchPending(
   running = true;
   lastRun = Date.now();
   try {
-    setVapidDetails(
-      vapidSubject(),
-      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
-      process.env.VAPID_PRIVATE_KEY as string,
-    );
+    configureVapid();
     const { data, error } = await adminClient().rpc("push_claim", { p_limit: 50 });
     if (error) throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
     const rows = (data ?? []) as Claimed[];

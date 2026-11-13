@@ -4,6 +4,7 @@ import * as React from "react";
 import { BellRingIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { api } from "@/lib/api/endpoints";
 import { usePush, type PushState } from "./use-push";
 
 const DISMISS_KEY = "studentos.push-prompt.dismissed";
@@ -25,21 +26,52 @@ function hint(state: PushState): string {
 export function PushAlertsRow() {
   const { state, busy, error, enable, disable } = usePush();
   const id = React.useId();
+  const [testing, setTesting] = React.useState(false);
+  const [testNote, setTestNote] = React.useState<string | null>(null);
   if (state === "unavailable") return null;
+
+  async function sendTest() {
+    setTesting(true);
+    setTestNote(null);
+    try {
+      const { sent } = await api.push.test();
+      setTestNote(
+        sent > 0
+          ? "Sent. It should appear on your phone in a few seconds."
+          : "No device received it. Turn alerts off and on again.",
+      );
+    } catch {
+      setTestNote("We could not send it. Please try again.");
+    } finally {
+      setTesting(false);
+    }
+  }
   const usable = state === "off" || state === "on";
   return (
-    <div className="flex min-h-14 items-center justify-between gap-4 py-2.5">
-      <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
-        <span className="block font-medium text-ink">Alerts on this device</span>
-        <span className="block text-[13px] text-ink-muted">{error ?? hint(state)}</span>
-      </label>
-      <Switch
-        id={id}
-        checked={state === "on"}
-        disabled={!usable || busy}
-        onCheckedChange={(value) => void (value ? enable() : disable())}
-      />
-    </div>
+    <>
+      <div className="flex min-h-14 items-center justify-between gap-4 py-2.5">
+        <label htmlFor={id} className="min-w-0 flex-1 text-[14px] leading-snug">
+          <span className="block font-medium text-ink">Alerts on this device</span>
+          <span className="block text-[13px] text-ink-muted">{error ?? hint(state)}</span>
+        </label>
+        <Switch
+          id={id}
+          checked={state === "on"}
+          disabled={!usable || busy}
+          onCheckedChange={(value) => void (value ? enable() : disable())}
+        />
+      </div>
+      {state === "on" ? (
+        <div className="flex items-center justify-between gap-4 border-t border-white/[0.07] py-2.5">
+          <span className="min-w-0 flex-1 text-[13px] text-ink-muted">
+            {testNote ?? "Check that alerts reach this phone."}
+          </span>
+          <Button size="sm" variant="outline" disabled={testing} onClick={() => void sendTest()}>
+            {testing ? "Sending" : "Send test alert"}
+          </Button>
+        </div>
+      ) : null}
+    </>
   );
 }
 

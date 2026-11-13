@@ -678,6 +678,9 @@ export const endpoints: Endpoint[] = [
     body: push.pushSubscribeBody,
     response: push.pushResponse,
   }),
+  e("PSH-03", "POST", "/me/push/test", "ses", "Send a test alert to my devices", {
+    response: push.pushTestResponse,
+  }),
   e("PSH-02", "DELETE", "/me/push", "ses", "Turn off alerts for this device", {
     body: push.pushUnsubscribeBody,
     response: push.pushResponse,

@@ -26323,6 +26323,94 @@
         }
       }
     },
+    "/me/push/test": {
+      "post": {
+        "operationId": "PSH-03_post",
+        "tags": [
+          "PSH"
+        ],
+        "summary": "PSH-03: Send a test alert to my devices",
+        "x-who": "ses",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "sent"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "request_id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "request_id"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED (read Retry-After)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/c/{slug}/announcements": {
       "get": {
         "operationId": "ANN-01_get",

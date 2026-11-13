@@ -137,6 +137,7 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | REM-01 | GET | /me/reminder-settings | ses | none |
 | REM-01 | PUT | /me/reminder-settings | ses | write limit |
 | PSH-01 | POST | /me/push | ses | write limit |
+| PSH-03 | POST | /me/push/test | ses | write limit |
 | PSH-02 | DELETE | /me/push | ses | write limit |
 | ANN-01 | GET | /c/{slug}/announcements | mem | none |
 | RPT-01 | POST | /c/{slug}/reports | mem | write limit |

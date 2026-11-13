@@ -950,6 +950,8 @@ export const api = {
     // Alerts for this device (PSH-01, PSH-02).
     subscribe: (body: z.input<typeof c.pushSubscribeBody>) =>
       apiClient(j("/me/push"), { method: "POST", body, schema: c.pushResponse.shape.data }),
+    test: () =>
+      apiClient(j("/me/push/test"), { method: "POST", schema: c.pushTestResponse.shape.data }),
     unsubscribe: (endpoint: string) =>
       apiClient(j("/me/push"), {
         method: "DELETE",

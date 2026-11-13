@@ -18,3 +18,6 @@ export const pushSubscribeBody = z.strictObject({
 // PSH-02 DELETE /api/v1/me/push: this device stops getting alerts.
 export const pushUnsubscribeBody = z.strictObject({ endpoint });
 export const pushResponse = successEnvelope(z.object({ enabled: z.boolean() }));
+
+// PSH-03 POST /api/v1/me/push/test: send a test alert to my devices. `sent` is how many devices took it (0 when none).
+export const pushTestResponse = successEnvelope(z.object({ sent: z.number().int().min(0) }));

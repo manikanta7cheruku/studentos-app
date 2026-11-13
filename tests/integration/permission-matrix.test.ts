@@ -40,6 +40,7 @@ import { join } from "node:path";
 import { POST as maintenance } from "@/app/api/internal/maintenance/route";
 import { POST as pushInternal } from "@/app/api/internal/push/route";
 import { DELETE as pushDelete, POST as pushPost } from "@/app/api/v1/me/push/route";
+import { POST as pushTest } from "@/app/api/v1/me/push/test/route";
 import { GET as health } from "@/app/api/health/route";
 import { GET as ready } from "@/app/api/ready/route";
 import { PATCH as patchSettings } from "@/app/api/v1/c/[slug]/admin/settings/route";
@@ -1720,6 +1721,14 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         (r) => r.status,
       ),
     expect: signedIn(400),
+  },
+  {
+    op: "PSH-03 POST /me/push/test (sends only to the person's own devices)",
+    call: (cookie) =>
+      call(pushTest, { method: "POST", path: "/api/v1/me/push/test", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(200),
   },
   {
     op: "PSH-02 DELETE /me/push (an empty body is the probe -> 400)",

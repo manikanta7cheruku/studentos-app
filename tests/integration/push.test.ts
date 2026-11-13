@@ -5,6 +5,7 @@ import { POST as otpRequest } from "@/app/api/v1/auth/otp/request/route";
 import { POST as otpVerify } from "@/app/api/v1/auth/otp/verify/route";
 import { POST as pushInternal } from "@/app/api/internal/push/route";
 import { DELETE as unsubscribe, POST as subscribe } from "@/app/api/v1/me/push/route";
+import { POST as testAlert } from "@/app/api/v1/me/push/test/route";
 import { adminClient } from "@/server/admin/supabase-admin";
 import { call, clearInbox, clearRateLimits, expectMatches, signIn } from "./helpers";
 
@@ -84,6 +85,17 @@ describe("PSH-01 and PSH-02 alerts for a device", () => {
       (await call(subscribe, { method: "POST", path: "/api/v1/me/push", json: { endpoint, keys } }))
         .status,
     ).toBe(401);
+  });
+});
+
+describe("PSH-03 test alert", () => {
+  it("answers how many devices took it, and needs a sign in", async () => {
+    const result = await call(testAlert, { method: "POST", path: "/api/v1/me/push/test", cookie });
+    expect(result.status).toBe(200);
+    expect(typeof result.body.data.sent).toBe("number");
+    expect((await call(testAlert, { method: "POST", path: "/api/v1/me/push/test" })).status).toBe(
+      401,
+    );
   });
 });
 

@@ -545,4 +545,5 @@ Base `/api/v1`. Shapes: `src/contracts/push.ts`. A device that allows alerts giv
 | ID | Endpoint | What it does |
 |---|---|---|
 | PSH-01 | POST `/me/push` | `{ endpoint, keys: { p256dh, auth } }`. This device now gets alerts. The same device sent twice is stored once. A person keeps at most 5 devices (the oldest go). Answer `{ enabled: true }` |
+| PSH-03 | POST `/me/push/test` | Sends one test alert to every device of the person. Answer `{ sent }`: how many devices took it (0 when none or alerts are off). Write limit |
 | PSH-02 | DELETE `/me/push` | `{ endpoint }`. This device stops getting alerts. A device that was not stored is not an error. Answer `{ enabled: false }` |
