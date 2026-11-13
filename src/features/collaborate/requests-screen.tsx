@@ -42,18 +42,28 @@ function IncomingCard({
   onDecide,
 }: {
   item: Incoming;
-  onDecide: (item: Incoming, decision: "accepted" | "declined") => Promise<string | null>;
+  onDecide: (
+    item: Incoming,
+    decision: "accepted" | "declined",
+    note?: string,
+  ) => Promise<string | null>;
 }) {
   const { slug } = useCollege();
   const [busy, setBusy] = React.useState<"accepted" | "declined" | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [declining, setDeclining] = React.useState(false);
+  const [note, setNote] = React.useState("");
   const { request, post } = item;
 
   async function decide(decision: "accepted" | "declined") {
     if (busy) return;
     setBusy(decision);
     setError(null);
-    const failure = await onDecide(item, decision);
+    const failure = await onDecide(
+      item,
+      decision,
+      decision === "declined" ? note.trim() || undefined : undefined,
+    );
     if (failure) {
       setError(failure);
       setBusy(null);
@@ -114,25 +124,64 @@ function IncomingCard({
         </blockquote>
       ) : null}
       {error ? <p className="text-[13px] text-danger">{error}</p> : null}
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          className="flex-1"
-          onClick={() => void decide("accepted")}
-          disabled={busy !== null}
-        >
-          {busy === "accepted" ? <Spinner /> : <CheckIcon aria-hidden="true" />} Accept
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={() => void decide("declined")}
-          disabled={busy !== null}
-        >
-          {busy === "declined" ? <Spinner /> : <XIcon aria-hidden="true" />} Decline
-        </Button>
-      </div>
+      {declining ? (
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor={`note-${request.id}`}
+            className="text-[12.5px] font-semibold text-ink-muted"
+          >
+            A note for them (optional)
+          </label>
+          <textarea
+            id={`note-${request.id}`}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="They will see this."
+            className="glass-clear w-full resize-none rounded-2xl p-3 text-[16px] outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-[14px]"
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              className="flex-1"
+              onClick={() => void decide("declined")}
+              disabled={busy !== null}
+            >
+              {busy === "declined" ? <Spinner /> : <XIcon aria-hidden="true" />} Send decline
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDeclining(false)}
+              disabled={busy !== null}
+            >
+              Back
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            className="flex-1"
+            onClick={() => void decide("accepted")}
+            disabled={busy !== null}
+          >
+            {busy === "accepted" ? <Spinner /> : <CheckIcon aria-hidden="true" />} Accept
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={() => setDeclining(true)}
+            disabled={busy !== null}
+          >
+            <XIcon aria-hidden="true" /> Decline
+          </Button>
+        </div>
+      )}
     </li>
   );
 }
@@ -250,9 +299,13 @@ export function RequestsScreen() {
     return () => window.clearInterval(timer);
   }, [reloadReceived, reloadSent]);
 
-  async function decide(item: Incoming, decision: "accepted" | "declined"): Promise<string | null> {
+  async function decide(
+    item: Incoming,
+    decision: "accepted" | "declined",
+    note?: string,
+  ): Promise<string | null> {
     try {
-      await api.teamPosts.decide(slug, item.request.id, decision);
+      await api.teamPosts.decide(slug, item.request.id, decision, note);
       setGone((old) => new Set(old).add(item.request.id));
       setNote(
         decision === "accepted"

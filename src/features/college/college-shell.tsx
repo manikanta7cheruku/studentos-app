@@ -440,7 +440,12 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   // An open conversation uses the whole phone screen: no top bar, no dock, the box to write sits at the bottom.
   const inChat = /\/messages\/[^/]+$/.test(pathname);
   const startTour = React.useCallback(() => setTour(true), []);
-  useAutoTour(me !== null && me.onboarded && !inChat, tourDone, startTour);
+  // The tour opens on Home (the first page people see), not on whichever page a link happened to open.
+  useAutoTour(
+    me !== null && me.onboarded && !inChat && pathname === `/c/${slug}/home`,
+    tourDone,
+    startTour,
+  );
   const [creating, setCreating] = React.useState(false);
   const [quick, setQuick] = React.useState(false);
   // + : one tap opens everything you can create. A double tap or a hold opens the shortcuts.

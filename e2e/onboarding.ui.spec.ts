@@ -40,10 +40,9 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await page.getByRole("button", { name: /^continue$/i }).click();
   // The college, the branch and the year are a must too
   await expect(page.getByText(/type the name of your college/i)).toBeVisible();
-  await page.getByLabel(/^college/i).fill("Alpha College");
-  await page
-    .getByRole("button", { name: String(new Date().getFullYear() + 2), exact: true })
-    .click();
+  await page.getByRole("textbox", { name: /^college/i }).fill("Alpha College");
+  // The year is a stepper: the first press picks a graduation year two years out.
+  await page.getByRole("button", { name: "Later graduation year" }).click();
   await page.getByRole("button", { name: /^continue$/i }).click();
 
   // Step 2: at least three interests
