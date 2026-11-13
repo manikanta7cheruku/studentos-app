@@ -105,7 +105,7 @@ const FAQ = [
   },
   {
     q: "Is there a mobile app?",
-    a: "Yes. Tap Download the app to add StudentOS to your home screen on iPhone or Android. It opens full screen with its own icon, and you can turn on alerts. No app store needed.",
+    a: "You can add StudentOS to your home screen on iPhone or Android today, and it opens full screen with its own icon. A downloadable app file for Android is launching soon.",
   },
 ];
 
@@ -156,6 +156,9 @@ export default function Home() {
               </Button>
               <InstallApp />
             </div>
+            <p className="mt-4 max-w-md text-[13px] leading-relaxed text-ink-muted">
+              Takes two taps, no app store. A downloadable Android app is launching soon.
+            </p>
           </div>
 
           <div
@@ -349,6 +352,9 @@ export default function Home() {
               browser.
             </p>
             <InstallApp className="mt-8" variant="default" />
+            <p className="mt-4 text-[13px] text-ink-muted">
+              Downloadable Android app: launching soon.
+            </p>
           </div>
         </section>
 

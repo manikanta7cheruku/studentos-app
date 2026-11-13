@@ -39,6 +39,7 @@ import {
 } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
 import { recentlyOnboarded } from "@/lib/just-onboarded";
+import { PushNudge } from "@/features/notifications/push-alerts";
 import { Tour } from "@/features/tour/tour";
 import { markTourDone, useTourDone } from "@/features/tour/tour-state";
 import { useLoad } from "@/lib/use-load";
@@ -756,6 +757,11 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           onOpenChange={setQuick}
         />
         <PlusHint
+          enabled={
+            me !== null && me.onboarded && !inChat && !creating && !quick && tourDone && !tour
+          }
+        />
+        <PushNudge
           enabled={
             me !== null && me.onboarded && !inChat && !creating && !quick && tourDone && !tour
           }

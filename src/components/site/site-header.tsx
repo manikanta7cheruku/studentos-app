@@ -33,7 +33,7 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <InstallApp size="sm" label="Download" className="hidden sm:inline-flex" />
+          <InstallApp size="sm" label="Add to phone" className="hidden sm:inline-flex" />
           <Button asChild size="sm">
             <Link href="/signin">Sign in</Link>
           </Button>
