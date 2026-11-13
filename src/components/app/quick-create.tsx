@@ -6,16 +6,19 @@ import { useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   BellIcon,
+  CalendarDaysIcon,
   InboxIcon,
+  MapPinnedIcon,
   MessageCircleIcon,
   MessageSquareHeartIcon,
-  ScaleIcon,
-  UsersRoundIcon,
+  PackageSearchIcon,
+  StoreIcon,
+  UserPlusIcon,
 } from "lucide-react";
-import { cn } from "cn";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useOverlayHistory } from "@/lib/use-overlay-history";
+import { GlassTip } from "./glass-tip";
 
 /** How long a press must last to count as a hold, and how long to wait for a second tap. */
 export const HOLD_MS = 650;
@@ -109,23 +112,29 @@ export function plusHintDone() {
 }
 
 /**
- * A small glass tip beside the + button: "double tap or hold for shortcuts". It shows the first two times someone opens
- * the app after signing in (counted on this device), fades by itself after a few seconds, and never comes back once the
- * shortcuts have been used.
+ * A small glass tip above the + button: "double tap or hold for shortcuts". It shows the first two times someone opens the app
+ * after signing in (counted on this device), leaves by itself after a few seconds, and never comes back once the shortcuts
+ * have been used.
  */
 export function PlusHint({ enabled }: { enabled: boolean }) {
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
     if (!enabled || readHintCount() >= HINT_TIMES) return;
-    const show = window.setTimeout(() => {
-      writeHintCount(readHintCount() + 1);
-      setVisible(true);
-    }, 1800);
-    const hide = window.setTimeout(() => setVisible(false), 1800 + 7000);
-    return () => {
-      window.clearTimeout(show);
-      window.clearTimeout(hide);
-    };
+    // The "profile moved" tip comes first for people who have not seen it, so two tips never stand on screen together.
+    let profileTipPending = false;
+    try {
+      profileTipPending = window.localStorage.getItem("studentos.profileTip") !== "1";
+    } catch {
+      profileTipPending = false;
+    }
+    const show = window.setTimeout(
+      () => {
+        writeHintCount(readHintCount() + 1);
+        setVisible(true);
+      },
+      profileTipPending ? 10_500 : 1800,
+    );
+    return () => window.clearTimeout(show);
   }, [enabled]);
   if (!enabled || !visible) return null;
   return (
@@ -135,32 +144,34 @@ export function PlusHint({ enabled }: { enabled: boolean }) {
         aria-hidden="true"
         className="plus-ring pointer-events-none fixed bottom-[calc(0.75rem+var(--safe-bottom))] right-3 z-40 size-16 rounded-[22px] md:hidden"
       />
-      <button
-        type="button"
-        onClick={() => setVisible(false)}
-        className="glass-clear plus-hint fixed bottom-[calc(5.6rem+var(--safe-bottom))] right-3 z-40 max-w-[15.5rem] rounded-[20px] px-4 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
-      >
-        <span className="block text-[13.5px] font-semibold">Shortcuts on the + button</span>
-        <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-muted">
-          Double tap it, or hold it, to jump to messages, requests and more.
-        </span>
-      </button>
+      <GlassTip
+        placement="above"
+        title="Shortcuts on the + button"
+        text="Double tap it, or hold it, for messages, requests and campus services."
+        onClose={() => setVisible(false)}
+        className="bottom-[calc(5.9rem+var(--safe-bottom))] right-3 md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
+      />
     </>
   );
 }
 
 /**
- * The shortcuts: not things to create (the + sheet has those) but where people go all day. A fan of clear glass pills that
- * springs out of the + button over a barely dimmed page, so the page stays visible behind it.
+ * The shortcuts: not things to create (the + sheet has those) but where people go all day. One panel of clear glass that grows
+ * out of the + button over a barely dimmed page, with what is waiting for me first, then the campus services, then two quick
+ * links. Counts show on the rows that have something waiting.
  */
 export function QuickCreate({
   slug,
   unread,
+  messages,
+  isGlobal,
   open,
   onOpenChange,
 }: {
   slug: string;
   unread: number;
+  messages: number;
+  isGlobal: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -172,12 +183,14 @@ export function QuickCreate({
         <DialogPrimitive.Overlay className="quick-scrim fixed inset-0 z-50" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fixed bottom-[calc(5.4rem+var(--safe-bottom))] right-3 z-50 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
+          className="quick-panel fixed bottom-[calc(5.5rem+var(--safe-bottom))] right-3 z-50 w-[17.5rem] max-w-[calc(100vw-1.5rem)] outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
           <DialogPrimitive.Title className="sr-only">Shortcuts</DialogPrimitive.Title>
           <ShortcutList
             slug={slug}
             unread={unread}
+            messages={messages}
+            isGlobal={isGlobal}
             onGo={(href) => overlay.goTo(href, router.push)}
           />
         </DialogPrimitive.Content>
@@ -186,31 +199,90 @@ export function QuickCreate({
   );
 }
 
+type Shortcut = { href: string; title: string; icon: React.ReactNode; count?: number };
+
+function Row({
+  item,
+  index,
+  onGo,
+}: {
+  item: Shortcut;
+  index: number;
+  onGo: (href: string) => void;
+}) {
+  return (
+    <li className="quick-row" style={{ animationDelay: `${60 + index * 28}ms` }}>
+      <Link
+        href={item.href}
+        prefetch={false}
+        onClick={(event) => {
+          plusHintDone();
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+          event.preventDefault();
+          onGo(item.href);
+        }}
+        className="group flex h-12 items-center gap-3 rounded-2xl px-2 outline-none transition-[background-color,transform] duration-150 hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] active:bg-white/[0.12] [&_svg]:size-[18px]"
+      >
+        <span className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)] transition-colors group-hover:bg-white/[0.18]">
+          {item.icon}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-left text-[14.5px] font-semibold leading-none">
+          {item.title}
+        </span>
+        {item.count && item.count > 0 ? (
+          <span
+            aria-label={`${item.count} waiting`}
+            className="tabular bg-brand min-w-[22px] rounded-full px-1.5 text-center text-[11px] font-bold leading-[22px] text-white"
+          >
+            {item.count > 99 ? "99+" : item.count}
+          </span>
+        ) : null}
+      </Link>
+    </li>
+  );
+}
+
+function Heading({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-2 pb-1 pt-2.5 text-[11px] font-bold uppercase tracking-[0.1em] text-white/45">
+      {children}
+    </p>
+  );
+}
+
 function ShortcutList({
   slug,
   unread,
+  messages,
+  isGlobal,
   onGo,
 }: {
   slug: string;
   unread: number;
+  messages: number;
+  isGlobal: boolean;
   onGo: (href: string) => void;
 }) {
-  // Only mounted while the menu is open, so the count is fetched when it is needed.
-  const threads = useLoad(() => api.messages.threads(slug), [slug]);
-  const waiting =
-    threads.status === "ready" ? threads.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
-  const items = [
+  // Only mounted while the panel is open, so this count is fetched when it is needed: people waiting for my answer on my posts.
+  const requests = useLoad(async () => {
+    const mine = await api.teamPosts.list(slug, { mine: true, status: "open", limit: 20 });
+    const lists = await Promise.all(
+      mine.data.map((post) => api.teamPosts.requests(slug, post.id, "pending")),
+    );
+    return lists.reduce((sum, list) => sum + list.length, 0);
+  }, [slug]);
+  const waitingFor: Shortcut[] = [
     {
       href: `/c/${slug}/messages`,
       title: "Messages",
       icon: <MessageCircleIcon aria-hidden="true" />,
-      count: waiting,
+      count: messages,
     },
     {
       href: `/c/${slug}/collaborate/requests`,
       title: "Team requests",
       icon: <InboxIcon aria-hidden="true" />,
-      count: 0,
+      count: requests.status === "ready" ? requests.data : 0,
     },
     {
       href: `/c/${slug}/notifications`,
@@ -218,70 +290,63 @@ function ShortcutList({
       icon: <BellIcon aria-hidden="true" />,
       count: unread,
     },
+  ];
+  const campus: Shortcut[] = [
+    { href: `/c/${slug}/events`, title: "Events", icon: <CalendarDaysIcon aria-hidden="true" /> },
+    ...(isGlobal
+      ? []
+      : [
+          {
+            href: `/c/${slug}/turf`,
+            title: "Turf and courts",
+            icon: <MapPinnedIcon aria-hidden="true" />,
+          },
+          {
+            href: `/c/${slug}/lost-found`,
+            title: "Lost and found",
+            icon: <PackageSearchIcon aria-hidden="true" />,
+          },
+          {
+            href: `/c/${slug}/market`,
+            title: "Marketplace",
+            icon: <StoreIcon aria-hidden="true" />,
+          },
+        ]),
+  ];
+  const more: Shortcut[] = [
     {
-      href: `/c/${slug}/debates`,
-      title: "Debates",
-      icon: <ScaleIcon aria-hidden="true" />,
-      count: 0,
-    },
-    {
-      href: `/c/${slug}/people`,
-      title: "Network",
-      icon: <UsersRoundIcon aria-hidden="true" />,
-      count: 0,
+      href: `/c/${slug}/me/settings#invite`,
+      title: "Invite friends",
+      icon: <UserPlusIcon aria-hidden="true" />,
     },
     {
       href: `/c/${slug}/feedback`,
       title: "Send feedback",
       icon: <MessageSquareHeartIcon aria-hidden="true" />,
-      count: 0,
     },
   ];
-  // The pills lean back along an arc, so the stack reads as a fan growing out of the button.
-  const lean = [0, 6, 12, 18, 22, 24];
+  let n = 0;
   return (
-    <ul className="flex flex-col items-end gap-2.5 md:items-start">
-      {[...items].reverse().map((item, reversed) => {
-        const index = items.length - 1 - reversed;
-        return (
-          <li
-            key={item.href}
-            className="quick-pop"
-            style={{ animationDelay: `${index * 45}ms`, marginRight: lean[index] }}
-          >
-            <Link
-              href={item.href}
-              prefetch={false}
-              onClick={(event) => {
-                plusHintDone();
-                if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
-                event.preventDefault();
-                onGo(item.href);
-              }}
-              className="glass-clear group flex h-[52px] w-[15rem] items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 outline-none transition-[transform,background-color] duration-200 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:flex-row-reverse md:pl-1.5 md:pr-5 [&_svg]:size-[18px]"
-            >
-              <span className="min-w-0 flex-1 truncate text-left text-[14.5px] font-semibold leading-none">
-                {item.title}
-              </span>
-              <span
-                className={cn(
-                  "relative inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/[0.14] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-colors group-hover:bg-white/[0.22]",
-                )}
-              >
-                {item.icon}
-                {item.count > 0 ? (
-                  <span
-                    aria-label={`${item.count} new`}
-                    className="tabular bg-brand absolute -right-1 -top-1 min-w-[18px] rounded-full px-1 text-center text-[10px] font-bold leading-[18px] text-white"
-                  >
-                    {item.count > 99 ? "99+" : item.count}
-                  </span>
-                ) : null}
-              </span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="glass-sheet-clear rounded-[26px] p-2">
+      <Heading>Waiting for you</Heading>
+      <ul>
+        {waitingFor.map((item) => (
+          <Row key={item.href} item={item} index={n++} onGo={onGo} />
+        ))}
+      </ul>
+      <Heading>Campus</Heading>
+      <ul>
+        {campus.map((item) => (
+          <Row key={item.href} item={item} index={n++} onGo={onGo} />
+        ))}
+      </ul>
+      <div className="mt-1.5 border-t border-white/10 pt-1">
+        <ul>
+          {more.map((item) => (
+            <Row key={item.href} item={item} index={n++} onGo={onGo} />
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }

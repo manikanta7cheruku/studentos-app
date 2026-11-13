@@ -37,6 +37,7 @@ import {
   usePlusGestures,
 } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
+import { GlassTip } from "@/components/app/glass-tip";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
@@ -116,9 +117,10 @@ function BellLink({ className }: { className?: string }) {
   );
 }
 
-/** Messages, one tap from every page. The badge counts messages waiting for me; it refreshes every 15 seconds and when the app comes back to the front. */
-function MessagesLink({ className }: { className?: string }) {
-  const { slug } = useCollege();
+const MessagesWaiting = React.createContext(0);
+
+/** How many messages are waiting for me in this space. Fetched again every 15 seconds and when the app comes back to the front. */
+function useMessagesWaiting(slug: string): number {
   const state = useLoad(() => api.messages.threads(slug), [slug]);
   const { reload } = state;
   React.useEffect(() => {
@@ -134,8 +136,13 @@ function MessagesLink({ className }: { className?: string }) {
       document.removeEventListener("visibilitychange", back);
     };
   }, [reload]);
-  const waiting =
-    state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+  return state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+}
+
+/** Messages, one tap from every page. The badge counts messages waiting for me. */
+function MessagesLink({ className }: { className?: string }) {
+  const { slug } = useCollege();
+  const waiting = React.useContext(MessagesWaiting);
   const label = waiting > 0 ? `Messages, ${waiting} waiting` : "Messages";
   return (
     <Link
@@ -398,6 +405,8 @@ function SpaceMenu() {
 
 export function CollegeShell({ children }: { children: React.ReactNode }) {
   const { slug, profile: me, unread } = useCollege();
+  const messagesWaiting = useMessagesWaiting(slug);
+  const waitingTotal = messagesWaiting + unread;
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
@@ -522,156 +531,173 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh text-ink md:grid md:grid-cols-[15.5rem_minmax(0,1fr)]">
-      <a
-        href="#main"
-        className="sr-only z-50 rounded-xl bg-surface px-4 py-3 font-medium text-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:ring-2 focus:ring-ring"
-      >
-        Skip to content
-      </a>
-
-      {/* Desktop and tablet: a quiet sidebar */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-white/[0.07] px-3.5 py-5 md:flex">
-        <div className="flex items-center justify-between px-1">
-          <SpaceMenu />
-          <div className="flex items-center">
-            <MessagesLink />
-            <BellLink />
-          </div>
-        </div>
-        <button
-          type="button"
-          {...plus.props}
-          className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
+    <MessagesWaiting.Provider value={messagesWaiting}>
+      <div className="min-h-dvh text-ink md:grid md:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-xl bg-surface px-4 py-3 font-medium text-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:ring-2 focus:ring-ring"
         >
-          <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
-        </button>
-        <nav aria-label="College" className="flex flex-1 flex-col gap-6 overflow-y-auto">
-          <ul className="flex flex-col gap-0.5">
-            {tabs.map((item) => (
-              <li key={item.href}>
-                <SideNavLink item={item} pathname={pathname} />
-              </li>
-            ))}
-          </ul>
-          <div>
-            <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-              More
-            </p>
+          Skip to content
+        </a>
+
+        {/* Desktop and tablet: a quiet sidebar */}
+        <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-white/[0.07] px-3.5 py-5 md:flex">
+          <div className="flex items-center justify-between px-1">
+            <SpaceMenu />
+            <div className="flex items-center">
+              <MessagesLink />
+              <BellLink />
+            </div>
+          </div>
+          <button
+            type="button"
+            {...plus.props}
+            className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
+          >
+            <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
+          </button>
+          <nav aria-label="College" className="flex flex-1 flex-col gap-6 overflow-y-auto">
             <ul className="flex flex-col gap-0.5">
-              {more.map((item) => (
+              {tabs.map((item) => (
                 <li key={item.href}>
                   <SideNavLink item={item} pathname={pathname} />
                 </li>
               ))}
             </ul>
+            <div>
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                More
+              </p>
+              <ul className="flex flex-col gap-0.5">
+                {more.map((item) => (
+                  <li key={item.href}>
+                    <SideNavLink item={item} pathname={pathname} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+          <div className="border-t border-white/[0.07] pt-3">
+            <UserMenu />
           </div>
-        </nav>
-        <div className="border-t border-white/[0.07] pt-3">
-          <UserMenu />
-        </div>
-      </aside>
+        </aside>
 
-      <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
-        {/* Phone: the space I am in and the bell */}
-        <header
+        <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
+          {/* Phone: the space I am in and the bell */}
+          <header
+            className={cn(
+              "sticky top-0 z-30 h-14 items-center gap-1 px-4 md:hidden",
+              inChat ? "hidden" : "flex",
+            )}
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
+            />
+            <SpaceMenu />
+            <div className="flex-1" />
+            <MessagesLink />
+            <BellLink />
+            <ProfileLink />
+          </header>
+
+          <main
+            id="main"
+            ref={mainRef}
+            tabIndex={-1}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onTouchCancel={onTouchEnd}
+            className={cn(
+              "flex-1 touch-pan-y outline-none md:pb-16",
+              inChat ? "pb-0" : "pb-[calc(6.5rem+var(--safe-bottom))]",
+            )}
+          >
+            {children}
+          </main>
+        </div>
+
+        {/* A soft fade under the dock, so scrolled content melts away instead of colliding with the bar. */}
+        <div
+          aria-hidden="true"
           className={cn(
-            "sticky top-0 z-30 h-14 items-center gap-1 px-4 md:hidden",
+            "pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(6rem+var(--safe-bottom))] bg-gradient-to-t from-[#0b0b10]/70 via-[#0b0b10]/30 to-transparent md:hidden",
+            inChat && "hidden",
+          )}
+        />
+        {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
+        <div
+          className={cn(
+            "pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 gap-2.5 md:hidden",
             inChat ? "hidden" : "flex",
           )}
         >
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
-          />
-          <SpaceMenu />
-          <div className="flex-1" />
-          <MessagesLink />
-          <BellLink />
-          <ProfileLink />
-        </header>
-
-        <main
-          id="main"
-          ref={mainRef}
-          tabIndex={-1}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onTouchCancel={onTouchEnd}
-          className={cn(
-            "flex-1 touch-pan-y outline-none md:pb-16",
-            inChat ? "pb-0" : "pb-[calc(6.5rem+var(--safe-bottom))]",
-          )}
-        >
-          {children}
-        </main>
-      </div>
-
-      {/* A soft fade under the dock, so scrolled content melts away instead of colliding with the bar. */}
-      <div
-        aria-hidden="true"
-        className={cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(6rem+var(--safe-bottom))] bg-gradient-to-t from-[#0b0b10]/70 via-[#0b0b10]/30 to-transparent md:hidden",
-          inChat && "hidden",
-        )}
-      />
-      {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
-      <div
-        className={cn(
-          "pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 gap-2.5 md:hidden",
-          inChat ? "hidden" : "flex",
-        )}
-      >
-        <nav
-          aria-label="College"
-          className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-5 items-center rounded-[22px] p-1.5"
-        >
-          {tabs.map((item, index) => {
-            const current = isCurrent(pathname, item);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => {
-                  if (tabIndex >= 0 && index !== tabIndex)
-                    direction.current = index > tabIndex ? 1 : -1;
-                }}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "group relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[9.5px] font-semibold tracking-tight outline-none transition-[color,transform] duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 min-[350px]:text-[10px] [&_svg]:size-[20px] [&_svg]:shrink-0 [&_svg]:transition-[filter,transform] [&_svg]:duration-300",
-                  current
-                    ? "text-white [&_svg]:scale-110 [&_svg]:drop-shadow-[0_0_9px_rgba(176,166,255,0.85)]"
-                    : "text-white/50 hover:text-white/85",
-                )}
+          <nav
+            aria-label="College"
+            className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-5 items-center rounded-[22px] p-1.5"
+          >
+            {tabs.map((item, index) => {
+              const current = isCurrent(pathname, item);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => {
+                    if (tabIndex >= 0 && index !== tabIndex)
+                      direction.current = index > tabIndex ? 1 : -1;
+                  }}
+                  aria-current={current ? "page" : undefined}
+                  className={cn(
+                    "group relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[9.5px] font-semibold tracking-tight outline-none transition-[color,transform] duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 min-[350px]:text-[10px] [&_svg]:size-[20px] [&_svg]:shrink-0 [&_svg]:transition-[filter,transform] [&_svg]:duration-300",
+                    current
+                      ? "text-white [&_svg]:scale-110 [&_svg]:drop-shadow-[0_0_9px_rgba(176,166,255,0.85)]"
+                      : "text-white/50 hover:text-white/85",
+                  )}
+                >
+                  <span aria-hidden="true">{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            aria-label="Create"
+            {...plus.props}
+            className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
+          >
+            <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
+            {waitingTotal > 0 && !quick ? (
+              <span
+                aria-label={`${waitingTotal} waiting`}
+                className="tabular absolute -right-1 -top-1 min-w-[20px] rounded-full bg-white px-1.5 text-center text-[11px] font-bold leading-[20px] text-[#2a2370] shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
               >
-                <span aria-hidden="true">{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          type="button"
-          aria-label="Create"
-          {...plus.props}
-          className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
-        >
-          <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
-        </button>
-      </div>
+                {waitingTotal > 99 ? "99+" : waitingTotal}
+              </span>
+            ) : null}
+          </button>
+        </div>
 
-      <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
-      <QuickCreate slug={slug} unread={unread} open={quick} onOpenChange={setQuick} />
-      <ProfileTip enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
-      <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
-    </div>
+        <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
+        <QuickCreate
+          slug={slug}
+          unread={unread}
+          messages={messagesWaiting}
+          isGlobal={slug === GLOBAL_SLUG}
+          open={quick}
+          onOpenChange={setQuick}
+        />
+        <ProfileTip enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
+        <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
+      </div>
+    </MessagesWaiting.Provider>
   );
 }
 
 const PROFILE_TIP_KEY = "studentos.profileTip";
 
-/** Once, for people who knew the old You tab: "Your profile is now your picture, top right". It fades by itself. */
+/** Once, for people who knew the old You tab: "Your profile is now your picture, top right". It leaves by itself. */
 function ProfileTip({ enabled }: { enabled: boolean }) {
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -689,24 +715,17 @@ function ProfileTip({ enabled }: { enabled: boolean }) {
       }
       setVisible(true);
     }, 2500);
-    const hide = window.setTimeout(() => setVisible(false), 2500 + 6500);
-    return () => {
-      window.clearTimeout(show);
-      window.clearTimeout(hide);
-    };
+    return () => window.clearTimeout(show);
   }, [enabled]);
   if (!enabled || !visible) return null;
   return (
-    <button
-      type="button"
-      onClick={() => setVisible(false)}
-      className="glass-clear plus-hint fixed right-3 top-[3.9rem] z-40 max-w-[14rem] rounded-[18px] px-3.5 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-    >
-      <span className="block text-[13px] font-semibold">Your profile moved</span>
-      <span className="mt-0.5 block text-[12px] leading-snug text-ink-muted">
-        Tap your picture, top right, for your profile and settings.
-      </span>
-    </button>
+    <GlassTip
+      placement="below"
+      title="Your profile moved"
+      text="Tap your picture, top right, for your profile and settings."
+      onClose={() => setVisible(false)}
+      className="right-3 top-[3.9rem] md:hidden"
+    />
   );
 }
 

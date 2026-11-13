@@ -564,6 +564,8 @@ select option {
   .glass,
   .glass-clear,
   .glass-dock,
+  .glass-sheet-clear,
+  .glass-tip,
   .glass-card,
   .glass-sheet,
   .glass-brand,
@@ -574,6 +576,8 @@ select option {
   .glass,
   .glass-clear,
   .glass-dock,
+  .glass-sheet-clear,
+  .glass-tip,
   .glass-card,
   .glass-bar {
     background: #1a1a24;
@@ -622,6 +626,106 @@ select option {
     transform: translate3d(14px, 36px, 0) scale(0.5);
   }
 }
+/* The shortcuts panel: grows out of the + button (bottom right), rows rise in one after another, and it leaves the same way. */
+.quick-panel {
+  transform-origin: bottom right;
+}
+.quick-panel[data-state="open"] {
+  animation: panel-in 340ms cubic-bezier(0.32, 1.25, 0.5, 1) both;
+}
+.quick-panel[data-state="closed"] {
+  animation: panel-out 180ms ease-in both;
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+}
+.quick-row {
+  animation: row-in 320ms cubic-bezier(0.3, 1.2, 0.5, 1) both;
+}
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* The panel itself: clear glass with a deep blur and a bright edge, like the dock. */
+.glass-sheet-clear {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+    rgba(18, 18, 30, 0.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
+  backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 24px 48px -16px rgba(0, 0, 0, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+/* The glass tips (shortcuts tip, profile tip). */
+.glass-tip {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.07)),
+    rgba(18, 18, 30, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 18px 36px -14px rgba(0, 0, 0, 0.7);
+}
+.glass-tip-notch {
+  background: rgb(52, 50, 74);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.glass-tip-in {
+  animation: tip-in 520ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
+}
+.glass-tip-out {
+  animation: tip-out 220ms ease-in both;
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+@keyframes tip-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+.glass-tip-line {
+  animation-name: tip-line;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes tip-line {
+  to {
+    transform: scaleX(0);
+  }
+}
 .plus-hint {
   animation: quick-pop 520ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
 }
@@ -637,6 +741,10 @@ select option {
 @media (prefers-reduced-motion: reduce) {
   .quick-scrim,
   .quick-pop,
+  .quick-panel,
+  .quick-row,
+  .glass-tip-in,
+  .glass-tip-out,
   .plus-hint,
   .plus-ring {
     animation: none;
