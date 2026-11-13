@@ -99,6 +99,27 @@ export function timeAgo(iso: string, now = Date.now()): string {
   return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
+// What a notification is about, for the filter row. The row only lists kinds that have something in it.
+const CATEGORIES = [
+  { id: "messages", label: "Messages" },
+  { id: "plans", label: "Plans" },
+  { id: "debates", label: "Debates" },
+  { id: "turf", label: "Turf" },
+  { id: "campus", label: "Campus" },
+  { id: "safety", label: "Safety" },
+] as const;
+type Category = (typeof CATEGORIES)[number]["id"];
+
+export function categoryOf(type: string): Category {
+  if (type === "dm.received") return "messages";
+  if (type.startsWith("team.")) return "plans";
+  if (type.startsWith("debate.")) return "debates";
+  if (type.startsWith("venue.")) return "turf";
+  if (type === "content.removed" || type.startsWith("moderation.") || type === "report.actioned")
+    return "safety";
+  return "campus";
+}
+
 /** "Today", "Yesterday", "Earlier this week" or a date: the heading above a group of notifications. */
 function dayLabel(iso: string, now = new Date()): string {
   const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -120,6 +141,7 @@ export function NotificationsScreen() {
   const [busy, setBusy] = React.useState<"more" | "all" | null>(null);
   const [problem, setProblem] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState<"all" | "unread">("all");
+  const [category, setCategory] = React.useState<Category | "all">("all");
 
   // New notifications appear on their own: fetch the first page again every few seconds while the page is in front.
   const { reload } = first;
@@ -148,7 +170,15 @@ export function NotificationsScreen() {
   const isRead = (item: NotificationItem) =>
     allRead || readIds.has(item.id) || item.read_at !== null;
   const unread = items.filter((item) => !isRead(item)).length;
-  const shown = tab === "unread" ? items.filter((item) => !isRead(item)) : items;
+  const inCategory = (item: NotificationItem) =>
+    category === "all" || categoryOf(item.type) === category;
+  const shown = items.filter((item) => (tab === "all" || !isRead(item)) && inCategory(item));
+  // The kinds that have something in them, with how many are unread, for the filter row.
+  const kinds = CATEGORIES.map((c) => ({
+    ...c,
+    total: items.filter((item) => categoryOf(item.type) === c.id).length,
+    unread: items.filter((item) => categoryOf(item.type) === c.id && !isRead(item)).length,
+  })).filter((c) => c.total > 0);
 
   async function open(item: NotificationItem) {
     const href = notificationHref(item, slug);
@@ -224,6 +254,39 @@ export function NotificationsScreen() {
         </Button>
       </div>
 
+      {kinds.length > 1 ? (
+        <div
+          role="group"
+          aria-label="What it is about"
+          className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0"
+        >
+          {[{ id: "all" as const, label: "Everything", unread: 0 }, ...kinds].map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              aria-pressed={category === c.id}
+              onClick={() => setCategory(c.id)}
+              className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 ${
+                category === c.id
+                  ? "bg-brand border-transparent text-white"
+                  : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink"
+              }`}
+            >
+              {c.label}
+              {c.unread > 0 ? (
+                <span
+                  className={`tabular rounded-full px-1.5 text-[11px] font-bold ${
+                    category === c.id ? "bg-white/25" : "bg-brand text-white"
+                  }`}
+                >
+                  {c.unread}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {first.status === "loading" ? (
         <div className="flex flex-col gap-2.5" aria-busy="true" aria-label="Loading notifications">
           {[0, 1, 2, 3].map((n) => (
@@ -244,7 +307,11 @@ export function NotificationsScreen() {
             <BellIcon aria-hidden="true" className="size-6" />
           </span>
           <p className="text-lg font-bold">
-            {tab === "unread" && items.length > 0 ? "Nothing unread" : "You are all caught up"}
+            {items.length > 0
+              ? tab === "unread"
+                ? "Nothing unread here"
+                : "Nothing in this filter"
+              : "You are all caught up"}
           </p>
           <p className="max-w-[34ch] text-[14px] text-ink-muted">
             When someone answers a request of yours, invites you to a debate, or your college posts
