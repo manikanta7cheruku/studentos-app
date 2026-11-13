@@ -14,6 +14,7 @@ import {
 import { cn } from "cn";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
+import { useOverlayHistory } from "@/lib/use-overlay-history";
 
 /** How long a press must last to count as a hold, and how long to wait for a second tap. */
 export const HOLD_MS = 650;
@@ -162,6 +163,7 @@ export function QuickCreate({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const overlay = useOverlayHistory(open, onOpenChange);
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -171,7 +173,7 @@ export function QuickCreate({
           className="fixed bottom-[calc(5.4rem+var(--safe-bottom))] right-3 z-50 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
           <DialogPrimitive.Title className="sr-only">Shortcuts</DialogPrimitive.Title>
-          <ShortcutList slug={slug} unread={unread} onPick={() => onOpenChange(false)} />
+          <ShortcutList slug={slug} unread={unread} onGo={overlay.goTo} />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
@@ -181,11 +183,11 @@ export function QuickCreate({
 function ShortcutList({
   slug,
   unread,
-  onPick,
+  onGo,
 }: {
   slug: string;
   unread: number;
-  onPick: () => void;
+  onGo: (href: string) => void;
 }) {
   // Only mounted while the menu is open, so the count is fetched when it is needed.
   const threads = useLoad(() => api.messages.threads(slug), [slug]);
@@ -244,9 +246,11 @@ function ShortcutList({
             <Link
               href={item.href}
               prefetch={false}
-              onClick={() => {
+              onClick={(event) => {
                 plusHintDone();
-                onPick();
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+                event.preventDefault();
+                onGo(item.href);
               }}
               className="glass-clear group flex h-[52px] w-[15rem] items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 outline-none transition-[transform,background-color] duration-200 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:flex-row-reverse md:pl-1.5 md:pr-5 [&_svg]:size-[18px]"
             >

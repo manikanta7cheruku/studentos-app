@@ -10,6 +10,7 @@ import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
+import { PersonLink } from "@/components/app/person-link";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -86,10 +87,19 @@ function CommentRow({
         nested ? "ml-5 border-l-2 border-white/[0.08] pl-4" : "border-t border-white/[0.07]",
       )}
     >
-      <Avatar name={comment.author.display_name} size="xs" className="mt-0.5" />
+      <PersonLink
+        slug={slug}
+        userId={comment.author.user_id}
+        plain
+        className="mt-0.5 h-fit rounded-full"
+      >
+        <Avatar name={comment.author.display_name} size="xs" />
+      </PersonLink>
       <div className="min-w-0 flex-1">
         <p className="text-[13px]">
-          <span className="font-semibold">{comment.author.display_name}</span>
+          <PersonLink slug={slug} userId={comment.author.user_id} className="font-semibold">
+            {comment.author.display_name}
+          </PersonLink>
           {comment.by_buzz_author ? (
             <span className="ml-1.5 rounded-full bg-[#8f86f0]/20 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-[#c9c4f8]">
               Author

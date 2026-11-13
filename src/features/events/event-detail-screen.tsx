@@ -1,5 +1,7 @@
 "use client";
 
+import { PersonLink } from "@/components/app/person-link";
+
 import { RemoveDialog } from "@/features/admin-console/remove-dialog";
 import { ReportMenu } from "@/features/admin-console/report-menu";
 import * as React from "react";
@@ -119,7 +121,14 @@ export function EventDetailScreen({ eventId }: { eventId: string }) {
               {state.data.title}
             </h1>
             <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              Hosted by {state.data.author.display_name}
+              Hosted by{" "}
+              <PersonLink
+                slug={slug}
+                userId={state.data.author.user_id}
+                className="font-medium text-ink"
+              >
+                {state.data.author.display_name}
+              </PersonLink>
             </p>
           </div>
           {state.data.status === "removed" ? (

@@ -8,6 +8,7 @@ import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
+import { PersonLink } from "@/components/app/person-link";
 import { LoadError } from "@/components/app/load-error";
 import { OverflowMenu } from "@/components/app/overflow-menu";
 import { PageHeader } from "@/components/app/page-header";
@@ -65,10 +66,19 @@ function ArgumentRow({
 
   return (
     <li className="glass-card flex gap-3 rounded-[20px] p-3.5">
-      <Avatar name={argument.author.display_name} size="xs" className="mt-0.5" />
+      <PersonLink
+        slug={slug}
+        userId={argument.author.user_id}
+        plain
+        className="mt-0.5 h-fit rounded-full"
+      >
+        <Avatar name={argument.author.display_name} size="xs" />
+      </PersonLink>
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
-          <span className="font-semibold">{argument.author.display_name}</span>
+          <PersonLink slug={slug} userId={argument.author.user_id} className="font-semibold">
+            {argument.author.display_name}
+          </PersonLink>
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[11px] font-bold",
@@ -331,7 +341,10 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           </p>
         ) : null}
         <p className="relative mt-2 text-[12.5px] text-ink-muted">
-          Started by {debate.author.display_name}
+          Started by{" "}
+          <PersonLink slug={slug} userId={debate.author.user_id} className="font-medium text-ink">
+            {debate.author.display_name}
+          </PersonLink>
         </p>
 
         {!live ? (

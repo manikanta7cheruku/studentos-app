@@ -14,6 +14,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { cn } from "cn";
+import { useOverlayHistory } from "@/lib/use-overlay-history";
 
 type Choice = {
   href: string;
@@ -93,6 +94,8 @@ export function CreateSheet({
   // Turf, the Marketplace and Lost and found belong to one campus, so Global does not offer them.
   const shown = slug === "global" ? choices.slice(0, 4) : choices;
 
+  // Back closes the sheet; a tile opens its page with Back returning to where the person was.
+  const overlay = useOverlayHistory(open, onOpenChange);
   const sheet = React.useRef<HTMLDivElement>(null);
   const drag = React.useRef<{ y: number; t: number; moved: number } | null>(null);
 
@@ -188,7 +191,12 @@ export function CreateSheet({
                 <Link
                   href={item.href}
                   prefetch={false}
-                  onClick={() => onOpenChange(false)}
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0)
+                      return;
+                    event.preventDefault();
+                    overlay.goTo(item.href);
+                  }}
                   className="group flex h-full min-h-[5.75rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-3 outline-none transition-[background-color,border-color,transform] duration-200 hover:border-white/25 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
                 >
                   <span
