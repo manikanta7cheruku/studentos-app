@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRightIcon, MegaphoneIcon, PinIcon } from "lucide-react";
+import { MegaphoneIcon, PinIcon } from "lucide-react";
 import { GLOBAL_SLUG } from "@/lib/home-path";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
@@ -29,29 +29,20 @@ export function CampusNotice() {
   return (
     <Link
       href={`/c/${slug}/campus`}
-      className="lift glass-card group flex items-start gap-3.5 rounded-[22px] p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="lift glass-card group relative flex min-h-[84px] w-[84%] max-w-[340px] shrink-0 items-center gap-3 overflow-hidden rounded-[20px] px-3.5 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span className="bg-brand inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] text-white">
+      <span className="bg-brand inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white">
         <MegaphoneIcon aria-hidden="true" className="size-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+        <span className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
           {latest.pinned ? <PinIcon aria-hidden="true" className="size-3" /> : null}
-          From {college.short_name || college.name} · {when}
+          <span className="truncate">
+            {college.short_name || college.name} notice · {when}
+          </span>
         </span>
-        <span className="mt-1 block truncate text-[15.5px] font-bold leading-snug">
-          {latest.title}
-        </span>
-        <span className="mt-0.5 line-clamp-2 text-[13.5px] leading-snug text-ink-muted">
-          {latest.body}
-        </span>
-        <span className="mt-2 inline-flex items-center gap-0.5 text-[13px] font-semibold text-[#b9b4ee]">
-          All notices
-          <ChevronRightIcon
-            aria-hidden="true"
-            className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
-          />
-        </span>
+        <span className="block truncate text-[14.5px] font-bold leading-snug">{latest.title}</span>
+        <span className="block truncate text-[12.5px] text-ink-muted">{latest.body}</span>
       </span>
     </Link>
   );

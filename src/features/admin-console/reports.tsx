@@ -33,6 +33,8 @@ const TARGET: Record<string, string> = {
   event: "an event",
   listing: "a market or lost and found post",
   venue: "a venue",
+  debate: "a debate",
+  debate_argument: "a debate argument",
 };
 
 type Action = "dismiss" | "hide" | "warn" | "suspend";

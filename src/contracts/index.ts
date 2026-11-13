@@ -18,3 +18,6 @@ export * from "./venues";
 export * from "./messages";
 export * from "./feedback";
 export * from "./photos";
+export * from "./social";
+export * from "./debates";
+export * from "./network";

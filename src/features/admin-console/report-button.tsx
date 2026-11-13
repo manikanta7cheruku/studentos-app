@@ -38,7 +38,16 @@ export function ReportButton({
   onOpenChange,
   hideTrigger = false,
 }: {
-  targetType: "team_post" | "profile" | "idea" | "idea_comment" | "event" | "listing" | "venue";
+  targetType:
+    | "team_post"
+    | "profile"
+    | "idea"
+    | "idea_comment"
+    | "event"
+    | "listing"
+    | "venue"
+    | "debate"
+    | "debate_argument";
   targetId: string;
   what: string;
   /** Opened from outside, for example from a "..." menu. */

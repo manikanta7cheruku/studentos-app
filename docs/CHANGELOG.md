@@ -31,7 +31,17 @@
 | 2026-11-12 | R3 turf booking | Venues, booking requests, the manager confirms or declines, notes to both sides (D-36). Migration 20261118000000. | R3 (owner) |
 | 2026-11-12 | R3 calmer UI and public reach | Comment likes and dislikes, public posts reach every college feed, floating filter pills, smaller cards (D-37). Migration 20261119000000. | R3 (owner) |
 | 2026-11-12 | R3 venues for everyone | Any member can add a turf or court; the + sheet and the Turf page have an Add option (D-38). Migration 20261120000000. | R3 (owner) |
+| 2026-11-13 | R3 debates | Topic debates that close by themselves replace the weekly challenge (D-54, D-55). Follower lists are private (D-56). College names are checked and suggested (D-57). Migrations 20261133 and 20261134. | R3 (owner) |
+| 2026-11-13 | R3 community round | College, branch and year on profiles; Global without campus-only features; invite links and following; polls, question of the day and anonymous buzz; contributions and badges; a welcome step on why the app is worth it (D-46 to D-52). Migrations 20261129 to 20261131. | R3 (owner) |
 | 2026-11-13 | R3 age on profile, campus notice, People | Age in years can be shown on the profile (D-45). Home shows the latest college notice. People gets interest filters, shared interests first and a Message button. Migration 20261128000000. | R3 (owner) |
 | 2026-11-13 | R3 gender on profile, strengths, quick create | Gender replaces sex in the screens and can be shown on the profile (D-44). Strengths work in sample mode and before the catalog migration. Double tap or hold on + opens a quick menu. Migration 20261127000000. | R3 (owner) |
 | 2026-11-12 | R3 profile and settings redesign | New You page, Edit profile, Settings (with blocked people), message screen with Seen status and a caution line, owner profile insights (D-43). Migration 20261125000000. | R3 (owner) |
 | 2026-11-12 | R3 onboarding, messages, feedback, photos | A tour for new people, private profile details, reports for everything, feedback, disappearing messages, photos on posts (D-39 to D-42). Migrations 20261121 to 20261124. | R3 (owner) |
+| 2026-11-13 | R3 message requests, network, private debates, place | Requests with 3 day expiry and a 5 day wait after not interested (D-61), network strength and people to meet on Home (D-62), invite-only debates (D-63), place on the profile (D-64), complete owner Users page and network numbers (D-65). | R3 |
+| 2026-11-13 | R3 anonymous posts and the owner | Owner Anonymous page, richer Reports page, report from the Buzz list (D-66). | R3 |
+| 2026-11-13 | R3 debates round 2 | Top argument preview on cards, Hot right now, compact sides after joining (D-67). | R3 |
+| 2026-11-13 | R3 updates, team requests, feedback | Notification links, live refresh and day groups; Team requests with inline answers; feedback with kind cards, counter and draft (D-68). | R3 |
+| 2026-11-13 | R3 navigation | Profile picture top right, dock with Debates and Network, brighter open tab, one-time tip (D-69). | R3 |
+| 2026-11-13 | R3 shortcuts and tips | Shortcuts panel with groups and counts, badge on +, smoother glass tips (D-70). | R3 |
+| 2026-11-13 | R3 tour and Create card | First-open tour with replay, clear glass Create card, faster panels (D-71). | R3 |
+| 2026-11-13 | R3 launch scope and the Let's go fix | College locked as Coming soon, Marketplace and Lost and found coming soon pages, safer finish of the welcome tour (D-72). | R3 |

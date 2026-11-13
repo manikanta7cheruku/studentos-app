@@ -22,7 +22,13 @@ const out = <T extends Dated>(item: T): T => ({
 export async function createIdea(
   actor: string,
   college: string,
-  input: { title: string; body: string; topic: string },
+  input: {
+    title: string;
+    body: string;
+    topic: string;
+    anonymous?: boolean;
+    poll?: string[];
+  },
 ) {
   return out(
     await rpc<Dated>("idea_create", {
@@ -31,6 +37,8 @@ export async function createIdea(
       p_title: input.title,
       p_body: input.body,
       p_topic: input.topic,
+      p_anonymous: input.anonymous ?? false,
+      p_poll: input.poll ?? null,
     }),
   );
 }
@@ -91,7 +99,7 @@ export async function createIdeaComment(
   actor: string,
   college: string,
   idea: string,
-  input: { body: string; parent_id?: string | null },
+  input: { body: string; parent_id?: string | null; anonymous?: boolean },
 ) {
   return out(
     await rpc<Dated>("idea_comment_create", {
@@ -100,6 +108,7 @@ export async function createIdeaComment(
       p_idea: idea,
       p_parent: input.parent_id ?? null,
       p_body: input.body,
+      p_anonymous: input.anonymous ?? false,
     }),
   );
 }
@@ -132,4 +141,15 @@ export async function voteIdeaComment(
 export async function removeIdeaComment(actor: string, college: string, comment: string) {
   await rpc("idea_comment_remove", { p_actor: actor, p_college: college, p_comment: comment });
   return { deleted: true as const };
+}
+
+export async function voteIdeaPoll(actor: string, college: string, idea: string, option: number) {
+  return out(
+    await rpc<Dated>("idea_poll_vote", {
+      p_actor: actor,
+      p_college: college,
+      p_idea: idea,
+      p_option: option,
+    }),
+  );
 }

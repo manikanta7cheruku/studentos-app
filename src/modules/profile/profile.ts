@@ -6,6 +6,7 @@ import { mapDbError } from "@/lib/db-error";
 import { toIso } from "@/lib/api";
 import { serverEnv } from "@/lib/env";
 import { getPrivate, setPrivate } from "./profile-private.admin";
+import { getContributions, getFollowInfo } from "../social/social.admin";
 
 export async function getMyProfile(supabase: SupabaseClient, userId: string) {
   const { data, error } = await supabase
@@ -32,7 +33,11 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     }
   }
 
-  const priv = await getPrivate(userId);
+  const [priv, contributions, follow] = await Promise.all([
+    getPrivate(userId),
+    getContributions(userId),
+    getFollowInfo(userId, userId),
+  ]);
   const interests: string[] = data.interests ?? [];
   const techInterests: string[] = data.tech_interests ?? [];
   return {
@@ -48,6 +53,13 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     career_goal: data.career_goal ?? null,
     visibility: (data.visibility as "college" | "hidden") ?? "college",
     portfolio_public: Boolean(data.portfolio_public),
+    college_name: (data.college_name as string | null) ?? null,
+    branch: (data.branch as string | null) ?? null,
+    grad_year: (data.grad_year as number | null) ?? null,
+    place: (data.place as string | null) ?? null,
+    followers: follow.followers,
+    following: follow.following,
+    contributions,
     sex: priv.sex,
     sex_public: Boolean(priv.sex_public),
     age_public: Boolean(priv.age_public),
@@ -59,6 +71,8 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
       data.display_name?.trim() &&
       data.handle &&
       priv.sex &&
+      data.college_name &&
+      data.grad_year &&
       interests.length + techInterests.length >= 1,
     ),
     created_at: toIso(data.created_at)!,
@@ -80,6 +94,10 @@ export async function updateMyProfile(
   if (patch.tech_interests !== undefined) updatePayload.tech_interests = patch.tech_interests;
   if (patch.excited_by !== undefined) updatePayload.excited_by = patch.excited_by;
   if (patch.career_goal !== undefined) updatePayload.career_goal = patch.career_goal;
+  if (patch.college_name !== undefined) updatePayload.college_name = patch.college_name;
+  if (patch.branch !== undefined) updatePayload.branch = patch.branch;
+  if (patch.grad_year !== undefined) updatePayload.grad_year = patch.grad_year;
+  if (patch.place !== undefined) updatePayload.place = patch.place;
   if (patch.visibility !== undefined) updatePayload.visibility = patch.visibility;
   if (patch.portfolio_public !== undefined) updatePayload.portfolio_public = patch.portfolio_public;
 
@@ -228,6 +246,11 @@ export type DirectoryPerson = {
   headline: string | null;
   avatar_url: string | null;
   interests: string[];
+  tech_interests: string[];
+  college_name: string | null;
+  branch: string | null;
+  grad_year: number | null;
+  place: string | null;
 };
 
 export async function getMemberProfile(
@@ -294,7 +317,7 @@ export async function getVisibleCollegePeople(
   const { data, error } = await supabase.rpc("directory_list", {
     p_college: collegeId,
     p_q: options.query ?? null,
-    p_limit: 50,
+    p_limit: 100,
   });
   if (error) {
     throw new AppError("UPSTREAM_UNAVAILABLE", { cause: error });
@@ -307,6 +330,11 @@ export async function getVisibleCollegePeople(
     headline: string | null;
     avatar_path: string | null;
     interests: string[] | null;
+    tech_interests?: string[] | null;
+    college_name?: string | null;
+    branch?: string | null;
+    grad_year?: number | null;
+    place?: string | null;
   };
 
   const rows = (data ?? []) as unknown as DirectoryRow[];
@@ -328,6 +356,11 @@ export async function getVisibleCollegePeople(
       headline: row.headline ?? null,
       avatar_url: avatarUrl,
       interests: row.interests ?? [],
+      tech_interests: row.tech_interests ?? [],
+      college_name: row.college_name ?? null,
+      branch: row.branch ?? null,
+      grad_year: row.grad_year ?? null,
+      place: row.place ?? null,
     };
   });
 }

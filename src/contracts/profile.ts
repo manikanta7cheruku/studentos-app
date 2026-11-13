@@ -1,4 +1,6 @@
+import { contributions } from "./social";
 import { z } from "zod";
+import { collegeNameProblem, placeProblem } from "../lib/college-name";
 import { httpsUrl, isoDateTime, successEnvelope, uuid } from "./common";
 
 // PRF-01 GET / PATCH /api/v1/me/profile
@@ -25,6 +27,16 @@ export const profile = z.object({
   // One line: what makes this person excited.
   excited_by: z.string().max(200).nullable().default(null),
   career_goal: z.string().max(200).nullable(),
+  // Where I study, typed by me; my branch and the year I graduate. Shown on my profile.
+  college_name: z.string().min(2).max(120).nullable().default(null),
+  branch: z.string().min(1).max(60).nullable().default(null),
+  grad_year: z.number().int().min(2000).max(2100).nullable().default(null),
+  // The city or area I live in. Optional.
+  place: z.string().min(2).max(80).nullable().default(null),
+  // Counts for my own page.
+  followers: z.number().int().min(0).default(0),
+  following: z.number().int().min(0).default(0),
+  contributions: contributions.nullable().default(null),
   visibility: profileVisibility,
   portfolio_public: z.boolean(),
   // Private, only in my own profile.
@@ -36,7 +48,7 @@ export const profile = z.object({
   age_public: z.boolean().default(false),
   phone: phoneNumber.nullable().default(null),
   phone_visibility: phoneVisibility.default("hidden"),
-  // True when the name, a username, sex and at least one interest are set. The app asks for them once, in a short tour.
+  // True when the name, a username, sex, college, year and at least one interest are set. The app asks for them once, in a short tour.
   onboarded: z.boolean().default(false),
   created_at: isoDateTime,
   updated_at: isoDateTime,
@@ -56,6 +68,26 @@ export const profilePatchBody = z
     tech_interests: z.array(z.string().trim().min(1).max(40)).max(20),
     excited_by: z.string().trim().max(200).nullable(),
     career_goal: z.string().trim().max(200).nullable(),
+    college_name: z
+      .string()
+      .trim()
+      .min(2)
+      .max(120)
+      .refine((value) => collegeNameProblem(value) === null, {
+        message: "That does not look like a college name",
+      })
+      .nullable(),
+    branch: z.string().trim().min(1).max(60).nullable(),
+    grad_year: z.number().int().min(2000).max(2100).nullable(),
+    place: z
+      .string()
+      .trim()
+      .min(2)
+      .max(80)
+      .refine((value) => placeProblem(value) === null, {
+        message: "That does not look like a place",
+      })
+      .nullable(),
     visibility: profileVisibility,
     portfolio_public: z.boolean(),
     sex: sexChoice.nullable(),
@@ -151,6 +183,12 @@ export const personProfileResponse = successEnvelope(
     // Age in years, only when the person chose to show it.
     age: z.number().int().nullable().default(null),
     career_goal: z.string().nullable(),
+    college_name: z.string().nullable().default(null),
+    branch: z.string().nullable().default(null),
+    place: z.string().nullable().default(null),
+    // Whether I follow this person. Follower counts are only ever shown to the person themselves.
+    i_follow: z.boolean().default(false),
+    contributions: contributions.nullable().default(null),
     program: z.string().nullable(),
     grad_year: z.number().int().nullable(),
     skills: z.array(z.object({ name: z.string(), level: z.number().int().min(1).max(5) })),

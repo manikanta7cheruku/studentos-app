@@ -118,15 +118,14 @@ test("the author declines with a note, the applicant reads it", async ({
   await expect(applicant.getByText(/waiting for the author/i)).toBeVisible();
 
   await page.goto("/c/alpha/collaborate/requests");
-  await expect(page.getByRole("heading", { name: /waiting for your answer/i })).toBeVisible();
-  await expect(page.getByText(/1 request waiting/i)).toBeVisible();
-  await page.getByRole("link", { name: "Answer" }).click();
+  await expect(page.getByRole("tab", { name: /to answer/i })).toBeVisible();
   await page.getByRole("button", { name: "Decline" }).click();
   await page.getByLabel(/a note for them/i).fill("We found someone already, thank you.");
-  await page.getByRole("button", { name: "Decline" }).last().click();
-  await expect(page.getByText("Declined", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /send decline/i }).click();
+  await expect(page.getByText(/you declined/i)).toBeVisible();
 
   await applicant.goto("/c/alpha/collaborate/requests");
+  await applicant.getByRole("tab", { name: /^sent/i }).click();
   await expect(applicant.getByText(/the author said no this time/i)).toBeVisible();
   await expect(applicant.getByText(/we found someone already/i)).toBeVisible();
   await expectNoSidewaysScroll(applicant);

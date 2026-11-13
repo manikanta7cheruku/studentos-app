@@ -9,6 +9,7 @@ import { ideaHandlers } from "./handlers-ideas";
 import { venueHandlers } from "./handlers-venues";
 import { peopleHandlers } from "./handlers-people";
 import { socialHandlers } from "./handlers-social";
+import { debateHandlers } from "./handlers-debates";
 
 export const handlers = [
   ...day4And5Handlers,
@@ -19,6 +20,7 @@ export const handlers = [
   ...venueHandlers,
   ...peopleHandlers,
   ...socialHandlers,
+  ...debateHandlers,
   // TEN-01: GET /api/v1/colleges/public/:slug
   http.get("*/api/v1/colleges/public/:slug", ({ params }) => {
     const rawSlug = params.slug;

@@ -107,9 +107,9 @@ test("a picture that is not an image is refused in plain words", async ({ page }
 test("people shows classmates and can be searched", async ({ page }) => {
   await member(page, "PRF5");
   await page.goto("/c/alpha/people");
-  await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Network" })).toBeVisible();
   await expectNoSidewaysScroll(page);
-  await page.getByLabel(/search people/i).fill("zzzz-nobody");
+  await page.getByLabel(/search the network/i).fill("zzzz-nobody");
   await expect(page.getByText(/nobody found/i)).toBeVisible();
 });
 

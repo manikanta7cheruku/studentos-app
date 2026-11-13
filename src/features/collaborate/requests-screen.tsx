@@ -2,31 +2,198 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Banner } from "@/components/ui/banner";
+import { CheckIcon, InboxIcon, SendIcon, XIcon } from "lucide-react";
+import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar } from "@/components/app/avatar";
+import { GlideTabs } from "@/components/app/glide-tabs";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
-import { friendlyMessage } from "@/lib/api-client";
-import { api, type MyJoinRequest } from "@/lib/api/endpoints";
+import { ApiError, friendlyMessage } from "@/lib/api-client";
+import { api, type JoinRequestItem, type MyJoinRequest } from "@/lib/api/endpoints";
+import { timeAgo } from "@/lib/time-ago";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { KIND_LABEL } from "./labels";
 
-const STATUS_WORDS: Record<string, string> = {
-  pending: "Waiting for the author",
-  accepted: "Accepted. You are on the team",
-  declined: "The author said no this time",
-  withdrawn: "You withdrew it",
-  cancelled: "Cancelled because the post closed or filled",
+// The status of a request I sent, in plain words, with a colour so the list can be scanned.
+const STATUS: Record<string, { words: string; chip: string }> = {
+  pending: { words: "Waiting for the author", chip: "bg-[#f0c36a]/15 text-[#f0c36a]" },
+  accepted: { words: "Accepted. You are on the team", chip: "bg-[#2fb98a]/15 text-[#5fd6ad]" },
+  declined: { words: "The author said no this time", chip: "bg-white/10 text-ink-muted" },
+  withdrawn: { words: "You withdrew it", chip: "bg-white/10 text-ink-muted" },
+  cancelled: { words: "Cancelled: the post closed or filled", chip: "bg-white/10 text-ink-muted" },
+};
+const SHORT: Record<string, string> = {
+  pending: "Waiting",
+  accepted: "Accepted",
+  declined: "Declined",
+  withdrawn: "Withdrawn",
+  cancelled: "Cancelled",
 };
 
-function MyRequestRow({ item, onChanged }: { item: MyJoinRequest; onChanged: () => void }) {
+type Incoming = { post: { id: string; title: string }; request: JoinRequestItem };
+
+/** One person asking to join one of my posts. Accept or decline right here: the card goes away at once and comes back on failure. */
+function IncomingCard({
+  item,
+  onDecide,
+}: {
+  item: Incoming;
+  onDecide: (
+    item: Incoming,
+    decision: "accepted" | "declined",
+    note?: string,
+  ) => Promise<string | null>;
+}) {
+  const { slug } = useCollege();
+  const [busy, setBusy] = React.useState<"accepted" | "declined" | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const [declining, setDeclining] = React.useState(false);
+  const [note, setNote] = React.useState("");
+  const { request, post } = item;
+
+  async function decide(decision: "accepted" | "declined") {
+    if (busy) return;
+    setBusy(decision);
+    setError(null);
+    const failure = await onDecide(
+      item,
+      decision,
+      decision === "declined" ? note.trim() || undefined : undefined,
+    );
+    if (failure) {
+      setError(failure);
+      setBusy(null);
+    }
+  }
+
+  return (
+    <li
+      className={cn(
+        "glass-card flex flex-col gap-3 rounded-[20px] p-4 transition-[opacity,transform] duration-300",
+        busy && "scale-[0.99] opacity-60",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <Link href={`/c/${slug}/people/${request.applicant.user_id}`} className="shrink-0">
+          <Avatar name={request.applicant.display_name} size="md" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-bold leading-tight">
+            <Link
+              href={`/c/${slug}/people/${request.applicant.user_id}`}
+              className="hover:underline"
+            >
+              {request.applicant.display_name}
+            </Link>{" "}
+            <span className="font-normal text-ink-muted">wants to be {request.role_name}</span>
+          </p>
+          {request.applicant.headline ? (
+            <p className="truncate text-[13px] text-ink-muted">{request.applicant.headline}</p>
+          ) : null}
+          <p className="mt-0.5 truncate text-[12px] text-ink-muted/80">
+            For{" "}
+            <Link
+              href={`/c/${slug}/collaborate/${post.id}`}
+              className="font-semibold hover:underline"
+            >
+              {post.title}
+            </Link>{" "}
+            · {timeAgo(request.created_at)}
+          </p>
+        </div>
+      </div>
+      {request.applicant.skills.length ? (
+        <p className="flex flex-wrap gap-1.5">
+          {request.applicant.skills.slice(0, 6).map((skill) => (
+            <span
+              key={skill}
+              className="rounded-full bg-white/[0.07] px-2.5 py-0.5 text-[11.5px] font-medium text-ink-muted"
+            >
+              {skill}
+            </span>
+          ))}
+        </p>
+      ) : null}
+      {request.message ? (
+        <blockquote className="rounded-2xl bg-white/[0.05] px-3.5 py-2.5 text-[14px] leading-relaxed text-ink/90">
+          {request.message}
+        </blockquote>
+      ) : null}
+      {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+      {declining ? (
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor={`note-${request.id}`}
+            className="text-[12.5px] font-semibold text-ink-muted"
+          >
+            A note for them (optional)
+          </label>
+          <textarea
+            id={`note-${request.id}`}
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="They will see this."
+            className="glass-clear w-full resize-none rounded-2xl p-3 text-[16px] outline-none focus-visible:ring-2 focus-visible:ring-ring md:text-[14px]"
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="destructive"
+              className="flex-1"
+              onClick={() => void decide("declined")}
+              disabled={busy !== null}
+            >
+              {busy === "declined" ? <Spinner /> : <XIcon aria-hidden="true" />} Send decline
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDeclining(false)}
+              disabled={busy !== null}
+            >
+              Back
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            className="flex-1"
+            onClick={() => void decide("accepted")}
+            disabled={busy !== null}
+          >
+            {busy === "accepted" ? <Spinner /> : <CheckIcon aria-hidden="true" />} Accept
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={() => setDeclining(true)}
+            disabled={busy !== null}
+          >
+            <XIcon aria-hidden="true" /> Decline
+          </Button>
+        </div>
+      )}
+    </li>
+  );
+}
+
+/** A request I sent: a coloured status, the author's note, and Withdraw (asks first). */
+function SentCard({ item, onChanged }: { item: MyJoinRequest; onChanged: () => void }) {
   const { slug } = useCollege();
   const [busy, setBusy] = React.useState(false);
+  const [asking, setAsking] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const live = item.status === "pending" || item.status === "accepted";
+  const status = STATUS[item.status] ?? { words: item.status, chip: "bg-white/10 text-ink-muted" };
 
   async function withdraw() {
     setBusy(true);
@@ -37,133 +204,213 @@ function MyRequestRow({ item, onChanged }: { item: MyJoinRequest; onChanged: () 
     } catch (caught) {
       setError(friendlyMessage(caught, "We could not withdraw the request."));
       setBusy(false);
+      setAsking(false);
     }
   }
 
   return (
-    <li className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-      <div className="min-w-0">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-muted">
-          {KIND_LABEL[item.post.kind]} · {item.role.role_name}
-        </p>
-        <h3 className="text-[16px] font-semibold leading-snug">
-          <Link
-            href={`/c/${slug}/collaborate/${item.post.id}`}
-            className="underline-offset-4 hover:underline"
-          >
-            {item.post.title}
-          </Link>
-        </h3>
-        <p className="mt-1 text-[13.5px] text-ink-muted">
-          {STATUS_WORDS[item.status] ?? item.status}
-        </p>
-        {item.decision_note ? (
-          <p className="mt-1 text-[13.5px] text-ink">Note from the author: {item.decision_note}</p>
-        ) : null}
-        {error ? <p className="mt-1 text-[13.5px] text-danger">{error}</p> : null}
+    <li className={cn("glass-card flex flex-col gap-2 rounded-[20px] p-4", !live && "opacity-75")}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11.5px] font-bold uppercase tracking-[0.08em] text-ink-muted">
+            {KIND_LABEL[item.post.kind]} · {item.role.role_name}
+          </p>
+          <h3 className="text-[15.5px] font-bold leading-snug">
+            <Link href={`/c/${slug}/collaborate/${item.post.id}`} className="hover:underline">
+              {item.post.title}
+            </Link>
+          </h3>
+        </div>
+        <span
+          className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-bold", status.chip)}
+        >
+          {SHORT[item.status] ?? item.status}
+        </span>
       </div>
+      <p className="text-[13px] text-ink-muted">{status.words}</p>
+      {item.decision_note ? (
+        <p className="rounded-2xl bg-white/[0.05] px-3 py-2 text-[13.5px]">
+          <span className="text-ink-muted">Note from the author: </span>
+          {item.decision_note}
+        </p>
+      ) : null}
+      {error ? <p className="text-[13px] text-danger">{error}</p> : null}
       {live ? (
-        <Button variant="outline" onClick={() => void withdraw()} disabled={busy}>
-          {busy ? <Spinner /> : null} {item.status === "accepted" ? "Leave the team" : "Withdraw"}
-        </Button>
+        asking ? (
+          <div className="flex flex-wrap items-center gap-2 text-[13px]">
+            <span className="text-ink-muted">
+              {item.status === "accepted" ? "Leave this team?" : "Withdraw this request?"}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              onClick={() => void withdraw()}
+              disabled={busy}
+            >
+              {busy ? <Spinner /> : null} {item.status === "accepted" ? "Leave" : "Withdraw"}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setAsking(false)}>
+              Keep it
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <Button type="button" size="sm" variant="outline" onClick={() => setAsking(true)}>
+              {item.status === "accepted" ? "Leave the team" : "Withdraw"}
+            </Button>
+          </div>
+        )
       ) : null}
     </li>
   );
 }
 
-/** Two lists: posts of mine that people asked to join, and the requests I sent. */
+/** Team requests: the people who asked to join my posts (answer them here), and the requests I sent. */
 export function RequestsScreen() {
   const { slug } = useCollege();
-  const received = useLoad(async () => {
+  const [tab, setTab] = React.useState<"answer" | "sent">("answer");
+  const [gone, setGone] = React.useState<Set<string>>(() => new Set());
+  const [note, setNote] = React.useState<string | null>(null);
+
+  // Every pending request on my open posts, fetched side by side (no waiting one post after another).
+  const received = useLoad(async (): Promise<Incoming[]> => {
     const mine = await api.teamPosts.list(slug, { mine: true, status: "open", limit: 20 });
-    const details = await Promise.all(mine.data.map((post) => api.teamPosts.one(slug, post.id)));
-    return details.filter((post) => (post.pending_requests ?? 0) > 0);
+    const lists = await Promise.all(
+      mine.data.map(async (post) => {
+        const rows = await api.teamPosts.requests(slug, post.id, "pending");
+        return rows.map((request) => ({ post: { id: post.id, title: post.title }, request }));
+      }),
+    );
+    return lists.flat().sort((a, b) => b.request.created_at.localeCompare(a.request.created_at));
   }, [slug]);
   const sent = useLoad(() => api.teamPosts.myRequests(slug), [slug]);
 
-  return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader
-        title="Requests"
-        description="People who asked to join your posts, and the requests you sent."
-        back={{ href: `/c/${slug}/collaborate`, label: "Plans" }}
-      />
+  // New requests and answers show up on their own.
+  const { reload: reloadReceived } = received;
+  const { reload: reloadSent } = sent;
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        reloadReceived();
+        reloadSent();
+      }
+    }, 15_000);
+    return () => window.clearInterval(timer);
+  }, [reloadReceived, reloadSent]);
 
-      <section aria-labelledby="received" className="flex flex-col gap-3">
-        <h2
-          id="received"
-          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
-        >
-          Waiting for your answer
-        </h2>
-        {received.status === "loading" ? (
-          <Skeleton className="h-20 w-full" />
+  async function decide(
+    item: Incoming,
+    decision: "accepted" | "declined",
+    note?: string,
+  ): Promise<string | null> {
+    try {
+      await api.teamPosts.decide(slug, item.request.id, decision, note);
+      setGone((old) => new Set(old).add(item.request.id));
+      setNote(
+        decision === "accepted"
+          ? `${item.request.applicant.display_name} is on the team as ${item.request.role_name}.`
+          : `You declined ${item.request.applicant.display_name}.`,
+      );
+      reloadReceived();
+      return null;
+    } catch (caught) {
+      return caught instanceof ApiError && caught.code === "SLOTS_FULL"
+        ? "That role is already full."
+        : caught instanceof ApiError && caught.code === "CONFLICT"
+          ? "This request was already decided or withdrawn."
+          : friendlyMessage(caught, "We could not save your answer. Please try again.");
+    }
+  }
+
+  const incoming =
+    received.status === "ready" ? received.data.filter((i) => !gone.has(i.request.id)) : [];
+  const mine = sent.status === "ready" ? sent.data : [];
+  const sentOpen = mine.filter((r) => r.status === "pending" || r.status === "accepted").length;
+
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
+      <PageHeader title="Team requests" back={{ href: `/c/${slug}/collaborate`, label: "Plans" }} />
+      <GlideTabs
+        label="Team requests"
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          {
+            value: "answer",
+            label: incoming.length ? `To answer (${incoming.length})` : "To answer",
+          },
+          { value: "sent", label: sentOpen ? `Sent (${sentOpen})` : "Sent" },
+        ]}
+      />
+      {note ? (
+        <p role="status" className="glass-clear rounded-2xl px-4 py-2.5 text-[13.5px]">
+          {note}
+        </p>
+      ) : null}
+
+      {tab === "answer" ? (
+        received.status === "loading" ? (
+          <div aria-busy="true" className="flex flex-col gap-3">
+            <Skeleton className="h-40 w-full rounded-[20px]" />
+            <Skeleton className="h-40 w-full rounded-[20px]" />
+          </div>
         ) : received.status === "error" ? (
           <LoadError error={received.error} onRetry={received.reload} what="your posts" />
-        ) : received.data.length === 0 ? (
-          <p className="glass-card rounded-[22px] p-5 text-[14px] text-ink-muted">
-            Nothing is waiting. When someone asks to join one of your open posts, it shows up here
-            and in your notifications.
-          </p>
-        ) : (
-          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
-            {received.data.map((post) => (
-              <li key={post.id} className="flex items-center justify-between gap-4 py-4">
-                <div className="min-w-0">
-                  <h3 className="text-[16px] font-semibold leading-snug">
-                    <Link
-                      href={`/c/${slug}/collaborate/${post.id}`}
-                      className="underline-offset-4 hover:underline"
-                    >
-                      {post.title}
-                    </Link>
-                  </h3>
-                  <p className="tabular text-[13.5px] text-ink-muted">
-                    {post.pending_requests} {post.pending_requests === 1 ? "request" : "requests"}{" "}
-                    waiting
-                  </p>
-                </div>
-                <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/collaborate/${post.id}`}>Answer</Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section aria-labelledby="sent" className="flex flex-col gap-3">
-        <h2
-          id="sent"
-          className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
-        >
-          Requests I sent
-        </h2>
-        {sent.status === "loading" ? (
-          <Skeleton className="h-20 w-full" />
-        ) : sent.status === "error" ? (
-          <LoadError error={sent.error} onRetry={sent.reload} what="your requests" />
-        ) : sent.data.length === 0 ? (
-          <Banner variant="info">
-            <p>
-              You have not asked to join anything yet.{" "}
-              <Link
-                href={`/c/${slug}/collaborate`}
-                className="font-medium text-primary underline underline-offset-4"
-              >
-                Look at the open posts
-              </Link>
-              .
+        ) : incoming.length === 0 ? (
+          <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
+            <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
+              <InboxIcon aria-hidden="true" className="size-6" />
+            </span>
+            <p className="text-lg font-bold">Nothing to answer</p>
+            <p className="max-w-[34ch] text-[14px] text-ink-muted">
+              When someone asks to join one of your open posts, it shows up here and in your
+              notifications.
             </p>
-          </Banner>
+            <Button asChild className="mt-1">
+              <Link href={`/c/${slug}/collaborate/new`}>Make a plan</Link>
+            </Button>
+          </div>
         ) : (
-          <ul className="glass-card divide-y divide-white/[0.07] rounded-[22px] px-4">
-            {sent.data.map((item) => (
-              <MyRequestRow key={item.id} item={item} onChanged={sent.reload} />
+          <ul className="stagger flex flex-col gap-3">
+            {incoming.map((item) => (
+              <IncomingCard key={item.request.id} item={item} onDecide={decide} />
             ))}
           </ul>
-        )}
-      </section>
+        )
+      ) : sent.status === "loading" ? (
+        <div aria-busy="true" className="flex flex-col gap-3">
+          <Skeleton className="h-28 w-full rounded-[20px]" />
+          <Skeleton className="h-28 w-full rounded-[20px]" />
+        </div>
+      ) : sent.status === "error" ? (
+        <LoadError error={sent.error} onRetry={sent.reload} what="your requests" />
+      ) : mine.length === 0 ? (
+        <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
+          <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
+            <SendIcon aria-hidden="true" className="size-6" />
+          </span>
+          <p className="text-lg font-bold">You have not asked to join anything</p>
+          <p className="max-w-[34ch] text-[14px] text-ink-muted">
+            Find a plan or a team that needs someone like you.
+          </p>
+          <Button asChild className="mt-1">
+            <Link href={`/c/${slug}/collaborate`}>Look at open posts</Link>
+          </Button>
+        </div>
+      ) : (
+        <ul className="stagger flex flex-col gap-3">
+          {[...mine]
+            .sort(
+              (a, b) =>
+                Number(b.status === "pending" || b.status === "accepted") -
+                Number(a.status === "pending" || a.status === "accepted"),
+            )
+            .map((item) => (
+              <SentCard key={item.id} item={item} onChanged={sent.reload} />
+            ))}
+        </ul>
+      )}
     </div>
   );
 }

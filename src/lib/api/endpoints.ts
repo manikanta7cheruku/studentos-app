@@ -37,6 +37,17 @@ export type AdminAnnouncement = Data<typeof c.adminAnnouncementListResponse>[num
 export type AdminOpportunity = Data<typeof c.adminOpportunityListResponse>[number];
 export type Report = Data<typeof c.reportQueueResponse>[number];
 export type Idea = Data<typeof c.ideaListResponse>[number];
+export type IdeaPoll = NonNullable<Idea["poll"]>;
+export type Contributions = NonNullable<Profile["contributions"]>;
+export type Debate = Data<typeof c.debateListResponse>[number];
+export type DebateTopic = z.infer<typeof c.debateTopic>;
+export type DebateArgument = Data<typeof c.debateArgumentListResponse>[number];
+export type NetworkSuggestion = Data<typeof c.networkSuggestionsResponse>[number];
+export type NetworkConnection = Data<typeof c.networkConnectionsResponse>[number];
+export type NetworkStats = Data<typeof c.networkStatsResponse>;
+export type DmThread = Data<typeof c.dmThreadResponse>;
+export type DmThreadItem = Data<typeof c.dmThreadListResponse>[number];
+export type Connection = Data<typeof c.connectionsResponse>[number];
 export type IdeaTopic = z.infer<typeof c.ideaTopic>;
 export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
@@ -77,6 +88,11 @@ export const api = {
   },
 
   colleges: {
+    suggest: (q: string, signal?: AbortSignal) =>
+      apiClient(j(`/colleges/suggest?q=${encodeURIComponent(q)}`), {
+        schema: c.collegeSuggestResponse.shape.data,
+        signal,
+      }),
     mine: () => apiClient(j("/me/memberships"), { schema: c.myMembershipsResponse.shape.data }),
     // A person with a one-time setup code from the platform owner makes their own college.
     setup: (body: z.input<typeof c.collegeSetupBody>) =>
@@ -173,6 +189,11 @@ export const api = {
           headline: string | null;
           avatar_url: string | null;
           interests: string[];
+          tech_interests: string[];
+          college_name: string | null;
+          branch: string | null;
+          grad_year: number | null;
+          place: string | null;
         }[]
       >,
     one: (slug: string, userId: string) =>
@@ -234,6 +255,107 @@ export const api = {
         schema: c.eventResponse.shape.data,
       }),
   },
+  follows: {
+    list: (kind: "followers" | "following") =>
+      apiClient(j(`/me/connections?kind=${kind}`), { schema: c.connectionsResponse.shape.data }),
+    set: (userId: string, on: boolean) =>
+      apiClient(j(`/me/follows/${userId}`), {
+        method: on ? "PUT" : "DELETE",
+        schema: c.followResponse.shape.data,
+      }),
+  },
+
+  network: {
+    suggestions: (slug: string, limit = 6) =>
+      apiClient(j(`/c/${slug}/network/suggestions?limit=${limit}`), {
+        schema: c.networkSuggestionsResponse.shape.data,
+      }),
+    connections: (slug: string) =>
+      apiClient(j(`/c/${slug}/network/connections`), {
+        schema: c.networkConnectionsResponse.shape.data,
+      }),
+    mine: () => apiClient(j("/me/network"), { schema: c.networkStatsResponse.shape.data }),
+  },
+
+  invite: {
+    get: () => apiClient(j("/me/invite"), { schema: c.inviteResponse.shape.data }),
+    apply: (code: string) =>
+      apiClient(j("/me/referral"), {
+        method: "POST",
+        body: { code },
+        schema: c.referralResponse.shape.data,
+      }),
+  },
+
+  debates: {
+    list: (
+      slug: string,
+      filters: {
+        status?: "live" | "ended" | "all";
+        topic?: DebateTopic;
+        cursor?: string;
+        limit?: number;
+      } = {},
+    ) => {
+      const query = new URLSearchParams();
+      query.set("status", filters.status ?? "live");
+      if (filters.topic) query.set("topic", filters.topic);
+      if (filters.cursor) query.set("cursor", filters.cursor);
+      query.set("limit", String(filters.limit ?? 20));
+      return apiFetchEnvelope(j(`/c/${slug}/debates?${query}`), {
+        schema: c.debateListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}`), { schema: c.debateResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.debateCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/debates`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.debateResponse.shape.data,
+      }),
+    remove: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}`), {
+        method: "DELETE",
+        schema: c.debateDeleteResponse.shape.data,
+      }),
+    invite: (slug: string, id: string, userIds: string[]) =>
+      apiClient(j(`/c/${slug}/debates/${id}/invites`), {
+        method: "PUT",
+        body: { user_ids: userIds },
+        schema: c.debateResponse.shape.data,
+      }),
+    pickSide: (slug: string, id: string, side: 0 | 1) =>
+      apiClient(j(`/c/${slug}/debates/${id}/side`), {
+        method: "PUT",
+        body: { side },
+        schema: c.debateResponse.shape.data,
+      }),
+    arguments: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments`), {
+        schema: c.debateArgumentListResponse.shape.data,
+      }),
+    argue: (slug: string, id: string, body: { body: string; anonymous?: boolean }, key?: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.debateArgumentResponse.shape.data,
+      }),
+    strongPoint: (slug: string, id: string, argumentId: string, value: 0 | 1) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments/${argumentId}/vote`), {
+        method: "PUT",
+        body: { value },
+        schema: c.debateArgumentResponse.shape.data,
+      }),
+    removeArgument: (slug: string, id: string, argumentId: string) =>
+      apiClient(j(`/c/${slug}/debates/${id}/arguments/${argumentId}`), {
+        method: "DELETE",
+        schema: c.debateDeleteResponse.shape.data,
+      }),
+  },
+
   blocks: {
     list: () => apiClient(j("/me/blocks"), { schema: c.blocksListResponse.shape.data }),
     unblock: (userId: string) =>
@@ -266,6 +388,11 @@ export const api = {
         body: { body },
         idempotent: key ?? true,
         schema: c.dmSendResponse.shape.data,
+      }),
+    decline: (slug: string, userId: string) =>
+      apiClient(j(`/c/${slug}/messages/${userId}/decline`), {
+        method: "POST",
+        schema: c.dmDeclineResponse.shape.data,
       }),
     report: (slug: string, userId: string, body: z.input<typeof c.dmReportBody>) =>
       apiClient(j(`/c/${slug}/messages/${userId}/report`), {
@@ -449,7 +576,7 @@ export const api = {
     comment: (
       slug: string,
       id: string,
-      body: { body: string; parent_id?: string | null },
+      body: { body: string; parent_id?: string | null; anonymous?: boolean },
       key?: string,
     ) =>
       apiClient(j(`/c/${slug}/ideas/${id}/comments`), {
@@ -457,6 +584,12 @@ export const api = {
         body,
         idempotent: key ?? true,
         schema: c.ideaCommentResponse.shape.data,
+      }),
+    pollVote: (slug: string, id: string, option: number) =>
+      apiClient(j(`/c/${slug}/ideas/${id}/poll`), {
+        method: "POST",
+        body: { option },
+        schema: c.ideaResponse.shape.data,
       }),
     removeComment: (slug: string, id: string, commentId: string) =>
       apiClient(j(`/c/${slug}/ideas/${id}/comments/${commentId}`), {

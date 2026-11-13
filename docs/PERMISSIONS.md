@@ -33,6 +33,12 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | NTF-01 | GET | /me/notifications | ses | none |
 | NTF-02 | POST | /me/notifications/read | ses | write limit |
 | RPT-05 | GET | /me/blocks | ses | read limit |
+| FOL-01 | PUT | /me/follows/{userId} | ses | write limit |
+| FOL-01 | DELETE | /me/follows/{userId} | ses | write limit |
+| FOL-02 | GET | /me/connections | ses | read limit |
+| COL-02 | GET | /colleges/suggest | ses | read limit |
+| INV-01 | GET | /me/invite | ses | read limit |
+| INV-02 | POST | /me/referral | ses | write limit |
 | RPT-04 | PUT | /me/blocks/{userId} | ses | write limit |
 | RPT-04 | DELETE | /me/blocks/{userId} | ses | write limit |
 | WL-01 | POST | /waitlist | pub | 5/h per IP |
@@ -97,11 +103,26 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | IDE-06 | POST | /c/{slug}/ideas/{id}/comments | mem | write limit, 40 an hour |
 | IDE-07 | GET | /c/{slug}/ideas/{id}/comments | mem | read limit |
 | IDE-08 | DELETE | /c/{slug}/ideas/{id}/comments/{commentId} | mem | author, or moderator and admin |
+| IDE-10 | POST | /c/{slug}/ideas/{id}/poll | mem | write limit |
+| DEB-01 | POST | /c/{slug}/debates | mem | write limit, 3 a day |
+| DEB-02 | GET | /c/{slug}/debates | mem | read limit |
+| DEB-03 | GET | /c/{slug}/debates/{id} | mem | read limit |
+| DEB-04 | PUT | /c/{slug}/debates/{id}/side | mem | write limit |
+| DEB-05 | POST | /c/{slug}/debates/{id}/arguments | mem | write limit, 30 an hour |
+| DEB-06 | GET | /c/{slug}/debates/{id}/arguments | mem | read limit |
+| DEB-07 | PUT | /c/{slug}/debates/{id}/arguments/{argId}/vote | mem | write limit |
+| DEB-08 | DELETE | /c/{slug}/debates/{id} | mem | author, or moderator and admin |
+| DEB-09 | DELETE | /c/{slug}/debates/{id}/arguments/{argId} | mem | author, or moderator and admin |
 | IDE-09 | PUT | /c/{slug}/ideas/{id}/comments/{commentId}/vote | mem | write limit |
 | MSG-01 | GET | /c/{slug}/messages | mem | read limit, my own conversations |
 | MSG-02 | GET | /c/{slug}/messages/{userId} | mem | read limit, both people active members and not blocked |
 | MSG-03 | POST | /c/{slug}/messages/{userId} | mem | write limit, 60 an hour, 20 unopened per person, not blocked |
 | MSG-04 | POST | /c/{slug}/messages/{userId}/report | mem | write limit |
+| MSG-05 | POST | /c/{slug}/messages/{userId}/decline | mem | write limit, only the person who received the request |
+| NET-01 | GET | /c/{slug}/network/suggestions | mem | read limit |
+| NET-02 | GET | /me/network | ses | read limit, my own numbers |
+| NET-03 | GET | /c/{slug}/network/connections | mem | read limit, my own connections |
+| DEB-10 | PUT | /c/{slug}/debates/{id}/invites | mem | write limit, author only |
 | FDB-01 | POST | /me/feedback | ses | write limit, 10 a day |
 | PHO-01 | POST | /c/{slug}/photos/upload-url | mem | write limit, 1 MB at most |
 | BRD-08 | PUT | /c/{slug}/board/{id}/photo | mem | the author only |

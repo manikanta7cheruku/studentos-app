@@ -21,6 +21,11 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : [["list"]],
   use: {
     baseURL,
+    // The first-open product tour would sit over every page: tests start as people who have seen it.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: baseURL, localStorage: [{ name: "studentos.tour.v1", value: "done" }] }],
+    },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

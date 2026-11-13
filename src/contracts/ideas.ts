@@ -13,11 +13,22 @@ export const ideaCreateBody = z
     title: z.string().trim().max(140).default(""),
     body: z.string().trim().max(2000).default(""),
     topic: ideaTopic.default("other"),
+    // Post without my name. Other people see "Anonymous fox". Moderators can still tell who it was.
+    anonymous: z.boolean().default(false),
+    // A poll: two to four short options.
+    poll: z.array(z.string().trim().min(1).max(40)).min(2).max(4).optional(),
   })
   .refine((value) => value.title.length + value.body.length > 0, {
     message: "Write something",
     path: ["body"],
   });
+
+export const ideaPoll = z.object({
+  options: z.array(z.object({ text: z.string(), votes: z.number().int().min(0) })),
+  // The option I picked (0 to 3), or null when I have not voted.
+  my_option: z.number().int().min(0).max(3).nullable(),
+  total: z.number().int().min(0),
+});
 
 export const idea = z.object({
   id: uuid,
@@ -31,12 +42,17 @@ export const idea = z.object({
   is_owner: z.boolean(),
   // My own vote: 1 up, -1 down, 0 none.
   my_vote: z.number().int().min(-1).max(1),
+  // Posted without a name: the author is then "Anonymous <animal>" with a nil user id.
+  is_anonymous: z.boolean().default(false),
+  poll: ideaPoll.nullable().default(null),
   author: z.object({
     user_id: uuid,
     display_name: z.string(),
     headline: z.string().nullable(),
   }),
 });
+// IDE-10 POST /api/v1/c/{slug}/ideas/{id}/poll   { "option": 0 }: pick an option (picking again changes it). Answers with the idea.
+export const ideaPollVoteBody = z.strictObject({ option: z.number().int().min(0).max(3) });
 export const ideaResponse = successEnvelope(idea);
 
 // IDE-02 GET /api/v1/c/{slug}/ideas?sort=new|top&topic=&mine=true&limit=&cursor=
@@ -60,6 +76,7 @@ export const ideaDeleteResponse = successEnvelope(z.object({ deleted: z.literal(
 export const ideaCommentCreateBody = z.strictObject({
   body: z.string().trim().min(1).max(800),
   parent_id: uuid.nullable().optional(),
+  anonymous: z.boolean().default(false),
 });
 export const ideaComment = z.object({
   id: uuid,
@@ -70,6 +87,9 @@ export const ideaComment = z.object({
   // Likes minus dislikes, and my own vote (1, -1 or 0).
   score: z.number().int().default(0),
   my_vote: z.number().int().min(-1).max(1).default(0),
+  is_anonymous: z.boolean().default(false),
+  // True when the comment is by the author of the buzz (also when both are anonymous).
+  by_buzz_author: z.boolean().default(false),
   author: z.object({ user_id: uuid, display_name: z.string() }),
 });
 export const ideaCommentResponse = successEnvelope(ideaComment);

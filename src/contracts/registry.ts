@@ -5,12 +5,15 @@ import * as auth from "./auth";
 import * as common from "./common";
 import * as board from "./board";
 import * as engagement from "./engagement";
+import * as debates from "./debates";
 import * as events from "./events";
 import * as ideas from "./ideas";
 import * as moderation from "./moderation";
+import * as network from "./network";
 import * as opportunities from "./opportunities";
 import * as profile from "./profile";
 import * as setup from "./setup";
+import * as social from "./social";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 import * as venues from "./venues";
@@ -147,6 +150,35 @@ export const endpoints: Endpoint[] = [
   e("NTF-02", "POST", "/me/notifications/read", "ses", "Mark some or all as read", {
     body: engagement.notificationReadBody,
     response: engagement.notificationReadResponse,
+  }),
+  e("FOL-01", "PUT", "/me/follows/{userId}", "ses", "Follow a person", {
+    response: social.followResponse,
+  }),
+  e("FOL-01", "DELETE", "/me/follows/{userId}", "ses", "Stop following a person", {
+    response: social.followResponse,
+  }),
+  e("INV-01", "GET", "/me/invite", "ses", "My invite code", { response: social.inviteResponse }),
+  e("INV-02", "POST", "/me/referral", "ses", "I joined through an invite link", {
+    body: social.referralBody,
+    response: social.referralResponse,
+  }),
+  e("NET-01", "GET", "/c/{slug}/network/suggestions", "mem", "People to meet", {
+    query: network.networkSuggestionsQuery,
+    response: network.networkSuggestionsResponse,
+  }),
+  e("NET-03", "GET", "/c/{slug}/network/connections", "mem", "People I am connected to", {
+    response: network.networkConnectionsResponse,
+  }),
+  e("NET-02", "GET", "/me/network", "ses", "My connections and open requests", {
+    response: network.networkStatsResponse,
+  }),
+  e("COL-02", "GET", "/colleges/suggest", "ses", "College names to pick from while typing", {
+    query: social.collegeSuggestQuery,
+    response: social.collegeSuggestResponse,
+  }),
+  e("FOL-02", "GET", "/me/connections", "ses", "My followers, or the people I follow", {
+    query: social.connectionsQuery,
+    response: social.connectionsResponse,
   }),
   e("RPT-05", "GET", "/me/blocks", "ses", "The people I blocked", {
     response: engagement.blocksListResponse,
@@ -435,6 +467,66 @@ export const endpoints: Endpoint[] = [
     body: ideas.ideaVoteBody,
     response: ideas.ideaResponse,
   }),
+  e("DEB-01", "POST", "/c/{slug}/debates", "mem", "Start a debate", {
+    body: debates.debateCreateBody,
+    response: debates.debateResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("DEB-02", "GET", "/c/{slug}/debates", "mem", "List debates (live or ended, by topic)", {
+    query: debates.debateListQuery,
+    response: debates.debateListResponse,
+  }),
+  e("DEB-03", "GET", "/c/{slug}/debates/{id}", "mem", "One debate", {
+    response: debates.debateResponse,
+  }),
+  e("DEB-04", "PUT", "/c/{slug}/debates/{id}/side", "mem", "Join a side, or change it", {
+    body: debates.debateSideBody,
+    response: debates.debateResponse,
+  }),
+  e("DEB-05", "POST", "/c/{slug}/debates/{id}/arguments", "mem", "Post an argument under my side", {
+    body: debates.debateArgumentCreateBody,
+    response: debates.debateArgumentResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("DEB-06", "GET", "/c/{slug}/debates/{id}/arguments", "mem", "The arguments of a debate", {
+    response: debates.debateArgumentListResponse,
+  }),
+  e(
+    "DEB-07",
+    "PUT",
+    "/c/{slug}/debates/{id}/arguments/{argId}/vote",
+    "mem",
+    "A strong point, or take it back",
+    { body: debates.debateArgumentVoteBody, response: debates.debateArgumentResponse },
+  ),
+  e(
+    "DEB-10",
+    "PUT",
+    "/c/{slug}/debates/{id}/invites",
+    "mem",
+    "Invite more people to a private debate",
+    {
+      body: debates.debateInvitesBody,
+      response: debates.debateResponse,
+    },
+  ),
+  e("DEB-08", "DELETE", "/c/{slug}/debates/{id}", "mem", "Remove a debate (author or moderator)", {
+    response: debates.debateDeleteResponse,
+  }),
+  e(
+    "DEB-09",
+    "DELETE",
+    "/c/{slug}/debates/{id}/arguments/{argId}",
+    "mem",
+    "Remove an argument (author or moderator)",
+    { response: debates.debateDeleteResponse },
+  ),
+  e("IDE-10", "POST", "/c/{slug}/ideas/{id}/poll", "mem", "Pick an option of a poll", {
+    body: ideas.ideaPollVoteBody,
+    response: ideas.ideaResponse,
+  }),
   e("IDE-05", "DELETE", "/c/{slug}/ideas/{id}", "mem", "Remove an idea (author or moderator)", {
     response: ideas.ideaDeleteResponse,
   }),
@@ -500,6 +592,14 @@ export const endpoints: Endpoint[] = [
       response: engagement.reportCreateResponse,
       status: 201,
     },
+  ),
+  e(
+    "MSG-05",
+    "POST",
+    "/c/{slug}/messages/{userId}/decline",
+    "mem",
+    "Not interested in a message request",
+    { response: messages.dmDeclineResponse },
   ),
   e("FDB-01", "POST", "/me/feedback", "ses", "Send feedback to the team", {
     body: feedback.feedbackCreateBody,

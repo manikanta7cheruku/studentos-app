@@ -63,5 +63,18 @@ select lives_ok($$select public.owner_user_audit('aaaaaaaa-1000-4000-8000-000000
 select cmp_ok((select count(*)::int from public.owner_audit(50)), '>=', 5, 'the audit list shows the owner actions');
 select is((select count(*)::int from public.owner_audit(50) where action = 'unrelated.college.action'), 0, 'and only the owner actions');
 
+-- Anonymous posts: the owner sees who is behind them, other students never do
+insert into public.ideas(id, college_id, author_id, title, body, topic, status, is_anonymous)
+values ('dddddddd-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000003', '', 'A secret rant', 'other', 'published', true);
+insert into public.reports(college_id, reporter_id, target_type, target_id, reason, status)
+values ('aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-1000-4000-8000-000000000001', 'idea', 'dddddddd-0000-4000-8000-000000000001', 'harassment', 'open');
+select is((public.owner_anonymous(null, 10, 0) ->> 'total')::int, 1, 'the owner lists anonymous posts');
+select is((public.owner_anonymous(null, 10, 0) -> 'rows' -> 0 ->> 'name'), 'Riya Sharma', 'with the real person behind it');
+select is((public.owner_anonymous(null, 10, 0) -> 'rows' -> 0 ->> 'open_reports')::int, 1, 'and how many open reports it has');
+select is((public.owner_anonymous('nothing like this', 10, 0) ->> 'total')::int, 0, 'a search that matches nothing finds nothing');
+select is((select target_author_name from public.owner_reports(10) where target_id = 'dddddddd-0000-4000-8000-000000000001'), 'Riya Sharma', 'a report shows who wrote the anonymous post');
+select ok((select target_anonymous from public.owner_reports(10) where target_id = 'dddddddd-0000-4000-8000-000000000001'), 'and that it was anonymous');
+select is((public.idea_get('aaaaaaaa-1000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'dddddddd-0000-4000-8000-000000000001') -> 'author' ->> 'user_id'), '00000000-0000-0000-0000-000000000000', 'while another student only sees a nil author id');
+
 select * from finish();
 rollback;

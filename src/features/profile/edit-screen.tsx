@@ -17,16 +17,19 @@ import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type Profile } from "@/lib/api/endpoints";
+import { collegeNameProblem, placeProblem } from "@/lib/college-name";
 import { compressImage } from "@/lib/compress-image";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import {
-  BirthYearPicker,
+  BirthYearField,
   CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
   PhoneFields,
   SexField,
+  StudyFields,
+  tidy,
   TECH_INTERESTS,
   normalisePhone,
   type Sex,
@@ -46,6 +49,10 @@ export function profileChanges(
     interests: string[];
     tech_interests?: string[];
     excited_by?: string;
+    college_name?: string;
+    branch?: string;
+    grad_year?: number | null;
+    place?: string;
     sex?: Sex | null;
     sex_public?: boolean;
     age_public?: boolean;
@@ -72,6 +79,14 @@ export function profileChanges(
   if (form.excited_by !== undefined && text(form.excited_by) !== saved.excited_by)
     patch.excited_by = text(form.excited_by);
   if (form.sex !== undefined && form.sex !== saved.sex) patch.sex = form.sex;
+  if (form.college_name !== undefined && tidy(form.college_name) !== (saved.college_name ?? ""))
+    patch.college_name = tidy(form.college_name) || null;
+  if (form.branch !== undefined && tidy(form.branch) !== (saved.branch ?? ""))
+    patch.branch = tidy(form.branch) || null;
+  if (form.place !== undefined && tidy(form.place) !== (saved.place ?? ""))
+    patch.place = tidy(form.place) || null;
+  if (form.grad_year !== undefined && form.grad_year !== saved.grad_year)
+    patch.grad_year = form.grad_year;
   if (form.age_public !== undefined && form.age_public !== saved.age_public)
     patch.age_public = form.age_public;
   if (form.sex_public !== undefined && form.sex_public !== saved.sex_public)
@@ -209,6 +224,10 @@ function EditForm({ saved }: { saved: Profile }) {
     interests: saved.interests,
     tech_interests: saved.tech_interests,
     excited_by: saved.excited_by ?? "",
+    college_name: saved.college_name ?? "",
+    branch: saved.branch ?? "",
+    grad_year: saved.grad_year,
+    place: saved.place ?? "",
     sex: saved.sex as Sex | null,
     sex_public: saved.sex_public,
     age_public: saved.age_public,
@@ -230,6 +249,12 @@ function EditForm({ saved }: { saved: Profile }) {
     if (!form.display_name.trim()) problems.display_name = "Enter the name classmates will see.";
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
+    const collegeProblem = collegeNameProblem(form.college_name);
+    if (!tidy(form.college_name)) problems.college = "Type the name of your college.";
+    else if (collegeProblem) problems.college = collegeProblem;
+    if (!form.grad_year) problems.year = "Pick the year you graduate.";
+    if (tidy(form.place ?? "") && placeProblem(form.place ?? ""))
+      problems.place = placeProblem(form.place ?? "")!;
     if (form.phone.trim() && !PHONE_OK.test(normalisePhone(form.phone)))
       problems.phone = "Use the form +919876543210.";
     setFields(problems);
@@ -313,6 +338,19 @@ function EditForm({ saved }: { saved: Profile }) {
           />
         </FormField>
       </Section>
+      <Section title="Your college" text="Shown on your profile.">
+        <StudyFields
+          college={form.college_name}
+          branch={form.branch}
+          year={form.grad_year}
+          onCollege={(next) => set("college_name", next)}
+          onBranch={(next) => set("branch", next)}
+          onYear={(next) => set("grad_year", next)}
+          place={form.place}
+          onPlace={(next) => set("place", next)}
+          errors={fields}
+        />
+      </Section>
       <Section title="Interests" text="Pick a few. Add your own below each list.">
         <InterestChips
           title="For fun"
@@ -355,20 +393,7 @@ function EditForm({ saved }: { saved: Profile }) {
             />
           ) : null}
         </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-[13px] font-semibold text-ink/90">
-            Birth year <span className="font-normal text-ink-muted">(optional)</span>
-          </p>
-          <BirthYearPicker value={form.birth_year} onChange={(next) => set("birth_year", next)} />
-          {form.birth_year ? (
-            <ToggleRow
-              checked={form.age_public}
-              onChange={(next) => set("age_public", next)}
-              title="Show my age on my profile"
-              text="Classmates see your age in years, never the year you were born. Off by default."
-            />
-          ) : null}
-        </div>
+        <BirthYearField value={form.birth_year} onChange={(next) => set("birth_year", next)} />
         <PhoneFields
           phone={form.phone}
           onPhone={(next) => set("phone", next)}

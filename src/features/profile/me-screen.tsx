@@ -15,6 +15,8 @@ import {
   MessageSquareHeartIcon,
   MapPinnedIcon,
   ShieldCheckIcon,
+  ScaleIcon,
+  UserPlusIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,8 +90,8 @@ function MoreMenu() {
     },
     {
       href: `/c/${slug}/collaborate/requests`,
-      label: "My requests",
-      text: "Plans you asked to join",
+      label: "Team requests",
+      text: "Answer people, and see yours",
       icon: <InboxIcon />,
     },
     {
@@ -102,8 +104,8 @@ function MoreMenu() {
   const explore: MoreRow[] = [
     {
       href: `/c/${slug}/people`,
-      label: "People",
-      text: "Find classmates",
+      label: "Network",
+      text: "Meet students, find your people",
       icon: <UsersRoundIcon />,
     },
     ...(college.modules.campus && slug !== "global"
@@ -123,26 +125,43 @@ function MoreMenu() {
       icon: <CalendarDaysIcon />,
     },
     {
-      href: `/c/${slug}/turf`,
-      label: "Turf and courts",
-      text: "Book a ground, find players",
-      icon: <MapPinnedIcon />,
+      href: `/c/${slug}/debates`,
+      label: "Debates",
+      text: "Pick a side, make your point",
+      icon: <ScaleIcon />,
     },
-    {
-      href: `/c/${slug}/lost-found`,
-      label: "Lost and found",
-      text: "Lost it? Found it?",
-      icon: <PackageSearchIcon />,
-    },
-    {
-      href: `/c/${slug}/market`,
-      label: "Marketplace",
-      text: "Buy, sell, rent, free",
-      icon: <StoreIcon />,
-    },
+    // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
+    ...(slug !== "global"
+      ? [
+          {
+            href: `/c/${slug}/turf`,
+            label: "Turf and courts",
+            text: "Book a ground, find players",
+            icon: <MapPinnedIcon />,
+          },
+          {
+            href: `/c/${slug}/lost-found`,
+            label: "Lost and found",
+            text: "Coming soon, with the colleges",
+            icon: <PackageSearchIcon />,
+          },
+          {
+            href: `/c/${slug}/market`,
+            label: "Marketplace",
+            text: "Coming soon: sell or rent to students",
+            icon: <StoreIcon />,
+          },
+        ]
+      : []),
     { href: `/c/${slug}/career`, label: "Careers", text: "Coming soon", icon: <BriefcaseIcon /> },
   ];
   const account: MoreRow[] = [
+    {
+      href: `/c/${slug}/me/settings#invite`,
+      label: "Invite friends",
+      text: "Share your link",
+      icon: <UserPlusIcon />,
+    },
     {
       href: `/c/${slug}/feedback`,
       label: "Send feedback",
@@ -185,8 +204,11 @@ export function MeScreen() {
       ) : (
         <>
           <ProfileView
+            isSelf
+            connectionsHref={`/c/${slug}/me/connections`}
             person={{
               ...state.data.profile,
+              program: state.data.profile.branch,
               gender: state.data.profile.sex_public ? state.data.profile.sex : null,
               age:
                 state.data.profile.age_public && state.data.profile.birth_year

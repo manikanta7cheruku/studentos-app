@@ -52,6 +52,32 @@ import {
 } from "@/app/api/v1/c/[slug]/admin/announcements/[id]/route";
 import { DELETE as unblockUser } from "@/app/api/v1/me/blocks/[userId]/route";
 import { GET as listBlocks } from "@/app/api/v1/me/blocks/route";
+import { GET as getInvite } from "@/app/api/v1/me/invite/route";
+import { POST as postReferral } from "@/app/api/v1/me/referral/route";
+import {
+  PUT as followPerson,
+  DELETE as unfollowPerson,
+} from "@/app/api/v1/me/follows/[userId]/route";
+import { POST as ideasPoll } from "@/app/api/v1/c/[slug]/ideas/[id]/poll/route";
+import { GET as debatesList, POST as debatesCreate } from "@/app/api/v1/c/[slug]/debates/route";
+import {
+  DELETE as debatesRemove,
+  GET as debatesGet,
+} from "@/app/api/v1/c/[slug]/debates/[id]/route";
+import { PUT as debatesSide } from "@/app/api/v1/c/[slug]/debates/[id]/side/route";
+import {
+  GET as debateArgumentsList,
+  POST as debateArgumentsCreate,
+} from "@/app/api/v1/c/[slug]/debates/[id]/arguments/route";
+import { DELETE as debateArgumentsRemove } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/route";
+import { PUT as debateArgumentVote } from "@/app/api/v1/c/[slug]/debates/[id]/arguments/[argId]/vote/route";
+import { POST as messagesDecline } from "@/app/api/v1/c/[slug]/messages/[userId]/decline/route";
+import { GET as networkSuggestions } from "@/app/api/v1/c/[slug]/network/suggestions/route";
+import { GET as networkConnections } from "@/app/api/v1/c/[slug]/network/connections/route";
+import { GET as myNetwork } from "@/app/api/v1/me/network/route";
+import { PUT as debateInvites } from "@/app/api/v1/c/[slug]/debates/[id]/invites/route";
+import { GET as myConnections } from "@/app/api/v1/me/connections/route";
+import { GET as suggestColleges } from "@/app/api/v1/colleges/suggest/route";
 import { GET as myProfile, PATCH as patchProfile } from "@/app/api/v1/me/profile/route";
 import { GET as mySkills, PUT as putSkills } from "@/app/api/v1/me/skills/route";
 import { GET as skillSearch } from "@/app/api/v1/skills/route";
@@ -720,6 +746,24 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     [
       ["IDE-02 GET /c/alpha/ideas (members)", ideasList, "GET", undefined, "/ideas", 200, false],
       [
+        "DEB-02 GET /c/alpha/debates (members)",
+        debatesList,
+        "GET",
+        undefined,
+        "/debates",
+        200,
+        false,
+      ],
+      [
+        "DEB-01 POST /c/alpha/debates (an empty body is the probe -> 400 for members)",
+        debatesCreate,
+        "POST",
+        {},
+        "/debates",
+        400,
+        true,
+      ],
+      [
         "IDE-01 POST /c/alpha/ideas (an empty body is the probe -> 400 for members)",
         ideasCreate,
         "POST",
@@ -788,6 +832,60 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
         { value: 1 },
         "/ideas",
         "/vote",
+        false,
+      ],
+      [
+        "DEB-03 GET /c/alpha/debates/{id} (unknown debate -> 404 for members)",
+        debatesGet,
+        "GET",
+        undefined,
+        "/debates",
+        "",
+        false,
+      ],
+      [
+        "DEB-08 DELETE /c/alpha/debates/{id} (unknown debate -> 404 for members)",
+        debatesRemove,
+        "DELETE",
+        undefined,
+        "/debates",
+        "",
+        false,
+      ],
+      [
+        "DEB-04 PUT /c/alpha/debates/{id}/side (unknown debate -> 404 for members)",
+        debatesSide,
+        "PUT",
+        { side: 0 },
+        "/debates",
+        "/side",
+        false,
+      ],
+      [
+        "DEB-06 GET /c/alpha/debates/{id}/arguments (unknown debate -> 404 for members)",
+        debateArgumentsList,
+        "GET",
+        undefined,
+        "/debates",
+        "/arguments",
+        false,
+      ],
+      [
+        "DEB-05 POST /c/alpha/debates/{id}/arguments (unknown debate -> 404 for members)",
+        debateArgumentsCreate,
+        "POST",
+        { body: "My point" },
+        "/debates",
+        "/arguments",
+        true,
+      ],
+      [
+        "IDE-10 POST /c/alpha/ideas/{id}/poll (unknown idea -> 404 for members)",
+        ideasPoll,
+        "POST",
+        { option: 0 },
+        "/ideas",
+        "/poll",
         false,
       ],
       [
@@ -933,6 +1031,108 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "DEB-09 DELETE /c/alpha/debates/{id}/arguments/{argId} (unknown argument -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const argId = randomUUID();
+      return call(debateArgumentsRemove, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/debates/${id}/arguments/${argId}`,
+        params: { slug: "alpha", id, argId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "DEB-07 PUT /c/alpha/debates/{id}/arguments/{argId}/vote (unknown argument -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      const argId = randomUUID();
+      return call(debateArgumentVote, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/debates/${id}/arguments/${argId}/vote`,
+        json: { value: 1 },
+        params: { slug: "alpha", id, argId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-05 POST /c/alpha/messages/{userId}/decline (no open request -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messagesDecline, {
+        method: "POST",
+        path: `/api/v1/c/alpha/messages/${userId}/decline`,
+        params: { slug: "alpha", userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "NET-01 GET /c/alpha/network/suggestions (members -> 200)",
+    call: (cookie: string | undefined) =>
+      call(networkSuggestions, {
+        method: "GET",
+        path: "/api/v1/c/alpha/network/suggestions",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "NET-03 GET /c/alpha/network/connections (members -> 200)",
+    call: (cookie: string | undefined) =>
+      call(networkConnections, {
+        method: "GET",
+        path: "/api/v1/c/alpha/network/connections",
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status),
+    expect: memberOnly(200),
+  },
+  {
+    op: "NET-02 GET /me/network (my own numbers -> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(myNetwork, { method: "GET", path: "/api/v1/me/network", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "DEB-10 PUT /c/alpha/debates/{id}/invites (unknown debate -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(debateInvites, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/debates/${id}/invites`,
+        json: { user_ids: [randomUUID()] },
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "FOL-02 GET /me/connections (my own lists -> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(myConnections, { method: "GET", path: "/api/v1/me/connections", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(200),
+  },
+  {
+    op: "COL-02 GET /colleges/suggest (-> 200 for everyone signed in)",
+    call: (cookie: string | undefined) =>
+      call(suggestColleges, {
+        method: "GET",
+        path: "/api/v1/colleges/suggest?q=alpha",
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(200),
   },
   {
     op: "COL-01 POST /colleges/setup (any signed in person; an empty body is the probe -> 400)",
@@ -1529,6 +1729,49 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
     expect: Object.fromEntries(allPrincipals.map((p) => [p, 400])) as Record<Principal, Expected>,
   })),
   {
+    op: "INV-01 GET /me/invite (my own code -> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(getInvite, { method: "GET", path: "/api/v1/me/invite", cookie }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "INV-02 POST /me/referral (an unknown code is ignored -> 200 for everyone signed in)",
+    call: (cookie) =>
+      call(postReferral, {
+        method: "POST",
+        path: "/api/v1/me/referral",
+        json: { code: "zzzzzzzz" },
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(200),
+  },
+  {
+    op: "FOL-01 PUT /me/follows/{stranger} (no such person -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(followPerson, {
+        method: "PUT",
+        path: `/api/v1/me/follows/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
+    op: "FOL-01 DELETE /me/follows/{stranger} (no such person -> 404 for everyone signed in)",
+    call: (cookie) => {
+      const userId = randomUUID();
+      return call(unfollowPerson, {
+        method: "DELETE",
+        path: `/api/v1/me/follows/${userId}`,
+        params: { userId },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: signedIn(404),
+  },
+  {
     op: "RPT-05 GET /me/blocks (my own list -> 200 for everyone signed in)",
     call: (cookie) =>
       call(listBlocks, { method: "GET", path: "/api/v1/me/blocks", cookie }).then((r) => r.status),
@@ -1651,6 +1894,10 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
 describe("real endpoints follow the permission matrix", () => {
   for (const endpoint of endpoints) {
     describe(endpoint.op, () => {
+      // Each person may write 60 times a minute. With this many rows the run would reach that, so every row starts fresh.
+      beforeAll(async () => {
+        await clearRateLimits();
+      });
       it("covers every principal", () => {
         expect(Object.keys(endpoint.expect).sort()).toEqual([...allPrincipals].sort());
       });

@@ -12,6 +12,7 @@ import {
   MessageSquareIcon,
   ScrollTextIcon,
   UsersIcon,
+  VenetianMaskIcon,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -21,6 +22,7 @@ const ITEMS = [
   { href: "/owner/codes", label: "Setup codes", icon: <KeyRoundIcon /> },
   { href: "/owner/users", label: "Users", icon: <UsersIcon /> },
   { href: "/owner/content", label: "Content", icon: <FileTextIcon /> },
+  { href: "/owner/anonymous", label: "Anonymous", icon: <VenetianMaskIcon /> },
   { href: "/owner/feedback", label: "Feedback", icon: <MessageSquareIcon /> },
   { href: "/owner/reports", label: "Reports", icon: <FlagIcon /> },
   { href: "/owner/health", label: "Health", icon: <ActivityIcon /> },

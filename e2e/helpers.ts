@@ -193,6 +193,9 @@ export async function finishTour(page: import("@playwright/test").Page): Promise
       body: JSON.stringify({
         handle,
         sex: "prefer_not_to_say",
+        college_name: "Alpha College",
+        branch: "CSE",
+        grad_year: new Date().getFullYear() + 2,
         interests: ["football"],
         tech_interests: ["Web development"],
       }),

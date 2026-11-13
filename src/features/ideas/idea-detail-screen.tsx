@@ -10,6 +10,7 @@ import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
+import { PersonLink } from "@/components/app/person-link";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -86,10 +87,24 @@ function CommentRow({
         nested ? "ml-5 border-l-2 border-white/[0.08] pl-4" : "border-t border-white/[0.07]",
       )}
     >
-      <Avatar name={comment.author.display_name} size="xs" className="mt-0.5" />
+      <PersonLink
+        slug={slug}
+        userId={comment.author.user_id}
+        plain
+        className="mt-0.5 h-fit rounded-full"
+      >
+        <Avatar name={comment.author.display_name} size="xs" />
+      </PersonLink>
       <div className="min-w-0 flex-1">
         <p className="text-[13px]">
-          <span className="font-semibold">{comment.author.display_name}</span>
+          <PersonLink slug={slug} userId={comment.author.user_id} className="font-semibold">
+            {comment.author.display_name}
+          </PersonLink>
+          {comment.by_buzz_author ? (
+            <span className="ml-1.5 rounded-full bg-[#8f86f0]/20 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-[#c9c4f8]">
+              Author
+            </span>
+          ) : null}
           <span className="text-ink-muted"> · {timeAgo(comment.created_at)}</span>
         </p>
         <p className="mt-1 whitespace-pre-line text-[14.5px] leading-relaxed text-ink/90">
@@ -151,6 +166,7 @@ function Composer({
   const { slug } = useCollege();
   const attempt = useAttempt();
   const [text, setText] = React.useState("");
+  const [anonymous, setAnonymous] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
@@ -169,7 +185,7 @@ function Composer({
       await api.ideas.comment(
         slug,
         ideaId,
-        { body, parent_id: replyTo ? (replyTo.parent_id ?? replyTo.id) : null },
+        { body, parent_id: replyTo ? (replyTo.parent_id ?? replyTo.id) : null, anonymous },
         attempt.get(),
       );
       attempt.reset();
@@ -221,6 +237,20 @@ function Composer({
           }}
           className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-[14.5px] outline-none placeholder:text-ink-muted/70"
         />
+        <button
+          type="button"
+          onClick={() => setAnonymous((value) => !value)}
+          aria-pressed={anonymous}
+          title="Post without your name"
+          className={cn(
+            "mb-0.5 inline-flex h-9 shrink-0 items-center rounded-full border px-3 text-[12px] font-semibold outline-none transition-[background-color,border-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+            anonymous
+              ? "border-[#8f86f0]/60 bg-[#8f86f0]/20 text-ink"
+              : "border-white/10 text-ink-muted hover:text-ink",
+          )}
+        >
+          Anonymous
+        </button>
         <Button
           type="submit"
           size="icon-sm"

@@ -26,6 +26,9 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
 
   // Nothing else opens before the tour is done.
   await page.waitForURL(/\/welcome/);
+  // First, why the app is worth it
+  await expect(page.getByRole("heading", { name: /welcome to/i })).toBeVisible();
+  await page.getByRole("button", { name: /get started/i }).click();
   await expect(page.getByRole("heading", { name: /who are you/i })).toBeVisible();
 
   // Step 1: the username is a must, sex too (and "prefer not to say" is an answer)
@@ -34,6 +37,12 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await page.getByRole("button", { name: /^continue$/i }).click();
   await expect(page.getByText(/3 to 30 letters/i)).toBeVisible();
   await page.getByLabel(/^username/i).fill(`tour_${Date.now().toString(36)}`);
+  await page.getByRole("button", { name: /^continue$/i }).click();
+  // The college, the branch and the year are a must too
+  await expect(page.getByText(/type the name of your college/i)).toBeVisible();
+  await page.getByRole("textbox", { name: /^college/i }).fill("Alpha College");
+  // The year is a stepper: the first press picks a graduation year two years out.
+  await page.getByRole("button", { name: "Later graduation year" }).click();
   await page.getByRole("button", { name: /^continue$/i }).click();
 
   // Step 2: at least three interests

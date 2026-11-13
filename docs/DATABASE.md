@@ -245,6 +245,17 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261116000000_owner_dashboard.sql` | `platform_admins`, `owner_*` functions (overview, sign-ups, colleges, setup codes, users, reports, health, audit) |
 | `20261117000000_functional_round.sql` | thoughts with optional title, `team_posts.join_mode`, `tf_join_open`, `tf_participants`, events `kind` and `invite_only` (official or personal, `event_create` with 8 arguments), `content_remove`, `owner_content_remove`, `content_recent`, `owner_content`, notification types `team.joined` and `content.removed` |
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
+| `20261139000000_debate_top_argument.sql` | `debate_json` also returns `top_argument` |
+| `20261138000000_network_connection_list.sql` | `network_connection_list` (my connections in one college) |
+| `20261137000000_owner_anonymous_reports.sql` | `owner_anonymous` (every anonymous buzz, comment and argument with the real person, for the owner), `owner_reports` now shows what was reported and who wrote it |
+| `20261136000000_requests_network_private_debates.sql` | `dm_threads` gets `status`, `requester_id`, `requested_at`, `request_expires_at`, `decided_at` (message requests); `dm_send`, `dm_decline`, `dm_inbox`, `dm_thread`; `network_connections`, `network_stats`, `network_suggest`; `debates.visibility`, `debate_invites`, `debate_invite_add`; `profiles.place`; `owner_users_full` (paged, with network and activity) and `owner_network_insights`; notification type `debate.invited` |
+| `20261135000000_standing_and_directory.sql` | `profile_contributions` also returns `crowd_debates`, `filled_plans`, `big_events`, `member_days` (and `invited` counts only friends who finished the tour); `directory_list` returns college, branch, year and tech interests and searches more fields |
+| `20261134000000_follow_list_college_names.sql` | `follow_list`, `college_name_suggest` |
+| `20261133000000_debates.sql` | `debates`, `debate_sides`, `debate_arguments`, `debate_argument_votes`, `debate_*` functions; the challenge tables are dropped; `profile_contributions` counts debates; reports and moderation reach debates and arguments |
+| `20261132000000_owner_users_full.sql` | `owner_users_full` (the whole record of each user, for the owner dashboard) |
+| `20261131000000_challenges_contributions.sql` | `challenge_entries`, `challenge_applause`, `challenge_*` functions, `profile_contributions` |
+| `20261130000000_buzz_polls_anonymous.sql` | `ideas.is_anonymous`, `poll_options`, `prompt_key`, `idea_comments.is_anonymous`, `idea_poll_votes`, `anon_alias`, `idea_poll_vote`; `idea_create`, `idea_comment_create`, `idea_json`, `idea_comment_json` rewritten |
+| `20261129000000_college_invites_follows.sql` | `profiles.college_name`, `branch`, `grad_year`; `user_invite_codes`, `referrals`, `invite_info`, `referral_apply`; `follows`, `follow_set`, `follow_info` |
 | `20261128000000_age_on_profile.sql` | `profile_private.age_public` (off by default), `profile_public_details` (gender and age for other people); `profile_private_get` and `_set` carry the key |
 | `20261127000000_gender_on_profile.sql` | `profile_private.sex_public` (off by default), `profile_public_gender`; `profile_private_get` and `_set` carry the new key |
 | `20261126000000_social_skills.sql` | social and working skills added to the `skills` catalog (Communication, Talkative, Leadership and others) |

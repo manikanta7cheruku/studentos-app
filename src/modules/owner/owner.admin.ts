@@ -1,3 +1,4 @@
+import { deleteAccount } from "@/modules/account/account.admin";
 import { adminClient } from "@/server/admin/supabase-admin";
 import { AppError } from "@/lib/errors";
 import { hashKey } from "@/lib/hash";
@@ -203,9 +204,42 @@ export type ReportRow = {
   reason: string;
   details: string | null;
   reporter_email: string | null;
+  reporter_name: string | null;
   created_at: string;
+  target_id: string | null;
+  /** A short piece of what was reported (the words, or the title). */
+  target_preview: string | null;
+  /** True when the author posted it anonymously. Other people never see who; the owner does. */
+  target_anonymous: boolean;
+  target_author_id: string | null;
+  target_author_name: string | null;
+  target_author_email: string | null;
 };
 export const reports = () => rpc<ReportRow[]>("owner_reports", { p_limit: 100 });
+
+export type AnonymousRow = {
+  kind: "buzz" | "comment" | "argument";
+  id: string;
+  body: string;
+  status: string;
+  created_at: string;
+  user_id: string | null;
+  name: string;
+  handle: string | null;
+  email: string | null;
+  college_slug: string;
+  college_name: string;
+  open_reports: number;
+};
+export const ANON_PAGE = 50;
+/** Everything posted anonymously (buzz, comments, debate arguments) with the real person behind it. Owner only. */
+export async function anonymousPosts(q: string, page: number) {
+  return rpc<{ total: number; rows: AnonymousRow[] }>("owner_anonymous", {
+    p_q: q,
+    p_limit: ANON_PAGE,
+    p_offset: page * ANON_PAGE,
+  });
+}
 
 export type Health = {
   database_bytes: number;
@@ -254,4 +288,120 @@ export async function setUserSuspended(actor: string, target: string, suspended:
     p_target: target,
     p_action: suspended ? "owner.user_suspended" : "owner.user_restored",
   });
+}
+
+export type OwnerUserFull = {
+  id: string;
+  email: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  suspended: boolean;
+  platform_admin: boolean;
+  spaces: { slug: string; name: string; role: string; status: string }[];
+  profile: {
+    display_name: string | null;
+    handle: string | null;
+    headline: string | null;
+    bio: string | null;
+    college_name: string | null;
+    branch: string | null;
+    grad_year: number | null;
+    place: string | null;
+    interests: string[];
+    tech_interests: string[];
+    excited_by: string | null;
+    career_goal: string | null;
+    visibility: string | null;
+    avatar: boolean;
+    onboarded: boolean;
+  };
+  private: {
+    sex: string | null;
+    sex_public: boolean;
+    birth_year: number | null;
+    age_public: boolean;
+    phone: string | null;
+    phone_visibility: string;
+  };
+  counts: {
+    buzz: number;
+    replies: number;
+    plans: number;
+    events: number;
+    upvotes: number;
+    debates: number;
+    invited: number;
+    crowd_debates: number;
+    filled_plans: number;
+    big_events: number;
+    member_days: number;
+    followers: number;
+    following: number;
+  };
+  network: { connections: number; requests_sent: number; requests_received: number };
+  activity: {
+    messages_sent: number;
+    private_debates: number;
+    skills: number;
+    feedback: number;
+    reports_filed: number;
+    reports_against: number;
+  };
+};
+
+export const USERS_PAGE = 50;
+
+/** The whole record of each person, one page at a time, for the owner. The page that calls this writes the visit to the audit log. */
+export const usersFull = (q: string, page = 0) =>
+  rpc<{ total: number; rows: OwnerUserFull[] }>("owner_users_full", {
+    p_q: q,
+    p_limit: USERS_PAGE,
+    p_offset: page * USERS_PAGE,
+  });
+
+export type NetworkInsights = {
+  debates_total: number;
+  debates_live: number;
+  debates_private: number;
+  arguments: number;
+  requests_pending: number;
+  requests_accepted: number;
+  requests_declined: number;
+  requests_expired: number;
+  follows: number;
+  mutual_follows: number;
+  with_place: number;
+  buzz: number;
+  plans: number;
+};
+export const networkInsights = () => rpc<NetworkInsights>("owner_network_insights");
+
+/**
+ * Deletes accounts for good, one after the other (the same removal a person gets from "Delete my account"). The owner and other
+ * owners are skipped. An account that cannot go (for example the only admin of a college) is reported, not forced.
+ */
+export async function deleteUsers(actor: string, ids: string[]) {
+  const result = { deleted: 0, skipped: [] as { id: string; reason: string }[] };
+  for (const id of ids) {
+    if (id === actor || (await isPlatformAdmin(id))) {
+      result.skipped.push({ id, reason: "owner accounts cannot be deleted here" });
+      continue;
+    }
+    try {
+      await rpc("owner_user_audit", {
+        p_actor: actor,
+        p_target: id,
+        p_action: "owner.user_deleted",
+      });
+      await deleteAccount(id, crypto.randomUUID());
+      result.deleted += 1;
+    } catch (caught) {
+      const conflict = caught instanceof AppError && caught.code === "CONFLICT";
+      result.skipped.push({
+        id,
+        reason: conflict ? "the only admin of a college" : "could not be deleted",
+      });
+    }
+  }
+  return result;
 }

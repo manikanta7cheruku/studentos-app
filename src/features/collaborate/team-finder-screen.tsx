@@ -214,7 +214,7 @@ export function TeamFinderScreen() {
         actions={
           <>
             <Button asChild variant="outline">
-              <Link href={`/c/${slug}/collaborate/requests`}>Requests</Link>
+              <Link href={`/c/${slug}/collaborate/requests`}>Team requests</Link>
             </Button>
             <Button asChild>
               <Link href={`/c/${slug}/collaborate/new`}>

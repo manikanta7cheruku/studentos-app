@@ -2,14 +2,23 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowDownIcon, ArrowUpIcon, CheckIcon, MessageCircleIcon, ShareIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  MessageCircleIcon,
+  ShareIcon,
+  VenetianMaskIcon,
+} from "lucide-react";
 import { cn } from "cn";
 import { Avatar } from "@/components/app/avatar";
+import { ReportMenu } from "@/features/admin-console/report-menu";
 import { OutsideBadge } from "@/components/app/outside-badge";
 import { api, type Idea, type IdeaTopic } from "@/lib/api/endpoints";
 import { timeAgo } from "@/lib/time-ago";
 import { useCollege } from "@/features/college";
 import { primeLoad } from "@/lib/use-load";
+import { IdeaPoll } from "./idea-poll";
 
 export const TOPIC_LABEL: Record<IdeaTopic, string> = {
   campus: "Campus life",
@@ -97,7 +106,9 @@ export function VotePill({
         onClick={() => void vote(-1)}
         className={cn(
           button,
-          mine === -1 ? "bg-white/15 text-ink" : "text-ink-muted hover:bg-white/10 hover:text-ink",
+          mine === -1
+            ? "bg-white/15 text-ink"
+            : "text-ink-muted/50 hover:bg-white/10 hover:text-ink",
         )}
       >
         <ArrowDownIcon aria-hidden="true" className="size-[15px]" />
@@ -190,14 +201,29 @@ export function IdeaCard({
       )}
     >
       <header className="flex items-center gap-2">
-        <Avatar name={idea.author.display_name} size="xs" />
-        <p className="flex min-w-0 flex-1 items-baseline gap-1.5 leading-tight">
-          <Link
-            href={`/c/${slug}/people/${idea.author.user_id}`}
-            className="relative z-10 max-w-[60%] shrink-0 truncate text-[13px] font-semibold hover:underline"
+        {idea.is_anonymous ? (
+          <span
+            aria-hidden="true"
+            className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-ink-muted"
           >
-            {idea.author.display_name}
-          </Link>
+            <VenetianMaskIcon className="size-3.5" />
+          </span>
+        ) : (
+          <Avatar name={idea.author.display_name} size="xs" />
+        )}
+        <p className="flex min-w-0 flex-1 items-baseline gap-1.5 leading-tight">
+          {idea.is_anonymous ? (
+            <span className="max-w-[60%] shrink-0 truncate text-[13px] font-semibold italic text-ink/80">
+              {idea.author.display_name}
+            </span>
+          ) : (
+            <Link
+              href={`/c/${slug}/people/${idea.author.user_id}`}
+              className="relative z-10 max-w-[60%] shrink-0 truncate text-[13px] font-semibold hover:underline"
+            >
+              {idea.author.display_name}
+            </Link>
+          )}
           <span className="min-w-0 truncate text-[12px] text-ink-muted">
             {idea.author.headline ? `· ${idea.author.headline} ` : ""}· {timeAgo(idea.created_at)}
           </span>
@@ -240,6 +266,7 @@ export function IdeaCard({
           </p>
         ) : null}
       </div>
+      {idea.poll ? <IdeaPoll idea={idea} space={slug} onChange={onChange} /> : null}
       <footer className="relative z-10 flex items-center gap-1.5">
         <VoteButtons idea={idea} space={slug} onChange={onChange} />
         {full ? (
@@ -257,7 +284,10 @@ export function IdeaCard({
             {idea.comment_count}
           </Link>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-0.5">
+          {!idea.is_owner && !outside && !full ? (
+            <ReportMenu targetType="idea" targetId={idea.id} what="buzz" className="size-7" />
+          ) : null}
           <ShareButton idea={idea} space={slug} />
         </div>
       </footer>

@@ -10,6 +10,7 @@ import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
+import { PersonLink } from "@/components/app/person-link";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -421,7 +422,9 @@ export function BoardDetailScreen({ board, postId }: { board: BoardName; postId:
             <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-muted">
               <span className="flex items-center gap-2">
                 <Avatar name={state.data.author.display_name} size="xs" />{" "}
-                {state.data.author.display_name}
+                <PersonLink slug={slug} userId={state.data.author.user_id}>
+                  {state.data.author.display_name}
+                </PersonLink>
               </span>
               {state.data.place ? (
                 <span className="flex items-center gap-1.5">

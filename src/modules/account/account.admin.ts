@@ -1,4 +1,5 @@
 import { getPublicDetails } from "@/modules/profile/profile-private.admin";
+import { getContributions, getFollowInfo, getStudyDetails } from "@/modules/social/social.admin";
 import { adminClient } from "@/server/admin/supabase-admin";
 import { AppError } from "@/lib/errors";
 import { mapDbError } from "@/lib/db-error";
@@ -52,8 +53,27 @@ export async function viewPerson(actor: string, college: string, target: string)
   const avatar_url = avatar_path
     ? adminClient().storage.from("avatars").getPublicUrl(avatar_path).data.publicUrl
     : null;
-  const shown = await getPublicDetails(target);
-  return { ...person, avatar_url, gender: shown.gender, age: shown.age };
+  const [shown, study, follow, contributions] = await Promise.all([
+    getPublicDetails(target),
+    getStudyDetails(target),
+    getFollowInfo(target, actor),
+    getContributions(target),
+  ]);
+  return {
+    ...person,
+    avatar_url,
+    gender: shown.gender,
+    age: shown.age,
+    college_name: study.college_name,
+    place: study.place,
+    branch: study.branch,
+    // What the person wrote on their profile wins over what the college membership says.
+    program: study.branch ?? (person as { program?: string | null }).program ?? null,
+    grad_year: study.grad_year ?? (person as { grad_year?: number | null }).grad_year ?? null,
+    // Who follows whom is private: only whether I follow this person.
+    i_follow: follow.i_follow,
+    contributions,
+  };
 }
 
 type MembershipRow = {

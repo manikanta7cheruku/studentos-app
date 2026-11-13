@@ -3,12 +3,21 @@
 import * as React from "react";
 import { cn } from "cn";
 import { Dialog as DialogPrimitive } from "radix-ui";
+import { useOverlayHistory } from "@/lib/use-overlay-history";
 
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
-function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+function Dialog({
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  // The Back button closes an open dialog instead of leaving the page.
+  useOverlayHistory(open === true, (next) => onOpenChange?.(next));
+  return (
+    <DialogPrimitive.Root data-slot="dialog" open={open} onOpenChange={onOpenChange} {...props} />
+  );
 }
 
 function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {

@@ -11,8 +11,10 @@ import {
   CalendarDaysIcon,
   PackageSearchIcon,
   StoreIcon,
+  ScaleIcon,
   ChevronDownIcon,
   ChevronsUpDownIcon,
+  CircleHelpIcon,
   GlobeIcon,
   HouseIcon,
   MapPinnedIcon,
@@ -22,8 +24,8 @@ import {
   PlusIcon,
   SettingsIcon,
   ShieldCheckIcon,
-  UserRoundIcon,
   UsersIcon,
+  UserRoundIcon,
   UsersRoundIcon,
 } from "lucide-react";
 import { cn } from "cn";
@@ -36,6 +38,9 @@ import {
   usePlusGestures,
 } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
+import { recentlyOnboarded } from "@/lib/just-onboarded";
+import { Tour } from "@/features/tour/tour";
+import { markTourDone, useTourDone } from "@/features/tour/tour-state";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
@@ -56,16 +61,19 @@ function useNav(): { tabs: NavItem[]; more: NavItem[] } {
     { href: `${base}/home`, label: "Home", icon: <HouseIcon /> },
     { href: `${base}/collaborate`, label: "Plans", icon: <UsersIcon /> },
     { href: `${base}/ideas`, label: "Buzz", icon: <MessageCircleHeartIcon /> },
-    { href: `${base}/me`, label: "You", icon: <UserRoundIcon /> },
+    { href: `${base}/debates`, label: "Debates", icon: <ScaleIcon /> },
+    { href: `${base}/people`, label: "Network", icon: <UsersRoundIcon /> },
   ];
   const more: NavItem[] = [];
   if (college.modules.campus && slug !== GLOBAL_SLUG)
     more.push({ href: `${base}/campus`, label: "Campus", icon: <Building2Icon /> });
   more.push({ href: `${base}/events`, label: "Events", icon: <CalendarDaysIcon /> });
-  more.push({ href: `${base}/turf`, label: "Turf and courts", icon: <MapPinnedIcon /> });
-  more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
-  more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
-  more.push({ href: `${base}/people`, label: "People", icon: <UsersRoundIcon /> });
+  // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
+  if (slug !== GLOBAL_SLUG) {
+    more.push({ href: `${base}/turf`, label: "Turf and courts", icon: <MapPinnedIcon /> });
+    more.push({ href: `${base}/lost-found`, label: "Lost and found", icon: <PackageSearchIcon /> });
+    more.push({ href: `${base}/market`, label: "Marketplace", icon: <StoreIcon /> });
+  }
   more.push({ href: `${base}/career`, label: "Careers", icon: <BriefcaseIcon /> });
   if (isModerator) more.push({ href: `${base}/admin`, label: "Admin", icon: <ShieldCheckIcon /> });
   return { tabs, more };
@@ -94,6 +102,7 @@ function BellLink({ className }: { className?: string }) {
     <Link
       href={`/c/${slug}/notifications`}
       aria-label={label}
+      data-tour="bell"
       className={cn(
         "relative inline-flex size-10 items-center justify-center rounded-xl text-ink-muted transition-colors duration-200 hover:bg-white/[0.08] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
@@ -112,24 +121,38 @@ function BellLink({ className }: { className?: string }) {
   );
 }
 
-/** Messages, one tap from every page. The badge counts messages waiting for me; it refreshes about every minute. */
-function MessagesLink({ className }: { className?: string }) {
-  const { slug } = useCollege();
+const MessagesWaiting = React.createContext(0);
+
+/** How many messages are waiting for me in this space. Fetched again every 15 seconds and when the app comes back to the front. */
+function useMessagesWaiting(slug: string): number {
   const state = useLoad(() => api.messages.threads(slug), [slug]);
   const { reload } = state;
   React.useEffect(() => {
     const timer = window.setInterval(() => {
       if (document.visibilityState === "visible") reload();
-    }, 60_000);
-    return () => window.clearInterval(timer);
+    }, 15_000);
+    const back = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    document.addEventListener("visibilitychange", back);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", back);
+    };
   }, [reload]);
-  const waiting =
-    state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+  return state.status === "ready" ? state.data.reduce((sum, thread) => sum + thread.unread, 0) : 0;
+}
+
+/** Messages, one tap from every page. The badge counts messages waiting for me. */
+function MessagesLink({ className }: { className?: string }) {
+  const { slug } = useCollege();
+  const waiting = React.useContext(MessagesWaiting);
   const label = waiting > 0 ? `Messages, ${waiting} waiting` : "Messages";
   return (
     <Link
       href={`/c/${slug}/messages`}
       aria-label={label}
+      data-tour="messages"
       className={cn(
         "relative inline-flex size-10 items-center justify-center rounded-xl text-ink-muted transition-colors duration-200 hover:bg-white/[0.08] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
@@ -144,6 +167,47 @@ function MessagesLink({ className }: { className?: string }) {
           {waiting > 99 ? "99+" : waiting}
         </span>
       ) : null}
+    </Link>
+  );
+}
+
+/** A quiet ? beside Messages: it replays the tour. Faint until pointed at, so it never competes with the real buttons. */
+function HelpButton({ onClick, className }: { onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="How to use StudentOS"
+      data-tour="help"
+      className={cn(
+        "inline-flex size-9 items-center justify-center rounded-xl text-ink-muted opacity-50 transition-[opacity,background-color] duration-200 hover:bg-white/[0.08] hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
+        className,
+      )}
+    >
+      <CircleHelpIcon aria-hidden="true" className="size-[18px]" />
+    </button>
+  );
+}
+
+/** My picture in the top bar: it opens my profile. A ring shows when I am on it. */
+function ProfileLink({ className }: { className?: string }) {
+  const { slug, profile } = useCollege();
+  const pathname = usePathname();
+  const on = pathname === `/c/${slug}/me` || pathname.startsWith(`/c/${slug}/me/`);
+  const name = profile?.display_name ?? "You";
+  return (
+    <Link
+      href={`/c/${slug}/me`}
+      aria-label="Your profile"
+      aria-current={on ? "page" : undefined}
+      data-tour="profile"
+      className={cn(
+        "ml-1 inline-flex size-10 items-center justify-center rounded-full outline-none transition-[box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+        on && "shadow-[0_0_0_2px_rgba(143,134,240,0.9)]",
+        className,
+      )}
+    >
+      <Avatar name={name} src={profile?.avatar_url ?? null} size="sm" />
     </Link>
   );
 }
@@ -221,6 +285,15 @@ function UserMenu({ align = "start" }: { align?: "start" | "end" }) {
           ) : null}
           <DropdownMenu.Item asChild>
             <Link
+              href={`/c/${slug}/me`}
+              className="flex min-h-11 items-center gap-3 rounded-md px-3 outline-none data-[highlighted]:bg-accent-soft"
+            >
+              <UserRoundIcon aria-hidden="true" className="size-[18px] text-ink-muted" />
+              Your profile
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild>
+            <Link
               href={`/c/${slug}/me/settings`}
               className="flex min-h-11 items-center gap-3 rounded-md px-3 outline-none data-[highlighted]:bg-accent-soft"
             >
@@ -248,6 +321,7 @@ function SideNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
     <Link
       href={item.href}
       aria-current={current ? "page" : undefined}
+      data-tour={`tab-${item.label.toLowerCase()}`}
       className={cn(
         "group relative flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] font-medium outline-none transition-[background-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] [&_svg]:size-[18px] [&_svg]:shrink-0",
         current
@@ -356,11 +430,22 @@ function SpaceMenu() {
 
 export function CollegeShell({ children }: { children: React.ReactNode }) {
   const { slug, profile: me, unread } = useCollege();
+  const messagesWaiting = useMessagesWaiting(slug);
+  const tourDone = useTourDone();
+  const [tour, setTour] = React.useState(false);
+  const waitingTotal = messagesWaiting + unread;
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
   // An open conversation uses the whole phone screen: no top bar, no dock, the box to write sits at the bottom.
   const inChat = /\/messages\/[^/]+$/.test(pathname);
+  const startTour = React.useCallback(() => setTour(true), []);
+  // The tour opens on Home (the first page people see), not on whichever page a link happened to open.
+  useAutoTour(
+    me !== null && me.onboarded && !inChat && pathname === `/c/${slug}/home`,
+    tourDone,
+    startTour,
+  );
   const [creating, setCreating] = React.useState(false);
   const [quick, setQuick] = React.useState(false);
   // + : one tap opens everything you can create. A double tap or a hold opens the shortcuts.
@@ -375,9 +460,36 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   // A new person finishes the short tour (name, username, sex, interests) before anything else.
   const needsTour = me !== null && !me.onboarded;
+  const { refreshProfile } = useCollege();
   React.useEffect(() => {
-    if (needsTour) router.replace(`/welcome?next=${encodeURIComponent(pathname)}`);
-  }, [needsTour, pathname, router]);
+    if (!needsTour) return;
+    const back = `/welcome?next=${encodeURIComponent(pathname)}`;
+    if (!recentlyOnboarded()) {
+      router.replace(back);
+      return;
+    }
+    // The tour was finished a moment ago. If the profile still reads as not finished, that is probably a stale answer: ask
+    // again a few times before sending anyone back to the start.
+    let cancelled = false;
+    void (async () => {
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 700));
+        if (cancelled) return;
+        try {
+          if ((await api.profile.get()).onboarded) {
+            await refreshProfile();
+            return;
+          }
+        } catch {
+          // try again
+        }
+      }
+      if (!cancelled) router.replace(back);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [needsTour, pathname, router, refreshProfile]);
   const mainRef = React.useRef<HTMLElement>(null);
   // Which way the last move between tabs went (1 forward, -1 back), so the next page slides in from that side.
   const direction = React.useRef<1 | -1 | 0>(0);
@@ -480,148 +592,195 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh text-ink md:grid md:grid-cols-[15.5rem_minmax(0,1fr)]">
-      <a
-        href="#main"
-        className="sr-only z-50 rounded-xl bg-surface px-4 py-3 font-medium text-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:ring-2 focus:ring-ring"
-      >
-        Skip to content
-      </a>
-
-      {/* Desktop and tablet: a quiet sidebar */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-white/[0.07] px-3.5 py-5 md:flex">
-        <div className="flex items-center justify-between px-1">
-          <SpaceMenu />
-          <div className="flex items-center">
-            <MessagesLink />
-            <BellLink />
-          </div>
-        </div>
-        <button
-          type="button"
-          {...plus.props}
-          className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
+    <MessagesWaiting.Provider value={messagesWaiting}>
+      <div className="min-h-dvh text-ink md:grid md:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-xl bg-surface px-4 py-3 font-medium text-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:ring-2 focus:ring-ring"
         >
-          <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
-        </button>
-        <nav aria-label="College" className="flex flex-1 flex-col gap-6 overflow-y-auto">
-          <ul className="flex flex-col gap-0.5">
-            {tabs.map((item) => (
-              <li key={item.href}>
-                <SideNavLink item={item} pathname={pathname} />
-              </li>
-            ))}
-          </ul>
-          <div>
-            <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
-              More
-            </p>
+          Skip to content
+        </a>
+
+        {/* Desktop and tablet: a quiet sidebar */}
+        <aside className="sticky top-0 hidden h-dvh flex-col gap-5 border-r border-white/[0.07] px-3.5 py-5 md:flex">
+          <div className="flex items-center justify-between px-1">
+            <SpaceMenu />
+            <div className="flex items-center">
+              <HelpButton onClick={() => setTour(true)} />
+              <MessagesLink />
+              <BellLink />
+            </div>
+          </div>
+          <button
+            type="button"
+            data-tour="plus"
+            {...plus.props}
+            className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
+          >
+            <PlusIcon aria-hidden="true" className="size-[18px]" /> Create
+          </button>
+          <nav aria-label="College" className="flex flex-1 flex-col gap-6 overflow-y-auto">
             <ul className="flex flex-col gap-0.5">
-              {more.map((item) => (
+              {tabs.map((item) => (
                 <li key={item.href}>
                   <SideNavLink item={item} pathname={pathname} />
                 </li>
               ))}
             </ul>
+            <div>
+              <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                More
+              </p>
+              <ul className="flex flex-col gap-0.5">
+                {more.map((item) => (
+                  <li key={item.href}>
+                    <SideNavLink item={item} pathname={pathname} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+          <div className="border-t border-white/[0.07] pt-3">
+            <UserMenu />
           </div>
-        </nav>
-        <div className="border-t border-white/[0.07] pt-3">
-          <UserMenu />
-        </div>
-      </aside>
+        </aside>
 
-      <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
-        {/* Phone: the space I am in and the bell */}
-        <header
+        <div className="flex min-h-dvh min-w-0 flex-col overflow-x-clip">
+          {/* Phone: the space I am in and the bell */}
+          <header
+            className={cn(
+              "sticky top-0 z-30 h-14 items-center gap-1 px-4 md:hidden",
+              inChat ? "hidden" : "flex",
+            )}
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
+            />
+            <SpaceMenu />
+            <div className="flex-1" />
+            <HelpButton onClick={() => setTour(true)} />
+            <MessagesLink />
+            <BellLink />
+            <ProfileLink />
+          </header>
+
+          <main
+            id="main"
+            ref={mainRef}
+            tabIndex={-1}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onTouchCancel={onTouchEnd}
+            className={cn(
+              "flex-1 touch-pan-y outline-none md:pb-16",
+              inChat ? "pb-0" : "pb-[calc(6.5rem+var(--safe-bottom))]",
+            )}
+          >
+            {children}
+          </main>
+        </div>
+
+        {/* A soft fade under the dock, so scrolled content melts away instead of colliding with the bar. */}
+        <div
+          aria-hidden="true"
           className={cn(
-            "sticky top-0 z-30 h-14 items-center gap-1 px-4 md:hidden",
+            "pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(6rem+var(--safe-bottom))] bg-gradient-to-t from-[#0b0b10]/70 via-[#0b0b10]/30 to-transparent md:hidden",
+            inChat && "hidden",
+          )}
+        />
+        {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
+        <div
+          className={cn(
+            "pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 gap-2.5 md:hidden",
             inChat ? "hidden" : "flex",
           )}
         >
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/80 to-transparent"
-          />
-          <SpaceMenu />
-          <div className="flex-1" />
-          <MessagesLink />
-          <BellLink />
-        </header>
+          <nav
+            aria-label="College"
+            className="glass-dock pointer-events-auto relative grid h-16 flex-1 grid-cols-5 items-center rounded-[22px] p-1.5"
+          >
+            {tabs.map((item, index) => {
+              const current = isCurrent(pathname, item);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => {
+                    if (tabIndex >= 0 && index !== tabIndex)
+                      direction.current = index > tabIndex ? 1 : -1;
+                  }}
+                  aria-current={current ? "page" : undefined}
+                  data-tour={`tab-${item.label.toLowerCase()}`}
+                  className={cn(
+                    "group relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[9.5px] font-semibold tracking-tight outline-none transition-[color,transform] duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 min-[350px]:text-[10px] [&_svg]:size-[20px] [&_svg]:shrink-0 [&_svg]:transition-[filter,transform] [&_svg]:duration-300",
+                    current
+                      ? "text-white [&_svg]:scale-110 [&_svg]:drop-shadow-[0_0_9px_rgba(176,166,255,0.85)]"
+                      : "text-white/50 hover:text-white/85",
+                  )}
+                >
+                  <span aria-hidden="true">{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            aria-label="Create"
+            data-tour="plus"
+            {...plus.props}
+            className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
+          >
+            <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
+            {waitingTotal > 0 && !quick ? (
+              <span
+                aria-label={`${waitingTotal} waiting`}
+                className="tabular absolute -right-1 -top-1 min-w-[20px] rounded-full bg-white px-1.5 text-center text-[11px] font-bold leading-[20px] text-[#2a2370] shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+              >
+                {waitingTotal > 99 ? "99+" : waitingTotal}
+              </span>
+            ) : null}
+          </button>
+        </div>
 
-        <main
-          id="main"
-          ref={mainRef}
-          tabIndex={-1}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onTouchCancel={onTouchEnd}
-          className={cn(
-            "flex-1 touch-pan-y outline-none md:pb-16",
-            inChat ? "pb-0" : "pb-[calc(6.5rem+var(--safe-bottom))]",
-          )}
-        >
-          {children}
-        </main>
-      </div>
-
-      {/* Phone: a glass dock. Only the open page shows its name. The + is its own button. */}
-      <div
-        className={cn(
-          "pointer-events-none fixed inset-x-3 bottom-[calc(0.75rem+var(--safe-bottom))] z-40 gap-2.5 md:hidden",
-          inChat ? "hidden" : "flex",
-        )}
-      >
-        <nav
-          aria-label="College"
-          className="glass-clear pointer-events-auto relative grid h-16 flex-1 grid-cols-4 items-center rounded-[22px] p-1.5"
-        >
-          {/* One highlight that travels to the open tab. */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-2xl bg-white/[0.17] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.3,1.2,0.4,1)]"
-            style={{
-              transform: `translateX(${Math.max(tabIndex, 0) * 100}%)`,
-              opacity: tabIndex >= 0 ? 1 : 0,
+        <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
+        <QuickCreate
+          slug={slug}
+          unread={unread}
+          messages={messagesWaiting}
+          isGlobal={slug === GLOBAL_SLUG}
+          onTour={() => setTour(true)}
+          open={quick}
+          onOpenChange={setQuick}
+        />
+        <PlusHint
+          enabled={
+            me !== null && me.onboarded && !inChat && !creating && !quick && tourDone && !tour
+          }
+        />
+        {tour ? (
+          <Tour
+            onClose={() => {
+              setTour(false);
+              markTourDone();
+              plusHintDone();
             }}
           />
-          {tabs.map((item, index) => {
-            const current = isCurrent(pathname, item);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => {
-                  if (tabIndex >= 0 && index !== tabIndex)
-                    direction.current = index > tabIndex ? 1 : -1;
-                }}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-[20px] [&_svg]:shrink-0",
-                  current ? "text-white" : "text-white/60 hover:text-white/90",
-                )}
-              >
-                <span aria-hidden="true">{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          type="button"
-          aria-label="Create"
-          {...plus.props}
-          className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
-        >
-          <PlusIcon aria-hidden="true" className="size-6" strokeWidth={2.4} />
-        </button>
+        ) : null}
       </div>
-
-      <CreateSheet slug={slug} open={creating} onOpenChange={setCreating} />
-      <QuickCreate slug={slug} unread={unread} open={quick} onOpenChange={setQuick} />
-      <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
-    </div>
+    </MessagesWaiting.Provider>
   );
+}
+
+/** Starts the tour once, a moment after a person's first open, when the page has settled. */
+function useAutoTour(ready: boolean, done: boolean, start: () => void) {
+  React.useEffect(() => {
+    if (!ready || done) return;
+    const timer = window.setTimeout(start, 1200);
+    return () => window.clearTimeout(timer);
+  }, [ready, done, start]);
 }
 
 export { UserMenu, BellLink, MessagesLink };

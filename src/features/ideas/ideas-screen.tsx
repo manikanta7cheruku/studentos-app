@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { LightbulbIcon, PlusIcon } from "lucide-react";
+import { FlameIcon, LightbulbIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +13,9 @@ import { api, type IdeaTopic } from "@/lib/api/endpoints";
 import { usePaged } from "@/lib/use-paged";
 import { useCollege, usePublicLoad } from "@/features/college";
 import { GLOBAL_SLUG } from "@/lib/home-path";
+import { useLoad } from "@/lib/use-load";
 import { IdeaCard, TOPICS, TOPIC_LABEL } from "./idea-card";
+import { QuickPost } from "./quick-post";
 
 function Chip({
   pressed,
@@ -93,28 +95,34 @@ export function IdeasScreen() {
     ...(publicBuzz?.data ?? []).filter((idea) => !list.items.some((item) => item.id === idea.id)),
   ].sort((a, b) => (sort === "new" ? b.created_at.localeCompare(a.created_at) : 0));
 
+  // The most talked-about buzz of the month, kept above the list while looking at everything, newest first.
+  const hot = useLoad(() => api.ideas.list(slug, { sort: "top", limit: 1 }), [slug]);
+  const trending =
+    sort === "new" && topic === "all" && hot.status === "ready" ? (hot.data.data[0] ?? null) : null;
+  const showTrending = trending && (trending.score >= 2 || trending.comment_count >= 1);
+  const rest = showTrending ? merged.filter((idea) => idea.id !== trending.id) : merged;
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader
-        app
-        eyebrow={slug === "global" ? "Global" : college.name}
-        title="Buzz"
-        description="Say whatever is on your mind. Vote on what you like and join the talk."
-        actions={
-          <Button asChild>
-            <Link href={`/c/${slug}/ideas/new`}>
-              <PlusIcon aria-hidden="true" /> New buzz
-            </Link>
-          </Button>
-        }
-      />
+      <PageHeader app eyebrow={slug === "global" ? "Global" : college.name} title="Buzz" />
 
-      <div className="flex flex-col gap-3">
+      <QuickPost onPosted={list.state.reload} />
+
+      <div
+        role="toolbar"
+        aria-label="Order and topic"
+        className="no-scrollbar -mx-5 flex items-center gap-2 overflow-x-auto px-5 pb-0.5 md:mx-0 md:flex-wrap md:px-0"
+      >
         <div
           role="group"
           aria-label="Order"
-          className="inline-flex w-fit rounded-xl border border-white/[0.08] bg-white/[0.05] p-1"
+          className="relative grid shrink-0 grid-cols-2 rounded-full border border-white/[0.08] bg-white/[0.05] p-0.5"
         >
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0.5 left-0.5 w-[calc((100%-0.25rem)/2)] rounded-full bg-white/[0.16] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition-transform duration-[380ms] ease-[cubic-bezier(0.3,1.2,0.4,1)] motion-reduce:transition-none"
+            style={{ transform: `translateX(${sort === "new" ? 0 : 100}%)` }}
+          />
           {(["new", "top"] as const).map((value) => (
             <button
               key={value}
@@ -122,29 +130,33 @@ export function IdeasScreen() {
               aria-pressed={sort === value}
               onClick={() => setSort(value)}
               className={cn(
-                "h-8 rounded-lg px-4 text-[13px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                sort === value ? "bg-white/[0.14] text-ink" : "text-ink-muted hover:text-ink",
+                "relative z-10 h-7 min-w-[3.6rem] rounded-full px-3.5 text-[12.5px] font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-ring",
+                sort === value ? "text-ink" : "text-ink-muted hover:text-ink",
               )}
             >
-              {value === "new" ? "New" : "Top this month"}
+              {value === "new" ? "New" : "Top"}
             </button>
           ))}
         </div>
-        <div
-          role="group"
-          aria-label="Topic"
-          className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
-        >
-          <Chip pressed={topic === "all"} onClick={() => setTopic("all")}>
-            Everything
+        <span aria-hidden="true" className="h-5 w-px shrink-0 bg-white/10" />
+        <Chip pressed={topic === "all"} onClick={() => setTopic("all")}>
+          Everything
+        </Chip>
+        {TOPICS.map((value) => (
+          <Chip key={value} pressed={topic === value} onClick={() => setTopic(value)}>
+            {TOPIC_LABEL[value]}
           </Chip>
-          {TOPICS.map((value) => (
-            <Chip key={value} pressed={topic === value} onClick={() => setTopic(value)}>
-              {TOPIC_LABEL[value]}
-            </Chip>
-          ))}
-        </div>
+        ))}
       </div>
+
+      {showTrending ? (
+        <section aria-label="Trending">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-[#f0a58c]">
+            <FlameIcon aria-hidden="true" className="size-3.5" /> Trending this month
+          </p>
+          <IdeaCard idea={trending} />
+        </section>
+      ) : null}
 
       <div aria-live="polite">
         {list.state.status === "loading" ? (
@@ -169,7 +181,7 @@ export function IdeasScreen() {
         ) : (
           <>
             <div className="stagger flex flex-col gap-3">
-              {merged.map((idea) => (
+              {rest.map((idea) => (
                 <IdeaCard
                   key={idea.id}
                   idea={idea}

@@ -1,7 +1,10 @@
 import * as React from "react";
+import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
+import type { Counts } from "./standing";
+import { ContributionsPanel } from "./contributions-panel";
 import { Chip, levelLabel } from "./skill-level";
 
 export type ProfileViewData = {
@@ -18,8 +21,14 @@ export type ProfileViewData = {
   /** Age in years. Only set when the person chose to show it. */
   age?: number | null;
   career_goal: string | null;
+  college_name?: string | null;
   program?: string | null;
   grad_year?: number | null;
+  place?: string | null;
+  /** Only my own page has these (nobody else sees who follows whom). */
+  followers?: number;
+  following?: number;
+  contributions?: Counts | null;
   skills: { name: string; level: number; evidence_url?: string | null }[];
 };
 
@@ -100,25 +109,36 @@ function StrengthChip({
 export function ProfileView({
   person,
   actions,
+  isSelf = false,
+  connectionsHref,
 }: {
   person: ProfileViewData;
   actions?: React.ReactNode;
+  /** My own page: the Contributions section is always there, and says how to start when it is empty. */
+  isSelf?: boolean;
+  /** Where the followers and following lists are (my own page only). */
+  connectionsHref?: string;
 }) {
-  const meta = [
-    person.gender ? GENDER_LABEL[person.gender] : null,
-    person.age ? `${person.age} years` : null,
+  const education = [
+    person.college_name,
     person.program,
     person.grad_year ? `Class of ${person.grad_year}` : null,
   ].filter(Boolean);
+  const meta = [
+    person.gender ? GENDER_LABEL[person.gender] : null,
+    person.age ? `${person.age} years` : null,
+    person.place ? `Lives in ${person.place}` : null,
+  ].filter(Boolean);
+  const counts = person.contributions ?? null;
   return (
     <article className="flex flex-col gap-4">
       <header className="glass-card relative overflow-hidden rounded-[28px]">
         {/* A soft colour behind the picture, so the top is not flat. */}
         <div
           aria-hidden="true"
-          className="bg-brand h-24 opacity-70 [mask-image:linear-gradient(to_bottom,black,transparent)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(143,134,240,0.5)_0%,rgba(143,134,240,0.28)_30%,rgba(224,134,106,0.12)_60%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.6)_40%,rgba(0,0,0,0.2)_75%,transparent_100%)]"
         />
-        <div className="-mt-12 flex flex-col items-center gap-3 px-5 pb-6 text-center sm:items-start sm:text-left">
+        <div className="relative flex flex-col items-center gap-3 px-5 pt-10 pb-6 text-center sm:items-start sm:text-left">
           <span className="rounded-full p-1 ring-4 ring-[#0b0b10]/60">
             <Avatar name={person.display_name} src={person.avatar_url} size="xl" />
           </span>
@@ -132,8 +152,30 @@ export function ProfileView({
                 {person.headline}
               </p>
             ) : null}
+            {education.length ? (
+              <p className="mt-1.5 text-[13.5px] font-medium text-ink/85">
+                {education.join(" · ")}
+              </p>
+            ) : null}
             {meta.length ? (
-              <p className="mt-1.5 text-[13.5px] text-ink-muted">{meta.join(" · ")}</p>
+              <p className="mt-0.5 text-[13px] text-ink-muted">{meta.join(" · ")}</p>
+            ) : null}
+            {person.followers !== undefined && connectionsHref ? (
+              <p className="tabular mt-2 text-[13px] text-ink-muted">
+                <Link
+                  href={`${connectionsHref}?kind=followers`}
+                  className="rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <b className="text-ink">{person.followers}</b> followers
+                </Link>{" "}
+                ·{" "}
+                <Link
+                  href={`${connectionsHref}?kind=following`}
+                  className="rounded outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <b className="text-ink">{person.following ?? 0}</b> following
+                </Link>
+              </p>
             ) : null}
           </div>
           {actions ? (
@@ -208,6 +250,7 @@ export function ProfileView({
           </Section>
         ) : null}
       </div>
+      {counts ? <ContributionsPanel counts={counts} isSelf={isSelf} /> : null}
     </article>
   );
 }

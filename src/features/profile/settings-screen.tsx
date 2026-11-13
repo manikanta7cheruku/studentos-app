@@ -155,7 +155,7 @@ function PrivacySection() {
         <Choice
           checked={visible}
           label="Show my profile to my college"
-          help="Verified members can find you in People. Turn it off to hide your profile from everyone."
+          help="Verified members can find you in the Network. Turn it off to hide your profile from everyone."
           onChange={(next) => {
             setOverride((o) => ({ ...o, visible: next }));
             void run(
@@ -480,6 +480,66 @@ function SpacesSection() {
   );
 }
 
+/** My invite link, to share in a group chat. Shows how many friends joined through it. */
+function InviteSection() {
+  const state = useLoad(() => api.invite.get(), []);
+  const [copied, setCopied] = React.useState(false);
+  if (state.status === "loading")
+    return (
+      <Group id="invite" title="Invite friends">
+        <div aria-busy="true" className="py-4">
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </Group>
+    );
+  if (state.status === "error")
+    return (
+      <Group id="invite" title="Invite friends">
+        <div className="py-3">
+          <LoadError error={state.error} onRetry={state.reload} what="your invite link" />
+        </div>
+      </Group>
+    );
+  const link = `${window.location.origin}/?ref=${state.data.code}`;
+  async function share() {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Join me on StudentOS",
+          text: "Plans, buzz and people from college. Join me:",
+          url: link,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // The share sheet was closed, or the browser blocked the clipboard. Nothing to tell them.
+    }
+  }
+  return (
+    <Group
+      id="invite"
+      title="Invite friends"
+      text="Share your link. Friends who join through it show up in your contributions."
+    >
+      <div className="flex flex-col gap-3 py-4">
+        <div className="flex items-center gap-2">
+          <code className="min-w-0 flex-1 truncate rounded-[12px] border border-white/10 bg-white/[0.05] px-3.5 py-3 text-[13px] text-ink-muted">
+            {link}
+          </code>
+          <Button onClick={() => void share()}>{copied ? "Copied" : "Share"}</Button>
+        </div>
+        <p className="tabular text-[13px] text-ink-muted">
+          <b className="text-ink">{state.data.invited}</b>{" "}
+          {state.data.invited === 1 ? "friend has" : "friends have"} joined through your link.
+        </p>
+      </div>
+    </Group>
+  );
+}
+
 function BlockedSection() {
   const state = useLoad(() => api.blocks.list(), []);
   const [freed, setFreed] = React.useState<string[]>([]);
@@ -582,6 +642,7 @@ export function SettingsScreen() {
         description="Who sees you, what we remind you about, and your account."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
+      <InviteSection />
       <PrivacySection />
       <BlockedSection />
       <SpacesSection />

@@ -12,6 +12,7 @@ import {
   ownerAudit,
   revokeCode,
   setCollegeStatus,
+  deleteUsers,
   setUserSuspended,
 } from "@/modules/owner/owner.admin";
 import { requireOpenOwner, requireOwner } from "@/modules/owner/owner-access";
@@ -175,6 +176,39 @@ export async function userSuspendedAction(
     await setUserSuspended(confirmed.userId, id.data, suspend);
     revalidatePath("/owner/users");
     return { ok: suspend ? "Account suspended." : "Account restored." };
+  } catch (caught) {
+    return failure(caught);
+  }
+}
+
+/** Deletes the chosen accounts for good. Asks for the PIN again, and never touches an owner account. */
+export async function deleteUsersAction(
+  _previous: OwnerActionState,
+  form: FormData,
+): Promise<OwnerActionState> {
+  const confirmed = await confirmPin(form);
+  if ("error" in confirmed) return confirmed;
+  const ids = z
+    .array(z.uuid())
+    .min(1)
+    .max(50)
+    .safeParse(
+      String(form.get("ids") ?? "")
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean),
+    );
+  if (!ids.success) return { error: "Pick between 1 and 50 accounts." };
+  try {
+    const result = await deleteUsers(confirmed.userId, ids.data);
+    revalidatePath("/owner/users");
+    revalidatePath("/owner");
+    const skipped = result.skipped.length
+      ? ` Not deleted: ${result.skipped.length} (${[...new Set(result.skipped.map((item) => item.reason))].join(", ")}).`
+      : "";
+    return {
+      ok: `Deleted ${result.deleted} ${result.deleted === 1 ? "account" : "accounts"}.${skipped}`,
+    };
   } catch (caught) {
     return failure(caught);
   }

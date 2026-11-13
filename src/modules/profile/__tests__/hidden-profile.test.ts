@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 // The private details (sex, birth year, number) come from the server only. Not needed for what these tests check.
+vi.mock("../../social/social.admin", () => ({
+  getContributions: async () => null,
+  getFollowInfo: async () => ({ followers: 0, following: 0, i_follow: false }),
+}));
 vi.mock("../profile-private.admin", () => ({
   getPrivate: async () => ({
     sex: null,
@@ -90,7 +94,7 @@ describe("hidden-profile rule enforcement", () => {
     expect(rpc).toHaveBeenCalledWith("directory_list", {
       p_college: college,
       p_q: "Kab",
-      p_limit: 50,
+      p_limit: 100,
     });
     expect(people).toHaveLength(1);
     expect(people[0]?.user_id).toBe(userB);

@@ -1,5 +1,16 @@
 import Link from "next/link";
-import { CalendarDaysIcon, MapPinnedIcon, PackageSearchIcon, StoreIcon } from "lucide-react";
+import { COMING_SOON } from "@/lib/features";
+import {
+  CalendarDaysIcon,
+  MapPinnedIcon,
+  PackageSearchIcon,
+  StoreIcon,
+  ScaleIcon,
+} from "lucide-react";
+
+const soon = (href: string) =>
+  (href.endsWith("/market") && COMING_SOON.marketplace) ||
+  (href.endsWith("/lost-found") && COMING_SOON.lostFound);
 
 /** Three ways into the community boards: Events, Lost and found, and the Marketplace. */
 export function ExploreTiles({ slug }: { slug: string }) {
@@ -29,21 +40,36 @@ export function ExploreTiles({ slug }: { slug: string }) {
       icon: <StoreIcon />,
     },
   ];
+  // Turf belongs to one campus, so Global does not list it. Lost and found and the Marketplace are listed everywhere, marked Soon.
+  const shown =
+    slug === "global"
+      ? [
+          tiles[0]!,
+          {
+            href: `/c/${slug}/debates`,
+            title: "Debates",
+            text: "Pick a side",
+            icon: <ScaleIcon />,
+          },
+          tiles[2]!,
+          tiles[3]!,
+        ]
+      : tiles;
   return (
-    <ul className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {tiles.map((tile) => (
-        <li key={tile.href}>
+    <ul className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 md:mx-0 md:px-0">
+      {shown.map((tile) => (
+        <li key={tile.href} className="shrink-0">
           <Link
             href={tile.href}
-            className="lift glass-card group flex h-full flex-col items-start gap-3 rounded-[22px] p-3.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="glass-clear inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring active:scale-95 [&_svg]:size-4 [&_svg]:text-[#b9b4ee]"
           >
-            <span className="bg-brand inline-flex size-10 items-center justify-center rounded-xl text-white [&_svg]:size-5">
-              {tile.icon}
-            </span>
-            <span>
-              <span className="block text-[15px] font-bold">{tile.title}</span>
-              <span className="block text-[12.5px] text-ink-muted">{tile.text}</span>
-            </span>
+            {tile.icon}
+            {tile.title}
+            {soon(tile.href) ? (
+              <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#f0c36a]">
+                Soon
+              </span>
+            ) : null}
           </Link>
         </li>
       ))}

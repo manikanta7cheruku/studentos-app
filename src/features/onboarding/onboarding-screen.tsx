@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDaysIcon, MapPinnedIcon, MessageCircleHeartIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon, ClockIcon, MessageCircleHeartIcon, UsersIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
@@ -11,17 +11,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
+import { collegeNameProblem, placeProblem } from "@/lib/college-name";
+import { markJustOnboarded } from "@/lib/just-onboarded";
+import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { homeFor, useSession } from "@/features/session/session-provider";
 import {
-  BirthYearPicker,
+  BirthYearField,
   CASUAL_INTERESTS,
   InterestChips,
   PHONE_OK,
   PhoneFields,
   SexField,
+  StudyFields,
+  tidy,
   TECH_INTERESTS,
   normalisePhone,
   type Sex,
@@ -52,14 +57,52 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
   const session = useSession();
   const mine = useLoad(() => api.profile.get(), []);
   const [step, setStep] = React.useState(0);
+  // A brand new person first sees why the app is worth it; someone only finishing their profile skips that.
+  const [intro, setIntro] = React.useState(true);
+  const [finishing, setFinishing] = React.useState(false);
+  const [finishError, setFinishError] = React.useState<string | null>(null);
 
   if (session.status === "signed-out") {
     router.replace("/signin?next=%2Fwelcome");
     return null;
   }
 
-  const finish = () => {
-    router.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
+  const finish = async () => {
+    if (finishing) return;
+    setFinishing(true);
+    setFinishError(null);
+    // Count the invitation (if the person came through a friend's link), once. It never holds the person back for long.
+    const code = takeReferral();
+    if (code) {
+      await Promise.race([
+        api.invite.apply(code).then(
+          () => clearReferral(),
+          () => clearReferral(),
+        ),
+        new Promise((resolve) => window.setTimeout(resolve, 1500)),
+      ]);
+    }
+    // Make sure the finished profile reads back as finished before leaving. If it does not, say so here, instead of sending
+    // the person on to a page that would send them straight back.
+    let finished = false;
+    for (let attempt = 0; attempt < 4 && !finished; attempt += 1) {
+      try {
+        finished = (await api.profile.get()).onboarded;
+      } catch {
+        finished = false;
+      }
+      if (!finished) await new Promise((resolve) => window.setTimeout(resolve, 600));
+    }
+    if (!finished) {
+      setFinishError(
+        "We could not confirm your profile yet. Check your name, username, college and interests, then try again.",
+      );
+      setFinishing(false);
+      return;
+    }
+    markJustOnboarded();
+    // A full page load, not a soft move: the app then reads the finished profile fresh.
+    window.location.replace(safeNext(next ?? null) ?? homeFor(session.colleges));
   };
 
   return (
@@ -94,6 +137,8 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
         <Banner variant="error">
           <p>We could not load your profile. Please reload the page.</p>
         </Banner>
+      ) : intro && !mine.data.handle ? (
+        <Why onStart={() => setIntro(false)} />
       ) : step === 0 ? (
         <AboutYou saved={mine.data} onDone={() => setStep(1)} />
       ) : step === 1 ? (
@@ -101,7 +146,7 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
       ) : step === 2 ? (
         <MoreAboutYou saved={mine.data} onDone={() => setStep(3)} onSkip={() => setStep(3)} />
       ) : (
-        <Tour onDone={finish} />
+        <Tour onDone={finish} busy={finishing} error={finishError} onReview={() => setStep(0)} />
       )}
     </main>
   );
@@ -122,11 +167,65 @@ function StepTitle({ title, text }: { title: string; text: string }) {
   );
 }
 
+const WHY = [
+  {
+    title: "Find your people",
+    text: "Teammates for a project, a fourth for football, someone who knows the subject you are stuck on.",
+  },
+  {
+    title: "Ask and get real answers",
+    text: "Post a question or a poll. Students from your college and beyond answer, with your name or without.",
+  },
+  {
+    title: "Nothing sticks around",
+    text: "Messages disappear an hour after they are read. You choose what others see about you.",
+  },
+] as const;
+
+function Why({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="font-heading text-[2rem] font-extrabold leading-tight tracking-tight">
+          Welcome to <span className="text-brand">StudentOS</span>
+        </h1>
+        <p className="mt-2 text-[15px] text-ink-muted">
+          The place for students to meet, ask, plan and help each other. Here is why it is worth
+          your time.
+        </p>
+      </div>
+      <ul className="stagger flex flex-col gap-3">
+        {WHY.map((item, index) => (
+          <li key={item.title} className="glass-card flex gap-4 rounded-[22px] p-4">
+            <span className="bg-brand tabular inline-flex size-9 shrink-0 items-center justify-center rounded-xl font-heading text-[15px] font-extrabold text-white">
+              {index + 1}
+            </span>
+            <span>
+              <span className="block text-[16px] font-bold leading-tight">{item.title}</span>
+              <span className="mt-1 block text-[13.5px] leading-snug text-ink-muted">
+                {item.text}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Button size="lg" onClick={onStart}>
+        Get started
+      </Button>
+      <p className="text-center text-[12.5px] text-ink-muted">It takes about a minute.</p>
+    </div>
+  );
+}
+
 function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
   const [name, setName] = React.useState(saved.display_name);
   const [handle, setHandle] = React.useState(saved.handle ?? suggestHandle(saved.display_name));
   const [sex, setSex] = React.useState<Sex | null>(saved.sex);
   const [year, setYear] = React.useState<number | null>(saved.birth_year);
+  const [college, setCollege] = React.useState(saved.college_name ?? "");
+  const [branch, setBranch] = React.useState(saved.branch ?? "");
+  const [gradYear, setGradYear] = React.useState<number | null>(saved.grad_year);
+  const [place, setPlace] = React.useState(saved.place ?? "");
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -140,6 +239,11 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     if (!HANDLE.test(clean))
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
     if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
+    const collegeProblem = collegeNameProblem(college);
+    if (!tidy(college)) problems.college = "Type the name of your college.";
+    else if (collegeProblem) problems.college = collegeProblem;
+    if (!gradYear) problems.year = "Pick the year you graduate.";
+    if (tidy(place) && placeProblem(place)) problems.place = placeProblem(place)!;
     setFields(problems);
     if (Object.keys(problems).length) return;
     setBusy(true);
@@ -150,6 +254,10 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         handle: clean,
         sex: sex!,
         birth_year: year,
+        college_name: tidy(college),
+        branch: tidy(branch) || null,
+        grad_year: gradYear!,
+        place: tidy(place) || null,
       });
       onDone();
     } catch (caught) {
@@ -200,9 +308,18 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
           Private unless you choose to show it on your profile. It helps keep women-only plans safe.
         </p>
       </div>
-      <FormField label="Birth year" help="Optional and private. We only keep the year.">
-        <BirthYearPicker value={year} onChange={setYear} />
-      </FormField>
+      <StudyFields
+        college={college}
+        branch={branch}
+        year={gradYear}
+        onCollege={setCollege}
+        onBranch={setBranch}
+        onYear={setGradYear}
+        place={place}
+        onPlace={setPlace}
+        errors={fields}
+      />
+      <BirthYearField value={year} onChange={setYear} />
       {error ? (
         <Banner variant="error">
           <p>{error}</p>
@@ -384,26 +501,36 @@ const TOUR = [
   {
     icon: <CalendarDaysIcon aria-hidden="true" />,
     title: "Events",
-    text: "Official events from your college and personal ones from students.",
-  },
-  {
-    icon: <MapPinnedIcon aria-hidden="true" />,
-    title: "Turf and courts",
-    text: "Find a ground, pick a free hour, ask to book it.",
+    text: "Official events from colleges and personal ones from students.",
   },
   {
     icon: <MessageCircleHeartIcon aria-hidden="true" />,
-    title: "Buzz and Market",
-    text: "Say anything in seconds. Buy, sell, or find what you lost.",
+    title: "Buzz and Debates",
+    text: "Say anything in seconds, or pick a side and argue your point.",
+  },
+  {
+    icon: <ClockIcon aria-hidden="true" />,
+    title: "Coming soon",
+    text: "Your college space, the Marketplace and Lost and found open as we team up with colleges.",
   },
 ];
 
-function Tour({ onDone }: { onDone: () => void }) {
+function Tour({
+  onDone,
+  busy,
+  error,
+  onReview,
+}: {
+  onDone: () => void;
+  busy: boolean;
+  error: string | null;
+  onReview: () => void;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <StepTitle
         title="You are in."
-        text="Here is what you can do. The + button is always there to start something."
+        text="Here is what you can do. The + button is always there to start something. Double tap it for shortcuts."
       />
       <ul className="flex flex-col gap-2.5">
         {TOUR.map((item) => (
@@ -421,8 +548,20 @@ function Tour({ onDone }: { onDone: () => void }) {
           </li>
         ))}
       </ul>
-      <Button size="lg" onClick={onDone}>
-        Let&rsquo;s go
+      {error ? (
+        <Banner variant="error">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={onReview}
+            className="mt-1 text-[13px] font-semibold underline underline-offset-2"
+          >
+            Review my details
+          </button>
+        </Banner>
+      ) : null}
+      <Button size="lg" onClick={onDone} disabled={busy}>
+        {busy ? <Spinner /> : null} Let&rsquo;s go
       </Button>
     </div>
   );

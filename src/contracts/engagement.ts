@@ -26,6 +26,7 @@ export const notificationType = z.enum([
   "venue.booking_declined",
   "venue.booking_cancelled",
   "dm.received",
+  "debate.invited",
 ]);
 // payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
 // announcement_id, report_id or college_slug that the screen can turn into a link.
@@ -110,6 +111,8 @@ export const reportTargetType = z.enum([
   "event",
   "listing",
   "venue",
+  "debate",
+  "debate_argument",
 ]);
 export const reportReason = z.enum([
   "spam",

@@ -16,6 +16,9 @@ import {
   type Venue,
 } from "@/lib/api/endpoints";
 import { CampusNotice } from "./campus-notice";
+import { DailyCards } from "./daily-cards";
+import { NetworkStrip, PeopleToMeet } from "./network-card";
+import { HappeningSoon, pickSoonest } from "./happening-soon";
 import { FinishProfile } from "./finish-profile";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
@@ -124,8 +127,15 @@ export function HomeScreen() {
     [],
   );
   const publicEvents = usePublicLoad(() => api.events.list(GLOBAL_SLUG, { when: "upcoming" }), []);
-  const publicVenues = usePublicLoad(() => api.venues.list(GLOBAL_SLUG), []);
 
+  const [now] = React.useState(() => Date.now());
+  const soon = pickSoonest(
+    slug,
+    events.status === "ready" ? events.data : [],
+    plans.status === "ready" ? plans.data.data : [],
+    now,
+  );
+  const isGlobal = slug === GLOBAL_SLUG;
   const first = profile?.display_name.split(/\s+/)[0] ?? "there";
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -149,12 +159,11 @@ export function HomeScreen() {
       items.push({ kind: "plan", at: post.created_at, post, outside: true });
     for (const event of (publicEvents ?? []).slice(0, 8))
       items.push({ kind: "event", at: event.created_at, event, outside: true });
-    // Turf and courts sit with the plans: a place to play, and a way to book it.
-    if (venues.status === "ready")
+    // Turf and courts sit with the plans: a place to play, and a way to book it. Only in a college: a ground belongs to one
+    // campus, so Global has none and what is public does not show up here either.
+    if (!isGlobal && venues.status === "ready")
       for (const venue of venues.data.slice(0, 6))
         items.push({ kind: "venue", at: venue.created_at, venue, outside: false });
-    for (const venue of (publicVenues ?? []).slice(0, 4))
-      items.push({ kind: "venue", at: venue.created_at, venue, outside: true });
   }
   if (tab !== "plans" && ideas.status === "ready") {
     for (const idea of ideas.data.data)
@@ -164,7 +173,7 @@ export function HomeScreen() {
     for (const idea of publicIdeas?.data ?? [])
       items.push({ kind: "idea", at: idea.created_at, idea, outside: true });
   }
-  if (tab === "all") {
+  if (tab === "all" && !isGlobal) {
     for (const source of [market, lost]) {
       if (source.status === "ready")
         for (const post of source.data.data)
@@ -191,6 +200,42 @@ export function HomeScreen() {
   items.push(...unique);
   items.sort((a, b) => b.at.localeCompare(a.at));
 
+  function renderItem(item: Item) {
+    if (item.kind === "plan")
+      return (
+        <PostRow
+          key={`p-${item.post.id}`}
+          post={item.post}
+          slug={item.outside ? GLOBAL_SLUG : slug}
+          outside={item.outside}
+        />
+      );
+    if (item.kind === "event")
+      return (
+        <EventCard
+          key={`e-${item.event.id}`}
+          event={item.event}
+          space={item.outside ? GLOBAL_SLUG : undefined}
+        />
+      );
+    if (item.kind === "board")
+      return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
+    if (item.kind === "venue")
+      return (
+        <VenueCard
+          key={`v-${item.venue.id}`}
+          venue={item.venue}
+          slug={item.outside ? GLOBAL_SLUG : slug}
+          outside={item.outside}
+        />
+      );
+    return (
+      <li key={`i-${item.idea.id}`}>
+        <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
+      </li>
+    );
+  }
+
   function reloadAll() {
     for (const source of sources) source.reload();
   }
@@ -209,7 +254,15 @@ export function HomeScreen() {
         </p>
       </header>
 
-      <CampusNotice />
+      <div
+        aria-label="Highlights"
+        className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 md:mx-0 md:px-0"
+      >
+        <CampusNotice />
+        <HappeningSoon soon={soon} now={now} />
+        <DailyCards />
+        <NetworkStrip />
+      </div>
 
       <FinishProfile />
 
@@ -247,41 +300,16 @@ export function HomeScreen() {
           </div>
         ) : (
           <ul key={tab} className="stagger flex flex-col gap-3">
-            {items.map((item) => {
-              if (item.kind === "plan")
-                return (
-                  <PostRow
-                    key={`p-${item.post.id}`}
-                    post={item.post}
-                    slug={item.outside ? GLOBAL_SLUG : slug}
-                    outside={item.outside}
-                  />
-                );
-              if (item.kind === "event")
-                return (
-                  <EventCard
-                    key={`e-${item.event.id}`}
-                    event={item.event}
-                    space={item.outside ? GLOBAL_SLUG : undefined}
-                  />
-                );
-              if (item.kind === "board")
-                return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
-              if (item.kind === "venue")
-                return (
-                  <VenueCard
-                    key={`v-${item.venue.id}`}
-                    venue={item.venue}
-                    slug={item.outside ? GLOBAL_SLUG : slug}
-                    outside={item.outside}
-                  />
-                );
-              return (
-                <li key={`i-${item.idea.id}`}>
-                  <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
-                </li>
-              );
-            })}
+            {items.map((item, index) => (
+              <React.Fragment key={`${item.kind}-${index}`}>
+                {renderItem(item)}
+                {tab === "all" && index === Math.min(3, items.length - 1) ? (
+                  <li>
+                    <PeopleToMeet />
+                  </li>
+                ) : null}
+              </React.Fragment>
+            ))}
           </ul>
         )}
         {!loading && !failed && items.length > 0 ? (
@@ -297,9 +325,6 @@ export function HomeScreen() {
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link href={`/c/${slug}/ideas`}>All buzz</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`/c/${slug}/market`}>Market</Link>
             </Button>
           </div>
         ) : null}
