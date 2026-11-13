@@ -178,7 +178,7 @@ export function NotificationsScreen() {
     ...c,
     total: items.filter((item) => categoryOf(item.type) === c.id).length,
     unread: items.filter((item) => categoryOf(item.type) === c.id && !isRead(item)).length,
-  })).filter((c) => c.total > 0);
+  }));
 
   async function open(item: NotificationItem) {
     const href = notificationHref(item, slug);
@@ -254,7 +254,7 @@ export function NotificationsScreen() {
         </Button>
       </div>
 
-      {kinds.length > 1 ? (
+      {items.length > 0 ? (
         <div
           role="group"
           aria-label="What it is about"
@@ -266,7 +266,9 @@ export function NotificationsScreen() {
               type="button"
               aria-pressed={category === c.id}
               onClick={() => setCategory(c.id)}
-              className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 ${
+              className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform,opacity] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 ${
+                "total" in c && c.total === 0 && category !== c.id ? "opacity-50" : ""
+              } ${
                 category === c.id
                   ? "bg-brand border-transparent text-white"
                   : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink"

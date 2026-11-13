@@ -22,7 +22,62 @@ import wl01 from "@/contracts/fixtures/wl-01.success.json";
 // Same URLs and methods as the real routes (docs/API_CONTRACT.md sections 9 and 10, docs/PERMISSIONS.md).
 // tests: src/mocks/handlers-day4-5.test.ts runs every one of them through the contract schema.
 export const day4And5Handlers = [
-  http.get("*/api/v1/me/notifications", () => HttpResponse.json(ntf01)),
+  // A few of every kind, so the filters and the day groups can be tried in sample mode.
+  http.get("*/api/v1/me/notifications", () => {
+    const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
+    const item = (
+      n: number,
+      type: string,
+      title: string,
+      message: string,
+      minutes: number,
+      read = false,
+    ) => ({
+      id: `99999999-9999-4999-8999-${String(n).padStart(12, "0")}`,
+      type,
+      payload: { title, message, college_slug: "alpha" },
+      read_at: read ? ago(minutes - 1) : null,
+      created_at: ago(minutes),
+    });
+    return HttpResponse.json({
+      ...ntf01,
+      data: [
+        item(1, "dm.received", "New request", "Priya Sharma wants to connect with you.", 4),
+        item(
+          2,
+          "debate.invited",
+          "You are invited to a debate",
+          "Arjun Reddy invited you: Is a 9 AM class fair?",
+          35,
+        ),
+        item(
+          3,
+          "team.request_received",
+          "New join request",
+          "Sana Ali asked to join Robotics club build.",
+          180,
+        ),
+        item(
+          4,
+          "venue.booking_confirmed",
+          "Booking confirmed",
+          "Your turf slot on Saturday 6 PM is confirmed.",
+          60 * 26,
+          true,
+        ),
+        item(
+          5,
+          "announcement.published",
+          "Exam timetable",
+          "The mid-semester timetable is out.",
+          60 * 28,
+          true,
+        ),
+        { ...ntf01.data[0]!, created_at: ago(60 * 24 * 9) },
+      ],
+      meta: { ...ntf01.meta, unread_count: 3 },
+    });
+  }),
   http.post("*/api/v1/me/notifications/read", () => HttpResponse.json(ntf02)),
   http.get("*/api/v1/c/:slug/announcements", () => HttpResponse.json(ann01)),
   http.post("*/api/v1/c/:slug/admin/announcements", () =>
