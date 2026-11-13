@@ -67,6 +67,16 @@ export const debate = z.object({
   visibility: z.enum(["public", "invite"]).default("public"),
   // Only the author sees how many people were invited.
   invited_count: z.number().int().nullable().default(null),
+  // The strongest argument so far (most strong-point votes), for a preview on the card. No author: it may be anonymous.
+  top_argument: z
+    .object({
+      body: z.string(),
+      side: z.number().int().min(0).max(1),
+      score: z.number().int(),
+      anonymous: z.boolean(),
+    })
+    .nullable()
+    .default(null),
   author: z.object({ user_id: uuid, display_name: z.string() }),
 });
 export const debateResponse = successEnvelope(debate);

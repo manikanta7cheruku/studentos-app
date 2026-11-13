@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusIcon, ScaleIcon } from "lucide-react";
+import { FlameIcon, PlusIcon, ScaleIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { GlideTabs } from "@/components/app/glide-tabs";
@@ -78,6 +78,24 @@ export function DebateCard({ debate, now, slug }: { debate: Debate; now: number;
         </span>
         <span className="text-balance text-[16.5px] font-bold leading-snug">{debate.title}</span>
         <SidesBar debate={debate} />
+        {debate.top_argument ? (
+          <span className="flex flex-col gap-0.5 rounded-2xl bg-white/[0.05] px-3 py-2">
+            <span className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-muted">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "size-1.5 rounded-full",
+                  debate.top_argument.side === 0 ? "bg-[#8f86f0]" : "bg-[#e0866a]",
+                )}
+              />
+              {debate.top_argument.score > 0 ? "Top point" : "Latest point"} ·{" "}
+              {debate.top_argument.side === 0 ? debate.side_a : debate.side_b}
+            </span>
+            <span className="line-clamp-2 text-[13px] leading-snug text-ink/90">
+              {debate.top_argument.body}
+            </span>
+          </span>
+        ) : null}
         <span className="tabular flex items-center justify-between gap-3 text-[12.5px] text-ink-muted">
           <span>
             {people} {people === 1 ? "person" : "people"} · {debate.argument_count}{" "}
@@ -105,6 +123,15 @@ export function DebatesScreen() {
     [slug, status, topic],
   );
   const now = useNow();
+  // The liveliest debate (most people and points) is lifted to the top while looking at all live debates.
+  const all = state.status === "ready" ? state.data.data : [];
+  const activity = (d: Debate) => d.a_count + d.b_count + 2 * d.argument_count;
+  const lively = [...all].sort((x, y) => activity(y) - activity(x))[0];
+  const hot =
+    status === "live" && topic === null && lively && lively.a_count + lively.b_count >= 3
+      ? lively
+      : null;
+  const rest = hot ? all.filter((d) => d.id !== hot.id) : all;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
@@ -145,6 +172,17 @@ export function DebatesScreen() {
           </Chip>
         ))}
       </div>
+      {hot ? (
+        <section aria-label="Hot right now">
+          <p className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-[#f0a58c]">
+            <FlameIcon aria-hidden="true" className="size-3.5" /> Hot right now
+          </p>
+          <ul>
+            <DebateCard debate={hot} now={now} slug={slug} />
+          </ul>
+        </section>
+      ) : null}
+
       <div aria-live="polite">
         {state.status === "loading" ? (
           <div aria-busy="true" className="flex flex-col gap-3">
@@ -154,7 +192,7 @@ export function DebatesScreen() {
           </div>
         ) : state.status === "error" ? (
           <LoadError error={state.error} onRetry={state.reload} what="the debates" />
-        ) : state.data.data.length === 0 ? (
+        ) : all.length === 0 ? (
           <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
             <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
               <ScaleIcon aria-hidden="true" className="size-6" />
@@ -175,7 +213,7 @@ export function DebatesScreen() {
           </div>
         ) : (
           <ul className="stagger flex flex-col gap-3">
-            {state.data.data.map((debate) => (
+            {rest.map((debate) => (
               <DebateCard key={debate.id} debate={debate} now={now} slug={slug} />
             ))}
           </ul>

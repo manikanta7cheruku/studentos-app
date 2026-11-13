@@ -380,8 +380,6 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
         )),
   );
   const lead = leader(debate);
-  const sideName = (side: number | null) =>
-    side === null ? "" : side === 0 ? debate.side_a : debate.side_b;
   const menu = (
     <div className="flex items-center gap-1">
       {!debate.is_owner ? (
@@ -486,7 +484,10 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
                 disabled={!live}
                 onClick={() => void pick(side)}
                 className={cn(
-                  "flex min-h-[4.5rem] flex-col items-start justify-between gap-1 rounded-[18px] border p-3 text-left outline-none transition-[border-color,background-color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-default",
+                  "flex rounded-[18px] border p-3 text-left outline-none transition-[border-color,background-color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-default",
+                  live && debate.my_side !== null
+                    ? "min-h-[3rem] flex-row items-center justify-between gap-2"
+                    : "min-h-[4.5rem] flex-col items-start justify-between gap-1",
                   mine
                     ? side === 0
                       ? "border-[#8f86f0]/70 bg-[#8f86f0]/20"
@@ -499,8 +500,10 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
                   <span className="truncate">{side === 0 ? debate.side_a : debate.side_b}</span>
                   {mine ? <CheckIcon aria-hidden="true" className="size-4 shrink-0" /> : null}
                 </span>
-                <span className="tabular text-[12.5px] text-ink-muted">
-                  {count} {count === 1 ? "person" : "people"}
+                <span className="tabular whitespace-nowrap text-[12.5px] text-ink-muted">
+                  {live && debate.my_side !== null
+                    ? count
+                    : `${count} ${count === 1 ? "person" : "people"}`}
                 </span>
               </button>
             );
@@ -634,7 +637,7 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
               onChange={(event) => setText(event.target.value)}
               maxLength={600}
               rows={1}
-              placeholder={`Make your point for ${sideName(debate.my_side)}`}
+              placeholder="Make your point"
               className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-1 py-2 text-[16px] outline-none placeholder:text-ink-muted/70 md:text-[14.5px]"
             />
             <button

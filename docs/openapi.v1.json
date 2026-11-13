@@ -19005,6 +19005,42 @@
                             }
                           ]
                         },
+                        "top_argument": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "string"
+                                },
+                                "side": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1
+                                },
+                                "score": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "anonymous": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "body",
+                                "side",
+                                "score",
+                                "anonymous"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -19041,6 +19077,7 @@
                         "is_owner",
                         "visibility",
                         "invited_count",
+                        "top_argument",
                         "author"
                       ],
                       "additionalProperties": false
@@ -19328,6 +19365,42 @@
                               }
                             ]
                           },
+                          "top_argument": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "body": {
+                                    "type": "string"
+                                  },
+                                  "side": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                  },
+                                  "score": {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "anonymous": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "body",
+                                  "side",
+                                  "score",
+                                  "anonymous"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
                           "author": {
                             "type": "object",
                             "properties": {
@@ -19364,6 +19437,7 @@
                           "is_owner",
                           "visibility",
                           "invited_count",
+                          "top_argument",
                           "author"
                         ],
                         "additionalProperties": false
@@ -19588,6 +19662,42 @@
                             }
                           ]
                         },
+                        "top_argument": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "string"
+                                },
+                                "side": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1
+                                },
+                                "score": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "anonymous": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "body",
+                                "side",
+                                "score",
+                                "anonymous"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -19624,6 +19734,7 @@
                         "is_owner",
                         "visibility",
                         "invited_count",
+                        "top_argument",
                         "author"
                       ],
                       "additionalProperties": false
@@ -19988,6 +20099,42 @@
                             }
                           ]
                         },
+                        "top_argument": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "string"
+                                },
+                                "side": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1
+                                },
+                                "score": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "anonymous": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "body",
+                                "side",
+                                "score",
+                                "anonymous"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -20024,6 +20171,7 @@
                         "is_owner",
                         "visibility",
                         "invited_count",
+                        "top_argument",
                         "author"
                       ],
                       "additionalProperties": false
@@ -20935,6 +21083,42 @@
                             }
                           ]
                         },
+                        "top_argument": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "body": {
+                                  "type": "string"
+                                },
+                                "side": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1
+                                },
+                                "score": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "anonymous": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "body",
+                                "side",
+                                "score",
+                                "anonymous"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "author": {
                           "type": "object",
                           "properties": {
@@ -20971,6 +21155,7 @@
                         "is_owner",
                         "visibility",
                         "invited_count",
+                        "top_argument",
                         "author"
                       ],
                       "additionalProperties": false
