@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { after } from "next/server";
 import type { ZodType } from "zod";
 import { AppError, errorBody, fromZodError, toAppError } from "./errors";
 import { serverEnv } from "./env";
@@ -134,13 +135,30 @@ export function failure(error: AppError, requestId: string): Response {
 
 type Handler<P> = (args: { request: Request; requestId: string; params: P }) => Promise<Response>;
 
+// After a change was saved, send the phone alerts it caused, once the answer has gone out. Does nothing for reads or when
+// alerts are not set up, and never affects the answer.
+function sendAlertsAfter(request: Request, response: Response) {
+  if (request.method === "GET" || request.method === "HEAD" || response.status >= 400) return;
+  if (!process.env.VAPID_PRIVATE_KEY) return;
+  try {
+    after(async () => {
+      const { dispatchPending } = await import("@/modules/push/push.admin");
+      await dispatchPending().catch((error) => console.error("alerts:", error));
+    });
+  } catch {
+    // Not inside a request (a test): nothing to do.
+  }
+}
+
 // Wraps a route handler: request id, error envelope, no stack traces or secrets in the answer.
 export function route<P = Record<string, never>>(handler: Handler<P>) {
   return async (request: Request, context?: { params: Promise<P> }): Promise<Response> => {
     const requestId = request.headers.get("x-request-id")?.slice(0, 64) || newRequestId();
     try {
       const params = (context ? await context.params : {}) as P;
-      return await handler({ request, requestId, params });
+      const response = await handler({ request, requestId, params });
+      sendAlertsAfter(request, response);
+      return response;
     } catch (error) {
       const appError = toAppError(error);
       if (appError.code === "INTERNAL") {

@@ -27,42 +27,14 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type NotificationItem } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { PushPrompt } from "./push-alerts";
+import { notificationHref as linkFor } from "@/lib/notification-link";
 
 // The person's own notifications (NTF-01, NTF-02). A notification is a title and a sentence; the type decides where
 // it leads. Opening one marks it read. "Mark all as read" does it for the whole list.
 
 export function notificationHref(item: NotificationItem, slug: string): string | null {
-  const base = `/c/${slug}`;
-  if (item.type === "announcement.published") return `${base}/campus`;
-  if (item.type.startsWith("team.")) {
-    const postId = item.payload.post_id;
-    return typeof postId === "string" ? `${base}/collaborate/${postId}` : `${base}/collaborate`;
-  }
-  if (item.type.startsWith("venue.")) {
-    const venueId = item.payload.venue_id;
-    // The manager answers on the venue page, the person who asked sees it in My bookings.
-    if (item.type === "venue.booking_requested" || item.type === "venue.booking_cancelled")
-      return typeof venueId === "string" ? `${base}/turf/${venueId}` : `${base}/turf`;
-    return `${base}/turf/bookings`;
-  }
-  if (item.type === "dm.received") {
-    const from = item.payload.from;
-    return typeof from === "string" ? `${base}/messages/${from}` : `${base}/messages`;
-  }
-  if (item.type === "debate.invited") {
-    const debateId = item.payload.debate_id;
-    return typeof debateId === "string" ? `${base}/debates/${debateId}` : `${base}/debates`;
-  }
-  // A person's own content was removed, warned about or actioned: the page where they can read the rules and their profile.
-  if (
-    item.type === "content.removed" ||
-    item.type.startsWith("moderation.") ||
-    item.type === "report.actioned"
-  )
-    return "/safety";
-  if (item.type === "opportunity.deadline_soon") return `${base}/career`;
-  if (item.type.startsWith("membership.")) return `${base}/me`;
-  return null;
+  return linkFor(item, slug);
 }
 
 /** An icon and two colours for each kind of notification, so the list can be scanned at a glance. */
@@ -230,6 +202,7 @@ export function NotificationsScreen() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
       <PageHeader app title="Updates" />
+      <PushPrompt />
       <div className="flex items-center gap-2">
         <GlideTabs
           label="Which updates"

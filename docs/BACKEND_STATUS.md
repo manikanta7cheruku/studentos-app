@@ -8,7 +8,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 
 | Area | Endpoint ids | Notes |
 |---|---|---|
-| System | SYS-01, SYS-02 | health, ready, and the scheduler call `POST /api/internal/maintenance` |
+| System | SYS-01, SYS-02, SYS-03 | health, ready, and the scheduler call `POST /api/internal/maintenance` |
 | Sign in and account | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06 | email code, cookies, logout, delete my account (two steps), Continue with Google (start and callback) |
 | College and joining | TEN-01, TEN-02, TEN-03, TEN-04, TEN-05, TEN-07, TEN-08, TEN-09 | public branding with `modules`, membership, invite code, manual, college email, leave a college, my colleges, join the Global space |
 | College admin | ADM-03, ADM-05, ADM-06, ADM-07, ADM-08, ADM-09, ADM-10, ADM-11 | settings, invites, queue, members, audit, stats |
@@ -23,6 +23,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Open join and removal | TMF-11, TMF-12, ADM-13, ADM-14 | one tap join with a host note and a list of who joined, and removing content with a reason that reaches the author (built by R3 in Day 14) |
 | Turf booking | VEN-01, VEN-02, VEN-03, VEN-04, VEN-05, VEN-06, VEN-07, VEN-08, VEN-09, VEN-10 | a directory of turfs and courts, booking requests that the manager confirms by hand, and notes to both sides (built by R3 in Day 16, no payments) |
 | Network | NET-01, NET-02, NET-03 | people to meet and my network size (built Day 19) |
+| Phone alerts | PSH-01, PSH-02 | a device allows alerts and every new notification is also pushed to it (built in R3 Day 80) |
 | Messages, feedback and photos | MSG-01, MSG-02, MSG-03, MSG-04, MSG-05, FDB-01, PHO-01, BRD-08 | disappearing text messages between classmates, a feedback note to the team, and one shrunk photo on a market or lost and found post (built by R3 in Day 17) |
 
 ## 2. Not built

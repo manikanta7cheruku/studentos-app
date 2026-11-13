@@ -20,6 +20,7 @@ import * as venues from "./venues";
 import * as messages from "./messages";
 import * as feedback from "./feedback";
 import * as photos from "./photos";
+import * as push from "./push";
 
 // One line for every API route method: its id, path, who may call it, and the shapes it takes and gives.
 // This is the single list that docs/openapi.v1.json is generated from. Two tests keep it honest
@@ -66,6 +67,13 @@ export const endpoints: Endpoint[] = [
     "/api/internal/maintenance",
     "cron",
     "Scheduler only: expire old things, send reminders, delete old rows",
+  ),
+  e(
+    "SYS-03",
+    "POST",
+    "/api/internal/push",
+    "cron",
+    "Scheduler only: send the alerts that are waiting",
   ),
 
   e("AUTH-01", "POST", "/auth/otp/request", "pub", "Send a sign in code by email", {
@@ -664,6 +672,15 @@ export const endpoints: Endpoint[] = [
   e("REM-01", "PUT", "/me/reminder-settings", "ses", "Switch deadline reminders on or off", {
     body: opportunities.reminderSettingsBody,
     response: opportunities.reminderSettingsResponse,
+  }),
+
+  e("PSH-01", "POST", "/me/push", "ses", "Turn on alerts for this device", {
+    body: push.pushSubscribeBody,
+    response: push.pushResponse,
+  }),
+  e("PSH-02", "DELETE", "/me/push", "ses", "Turn off alerts for this device", {
+    body: push.pushUnsubscribeBody,
+    response: push.pushResponse,
   }),
 
   e("ANN-01", "GET", "/c/{slug}/announcements", "mem", "Announcements for members", {

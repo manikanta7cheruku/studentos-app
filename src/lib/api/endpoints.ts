@@ -946,6 +946,18 @@ export const api = {
       }),
   },
 
+  push: {
+    // Alerts for this device (PSH-01, PSH-02).
+    subscribe: (body: z.input<typeof c.pushSubscribeBody>) =>
+      apiClient(j("/me/push"), { method: "POST", body, schema: c.pushResponse.shape.data }),
+    unsubscribe: (endpoint: string) =>
+      apiClient(j("/me/push"), {
+        method: "DELETE",
+        body: { endpoint },
+        schema: c.pushResponse.shape.data,
+      }),
+  },
+
   reminders: {
     get: () =>
       apiClient(j("/me/reminder-settings"), { schema: c.reminderSettingsResponse.shape.data }),

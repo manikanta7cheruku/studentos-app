@@ -340,6 +340,7 @@ Rules for the screens:
 
 - **Safe retries (all IDEM endpoints).** The `Idempotency-Key` is claimed before the work starts. Same key and same body: the first answer again with `Idempotent-Replay: true`. Same key, different body: 422 `IDEMPOTENCY_KEY_REUSED`. Same key while the first call is still running: 409 `CONFLICT` with `Retry-After: 1`, wait and send the same call again. A call that fails does not keep the key. Keys live 24 hours.
 - **TEN-01** also returns `modules: { campus, collaborate, career }` (true unless the college admin switched the tab off). Use it to hide a tab before sign in.
+- **SYS-03** `POST /api/internal/push` is for the scheduler only (`Authorization: Bearer <CRON_SECRET>`, 401 for everyone else). It sends the phone alerts that are waiting. Alerts are also sent right after a change is saved, so this is a safety net. Answer `{ sent, dropped }`.
 - **SYS-02** `POST /api/internal/maintenance` is for the scheduler only (`Authorization: Bearer <CRON_SECRET>`, 401 for everyone else). Screens never call it.
 - **Expiry rules.** An open team post past its deadline is shown as `expired` immediately; the maintenance run then closes it, cancels the waiting requests and tells the author and the applicants (`team.post_expired`, `team.request_cancelled`). A join request that waited more than 30 days for an admin becomes `expired`, the membership goes to `left`, the person gets `membership.expired` and can apply again.
 - New notification types: `membership.expired`, `team.post_expired`.
@@ -536,3 +537,12 @@ A venue is a turf, a court or a ground. Students ask for some hours on a day, an
 **Anonymous posts (IDE-01, IDE-06, DEB-05):** `anonymous: true` hides the author. Other people see `Anonymous <animal>` (the same animal for the same person inside one buzz or debate) and a nil user id. The author and moderators can still be found in the database. `is_anonymous` is on the idea, the comment and the argument.
 
 **Polls (IDE-01):** `poll` is 2 to 4 options of 1 to 40 characters. The idea then has `poll: { options: [{ text, votes }], my_option, total }`.
+
+## 20. Phone and desktop alerts (decision D-74)
+
+Base `/api/v1`. Shapes: `src/contracts/push.ts`. A device that allows alerts gives the browser's address (`endpoint`) and two keys; the server keeps them for that person. Every new notification is then also sent to the person's devices once (the text is the notification's own title and message, never what someone wrote in a message). Needs `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY`; without them nothing is sent and the Alerts switch is hidden.
+
+| ID | Endpoint | What it does |
+|---|---|---|
+| PSH-01 | POST `/me/push` | `{ endpoint, keys: { p256dh, auth } }`. This device now gets alerts. The same device sent twice is stored once. A person keeps at most 5 devices (the oldest go). Answer `{ enabled: true }` |
+| PSH-02 | DELETE `/me/push` | `{ endpoint }`. This device stops getting alerts. A device that was not stored is not an error. Answer `{ enabled: false }` |

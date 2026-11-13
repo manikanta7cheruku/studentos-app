@@ -26,6 +26,7 @@ import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useCollege } from "@/features/college";
 import { useSession } from "@/features/session/session-provider";
+import { PushAlertsRow } from "@/features/notifications/push-alerts";
 
 function Group({
   id,
@@ -151,6 +152,12 @@ function PrivacySection() {
 
   return (
     <div className="flex flex-col gap-2">
+      {process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+      process.env.NEXT_PUBLIC_API_MOCKING !== "enabled" ? (
+        <Group id="alerts" title="Alerts">
+          <PushAlertsRow />
+        </Group>
+      ) : null}
       <Group id="privacy" title="Privacy and reminders">
         <Choice
           checked={visible}

@@ -61,6 +61,9 @@ Then run `pnpm verify`. It must finish with a successful build. After that, `pnp
 | `NEXT_PUBLIC_GOOGLE_SIGNIN` | `disabled` (default). `enabled` shows Continue with Google on the sign in page; only after Google is set up in Supabase (`docs/PRODUCTION_SETUP.md`) |
 | `NEXT_PUBLIC_API_MOCKING` | `disabled` to use the real API, `enabled` to answer from the sample fixtures (R3 and R4 screens without a backend) |
 | `CRON_SECRET` | Leave empty locally. In staging and production: 24 or more random characters, the shared secret of the scheduler that calls `POST /api/internal/maintenance` (docs/OBSERVABILITY.md section 11) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Phone alerts. Optional. The public half of a key pair made with `npx web-push generate-vapid-keys`. Empty keeps alerts off |
+| `VAPID_PRIVATE_KEY` | Phone alerts. Optional. The private half of the same pair, server only. Empty keeps alerts off |
+| `VAPID_SUBJECT` | Phone alerts. Optional. A web address or `mailto:` address that says who the alerts come from. Defaults to `NEXT_PUBLIC_APP_URL` |
 
 4. Sign in codes sent by the local stack arrive in Mailpit at http://127.0.0.1:54324.
 5. The app refuses to answer an API call if a needed variable is missing. The error names the variable, never the value.

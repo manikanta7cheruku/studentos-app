@@ -22,7 +22,7 @@ const files = routeFiles(apiRoot).map((file) => ({
 
 // Routes that do not follow the app rules on purpose, with the reason.
 const NOT_WRAPPED = new Set(["/health/route.ts", "/ready/route.ts"]); // plain liveness checks, no secrets, no database writes
-const NO_ORIGIN_CHECK = new Set(["/internal/maintenance/route.ts"]); // called by the scheduler with a secret, never from a browser
+const NO_ORIGIN_CHECK = new Set(["/internal/maintenance/route.ts", "/internal/push/route.ts"]); // called by the scheduler with a secret, never from a browser
 
 const writeMethods = /export const (POST|PUT|PATCH|DELETE)\b/;
 
