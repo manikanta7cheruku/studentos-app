@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { LockIcon, ScaleIcon } from "lucide-react";
+import { ChevronDownIcon, LockIcon, ScaleIcon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ export function DebateNewScreen() {
   const [sideB, setSideB] = React.useState("Disagree");
   const [hours, setHours] = React.useState<number>(24);
   const [priv, setPriv] = React.useState(false);
+  const [more, setMore] = React.useState(false);
   const [invited, setInvited] = React.useState<Picked[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -114,37 +115,6 @@ export function DebateNewScreen() {
             autoFocus
           />
         </FormField>
-        <FormField label="A little context" help="Optional. Set the scene in a few lines.">
-          <Textarea
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-            maxLength={600}
-            rows={3}
-          />
-        </FormField>
-
-        <fieldset className="flex flex-col gap-2.5">
-          <legend className="mb-1 text-[13px] font-semibold text-ink/90">Topic</legend>
-          <div className="flex flex-wrap gap-2">
-            {DEBATE_TOPICS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={topic === value}
-                onClick={() => setTopic(value)}
-                className={cn(chip, topic === value ? on : off)}
-              >
-                {DEBATE_TOPIC_LABEL[value]}
-              </button>
-            ))}
-          </div>
-          {topic === "politics" ? (
-            <p className="text-[12.5px] leading-snug text-ink-muted">
-              Politics gets heated. Argue the idea, not the person. Hate, threats and abuse are
-              removed, and anyone can report.
-            </p>
-          ) : null}
-        </fieldset>
 
         <div className="flex flex-col gap-2.5">
           <p className="text-[13px] font-semibold text-ink/90">The two sides</p>
@@ -214,49 +184,111 @@ export function DebateNewScreen() {
           </p>
         </fieldset>
 
-        <SpacePicker
-          value={space}
-          onChange={(next) => {
-            setSpace(next);
-            if (next === "global") setPriv(false);
-            setInvited([]);
-          }}
-        />
-
-        {space !== "global" ? (
-          <fieldset className="flex flex-col gap-2.5">
-            <legend className="mb-1 text-[13px] font-semibold text-ink/90">Who can join?</legend>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                aria-pressed={!priv}
-                onClick={() => setPriv(false)}
-                className={cn(chip, !priv ? on : off)}
-              >
-                Everyone
-              </button>
-              <button
-                type="button"
-                aria-pressed={priv}
-                onClick={() => setPriv(true)}
-                className={cn(chip, priv ? on : off)}
-              >
-                <LockIcon aria-hidden="true" className="mr-1.5 size-3.5" /> Invite only
-              </button>
-            </div>
-            {priv ? (
-              <>
-                <p className="text-[12.5px] text-ink-muted">
-                  Only the people you pick can see it or take part. They get a notification.
-                </p>
-                <InvitePicker slug={space} picked={invited} onChange={setInvited} />
-                {fields.invites ? (
-                  <p className="text-[12.5px] font-medium text-danger">{fields.invites}</p>
+        <div>
+          <button
+            type="button"
+            onClick={() => setMore((value) => !value)}
+            aria-expanded={more || priv}
+            className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[13px] font-semibold text-[#b9b4ee] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ChevronDownIcon
+              aria-hidden="true"
+              className={cn(
+                "size-4 transition-transform duration-300",
+                (more || priv) && "rotate-180",
+              )}
+            />
+            More options
+            <span className="font-normal text-ink-muted"> · topic, context, who can join</span>
+          </button>
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+              more || priv
+                ? "grid-rows-[1fr] opacity-100"
+                : "pointer-events-none grid-rows-[0fr] opacity-0",
+            )}
+            aria-hidden={!(more || priv)}
+            inert={!(more || priv)}
+          >
+            <div className="flex min-h-0 flex-col gap-5 overflow-hidden pt-4">
+              <FormField label="A little context" help="Optional. Set the scene in a few lines.">
+                <Textarea
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  maxLength={600}
+                  rows={3}
+                />
+              </FormField>
+              <fieldset className="flex flex-col gap-2.5">
+                <legend className="mb-1 text-[13px] font-semibold text-ink/90">Topic</legend>
+                <div className="flex flex-wrap gap-2">
+                  {DEBATE_TOPICS.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={topic === value}
+                      onClick={() => setTopic(value)}
+                      className={cn(chip, topic === value ? on : off)}
+                    >
+                      {DEBATE_TOPIC_LABEL[value]}
+                    </button>
+                  ))}
+                </div>
+                {topic === "politics" ? (
+                  <p className="text-[12.5px] leading-snug text-ink-muted">
+                    Politics gets heated. Argue the idea, not the person. Hate, threats and abuse
+                    are removed, and anyone can report.
+                  </p>
                 ) : null}
-              </>
-            ) : null}
-          </fieldset>
-        ) : null}
+              </fieldset>
+              <SpacePicker
+                value={space}
+                onChange={(next) => {
+                  setSpace(next);
+                  if (next === "global") setPriv(false);
+                  setInvited([]);
+                }}
+              />
+              {space !== "global" ? (
+                <fieldset className="flex flex-col gap-2.5">
+                  <legend className="mb-1 text-[13px] font-semibold text-ink/90">
+                    Who can join?
+                  </legend>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={!priv}
+                      onClick={() => setPriv(false)}
+                      className={cn(chip, !priv ? on : off)}
+                    >
+                      Everyone
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={priv}
+                      onClick={() => setPriv(true)}
+                      className={cn(chip, priv ? on : off)}
+                    >
+                      <LockIcon aria-hidden="true" className="mr-1.5 size-3.5" /> Invite only
+                    </button>
+                  </div>
+                  {priv ? (
+                    <>
+                      <p className="text-[12.5px] text-ink-muted">
+                        Only the people you pick can see it or take part. They get a notification.
+                      </p>
+                      <InvitePicker slug={space} picked={invited} onChange={setInvited} />
+                      {fields.invites ? (
+                        <p className="text-[12.5px] font-medium text-danger">{fields.invites}</p>
+                      ) : null}
+                    </>
+                  ) : null}
+                </fieldset>
+              ) : null}
+            </div>
+          </div>
+        </div>
 
         {error ? (
           <Banner variant="error">

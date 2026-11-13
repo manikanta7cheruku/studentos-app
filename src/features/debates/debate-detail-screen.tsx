@@ -7,6 +7,7 @@ import {
   FlameIcon,
   LockIcon,
   SendIcon,
+  ShareIcon,
   Trash2Icon,
   TrophyIcon,
   UserPlusIcon,
@@ -33,13 +34,67 @@ import { ReportMenu } from "@/features/admin-console/report-menu";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type Debate, type DebateArgument } from "@/lib/api/endpoints";
 import { timeAgo } from "@/lib/time-ago";
-import { useAttempt } from "@/lib/use-attempt";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { InvitePicker, type Picked } from "./invite-picker";
 import { DEBATE_TOPIC_LABEL, SidesBar, leader, resultLine, timeLeft, useNow } from "./debate-parts";
 
 const SIDE_TINT = ["bg-[#8f86f0]/20 text-[#d6d1fb]", "bg-[#e0866a]/20 text-[#f6c7b6]"] as const;
+
+type PendingArg = {
+  id: string;
+  body: string;
+  anonymous: boolean;
+  at: string;
+  status: "sending" | "sent" | "failed";
+};
+
+/** The result of a closed debate: who won and by how much, with a button to share it. */
+function ResultCard({ debate }: { debate: Debate }) {
+  const { slug } = useCollege();
+  const [copied, setCopied] = React.useState(false);
+  const total = debate.a_count + debate.b_count;
+  const lead = leader(debate);
+  const winner = lead === null ? null : lead === 0 ? debate.side_a : debate.side_b;
+  const share = async () => {
+    const url = `${window.location.origin}/c/${slug}/debates/${debate.id}`;
+    const text = `${debate.title} ${resultLine(debate)}`;
+    try {
+      if (navigator.share) await navigator.share({ title: debate.title, text, url });
+      else await navigator.clipboard.writeText(`${text} ${url}`);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // The person closed the share sheet, or the browser blocked the clipboard. Nothing to tell them.
+    }
+  };
+  return (
+    <div className="relative mt-4 flex items-center gap-3.5 rounded-2xl border border-[#f0c36a]/30 bg-[#f0c36a]/[0.07] p-4">
+      <TrophyIcon aria-hidden="true" className="size-8 shrink-0 text-[#f0c36a]" />
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#f0c36a]">
+          {total === 0 ? "Closed" : lead === null ? "A tie" : "Winner"}
+        </p>
+        <p className="truncate text-[1.25rem] font-extrabold leading-tight">
+          {winner ?? (total === 0 ? "Nobody joined" : `${debate.a_count} each`)}
+        </p>
+        <p className="text-[12.5px] text-ink-muted">{resultLine(debate)}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => void share()}
+        aria-label={copied ? "Result copied" : "Share the result"}
+        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 outline-none transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {copied ? (
+          <CheckIcon aria-hidden="true" className="size-4 text-success" />
+        ) : (
+          <ShareIcon aria-hidden="true" className="size-4" />
+        )}
+      </button>
+    </div>
+  );
+}
 
 function ArgumentRow({
   argument,
@@ -180,7 +235,6 @@ function ArgumentRow({
 export function DebateDetailScreen({ debateId }: { debateId: string }) {
   const { slug, isModerator } = useCollege();
   const router = useRouter();
-  const attempt = useAttempt();
   const state = useLoad(() => api.debates.one(slug, debateId), [slug, debateId]);
   const list = useLoad(() => api.debates.arguments(slug, debateId), [slug, debateId]);
   const now = useNow();
@@ -190,6 +244,8 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [asking, setAsking] = React.useState(false);
+  const [pendingSide, setPendingSide] = React.useState<0 | 1 | null>(null);
+  const [pendingArgs, setPendingArgs] = React.useState<PendingArg[]>([]);
 
   const { reload: reloadDebate } = state;
   const { reload: reloadList } = list;
@@ -203,48 +259,63 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
         reloadDebate();
         reloadList();
       }
-    }, 15_000);
+    }, 5_000);
     return () => window.clearInterval(timer);
   }, [live, reloadDebate, reloadList]);
 
   async function pick(side: 0 | 1) {
-    if (busy || !live) return;
-    setBusy(true);
+    if (!live) return;
     setError(null);
+    setPendingSide(side);
     try {
       await api.debates.pickSide(slug, debateId, side);
       reloadDebate();
     } catch (caught) {
+      setPendingSide(null);
       setError(friendlyMessage(caught, "We could not save your side. Please try again."));
-    } finally {
-      setBusy(false);
     }
   }
 
-  async function post(event: React.FormEvent) {
-    event.preventDefault();
-    const body = text.trim();
-    if (!body || busy) return;
-    setBusy(true);
+  /** The point shows at once (a little faded) and turns solid when the server has it. A failure offers Retry. */
+  async function deliver(item: PendingArg) {
     setError(null);
+    setPendingArgs((all) => all.map((p) => (p.id === item.id ? { ...p, status: "sending" } : p)));
     try {
-      await api.debates.argue(slug, debateId, { body, anonymous }, attempt.get());
-      attempt.reset();
-      setText("");
+      await api.debates.argue(
+        slug,
+        debateId,
+        { body: item.body, anonymous: item.anonymous },
+        item.id,
+      );
+      setPendingArgs((all) => all.map((p) => (p.id === item.id ? { ...p, status: "sent" } : p)));
       reloadList();
       reloadDebate();
     } catch (caught) {
-      if (!(caught instanceof ApiError && caught.isOffline)) attempt.reset();
+      setPendingArgs((all) => all.map((p) => (p.id === item.id ? { ...p, status: "failed" } : p)));
       setError(
         caught instanceof ApiError && caught.code === "CONFLICT"
           ? "This debate has just closed."
           : caught instanceof ApiError && caught.code === "RATE_LIMITED"
             ? "Slow down a little. Try again in a few minutes."
-            : friendlyMessage(caught, "We could not post that. Please try again."),
+            : friendlyMessage(caught, "We could not post that. Tap Retry."),
       );
-    } finally {
-      setBusy(false);
     }
+  }
+
+  function post(event: React.FormEvent) {
+    event.preventDefault();
+    const body = text.trim();
+    if (!body) return;
+    const item: PendingArg = {
+      id: crypto.randomUUID(),
+      body,
+      anonymous,
+      at: new Date().toISOString(),
+      status: "sending",
+    };
+    setPendingArgs((all) => [item, ...all]);
+    setText("");
+    void deliver(item);
   }
 
   async function removeDebate() {
@@ -284,9 +355,30 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
       </div>
     );
 
-  const debate = state.data;
+  const real = state.data;
+  // My tap counts at once: my side and the two numbers move before the server answers, and the bar slides with them.
+  const debate: Debate =
+    pendingSide !== null && pendingSide !== real.my_side
+      ? {
+          ...real,
+          my_side: pendingSide,
+          a_count: real.a_count + (pendingSide === 0 ? 1 : 0) - (real.my_side === 0 ? 1 : 0),
+          b_count: real.b_count + (pendingSide === 1 ? 1 : 0) - (real.my_side === 1 ? 1 : 0),
+        }
+      : real;
   const args = list.status === "ready" ? list.data : [];
   const shown = filter === null ? args : args.filter((item) => item.side === filter);
+  const shownPending = pendingArgs.filter(
+    (item) =>
+      (filter === null || filter === debate.my_side) &&
+      (item.status !== "sent" ||
+        !args.some(
+          (x) =>
+            x.is_owner &&
+            x.body === item.body &&
+            new Date(x.created_at).getTime() >= new Date(item.at).getTime() - 10_000,
+        )),
+  );
   const lead = leader(debate);
   const sideName = (side: number | null) =>
     side === null ? "" : side === 0 ? debate.side_a : debate.side_b;
@@ -375,17 +467,7 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           </PersonLink>
         </p>
 
-        {!live ? (
-          <div className="relative mt-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3.5">
-            <TrophyIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-[#f0c36a]" />
-            <div>
-              <p className="text-[14.5px] font-bold">{resultLine(debate)}</p>
-              <p className="text-[12.5px] text-ink-muted">
-                This debate is closed. You can still read every argument.
-              </p>
-            </div>
-          </div>
-        ) : null}
+        {!live ? <ResultCard debate={debate} /> : null}
 
         <div
           role="radiogroup"
@@ -401,7 +483,7 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
                 type="button"
                 role="radio"
                 aria-checked={mine}
-                disabled={!live || busy}
+                disabled={!live}
                 onClick={() => void pick(side)}
                 className={cn(
                   "flex min-h-[4.5rem] flex-col items-start justify-between gap-1 rounded-[18px] border p-3 text-left outline-none transition-[border-color,background-color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-default",
@@ -471,7 +553,7 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           </div>
         ) : list.status === "error" ? (
           <LoadError error={list.error} onRetry={list.reload} what="the arguments" />
-        ) : shown.length === 0 ? (
+        ) : shown.length === 0 && shownPending.length === 0 ? (
           <p className="glass-card rounded-[20px] p-5 text-center text-[14px] text-ink-muted">
             {live
               ? "No arguments here yet. Be the first to make a point."
@@ -479,6 +561,42 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
           </p>
         ) : (
           <ul className="stagger flex flex-col gap-2.5">
+            {shownPending.map((item) => (
+              <li
+                key={item.id}
+                className={cn(
+                  "glass-card flex flex-col gap-1.5 rounded-[20px] p-3.5 transition-opacity duration-300",
+                  item.status === "failed" ? "opacity-75 ring-1 ring-red-300/60" : "opacity-60",
+                )}
+              >
+                <p className="whitespace-pre-line break-words text-[14.5px] leading-relaxed">
+                  {item.body}
+                </p>
+                <p className="flex items-center gap-2 text-[12px] text-ink-muted">
+                  {item.status === "failed" ? (
+                    <>
+                      Not posted ·
+                      <button
+                        type="button"
+                        onClick={() => void deliver(item)}
+                        className="font-bold text-ink underline outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Retry
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPendingArgs((all) => all.filter((p) => p.id !== item.id))}
+                        className="underline outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  ) : (
+                    "Posting…"
+                  )}
+                </p>
+              </li>
+            ))}
             {shown.map((item) => (
               <ArgumentRow
                 key={item.id}
@@ -537,10 +655,10 @@ export function DebateDetailScreen({ debateId }: { debateId: string }) {
               type="submit"
               size="icon-sm"
               className="size-10 rounded-full"
-              disabled={busy || !text.trim()}
+              disabled={!text.trim()}
               aria-label="Post argument"
             >
-              {busy ? <Spinner /> : <SendIcon aria-hidden="true" />}
+              <SendIcon aria-hidden="true" />
             </Button>
           </div>
           <p className="px-2 text-[11.5px] text-ink-muted">

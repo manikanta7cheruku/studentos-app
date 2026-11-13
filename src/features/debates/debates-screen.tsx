@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PlusIcon, ScaleIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { GlideTabs } from "@/components/app/glide-tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
@@ -107,48 +108,30 @@ export function DebatesScreen() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 pt-2 pb-2 md:px-8 md:py-8">
-      <PageHeader
-        title="Debates"
-        description="Pick a side, make your point. Each debate closes by itself when the time is up."
-        actions={
-          <Button asChild>
-            <Link href={`/c/${slug}/debates/new`}>
-              <PlusIcon aria-hidden="true" /> Start one
-            </Link>
-          </Button>
-        }
-      />
+      <PageHeader title="Debates" />
       <div
-        role="group"
-        aria-label="Live or ended"
-        className="inline-flex w-fit rounded-full border border-white/10 bg-white/[0.04] p-1"
-      >
-        {(
-          [
-            ["live", "Live"],
-            ["ended", "Ended"],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={status === value}
-            onClick={() => setStatus(value)}
-            className={cn(
-              "h-8 rounded-full px-5 text-[13px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-              status === value ? "bg-white/[0.16] text-ink" : "text-ink-muted hover:text-ink",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div
-        role="group"
-        aria-label="Topic"
+        role="toolbar"
+        aria-label="Live or ended, and topic"
         data-no-swipe
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+        className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-0.5 md:mx-0 md:flex-wrap md:px-0"
       >
+        <Link
+          href={`/c/${slug}/debates/new`}
+          className="bg-brand inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-[13.5px] font-bold text-white outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+        >
+          <PlusIcon aria-hidden="true" className="size-4" /> Start
+        </Link>
+        <GlideTabs
+          label="Live or ended"
+          value={status}
+          onChange={setStatus}
+          className="shrink-0"
+          tabs={[
+            { value: "live", label: "Live" },
+            { value: "ended", label: "Ended" },
+          ]}
+        />
+        <span aria-hidden="true" className="h-5 w-px shrink-0 bg-white/10" />
         <Chip pressed={topic === null} onClick={() => setTopic(null)}>
           Everything
         </Chip>
