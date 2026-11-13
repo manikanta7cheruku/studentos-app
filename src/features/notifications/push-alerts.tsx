@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BellRingIcon } from "lucide-react";
+import { BellRingIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api/endpoints";
@@ -101,23 +101,14 @@ function nudgeDue(): boolean {
   return Date.now() - at >= (GAPS[Math.min(n, GAPS.length - 1)] ?? 21 * DAY);
 }
 
-const NUDGE_TEXT: Record<"off" | "blocked" | "install", { title: string; text: string }> = {
-  off: {
-    title: "Never miss a message or a plan",
-    text: "Turn on alerts and StudentOS lets you know when someone messages you, joins your plan or replies. You can turn them off any time.",
-  },
-  blocked: {
-    title: "Alerts are turned off for StudentOS",
-    text: "You may be missing messages and plan updates. To turn them on, open your browser's site settings for StudentOS and allow Notifications.",
-  },
-  install: {
-    title: "Get alerts on your iPhone",
-    text: "Add StudentOS to your Home Screen (Share, then Add to Home Screen) and open it from there. Then you can turn alerts on.",
-  },
+const NUDGE_TEXT: Record<"off" | "blocked" | "install", string> = {
+  off: "Get alerts for messages and plans",
+  blocked: "Alerts are blocked. Allow Notifications in your browser settings.",
+  install: "For alerts, add StudentOS to your Home Screen.",
 };
 
 /**
- * A calm card that asks for alerts once a person is settled in the app, and comes back now and then if they said not now, or if
+ * A slim bar that asks for alerts once a person is settled in the app, and comes back now and then if they said not now, or if
  * the browser blocked them. `enabled` is false while a tour, a tip or a sheet is on screen, so it never stands on top of them.
  */
 export function PushNudge({ enabled }: { enabled: boolean }) {
@@ -152,25 +143,28 @@ export function PushNudge({ enabled }: { enabled: boolean }) {
     <div
       role="dialog"
       aria-label="Alerts"
-      className="page-enter glass-card fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-sm items-start gap-3 rounded-[22px] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.5)] md:bottom-6 md:left-auto md:right-6 md:mx-0"
+      className="page-enter glass-card fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-sm items-center gap-2.5 rounded-full py-2 pl-3.5 pr-2 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:bottom-6 md:left-auto md:right-6 md:mx-0"
     >
-      <span className="bg-brand inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white [&_svg]:size-5">
-        <BellRingIcon aria-hidden="true" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[14.5px] font-semibold leading-snug">{copy.title}</p>
-        <p className="mt-1 text-[13px] leading-snug text-ink-muted">{copy.text}</p>
-        <div className="mt-3 flex gap-2">
-          {state === "off" ? (
-            <Button size="sm" disabled={busy} onClick={() => void turnOn()}>
-              Turn on alerts
-            </Button>
-          ) : null}
-          <Button size="sm" variant="ghost" onClick={later}>
-            {state === "off" ? "Not now" : "Got it"}
-          </Button>
-        </div>
-      </div>
+      <BellRingIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+      <p className="min-w-0 flex-1 text-[13px] leading-snug">{copy}</p>
+      {state === "off" ? (
+        <Button
+          size="sm"
+          className="h-8 rounded-full px-3.5 text-[12.5px]"
+          disabled={busy}
+          onClick={() => void turnOn()}
+        >
+          Turn on
+        </Button>
+      ) : null}
+      <button
+        type="button"
+        aria-label={state === "off" ? "Not now" : "Got it"}
+        onClick={later}
+        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/10 hover:text-ink"
+      >
+        <XIcon aria-hidden="true" className="size-4" />
+      </button>
     </div>
   );
 }
