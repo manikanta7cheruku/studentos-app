@@ -13,6 +13,7 @@ import {
   MessageSquareHeartIcon,
   PackageSearchIcon,
   StoreIcon,
+  CircleHelpIcon,
   UserPlusIcon,
 } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
@@ -165,6 +166,7 @@ export function QuickCreate({
   unread,
   messages,
   isGlobal,
+  onTour,
   open,
   onOpenChange,
 }: {
@@ -172,6 +174,7 @@ export function QuickCreate({
   unread: number;
   messages: number;
   isGlobal: boolean;
+  onTour: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -191,6 +194,11 @@ export function QuickCreate({
             unread={unread}
             messages={messages}
             isGlobal={isGlobal}
+            onTour={() => {
+              plusHintDone();
+              onOpenChange(false);
+              window.setTimeout(onTour, 120);
+            }}
             onGo={(href) => overlay.goTo(href, router.push)}
           />
         </DialogPrimitive.Content>
@@ -255,12 +263,14 @@ function ShortcutList({
   unread,
   messages,
   isGlobal,
+  onTour,
   onGo,
 }: {
   slug: string;
   unread: number;
   messages: number;
   isGlobal: boolean;
+  onTour: () => void;
   onGo: (href: string) => void;
 }) {
   // Only mounted while the panel is open, so this count is fetched when it is needed: people waiting for my answer on my posts.
@@ -345,6 +355,20 @@ function ShortcutList({
           {more.map((item) => (
             <Row key={item.href} item={item} index={n++} onGo={onGo} />
           ))}
+          <li className="quick-row" style={{ animationDelay: `${60 + n * 28}ms` }}>
+            <button
+              type="button"
+              onClick={onTour}
+              className="group flex h-12 w-full items-center gap-3 rounded-2xl px-2 outline-none transition-[background-color,transform] duration-150 hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] active:bg-white/[0.12] [&_svg]:size-[18px]"
+            >
+              <span className="relative inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)] transition-colors group-hover:bg-white/[0.18]">
+                <CircleHelpIcon aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-left text-[14.5px] font-semibold leading-none">
+                How to use StudentOS
+              </span>
+            </button>
+          </li>
         </ul>
       </div>
     </div>

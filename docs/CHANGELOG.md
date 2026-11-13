@@ -43,3 +43,4 @@
 | 2026-11-13 | R3 updates, team requests, feedback | Notification links, live refresh and day groups; Team requests with inline answers; feedback with kind cards, counter and draft (D-68). | R3 |
 | 2026-11-13 | R3 navigation | Profile picture top right, dock with Debates and Network, brighter open tab, one-time tip (D-69). | R3 |
 | 2026-11-13 | R3 shortcuts and tips | Shortcuts panel with groups and counts, badge on +, smoother glass tips (D-70). | R3 |
+| 2026-11-13 | R3 tour and Create card | First-open tour with replay, clear glass Create card, faster panels (D-71). | R3 |

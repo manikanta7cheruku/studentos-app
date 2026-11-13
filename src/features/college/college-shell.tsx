@@ -14,6 +14,7 @@ import {
   ScaleIcon,
   ChevronDownIcon,
   ChevronsUpDownIcon,
+  CircleHelpIcon,
   GlobeIcon,
   HouseIcon,
   MapPinnedIcon,
@@ -37,7 +38,8 @@ import {
   usePlusGestures,
 } from "@/components/app/quick-create";
 import { api } from "@/lib/api/endpoints";
-import { GlassTip } from "@/components/app/glass-tip";
+import { Tour } from "@/features/tour/tour";
+import { markTourDone, useTourDone } from "@/features/tour/tour-state";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useSession } from "@/features/session/session-provider";
@@ -99,6 +101,7 @@ function BellLink({ className }: { className?: string }) {
     <Link
       href={`/c/${slug}/notifications`}
       aria-label={label}
+      data-tour="bell"
       className={cn(
         "relative inline-flex size-10 items-center justify-center rounded-xl text-ink-muted transition-colors duration-200 hover:bg-white/[0.08] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
@@ -148,6 +151,7 @@ function MessagesLink({ className }: { className?: string }) {
     <Link
       href={`/c/${slug}/messages`}
       aria-label={label}
+      data-tour="messages"
       className={cn(
         "relative inline-flex size-10 items-center justify-center rounded-xl text-ink-muted transition-colors duration-200 hover:bg-white/[0.08] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,
@@ -166,6 +170,24 @@ function MessagesLink({ className }: { className?: string }) {
   );
 }
 
+/** A quiet ? beside Messages: it replays the tour. Faint until pointed at, so it never competes with the real buttons. */
+function HelpButton({ onClick, className }: { onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="How to use StudentOS"
+      data-tour="help"
+      className={cn(
+        "inline-flex size-9 items-center justify-center rounded-xl text-ink-muted opacity-50 transition-[opacity,background-color] duration-200 hover:bg-white/[0.08] hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
+        className,
+      )}
+    >
+      <CircleHelpIcon aria-hidden="true" className="size-[18px]" />
+    </button>
+  );
+}
+
 /** My picture in the top bar: it opens my profile. A ring shows when I am on it. */
 function ProfileLink({ className }: { className?: string }) {
   const { slug, profile } = useCollege();
@@ -177,6 +199,7 @@ function ProfileLink({ className }: { className?: string }) {
       href={`/c/${slug}/me`}
       aria-label="Your profile"
       aria-current={on ? "page" : undefined}
+      data-tour="profile"
       className={cn(
         "ml-1 inline-flex size-10 items-center justify-center rounded-full outline-none transition-[box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
         on && "shadow-[0_0_0_2px_rgba(143,134,240,0.9)]",
@@ -297,6 +320,7 @@ function SideNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
     <Link
       href={item.href}
       aria-current={current ? "page" : undefined}
+      data-tour={`tab-${item.label.toLowerCase()}`}
       className={cn(
         "group relative flex min-h-10 items-center gap-3 rounded-xl px-3 text-[14px] font-medium outline-none transition-[background-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] [&_svg]:size-[18px] [&_svg]:shrink-0",
         current
@@ -406,12 +430,16 @@ function SpaceMenu() {
 export function CollegeShell({ children }: { children: React.ReactNode }) {
   const { slug, profile: me, unread } = useCollege();
   const messagesWaiting = useMessagesWaiting(slug);
+  const tourDone = useTourDone();
+  const [tour, setTour] = React.useState(false);
   const waitingTotal = messagesWaiting + unread;
   useEnsurePublicSpace();
   const pathname = usePathname();
   const { tabs, more } = useNav();
   // An open conversation uses the whole phone screen: no top bar, no dock, the box to write sits at the bottom.
   const inChat = /\/messages\/[^/]+$/.test(pathname);
+  const startTour = React.useCallback(() => setTour(true), []);
+  useAutoTour(me !== null && me.onboarded && !inChat, tourDone, startTour);
   const [creating, setCreating] = React.useState(false);
   const [quick, setQuick] = React.useState(false);
   // + : one tap opens everything you can create. A double tap or a hold opens the shortcuts.
@@ -545,12 +573,14 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between px-1">
             <SpaceMenu />
             <div className="flex items-center">
+              <HelpButton onClick={() => setTour(true)} />
               <MessagesLink />
               <BellLink />
             </div>
           </div>
           <button
             type="button"
+            data-tour="plus"
             {...plus.props}
             className="bg-brand flex h-10 items-center justify-center gap-2 rounded-xl text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] outline-none transition-[transform,filter] duration-200 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] motion-safe:hover:-translate-y-px"
           >
@@ -596,6 +626,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
             />
             <SpaceMenu />
             <div className="flex-1" />
+            <HelpButton onClick={() => setTour(true)} />
             <MessagesLink />
             <BellLink />
             <ProfileLink />
@@ -648,6 +679,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
                       direction.current = index > tabIndex ? 1 : -1;
                   }}
                   aria-current={current ? "page" : undefined}
+                  data-tour={`tab-${item.label.toLowerCase()}`}
                   className={cn(
                     "group relative z-10 flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[9.5px] font-semibold tracking-tight outline-none transition-[color,transform] duration-300 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 min-[350px]:text-[10px] [&_svg]:size-[20px] [&_svg]:shrink-0 [&_svg]:transition-[filter,transform] [&_svg]:duration-300",
                     current
@@ -664,6 +696,7 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             aria-label="Create"
+            data-tour="plus"
             {...plus.props}
             className="glass-brand pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-[22px] text-white outline-none transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.88]"
           >
@@ -685,48 +718,36 @@ export function CollegeShell({ children }: { children: React.ReactNode }) {
           unread={unread}
           messages={messagesWaiting}
           isGlobal={slug === GLOBAL_SLUG}
+          onTour={() => setTour(true)}
           open={quick}
           onOpenChange={setQuick}
         />
-        <ProfileTip enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
-        <PlusHint enabled={me !== null && me.onboarded && !inChat && !creating && !quick} />
+        <PlusHint
+          enabled={
+            me !== null && me.onboarded && !inChat && !creating && !quick && tourDone && !tour
+          }
+        />
+        {tour ? (
+          <Tour
+            onClose={() => {
+              setTour(false);
+              markTourDone();
+              plusHintDone();
+            }}
+          />
+        ) : null}
       </div>
     </MessagesWaiting.Provider>
   );
 }
 
-const PROFILE_TIP_KEY = "studentos.profileTip";
-
-/** Once, for people who knew the old You tab: "Your profile is now your picture, top right". It leaves by itself. */
-function ProfileTip({ enabled }: { enabled: boolean }) {
-  const [visible, setVisible] = React.useState(false);
+/** Starts the tour once, a moment after a person's first open, when the page has settled. */
+function useAutoTour(ready: boolean, done: boolean, start: () => void) {
   React.useEffect(() => {
-    if (!enabled) return;
-    try {
-      if (window.localStorage.getItem(PROFILE_TIP_KEY) === "1") return;
-    } catch {
-      return;
-    }
-    const show = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(PROFILE_TIP_KEY, "1");
-      } catch {
-        // No storage: the tip may show again, which is harmless.
-      }
-      setVisible(true);
-    }, 2500);
-    return () => window.clearTimeout(show);
-  }, [enabled]);
-  if (!enabled || !visible) return null;
-  return (
-    <GlassTip
-      placement="below"
-      title="Your profile moved"
-      text="Tap your picture, top right, for your profile and settings."
-      onClose={() => setVisible(false)}
-      className="right-3 top-[3.9rem] md:hidden"
-    />
-  );
+    if (!ready || done) return;
+    const timer = window.setTimeout(start, 1200);
+    return () => window.clearTimeout(timer);
+  }, [ready, done, start]);
 }
 
 export { UserMenu, BellLink, MessagesLink };

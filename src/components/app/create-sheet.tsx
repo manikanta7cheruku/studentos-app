@@ -22,14 +22,14 @@ type Choice = {
   title: string;
   text: string;
   icon: React.ReactNode;
-  /** Two soft colours for the icon tile. */
+  /** Two colours for the icon tile. */
   tint: string;
 };
 
 /**
- * What can I start? Opens from the + button. A glass sheet that slides up on a phone (and can be pulled down with a
- * finger), a card on a computer. The choices are big tiles, so one tap on a thumb is enough.
- * Nothing is loaded in the background when it opens: the links do not prefetch, so the sheet opens at once.
+ * What can I start? Opens from the + button as one card of clear glass that grows out of the button, with the choices as
+ * big tiles (one tap with a thumb). The glass is deep and dark enough that white text stays easy to read over any page.
+ * Nothing is loaded when it opens (the links do not prefetch), so it appears at once.
  */
 export function CreateSheet({
   slug,
@@ -72,20 +72,20 @@ export function CreateSheet({
     {
       href: `/c/${slug}/turf/new`,
       title: "Turf or court",
-      text: "List a ground to book",
+      text: "List a ground",
       icon: <MapPinnedIcon aria-hidden="true" />,
       tint: "from-[#7a5fd6] to-[#4f6fe0]",
     },
     {
       href: `/c/${slug}/market/new`,
       title: "Sell or rent",
-      text: "Books, bikes, gadgets",
+      text: "Books, bikes, more",
       icon: <StoreIcon aria-hidden="true" />,
       tint: "from-[#2fb98a] to-[#2f90b9]",
     },
     {
       href: `/c/${slug}/lost-found/new`,
-      title: "Lost & found",
+      title: "Lost and found",
       text: "Post it, get a reply",
       icon: <PackageSearchIcon aria-hidden="true" />,
       tint: "from-[#d99a3a] to-[#d6665a]",
@@ -95,100 +95,35 @@ export function CreateSheet({
   // Turf, the Marketplace and Lost and found belong to one campus, so Global does not offer them.
   const shown = slug === "global" ? choices.slice(0, 4) : choices;
 
-  // Back closes the sheet; a tile opens its page with Back returning to where the person was.
+  // Back closes the card; a tile opens its page with Back returning to where the person was.
   const router = useRouter();
   const overlay = useOverlayHistory(open, onOpenChange);
-  const sheet = React.useRef<HTMLDivElement>(null);
-  const drag = React.useRef<{ y: number; t: number; moved: number } | null>(null);
-
-  // A fresh open is never "gone".
-  React.useEffect(() => {
-    if (open && sheet.current) {
-      sheet.current.removeAttribute("data-gone");
-      sheet.current.style.transform = "";
-      sheet.current.style.transition = "";
-    }
-  }, [open]);
-
-  function onPointerDown(event: React.PointerEvent) {
-    drag.current = { y: event.clientY, t: performance.now(), moved: 0 };
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-    if (sheet.current) {
-      sheet.current.style.transition = "none";
-      sheet.current.style.animation = "none";
-    }
-  }
-  function onPointerMove(event: React.PointerEvent) {
-    const gesture = drag.current;
-    if (!gesture || !sheet.current) return;
-    const dy = event.clientY - gesture.y;
-    gesture.moved = dy;
-    // Pulling down follows the finger. Pulling up resists.
-    sheet.current.style.transform = `translate3d(0, ${dy > 0 ? dy : dy * 0.1}px, 0)`;
-  }
-  function onPointerUp() {
-    const gesture = drag.current;
-    drag.current = null;
-    const node = sheet.current;
-    if (!gesture || !node) return;
-    const speed = gesture.moved / Math.max(1, performance.now() - gesture.t);
-    node.style.transition = "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)";
-    if (gesture.moved > 90 || speed > 0.55) {
-      node.style.transform = "translate3d(0, 110%, 0)";
-      window.setTimeout(() => {
-        node.setAttribute("data-gone", "true");
-        onOpenChange(false);
-      }, 230);
-    } else {
-      node.style.transform = "translate3d(0, 0, 0)";
-      window.setTimeout(() => {
-        node.style.transition = "";
-        node.style.transform = "";
-        node.style.animation = "";
-      }, 270);
-    }
-  }
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="sheet-scrim fixed inset-0 z-50" />
+        <DialogPrimitive.Overlay className="quick-scrim fixed inset-0 z-50" />
         <DialogPrimitive.Content
-          ref={sheet}
           aria-describedby={undefined}
-          className="sheet-panel glass-sheet fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md rounded-t-[28px] px-5 pb-[calc(1.25rem+var(--safe-bottom))] pt-0 outline-none md:bottom-auto md:top-1/2 md:max-w-lg md:-translate-y-1/2 md:rounded-[28px] md:pb-6"
+          className="quick-panel glass-sheet-clear fixed bottom-[calc(5.5rem+var(--safe-bottom))] right-3 z-50 w-[21.5rem] max-w-[calc(100vw-1.5rem)] rounded-[28px] p-3 outline-none md:bottom-auto md:left-5 md:right-auto md:top-[7.6rem]"
         >
-          {/* The pull area: the handle and the title. Big enough for a thumb. */}
-          <div
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            className="-mx-5 flex cursor-grab touch-none select-none flex-col items-center px-5 pb-3 pt-3 active:cursor-grabbing md:cursor-default"
-          >
-            <div
-              aria-hidden="true"
-              className="mb-3 h-[5px] w-11 rounded-full bg-white/30 md:hidden"
-            />
-            <div className="flex w-full items-center justify-between">
-              <DialogPrimitive.Title className="font-heading text-[22px] font-extrabold tracking-tight">
-                Create
-              </DialogPrimitive.Title>
-              <DialogPrimitive.Close
-                aria-label="Close"
-                onPointerDown={(event) => event.stopPropagation()}
-                className="inline-flex size-9 items-center justify-center rounded-full bg-white/[0.08] text-ink-muted outline-none transition-[background-color,transform] duration-200 hover:bg-white/[0.14] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
-              >
-                <XIcon aria-hidden="true" className="size-[18px]" />
-              </DialogPrimitive.Close>
-            </div>
+          <div className="flex items-center justify-between px-1.5 pb-2.5 pt-1">
+            <DialogPrimitive.Title className="font-heading text-[19px] font-extrabold tracking-tight text-white">
+              Create
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Close
+              aria-label="Close"
+              className="inline-flex size-8 items-center justify-center rounded-full bg-white/[0.12] text-white/80 outline-none transition-[background-color,transform] duration-150 hover:bg-white/[0.2] hover:text-white focus-visible:ring-2 focus-visible:ring-ring active:scale-90"
+            >
+              <XIcon aria-hidden="true" className="size-4" />
+            </DialogPrimitive.Close>
           </div>
-          <ul className="grid auto-rows-fr grid-cols-2 gap-2.5 [&>li:last-child:nth-child(odd)]:col-span-2">
+          <ul className="grid auto-rows-fr grid-cols-2 gap-2 [&>li:last-child:nth-child(odd)]:col-span-2">
             {shown.map((item, index) => (
               <li
                 key={item.href}
-                className="sheet-tile"
-                style={{ "--i": index } as React.CSSProperties}
+                className="quick-row"
+                style={{ animationDelay: `${40 + index * 18}ms` }}
               >
                 <Link
                   href={item.href}
@@ -199,19 +134,21 @@ export function CreateSheet({
                     event.preventDefault();
                     overlay.goTo(item.href, router.push);
                   }}
-                  className="group flex h-full min-h-[5.75rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.12] bg-white/[0.07] p-3 outline-none transition-[background-color,border-color,transform] duration-200 hover:border-white/25 hover:bg-white/[0.12] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
+                  className="group flex h-full min-h-[5.25rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.16] bg-white/[0.09] p-3 outline-none transition-[background-color,border-color,transform] duration-150 hover:border-white/30 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
                 >
                   <span
                     className={cn(
-                      "inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_14px_-8px_rgba(0,0,0,0.6)] [&_svg]:size-[18px]",
+                      "inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_6px_14px_-8px_rgba(0,0,0,0.6)] [&_svg]:size-[18px]",
                       item.tint,
                     )}
                   >
                     {item.icon}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[14px] font-bold leading-tight">{item.title}</span>
-                    <span className="mt-0.5 block truncate text-[12px] leading-snug text-ink-muted">
+                    <span className="block text-[14.5px] font-bold leading-tight text-white">
+                      {item.title}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[12.5px] leading-snug text-white/70">
                       {item.text}
                     </span>
                   </span>

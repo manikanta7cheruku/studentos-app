@@ -631,21 +631,19 @@ select option {
   transform-origin: bottom right;
 }
 .quick-panel[data-state="open"] {
-  animation: panel-in 340ms cubic-bezier(0.32, 1.25, 0.5, 1) both;
+  animation: panel-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .quick-panel[data-state="closed"] {
-  animation: panel-out 180ms ease-in both;
+  animation: panel-out 140ms ease-in both;
 }
 @keyframes panel-in {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.9);
-    filter: blur(4px);
+    transform: translateY(10px) scale(0.94);
   }
   to {
     opacity: 1;
     transform: none;
-    filter: blur(0);
   }
 }
 @keyframes panel-out {
@@ -655,7 +653,7 @@ select option {
   }
 }
 .quick-row {
-  animation: row-in 320ms cubic-bezier(0.3, 1.2, 0.5, 1) both;
+  animation: row-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes row-in {
   from {
@@ -666,8 +664,8 @@ select option {
 /* The panel itself: clear glass with a deep blur and a bright edge, like the dock. */
 .glass-sheet-clear {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
-    rgba(18, 18, 30, 0.5);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05)),
+    rgba(14, 14, 24, 0.6);
   -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
   backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -693,7 +691,7 @@ select option {
   border-color: rgba(255, 255, 255, 0.2);
 }
 .glass-tip-in {
-  animation: tip-in 520ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
+  animation: tip-in 360ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
 }
 .glass-tip-out {
   animation: tip-out 220ms ease-in both;
@@ -702,12 +700,10 @@ select option {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.92);
-    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: none;
-    filter: blur(0);
   }
 }
 @keyframes tip-out {
@@ -763,4 +759,82 @@ select option {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* The tour: a veil with a lit up hole that glides from one thing to the next, and one glass card beside it. */
+.tour-hole {
+  box-shadow:
+    0 0 0 100vmax rgba(5, 5, 12, 0.74),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.55),
+    0 0 24px rgba(160, 150, 255, 0.45);
+  transition:
+    left 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tour-card {
+  transition:
+    left 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: tour-card-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tour-card:active {
+  transform: scale(0.985);
+}
+.tour-step {
+  animation: tour-step 220ms ease-out both;
+}
+@keyframes tour-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+@keyframes tour-step {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+/* The double tap picture: two quick rings on the + button, then a pause. */
+.tour-tap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  animation: tour-tap 1.7s ease-out infinite;
+}
+.tour-tap-2 {
+  animation-delay: 0.22s;
+}
+@keyframes tour-tap {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.5);
+  }
+  35% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-hole,
+  .tour-card {
+    transition: none;
+    animation: none;
+  }
+  .tour-step,
+  .tour-tap {
+    animation: none;
+  }
 }
