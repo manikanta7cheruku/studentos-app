@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDaysIcon, ChevronRightIcon, ClockIcon, UsersIcon } from "lucide-react";
+import { CalendarDaysIcon, ClockIcon, UsersIcon } from "lucide-react";
 import type { EventItem, TeamPost } from "@/lib/api/endpoints";
 
 type Soon = {
@@ -63,38 +63,27 @@ export function pickSoonest(
 export function HappeningSoon({ soon, now }: { soon: Soon | null; now: number }) {
   if (!soon) return null;
   return (
-    <section aria-label="Happening soon">
-      <Link
-        href={soon.href}
-        className="lift glass-card group relative flex items-center gap-3.5 overflow-hidden rounded-[22px] p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-8 -top-10 size-28 rounded-full bg-[#8f86f0] opacity-25 blur-2xl"
-        />
-        <span className="bg-brand relative inline-flex size-12 shrink-0 items-center justify-center rounded-2xl text-white [&_svg]:size-6">
-          {soon.kind === "Event" ? (
-            <CalendarDaysIcon aria-hidden="true" />
-          ) : (
-            <UsersIcon aria-hidden="true" />
-          )}
+    <Link
+      href={soon.href}
+      className="lift glass-card group relative flex min-h-[84px] w-[84%] max-w-[340px] shrink-0 items-center gap-3 overflow-hidden rounded-[20px] px-3.5 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <span className="bg-brand inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white [&_svg]:size-5">
+        {soon.kind === "Event" ? (
+          <CalendarDaysIcon aria-hidden="true" />
+        ) : (
+          <UsersIcon aria-hidden="true" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#f0a58c]">
+          <ClockIcon aria-hidden="true" className="size-3" /> Soon · {startsIn(soon.at, now)}
         </span>
-        <span className="relative min-w-0 flex-1">
-          <span className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-[#f0a58c]">
-            <ClockIcon aria-hidden="true" className="size-3.5" /> Happening soon ·{" "}
-            {startsIn(soon.at, now)}
-          </span>
-          <span className="mt-0.5 block truncate text-[15.5px] font-bold">{soon.title}</span>
-          <span className="block truncate text-[12.5px] text-ink-muted">
-            {soon.kind}
-            {soon.note ? ` · ${soon.note}` : ""}
-          </span>
+        <span className="block truncate text-[14.5px] font-bold">{soon.title}</span>
+        <span className="block truncate text-[12.5px] text-ink-muted">
+          {soon.kind}
+          {soon.note ? ` · ${soon.note}` : ""}
         </span>
-        <ChevronRightIcon
-          aria-hidden="true"
-          className="relative size-5 shrink-0 text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5"
-        />
-      </Link>
-    </section>
+      </span>
+    </Link>
   );
 }

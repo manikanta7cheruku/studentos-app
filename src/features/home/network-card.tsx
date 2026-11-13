@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronRightIcon, SendIcon } from "lucide-react";
+import { SendIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,44 +58,35 @@ function Ring({
   );
 }
 
-/** Home: how strong my network is. One slim line once someone has a few connections, a fuller prompt before that. Hidden on Global. */
+/** Home: how strong my network is, as one card in the highlights row. Hidden on Global. */
 export function NetworkStrip() {
   const { slug } = useCollege();
   const mine = useLoad(() => api.network.mine(), []);
   if (slug === "global" || mine.status !== "ready") return null;
   const connections = mine.data.connections;
   const progress = networkProgress(connections);
-  const slim = connections >= 3;
   return (
     <Link
       href={`/c/${slug}/people`}
       aria-label="Your network"
-      className={`lift glass-card flex items-center gap-3 rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${slim ? "px-4 py-2.5" : "p-4"}`}
+      className="lift glass-card group relative flex min-h-[84px] w-[84%] max-w-[340px] shrink-0 items-center gap-3 overflow-hidden rounded-[20px] px-3.5 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Ring fraction={progress.fraction} size={slim ? 40 : 64}>
+      <Ring fraction={progress.fraction} size={44}>
         {connections}
       </Ring>
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">
+        <span className="block text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
           Network strength
         </span>
-        <span className="block truncate text-[14.5px] font-bold leading-snug">
+        <span className="block truncate text-[14.5px] font-bold">
           {progress.tier ? progress.tier.name : "Just getting started"}
         </span>
-        {slim ? null : (
-          <span className="block text-[13px] text-ink-muted">
-            {progress.next
-              ? `Meet ${progress.left} more ${progress.left === 1 ? "person" : "people"} to reach ${progress.next.name}`
-              : "You are at the top. Keep it going."}
-          </span>
-        )}
-      </span>
-      {slim && progress.next ? (
-        <span className="shrink-0 text-[12.5px] text-ink-muted">
-          {progress.left} to {progress.next.name}
+        <span className="block truncate text-[12.5px] text-ink-muted">
+          {progress.next
+            ? `Meet ${progress.left} more to reach ${progress.next.name}`
+            : "You are at the top"}
         </span>
-      ) : null}
-      <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+      </span>
     </Link>
   );
 }
@@ -117,7 +108,7 @@ export function PeopleToMeet() {
           See all
         </Link>
       </div>
-      <ul className="no-scrollbar mt-2 flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-1 md:px-0">
+      <ul className="no-scrollbar mt-2 flex snap-x snap-proximity [overflow-anchor:none] scroll-px-5 gap-3 overflow-x-auto px-5 pb-1 md:px-0">
         {list.map((person) => (
           <li
             key={person.user_id}

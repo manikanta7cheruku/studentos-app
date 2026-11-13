@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRightIcon, ScaleIcon } from "lucide-react";
+import { ScaleIcon } from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
@@ -20,41 +20,30 @@ export function DailyCards() {
         )[0]
       : undefined;
   return (
-    <section aria-label="Live debate">
-      <Link
-        href={hottest ? `/c/${slug}/debates/${hottest.id}` : `/c/${slug}/debates`}
-        className="lift glass-card group relative flex flex-col gap-2 overflow-hidden rounded-[22px] px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-[#e0866a] opacity-25 blur-2xl"
-        />
-        <span className="relative flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-          <ScaleIcon aria-hidden="true" className="size-3.5" />{" "}
+    <Link
+      href={hottest ? `/c/${slug}/debates/${hottest.id}` : `/c/${slug}/debates`}
+      className="lift glass-card group relative flex min-h-[84px] w-[84%] max-w-[340px] shrink-0 items-center gap-3 overflow-hidden rounded-[20px] px-3.5 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e0866a]/25 text-[#f6c7b6]">
+        <ScaleIcon aria-hidden="true" className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
           {hottest ? "Live debate" : "Debates"}
         </span>
-        <span className="relative text-[15.5px] font-bold leading-snug">
+        <span className="block truncate text-[14.5px] font-bold">
           {hottest
             ? hottest.title
             : debates.status === "loading"
               ? "Loading…"
-              : "Nothing live. Start a debate on a film, a match, anything."}
+              : "Start a debate on anything"}
         </span>
-        <span className="relative mt-1 flex items-center justify-between text-[13px]">
-          <span className="tabular text-ink-muted">
-            {hottest
-              ? `${hottest.a_count + hottest.b_count} joined · ${timeLeft(hottest.ends_at, now)}`
-              : "Pick a side, make your point"}
-          </span>
-          <span className="inline-flex items-center gap-0.5 font-semibold text-[#b9b4ee]">
-            {hottest ? "Join" : "Start"}
-            <ChevronRightIcon
-              aria-hidden="true"
-              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
-            />
-          </span>
+        <span className="tabular block truncate text-[12.5px] text-ink-muted">
+          {hottest
+            ? `${hottest.a_count + hottest.b_count} joined · ${timeLeft(hottest.ends_at, now)}`
+            : "Pick a side, make your point"}
         </span>
-      </Link>
-    </section>
+      </span>
+    </Link>
   );
 }

@@ -200,6 +200,42 @@ export function HomeScreen() {
   items.push(...unique);
   items.sort((a, b) => b.at.localeCompare(a.at));
 
+  function renderItem(item: Item) {
+    if (item.kind === "plan")
+      return (
+        <PostRow
+          key={`p-${item.post.id}`}
+          post={item.post}
+          slug={item.outside ? GLOBAL_SLUG : slug}
+          outside={item.outside}
+        />
+      );
+    if (item.kind === "event")
+      return (
+        <EventCard
+          key={`e-${item.event.id}`}
+          event={item.event}
+          space={item.outside ? GLOBAL_SLUG : undefined}
+        />
+      );
+    if (item.kind === "board")
+      return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
+    if (item.kind === "venue")
+      return (
+        <VenueCard
+          key={`v-${item.venue.id}`}
+          venue={item.venue}
+          slug={item.outside ? GLOBAL_SLUG : slug}
+          outside={item.outside}
+        />
+      );
+    return (
+      <li key={`i-${item.idea.id}`}>
+        <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
+      </li>
+    );
+  }
+
   function reloadAll() {
     for (const source of sources) source.reload();
   }
@@ -218,21 +254,21 @@ export function HomeScreen() {
         </p>
       </header>
 
-      <CampusNotice />
-
-      <HappeningSoon soon={soon} now={now} />
-
-      <DailyCards />
-
-      <NetworkStrip />
+      <div
+        aria-label="Highlights"
+        className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 md:mx-0 md:px-0"
+      >
+        <CampusNotice />
+        <HappeningSoon soon={soon} now={now} />
+        <DailyCards />
+        <NetworkStrip />
+      </div>
 
       <FinishProfile />
 
       <ExploreTiles slug={slug} />
 
       <FeedTabs tab={tab} onChange={setTab} />
-
-      {tab === "all" ? <PeopleToMeet /> : null}
 
       <div aria-live="polite">
         {loading && items.length === 0 ? (
@@ -264,41 +300,16 @@ export function HomeScreen() {
           </div>
         ) : (
           <ul key={tab} className="stagger flex flex-col gap-3">
-            {items.map((item) => {
-              if (item.kind === "plan")
-                return (
-                  <PostRow
-                    key={`p-${item.post.id}`}
-                    post={item.post}
-                    slug={item.outside ? GLOBAL_SLUG : slug}
-                    outside={item.outside}
-                  />
-                );
-              if (item.kind === "event")
-                return (
-                  <EventCard
-                    key={`e-${item.event.id}`}
-                    event={item.event}
-                    space={item.outside ? GLOBAL_SLUG : undefined}
-                  />
-                );
-              if (item.kind === "board")
-                return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
-              if (item.kind === "venue")
-                return (
-                  <VenueCard
-                    key={`v-${item.venue.id}`}
-                    venue={item.venue}
-                    slug={item.outside ? GLOBAL_SLUG : slug}
-                    outside={item.outside}
-                  />
-                );
-              return (
-                <li key={`i-${item.idea.id}`}>
-                  <IdeaCard idea={item.idea} space={item.outside ? GLOBAL_SLUG : undefined} />
-                </li>
-              );
-            })}
+            {items.map((item, index) => (
+              <React.Fragment key={`${item.kind}-${index}`}>
+                {renderItem(item)}
+                {tab === "all" && index === Math.min(3, items.length - 1) ? (
+                  <li>
+                    <PeopleToMeet />
+                  </li>
+                ) : null}
+              </React.Fragment>
+            ))}
           </ul>
         )}
         {!loading && !failed && items.length > 0 ? (
