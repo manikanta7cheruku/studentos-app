@@ -1,30 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
-  <defs>
-    <radialGradient id="sos-body" cx="36%" cy="28%" r="85%">
-      <stop offset="0" stop-color="#a69dff"/>
-      <stop offset="0.45" stop-color="#6258dc"/>
-      <stop offset="1" stop-color="#241e6b"/>
-    </radialGradient>
-    <linearGradient id="sos-sheen" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.62"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="sos-glow" cx="50%" cy="100%" r="70%">
-      <stop offset="0" stop-color="#c9b8ff" stop-opacity="0.5"/>
-      <stop offset="1" stop-color="#c9b8ff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="sos-rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity="0.75"/>
-      <stop offset="0.5" stop-color="#fff" stop-opacity="0.08"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0.4"/>
-    </linearGradient>
-    <clipPath id="sos-clip"><circle cx="50" cy="50" r="47"/></clipPath>
-  </defs>
-  <circle cx="50" cy="50" r="48" fill="url(#sos-body)"/>
-  <g clip-path="url(#sos-clip)">
-    <ellipse cx="50" cy="102" rx="46" ry="34" fill="url(#sos-glow)"/>
-    <ellipse cx="42" cy="22" rx="31" ry="17" fill="url(#sos-sheen)" transform="rotate(-14 42 22)"/>
-  </g>
-  <circle cx="50" cy="50" r="47.2" fill="none" stroke="url(#sos-rim)" stroke-width="1.6"/>
-  <path d="M65 36.5C65 29 57 26 50 26C42 26 35 30 35 37C35 44.5 42 46.5 50 49C58 51.5 66 54 66 62C66 69 58.5 73 50 73C41 73 34 69.5 34 62.5" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<defs>
+  <radialGradient id="sos-body" cx="36%" cy="28%" r="85%"><stop offset="0" stop-color="#a69dff"/><stop offset=".45" stop-color="#6258dc"/><stop offset="1" stop-color="#1f1a5e"/></radialGradient>
+  <linearGradient id="sos-sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <radialGradient id="sos-glow" cx="50%" cy="100%" r="70%"><stop offset="0" stop-color="#c9b8ff" stop-opacity=".5"/><stop offset="1" stop-color="#c9b8ff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="sos-rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity=".4"/></linearGradient>
+  <linearGradient id="sos-line" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#d9d2ff" stop-opacity=".55"/></linearGradient>
+  <clipPath id="sos-clip"><circle cx="50" cy="50" r="47"/></clipPath>
+</defs>
+<circle cx="50" cy="50" r="48" fill="url(#sos-body)"/>
+<g clip-path="url(#sos-clip)"><ellipse cx="50" cy="104" rx="46" ry="34" fill="url(#sos-glow)"/></g>
+  <circle cx="39" cy="50" r="19" fill="#fff" fill-opacity=".14" stroke="url(#sos-line)" stroke-width="3.6"/>
+  <circle cx="61" cy="50" r="19" fill="#fff" fill-opacity=".14" stroke="url(#sos-line)" stroke-width="3.6"/>
+  
+<g clip-path="url(#sos-clip)"><ellipse cx="42" cy="20" rx="31" ry="15" fill="url(#sos-sheen)" transform="rotate(-14 42 20)"/></g>
+<circle cx="50" cy="50" r="47.2" fill="none" stroke="url(#sos-rim)" stroke-width="1.6"/></svg>
