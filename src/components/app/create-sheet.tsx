@@ -27,6 +27,8 @@ type Choice = {
   tint: string;
   /** Not open yet: the tile says Soon and opens the page that explains it. */
   soon?: boolean;
+  /** A big tile across the whole row. */
+  wide?: boolean;
 };
 
 /**
@@ -97,9 +99,17 @@ export function CreateSheet({
     },
   ];
 
-  // Turf belongs to one campus, so Global does not offer it. The Marketplace and Lost and found show everywhere, marked Soon.
-  const shown =
-    slug === "global" ? choices.filter((item) => !item.href.includes("/turf")) : choices;
+  // Order: what is coming first (Sell or rent, Lost and found), then what people use every day, and Events as the big tile at
+  // the bottom. Turf belongs to one campus, so Global does not offer it.
+  const by = (word: string) => choices.find((item) => item.href.includes(word))!;
+  const shown: Choice[] = [
+    by("/market"),
+    by("/lost-found"),
+    by("/collaborate"),
+    by("/ideas"),
+    ...(slug === "global" ? [{ ...by("/debates"), wide: true }] : [by("/debates"), by("/turf")]),
+    { ...by("/events"), wide: true },
+  ];
 
   // Back closes the card; a tile opens its page with Back returning to where the person was.
   const router = useRouter();
@@ -124,11 +134,11 @@ export function CreateSheet({
               <XIcon aria-hidden="true" className="size-4" />
             </DialogPrimitive.Close>
           </div>
-          <ul className="grid auto-rows-fr grid-cols-2 gap-2 [&>li:last-child:nth-child(odd)]:col-span-2">
+          <ul className="grid auto-rows-fr grid-cols-2 gap-2">
             {shown.map((item, index) => (
               <li
                 key={item.href}
-                className="quick-row"
+                className={cn("quick-row", item.wide && "col-span-2")}
                 style={{ animationDelay: `${40 + index * 18}ms` }}
               >
                 <Link
@@ -140,7 +150,7 @@ export function CreateSheet({
                     event.preventDefault();
                     overlay.goTo(item.href, router.push);
                   }}
-                  className="group flex h-full min-h-[5.25rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.16] bg-white/[0.09] p-3 outline-none transition-[background-color,border-color,transform] duration-150 hover:border-white/30 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
+                  className="group relative flex h-full min-h-[5.25rem] flex-col justify-between gap-2 rounded-[18px] border border-white/[0.16] bg-white/[0.09] p-3 outline-none transition-[background-color,border-color,transform] duration-150 hover:border-white/30 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]"
                 >
                   <span
                     className={cn(
@@ -150,14 +160,14 @@ export function CreateSheet({
                   >
                     {item.icon}
                   </span>
+                  {item.soon ? (
+                    <span className="absolute right-2.5 top-2.5 rounded-full bg-white/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-[#f0c36a]">
+                      Soon
+                    </span>
+                  ) : null}
                   <span className="min-w-0">
-                    <span className="flex items-center gap-1.5 text-[14.5px] font-bold leading-tight text-white">
+                    <span className="block text-[14.5px] font-bold leading-tight text-white">
                       {item.title}
-                      {item.soon ? (
-                        <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-[#f0c36a]">
-                          Soon
-                        </span>
-                      ) : null}
                     </span>
                     <span className="mt-0.5 block truncate text-[12.5px] leading-snug text-white/70">
                       {item.text}

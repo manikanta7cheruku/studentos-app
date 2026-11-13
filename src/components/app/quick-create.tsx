@@ -24,7 +24,7 @@ import { GlassTip } from "./glass-tip";
 
 /** How long a press must last to count as a hold, and how long to wait for a second tap. */
 export const HOLD_MS = 650;
-export const DOUBLE_TAP_MS = 280;
+export const DOUBLE_TAP_MS = 210;
 
 /**
  * Gestures for the + button. A single tap opens the full list of things to create, after a very short wait to be sure no
