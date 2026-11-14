@@ -22,7 +22,8 @@
     "docs:openapi": "node scripts/update-openapi.mjs",
     "env:check": "node scripts/check-environment.mjs",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "owner:pin": "node scripts/owner-pin.mjs"
+    "owner:pin": "node scripts/owner-pin.mjs",
+    "licenses:check": "node scripts/check-licenses.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

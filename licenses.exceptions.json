@@ -1,0 +1,60 @@
+{
+  "description": "Packages whose licence is not on licenses.allow.json. An entry counts only when status is approved and approvedBy and approvedOn are filled in (docs/LICENSING.md section 4.3). Pending entries are proposals and approve nothing.",
+  "exceptions": [
+    {
+      "name": "@csstools/color-helpers",
+      "license": "MIT-0",
+      "scope": "development",
+      "reason": "MIT-0 is the MIT licence without the attribution requirement. Seen only in the development list on the R5 machine, so it is not shipped.",
+      "status": "pending",
+      "proposedBy": "R5 (Uday1217k)",
+      "proposedOn": "2026-11-15",
+      "approvedBy": null,
+      "approvedOn": null
+    },
+    {
+      "name": "@csstools/css-syntax-patches-for-csstree",
+      "license": "MIT-0",
+      "scope": "development",
+      "reason": "MIT-0 is the MIT licence without the attribution requirement. Seen only in the development list on the R5 machine, so it is not shipped.",
+      "status": "pending",
+      "proposedBy": "R5 (Uday1217k)",
+      "proposedOn": "2026-11-15",
+      "approvedBy": null,
+      "approvedOn": null
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "scope": "production",
+      "reason": "Image library binary used by Next.js. LGPL is weak copyleft: allowed with review (LICENSING.md section 4.1). The reviewer must confirm the LGPL part (libvips) is a separate library file that can be replaced.",
+      "status": "pending",
+      "proposedBy": "R5 (Uday1217k)",
+      "proposedOn": "2026-11-15",
+      "approvedBy": null,
+      "approvedOn": null
+    },
+    {
+      "name": "@img/sharp-libvips-*",
+      "license": "LGPL-3.0-or-later",
+      "scope": "production",
+      "reason": "The libvips library for other platforms (the Linux CI machine). Same review as above. The exact names are confirmed by the first CI run.",
+      "status": "pending",
+      "proposedBy": "R5 (Uday1217k)",
+      "proposedOn": "2026-11-15",
+      "approvedBy": null,
+      "approvedOn": null
+    },
+    {
+      "name": "caniuse-lite",
+      "license": "CC-BY-4.0",
+      "scope": "production",
+      "reason": "Browser support data, not code. CC-BY-4.0 requires attribution, so it must be listed in the third party notices.",
+      "status": "pending",
+      "proposedBy": "R5 (Uday1217k)",
+      "proposedOn": "2026-11-15",
+      "approvedBy": null,
+      "approvedOn": null
+    }
+  ]
+}
