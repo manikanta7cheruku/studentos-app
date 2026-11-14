@@ -77,11 +77,10 @@ const label = (endpoint: (typeof endpoints)[number]) =>
   `${endpoint.id} ${endpoint.method} ${endpoint.path}`;
 
 // Endpoints whose answer no integration test compares with its schema yet. Remove a line when you add the check.
-// Known gaps on 2026-11-15: 49 endpoints of other features (debates, venues, messages, networking, push, profile, feedback, board).
-// Owner: R2 (backend) with each feature's author. R5 adds ADM-13 and ADM-14 next.
+// Known gaps on 2026-11-15: 47 endpoints of other features (debates, venues, messages, networking, push, profile, feedback, board).
+// Owner: R2 (backend) with each feature's author. Coverage is per schema: two endpoints that share one schema object
+// (for example joinInviteResponse and joinOpenResponse) count as covered when either one is checked.
 const knownGaps: string[] = [
-  "ADM-13 POST /c/{slug}/admin/content/remove",
-  "ADM-14 GET /c/{slug}/admin/content",
   "BRD-05 DELETE /c/{slug}/board/{id}",
   "BRD-07 POST /c/{slug}/board/{id}/messages",
   "BRD-08 PUT /c/{slug}/board/{id}/photo",
