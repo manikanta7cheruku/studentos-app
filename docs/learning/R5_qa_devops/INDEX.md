@@ -10,3 +10,4 @@ Only R5 Testing and DevOps learning files are listed here. Add one row at the en
 | 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_isolation-tests.md | College isolation and permission tests | pending |
 | 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_staging.md | Staging environment | pending |
 | 2 | R5 | docs/learning/R5_qa_devops/build-sessions/D02_R5_e2e-setup.md | Browser test setup (Playwright) | pending |
+| 3 | R5 | docs/learning/R5_qa_devops/build-sessions/D03_R5_licence-secrets-join-tests.md | Licence check, secret scan, join journeys and contract coverage | pending (R2) |
