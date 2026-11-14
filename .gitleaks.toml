@@ -1,0 +1,7 @@
+# Secret scan settings. The scan runs in CI (job "Secret scan") over every commit.
+# Rules: the default gitleaks rules. Known fake values are listed one by one in .gitleaksignore, each with a reason.
+# Do not exempt a whole folder or file type here.
+title = "StudentOS secret scan"
+
+[extend]
+useDefault = true
