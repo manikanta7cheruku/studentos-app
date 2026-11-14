@@ -111,6 +111,10 @@ describe("package check", () => {
     expect(nameMatches("", "anything")).toBe(false);
   });
 
+  it("a package without a version (a folder dependency) is shown as unknown, not null", () => {
+    const rows = flattenPnpm({ "GPL-3.0-only": [{ name: "demo", versions: [null] }] });
+    expect(rows).toEqual([{ name: "demo", version: "unknown", license: "GPL-3.0-only" }]);
+  });
   it("reads the pnpm output, one row per version", () => {
     const rows = flattenPnpm({
       MIT: [{ name: "a", versions: ["1.0.0", "2.0.0"] }],

@@ -72,7 +72,8 @@ export function flattenPnpm(data) {
   for (const [license, packages] of Object.entries(data)) {
     for (const entry of packages) {
       const versions = entry.versions && entry.versions.length > 0 ? entry.versions : ["unknown"];
-      for (const version of versions) rows.push({ name: entry.name, version, license });
+      for (const version of versions)
+        rows.push({ name: entry.name, version: version ?? "unknown", license });
     }
   }
   return rows;
