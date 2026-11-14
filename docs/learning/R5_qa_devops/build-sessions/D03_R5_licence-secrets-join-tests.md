@@ -56,7 +56,7 @@ An AI assistant (Claude) wrote the licence script and its tests, the CI jobs, th
 
 ## 16. What a human verified (how: ran tests, read code, checked docs, tried to break it)
 The R5 person ran every command and pasted the real output. Verified by running: the licence check on Windows and on Linux in CI; a made-up GPL package and a throwaway PR (#65) where the Licence check turned red; a random fake key and a throwaway PR (#66) where the Secret scan turned red; five breaks of the browser journeys; two breaks of the ADM-13 and ADM-14 test; three breaks of the coverage test. CI on PR #64 was green on the last commit (14 checks).
-YOU-FILL: write in your own words what you read or understood yourself, and anything you found different from this file.
+TYPE here: what you read or understood yourself, and anything you found different from this file
 
 ## 17. What each teammate can now explain/implement independently
 Run the licence check and read its result, propose an exception the right way, run gitleaks locally, read a contract coverage failure and fix it, run the join journeys, and explain why a check must be shown to fail before it is trusted.
