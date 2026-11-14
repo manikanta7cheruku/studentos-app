@@ -5,3 +5,14 @@ title = "StudentOS secret scan"
 
 [extend]
 useDefault = true
+
+# Test-only fake values (checked by R5 on 2026-11-15): the CRON_SECRET constant used by three integration tests and the
+# fake push subscription keys in a fixture and a test. They are in tests/ and src/contracts/fixtures/ only.
+# EXACT values only. A different value, or one of these values in any other place, is still reported.
+# A real secret must be rotated (docs/SECURITY_AND_PRIVACY.md), never added here.
+[[allowlists]]
+description = "Test-only fake values in tests and fixtures"
+regexes = [
+  '''^tBHItJI5svbpez7KI4CCXg$''',
+  '''^test-cron-secret-0123456789abcdef$''',
+]
