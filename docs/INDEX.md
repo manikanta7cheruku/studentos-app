@@ -24,6 +24,9 @@
 | BACKUP_AND_RELEASE_RUNBOOK.md | Backups, release, rollback |
 | TECH_STACK_AND_PROVIDERS.md | Tools, free limits, costs |
 | LICENSING.md | All licence rules |
+| THIRD_PARTY_REGISTER.md | Dependencies, licences and exceptions |
+| ASSETS_REGISTER.md | Fonts, icons and images, with their licences |
+| SERVICES_REGISTER.md | Providers, plans, terms and data shared |
 | RISKS.md | Risk list |
 | GO_TO_MARKET.md | Launch plan |
 | DEFINITION_OF_DONE.md | When a task is really done |
