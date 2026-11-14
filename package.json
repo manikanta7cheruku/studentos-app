@@ -59,7 +59,8 @@
     "supabase": "^2.122.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "forbidden-licence-demo": "file:./test-fixtures/forbidden-licence-demo"
   },
   "packageManager": "pnpm@10.34.7",
   "engines": {

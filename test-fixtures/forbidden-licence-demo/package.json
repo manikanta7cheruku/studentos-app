@@ -1,0 +1,6 @@
+{
+  "name": "forbidden-licence-demo",
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "description": "Throwaway fixture. Exists only on a test branch to prove the licence check fails."
+}
