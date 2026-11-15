@@ -1,0 +1,16 @@
+{
+  "description": "Licences allowed for dependencies. Source: docs/LICENSING.md section 4.3 (MPL-2.0 needs a review note). Changing this list needs approval by R2 or the admin.",
+  "allowed": [
+    "MIT",
+    "ISC",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "0BSD",
+    "CC0-1.0",
+    "Unlicense",
+    "MPL-2.0",
+    "BlueOak-1.0.0",
+    "Python-2.0"
+  ]
+}

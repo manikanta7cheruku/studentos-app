@@ -1,0 +1,18 @@
+# Secret scan settings. The scan runs in CI (job "Secret scan") over every commit.
+# Rules: the default gitleaks rules. Known fake values are listed one by one in .gitleaksignore, each with a reason.
+# Do not exempt a whole folder or file type here.
+title = "StudentOS secret scan"
+
+[extend]
+useDefault = true
+
+# Test-only fake values (checked by R5 on 2026-11-15): the CRON_SECRET constant used by three integration tests and the
+# fake push subscription keys in a fixture and a test. They are in tests/ and src/contracts/fixtures/ only.
+# EXACT values only. A different value, or one of these values in any other place, is still reported.
+# A real secret must be rotated (docs/SECURITY_AND_PRIVACY.md), never added here.
+[[allowlists]]
+description = "Test-only fake values in tests and fixtures"
+regexes = [
+  '''^tBHItJI5svbpez7KI4CCXg$''',
+  '''^test-cron-secret-0123456789abcdef$''',
+]

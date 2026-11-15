@@ -151,8 +151,9 @@ export async function cleanUp(): Promise<void> {
   await db.from("invite_codes").delete().like("label", "e2e %");
   const { data } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
   for (const user of data?.users ?? []) {
-    if (user.email?.startsWith("e2e-") && user.email.endsWith("@example.test"))
-      await db.auth.admin.deleteUser(user.id);
+    const testAddress =
+      user.email?.endsWith("@example.test") || user.email?.endsWith("@alpha.test");
+    if (user.email?.startsWith("e2e-") && testAddress) await db.auth.admin.deleteUser(user.id);
   }
 }
 
