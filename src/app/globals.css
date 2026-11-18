@@ -1037,3 +1037,85 @@ select option {
     transition-duration: 1ms !important;
   }
 }
+
+/* Buttons on a profile: frosted glass with a lit top edge. One size (38 px), one weight. The main action is the app's violet as
+   tinted glass; the others are neutral glass. They press in a little and have a clear keyboard ring. */
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.375rem;
+  min-width: 0;
+  padding: 0 1.05rem;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink, #f2f2f7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05)),
+    rgba(24, 24, 36, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 20px -12px rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 140ms ease;
+}
+.profile-btn:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.19), rgba(255, 255, 255, 0.08)),
+    rgba(24, 24, 36, 0.4);
+}
+.profile-btn:active {
+  transform: scale(0.97);
+}
+.profile-btn:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 0 3px rgba(150, 140, 255, 0.4);
+}
+.profile-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.profile-btn-primary {
+  background:
+    linear-gradient(135deg, rgba(126, 114, 240, 0.9), rgba(152, 92, 190, 0.82)),
+    rgba(40, 30, 90, 0.4);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.46),
+    0 12px 24px -12px rgba(104, 84, 230, 0.85);
+}
+.profile-btn-primary:hover {
+  background:
+    linear-gradient(135deg, rgba(140, 128, 250, 0.95), rgba(166, 104, 204, 0.88)),
+    rgba(40, 30, 90, 0.4);
+  border-color: rgba(255, 255, 255, 0.44);
+}
+.profile-btn-icon {
+  min-width: 0;
+  width: 2.375rem;
+  padding: 0;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .profile-btn {
+    background: #23232f;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .profile-btn-primary {
+    background: #5b4fc4;
+  }
+}

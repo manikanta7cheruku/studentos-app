@@ -216,7 +216,7 @@ export function ProfileView({
             ) : null}
           </div>
           {actions ? (
-            <div className="mt-1 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:!h-8 [&>*]:min-w-[5.25rem] [&>*]:flex-none [&>*]:!rounded-[10px] [&>*]:!text-[13px]">
+            <div className="mt-1.5 flex w-full flex-wrap justify-center gap-2.5 sm:justify-start">
               {actions}
             </div>
           ) : null}

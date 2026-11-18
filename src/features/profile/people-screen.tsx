@@ -8,8 +8,10 @@ import {
   ChevronRightIcon,
   GraduationCapIcon,
   HourglassIcon,
+  MessageCircleIcon,
   SearchIcon,
   SlidersHorizontalIcon,
+  UserPlusIcon,
   XIcon,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -740,13 +742,15 @@ function FollowButton({ userId, initial }: { userId: string; initial: boolean })
     }
   }
   return (
-    <Button
-      variant={following ? "outline" : "default"}
+    <button
+      type="button"
       onClick={() => void toggle()}
       aria-pressed={following}
+      className={cn("profile-btn", !following && "profile-btn-primary")}
     >
+      {following ? <CheckIcon aria-hidden="true" /> : <UserPlusIcon aria-hidden="true" />}
       {following ? "Following" : "Follow"}
-    </Button>
+    </button>
   );
 }
 
@@ -815,14 +819,14 @@ export function PersonScreen({ userId }: { userId: string }) {
               state.data.is_self ? undefined : (
                 <>
                   <FollowButton userId={state.data.user_id} initial={state.data.i_follow} />
-                  <Button asChild variant="outline">
-                    <Link href={`/c/${slug}/messages/${state.data.user_id}`}>Message</Link>
-                  </Button>
+                  <Link href={`/c/${slug}/messages/${state.data.user_id}`} className="profile-btn">
+                    <MessageCircleIcon aria-hidden="true" /> Message
+                  </Link>
                   <ReportMenu
                     targetType="profile"
                     targetId={state.data.user_id}
                     what="profile"
-                    className="size-8 shrink-0 !min-w-0 !flex-none border border-white/10"
+                    className="profile-btn profile-btn-icon !size-[2.375rem] shrink-0 !rounded-[13px]"
                     extra={[
                       {
                         label: "Block " + state.data.display_name,

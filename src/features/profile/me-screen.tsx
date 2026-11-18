@@ -19,7 +19,6 @@ import {
   UserPlusIcon,
   UsersRoundIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
 import { api } from "@/lib/api/endpoints";
@@ -238,15 +237,15 @@ export function MeScreen() {
             }}
             actions={
               <>
-                <Button asChild>
-                  <Link href={`/c/${slug}/me/edit`}>Edit profile</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/strengths`}>Strengths</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/settings`}>Settings</Link>
-                </Button>
+                <Link href={`/c/${slug}/me/edit`} className="profile-btn profile-btn-primary">
+                  Edit profile
+                </Link>
+                <Link href={`/c/${slug}/me/strengths`} className="profile-btn">
+                  Strengths
+                </Link>
+                <Link href={`/c/${slug}/me/settings`} className="profile-btn">
+                  Settings
+                </Link>
               </>
             }
           />
