@@ -74,6 +74,27 @@ export function SexField({
 }
 
 /**
+ * One digit that rolls like an odometer: all ten digits sit in a column behind a window one digit tall, and the column slides to
+ * the one to show. Only a digit that changes moves, so 2006 to 2005 rolls the last digit and leaves the rest still.
+ */
+function RollingDigit({ digit }: { digit: number }) {
+  return (
+    <span className="relative inline-block h-[1.4em] w-[0.64em] overflow-hidden">
+      <span
+        className="absolute inset-x-0 top-0 flex flex-col transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        style={{ transform: `translateY(${-digit * 1.4}em)` }}
+      >
+        {Array.from({ length: 10 }, (_, d) => (
+          <span key={d} className="block h-[1.4em] text-center leading-[1.4em]">
+            {d}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/**
  * A year on one line: minus, the year, plus. Tap the year to type it. Empty until picked: the first tap on either button
  * starts at `start`. Takes very little room, and never a long list to scroll.
  */
@@ -113,23 +134,42 @@ export function YearStepper({
       >
         &minus;
       </button>
-      <input
-        inputMode="numeric"
-        aria-label={label}
-        value={shown}
-        placeholder="Year"
-        maxLength={4}
-        onChange={(event) => {
-          const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
-          setDraft(digits);
-          if (digits.length === 4) {
-            onChange(clamp(Number(digits)));
-            setDraft(null);
-          }
-        }}
-        onBlur={() => setDraft(null)}
-        className="tabular w-16 bg-transparent text-center text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-ink-muted/60"
-      />
+      <span className="group/year relative flex h-full w-[4.4rem] items-center justify-center">
+        {value === null ? (
+          <span aria-hidden="true" className="pointer-events-none text-[15px] text-ink-muted/60">
+            Year
+          </span>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none flex text-[15px] font-semibold group-focus-within/year:opacity-0"
+          >
+            {String(value)
+              .padStart(4, "0")
+              .split("")
+              .map((digit, index) => (
+                <RollingDigit key={index} digit={Number(digit)} />
+              ))}
+          </span>
+        )}
+        <input
+          inputMode="numeric"
+          aria-label={label}
+          value={shown}
+          maxLength={4}
+          onChange={(event) => {
+            const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
+            setDraft(digits);
+            if (digits.length === 4) {
+              onChange(clamp(Number(digits)));
+              setDraft(null);
+            }
+          }}
+          onFocus={(event) => event.target.select()}
+          onBlur={() => setDraft(null)}
+          className="tabular absolute inset-0 w-full bg-transparent text-center text-[15px] font-semibold text-transparent caret-ink outline-none focus:text-ink"
+        />
+      </span>
       <button
         type="button"
         aria-label={`Later ${label.toLowerCase()}`}
@@ -484,8 +524,8 @@ export function StudyFields({
         <YearStepper
           label="Graduation year"
           value={year}
-          min={new Date().getFullYear() - 1}
-          max={new Date().getFullYear() + 8}
+          min={2000}
+          max={2100}
           start={new Date().getFullYear() + 2}
           onChange={onYear}
         />
