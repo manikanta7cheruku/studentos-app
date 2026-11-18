@@ -312,7 +312,10 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         college={college}
         branch={branch}
         year={gradYear}
-        onCollege={setCollege}
+        onCollege={(next) => {
+          setCollege(next);
+          setFields((current) => ({ ...current, college: "" }));
+        }}
         onBranch={setBranch}
         onYear={setGradYear}
         place={place}

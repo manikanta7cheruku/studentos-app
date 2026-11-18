@@ -19,6 +19,7 @@ import { LAUNCH_COLLEGES, listedCollege, searchColleges } from "@/lib/launch-col
  */
 export function CollegePicker({
   id,
+  labelledBy,
   value,
   other,
   invalid,
@@ -27,6 +28,8 @@ export function CollegePicker({
   onOther,
 }: {
   id: string;
+  /** The id of the visible label above the field; the button is named by it and by what it shows. */
+  labelledBy: string;
   /** The college name as saved. */
   value: string;
   /** True while the person is typing their own college instead. */
@@ -53,6 +56,7 @@ export function CollegePicker({
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-labelledby={`${labelledBy} ${id}-value`}
         aria-describedby={describedBy}
         onClick={() => setOpen(true)}
         className={cn(
@@ -68,6 +72,7 @@ export function CollegePicker({
           <PencilLineIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
         ) : null}
         <span
+          id={`${id}-value`}
           className={cn("min-w-0 flex-1 truncate", chosen || other ? "text-ink" : "text-ink-muted")}
         >
           {chosen ? chosen.name : other ? "Other college" : "Choose your college"}

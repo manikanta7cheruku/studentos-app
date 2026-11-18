@@ -432,11 +432,12 @@ export function StudyFields({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={collegeId} className="text-[13px] font-semibold text-ink/90">
+        <span id={`${collegeId}-label`} className="text-[13px] font-semibold text-ink/90">
           College <span className="font-normal text-ink-muted">(required)</span>
-        </label>
+        </span>
         <CollegePicker
           id={collegeId}
+          labelledBy={`${collegeId}-label`}
           value={college}
           other={otherCollege}
           invalid={Boolean(errors.college)}
@@ -447,7 +448,8 @@ export function StudyFields({
           }}
           onOther={() => {
             setOtherCollege(true);
-            if (listedCollege(college)) onCollege("");
+            // Calling it also clears an old "choose your college" message.
+            onCollege(listedCollege(college) ? "" : college);
           }}
         />
         {otherCollege ? (
@@ -467,7 +469,7 @@ export function StudyFields({
           id={`${collegeId}-help`}
           className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
         >
-          {errors.college ??
+          {errors.college ||
             (otherCollege
               ? "More colleges are coming soon. For now, type yours."
               : "Shown on your profile so people know where you are from.")}

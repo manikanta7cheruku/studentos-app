@@ -344,7 +344,10 @@ function EditForm({ saved }: { saved: Profile }) {
           college={form.college_name}
           branch={form.branch}
           year={form.grad_year}
-          onCollege={(next) => set("college_name", next)}
+          onCollege={(next) => {
+            set("college_name", next);
+            setFields((current) => ({ ...current, college: "" }));
+          }}
           onBranch={(next) => set("branch", next)}
           onYear={(next) => set("grad_year", next)}
           place={form.place}
