@@ -86,6 +86,7 @@ export function CollegePicker({
   // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the sheet where it is.
   const typingProps = {
     onFocus: () => setTyping(true),
+    onClick: () => setTyping(true),
     onBlur: (event: React.FocusEvent) => {
       const next = event.relatedTarget;
       const staysTyping =
@@ -95,6 +96,34 @@ export function CollegePicker({
       if (!staysTyping) setTyping(false);
     },
   };
+  // The keyboard can go away without the box losing focus (Android's back button hides it first). When the visible part of the
+  // page grows by a keyboard's worth the sheet settles back down, and when it shrinks again for a box that has focus it lifts again.
+  // This only positions the sheet; nothing here can close it.
+  React.useEffect(() => {
+    if (!open) return;
+    const view = window.visualViewport;
+    if (!view) return;
+    // The keyboard rises and sinks over a few hundred milliseconds in many small steps, so compare with the height the page has
+    // when no keyboard is up (the largest seen), not with the previous step.
+    let resting = view.height;
+    let keyboardUp = false;
+    const onResize = () => {
+      const height = view.height;
+      resting = Math.max(resting, height);
+      const nowUp = resting - height > 120;
+      const active = document.activeElement;
+      const boxFocused =
+        active instanceof HTMLElement &&
+        active.closest(".college-sheet") !== null &&
+        active.matches("input, textarea");
+      if (keyboardUp && !nowUp) setTyping(false);
+      else if (!keyboardUp && nowUp && boxFocused) setTyping(true);
+      keyboardUp = nowUp;
+    };
+    view.addEventListener("resize", onResize);
+    return () => view.removeEventListener("resize", onResize);
+  }, [open, setTyping]);
+
   // A tap on a row or a button inside the sheet must not take the focus away from the box first: that would close the keyboard
   // and move the sheet under the finger before the tap lands.
   const keepFocus = { onMouseDown: (event: React.MouseEvent) => event.preventDefault() };
@@ -269,7 +298,8 @@ export function CollegePicker({
                   {...keepFocus}
                   onClick={() => {
                     setView("list");
-                    setTyping(false);
+                    if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
+                    setTypingNow(false);
                     // The box that had the keyboard is leaving: hand the keyboard back.
                     if (document.activeElement instanceof HTMLElement)
                       document.activeElement.blur();
