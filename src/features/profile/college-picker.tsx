@@ -31,26 +31,6 @@ function relevant(name: string, typed: string): boolean {
   return words.every((word) => lower.includes(word));
 }
 
-// When a person taps a box to type, the sheet moves up into the top part of the screen at once, in step with the keyboard
-// rising, instead of waiting for the phone to report that the keyboard is open (that report comes late, which looks like a
-// stall). The card is 46% of the screen high, which sits above a normal keyboard; if a keyboard is taller, the real visible
-// height (below) shrinks it to fit. One string ("mobile:visible height:window height") so it compares by value.
-function viewportSnapshot(): string {
-  const view = window.visualViewport;
-  const mobile = window.innerWidth < 640;
-  if (!view || !mobile) return `${mobile ? 1 : 0}:0:0`;
-  return `1:${Math.round(view.height)}:${window.innerHeight}`;
-}
-function subscribeViewport(callback: () => void) {
-  const view = window.visualViewport;
-  view?.addEventListener("resize", callback);
-  view?.addEventListener("scroll", callback);
-  return () => {
-    view?.removeEventListener("resize", callback);
-    view?.removeEventListener("scroll", callback);
-  };
-}
-
 const rowClass =
   "flex w-full items-center gap-3 rounded-[14px] px-2.5 py-2.5 text-left outline-none transition-colors duration-150 hover:bg-white/[0.07] focus-visible:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-ring active:bg-white/[0.1]";
 
@@ -82,34 +62,28 @@ export function CollegePicker({
   const [typedCollege, setTypedCollege] = React.useState("");
   const [typedError, setTypedError] = React.useState<string | null>(null);
   const [similar, setSimilar] = React.useState<{ query: string; names: string[] } | null>(null);
-  const viewport = React.useSyncExternalStore(subscribeViewport, viewportSnapshot, () => "0:0:0");
-  const [mobile = 0, visible = 0, windowHeight = 0] = viewport.split(":").map(Number);
-  // Typing: a box in the sheet was tapped. The sheet then slides up to the top of the screen at once, in step with the keyboard.
-  // It stays there only while the keyboard is really open (or for a moment after the tap, while the keyboard is still rising),
-  // so closing the keyboard by any route (its own button, the back gesture, tapping away) lets the sheet settle back down.
-  const [wantsKeyboard, setWantsKeyboard] = React.useState(false);
-  const [rising, setRising] = React.useState(false);
-  const keyboardOpen = mobile === 1 && windowHeight - visible > 100;
-  const typing = wantsKeyboard && (keyboardOpen || rising);
-  const risingTimer = React.useRef<number | null>(null);
+  // Typing: a box in the sheet has the focus. The sheet then slides up to the top of the screen at the moment of the tap, in step
+  // with the keyboard rising, and back down when the focus leaves. It follows the focus and nothing else (not the size the phone
+  // reports for the keyboard, which differs from phone to phone and arrives late), so it never moves at a surprising moment.
+  // Leaving is delayed a moment: a tap on a row blurs the box first, and the sheet must not slide away from under the finger
+  // before the tap lands.
+  const [typing, setTypingNow] = React.useState(false);
+  const leaveTimer = React.useRef<number | null>(null);
   const setTyping = React.useCallback((next: boolean) => {
-    setWantsKeyboard(next);
-    if (risingTimer.current !== null) window.clearTimeout(risingTimer.current);
-    if (next) {
-      setRising(true);
-      risingTimer.current = window.setTimeout(() => setRising(false), 800);
-    } else {
-      setRising(false);
+    if (leaveTimer.current !== null) {
+      window.clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
     }
+    if (next) setTypingNow(true);
+    else leaveTimer.current = window.setTimeout(() => setTypingNow(false), 220);
   }, []);
   React.useEffect(
     () => () => {
-      if (risingTimer.current !== null) window.clearTimeout(risingTimer.current);
+      if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
     },
     [],
   );
-  // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the sheet where it is. A tap on a box that
-  // already has focus (the keyboard was hidden with the back gesture) counts too.
+  // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the sheet where it is.
   const typingProps = {
     onFocus: () => setTyping(true),
     onPointerDown: () => setTyping(true),
@@ -163,7 +137,8 @@ export function CollegePicker({
 
   function show(next: boolean) {
     setOpen(next);
-    setTyping(false);
+    if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
+    setTypingNow(false);
     if (next) {
       setView("list");
       setTypedCollege(typed ?? "");
@@ -229,7 +204,7 @@ export function CollegePicker({
           <DialogPrimitive.Content
             // The keyboard opens only when someone taps a box, never by itself the moment the sheet appears.
             onOpenAutoFocus={(event) => event.preventDefault()}
-            data-typing={mobile && typing ? "true" : undefined}
+            data-typing={typing ? "true" : undefined}
             className="college-sheet glass-pro"
           >
             <div className="flex shrink-0 items-start gap-2">
