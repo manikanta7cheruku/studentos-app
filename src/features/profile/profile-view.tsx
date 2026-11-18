@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLinkIcon } from "lucide-react";
+import { CheckIcon, ExternalLinkIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { cn } from "cn";
 import type { Counts } from "./standing";
@@ -43,9 +43,13 @@ function Section({
 }) {
   return (
     <section className="px-5 py-5 sm:px-6">
-      <h2 className="mb-2.5 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+      <h2 className="mb-3.5 flex items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
         {title}
-        {count !== undefined ? <span className="tabular text-ink-muted/80">{count}</span> : null}
+        {count !== undefined ? (
+          <span className="tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/[0.08] px-1.5 text-[11px] font-semibold tracking-normal text-ink/75">
+            {count}
+          </span>
+        ) : null}
       </h2>
       <div className="min-w-0">{children}</div>
     </section>
@@ -105,6 +109,21 @@ function StrengthChip({
   );
 }
 
+/** An interest. One you share with the person looking is lit in the app's violet with a tick. */
+function InterestChip({ name, shared }: { name: string; shared: boolean }) {
+  return (
+    <Chip
+      className={cn(
+        "h-[30px] min-h-0 gap-1.5 px-3 text-[12.5px] text-ink/90",
+        shared && "border-[#a99fff]/40 bg-[#7a6ef0]/20 text-[#e4e0ff]",
+      )}
+    >
+      {shared ? <CheckIcon aria-hidden="true" className="size-3" /> : null}
+      {name}
+    </Chip>
+  );
+}
+
 /** One profile, read only: the same layout for my own profile and for a classmate's. A glass hero, then cards. */
 /**
  * A username-like name with no spaces ("manikantathadigoppula26") cannot wrap nicely, so it is sized to fit the card on one
@@ -124,6 +143,8 @@ export function ProfileView({
   actions,
   isSelf = false,
   connectionsHref,
+  campus,
+  commonWith,
 }: {
   person: ProfileViewData;
   actions?: React.ReactNode;
@@ -131,25 +152,24 @@ export function ProfileView({
   isSelf?: boolean;
   /** Where the followers and following lists are (my own page only). */
   connectionsHref?: string;
+  /** The Campus part (college, students from it). It sits first in the details card. */
+  campus?: React.ReactNode;
+  /** The viewer's own interests, in lower case: the ones this person shares are lit up. Not given on my own page. */
+  commonWith?: string[];
 }) {
-  const course = [person.program, person.grad_year ? `Class of ${person.grad_year}` : null]
-    .filter(Boolean)
-    .join(" · ");
   const meta = [
     person.gender ? GENDER_LABEL[person.gender] : null,
     person.age ? `${person.age} years` : null,
-    person.place ? `Lives in ${person.place}` : null,
   ].filter(Boolean);
+  const common = new Set(commonWith ?? []);
+  const isCommon = (interest: string) => common.has(interest.trim().toLowerCase());
+  const shared = [...person.interests, ...(person.tech_interests ?? [])].filter(isCommon).length;
+  const interestCount = person.interests.length + (person.tech_interests?.length ?? 0);
   const counts = person.contributions ?? null;
   return (
     <article className="flex flex-col gap-4">
       <header className="glass-card relative overflow-hidden rounded-[28px]">
-        {/* A soft colour behind the picture, so the top is not flat. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(143,134,240,0.5)_0%,rgba(143,134,240,0.28)_30%,rgba(224,134,106,0.12)_60%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.6)_40%,rgba(0,0,0,0.2)_75%,transparent_100%)]"
-        />
-        <div className="relative flex flex-col items-center gap-3 px-5 pt-10 pb-6 text-center sm:items-start sm:text-left">
+        <div className="relative flex flex-col items-center gap-3 px-5 pt-8 pb-5 text-center sm:items-start sm:text-left">
           <span className="rounded-full p-1 ring-4 ring-[#0b0b10]/60">
             <Avatar name={person.display_name} src={person.avatar_url} size="xl" />
           </span>
@@ -171,14 +191,6 @@ export function ProfileView({
               <p className="mt-2 text-pretty text-[15.5px] leading-snug text-ink [overflow-wrap:anywhere]">
                 {person.headline}
               </p>
-            ) : null}
-            {person.college_name ? (
-              <p className="mt-2 text-balance text-[14px] font-semibold leading-snug text-ink/90 [overflow-wrap:anywhere]">
-                {person.college_name}
-              </p>
-            ) : null}
-            {course ? (
-              <p className="mt-0.5 text-balance text-[13.5px] font-medium text-ink/75">{course}</p>
             ) : null}
             {meta.length ? (
               <p className="mt-0.5 text-balance text-[13px] text-ink-muted [overflow-wrap:anywhere]">
@@ -204,7 +216,7 @@ export function ProfileView({
             ) : null}
           </div>
           {actions ? (
-            <div className="mt-2 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:min-w-[6rem] [&>*]:flex-1 sm:[&>*]:flex-none">
+            <div className="mt-1 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:!h-8 [&>*]:min-w-[5.25rem] [&>*]:flex-none [&>*]:!rounded-[10px] [&>*]:!text-[13px]">
               {actions}
             </div>
           ) : null}
@@ -212,6 +224,7 @@ export function ProfileView({
       </header>
 
       <div className="glass-card divide-y divide-white/[0.07] overflow-hidden rounded-[24px]">
+        {campus ? <section className="px-5 py-5 sm:px-6">{campus}</section> : null}
         {person.excited_by ? (
           <Section title="What excites me">
             <p className="max-w-prose text-pretty text-[16px] leading-relaxed">
@@ -244,16 +257,22 @@ export function ProfileView({
             </ul>
           </Section>
         ) : null}
-        {person.interests.length || person.tech_interests?.length ? (
-          <Section title="Interests">
+        {interestCount ? (
+          <Section title="Interests" count={interestCount}>
+            {shared > 0 ? (
+              <p className="mb-3.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#cfcaff]">
+                <CheckIcon aria-hidden="true" className="size-3.5" />
+                {shared} in common with you
+              </p>
+            ) : null}
             <div className="flex flex-col gap-4">
               {person.interests.length ? (
                 <div>
-                  <p className="mb-2 text-[13px] font-semibold text-ink/90">For fun</p>
+                  <p className="mb-2 text-[12px] text-ink-muted">For fun</p>
                   <ul className="flex flex-wrap gap-2">
                     {person.interests.map((interest) => (
                       <li key={interest}>
-                        <Chip>{interest}</Chip>
+                        <InterestChip name={interest} shared={isCommon(interest)} />
                       </li>
                     ))}
                   </ul>
@@ -261,11 +280,11 @@ export function ProfileView({
               ) : null}
               {person.tech_interests?.length ? (
                 <div>
-                  <p className="mb-2 text-[13px] font-semibold text-ink/90">Tech and career</p>
+                  <p className="mb-2 text-[12px] text-ink-muted">Tech and career</p>
                   <ul className="flex flex-wrap gap-2">
                     {person.tech_interests.map((interest) => (
                       <li key={interest}>
-                        <Chip>{interest}</Chip>
+                        <InterestChip name={interest} shared={isCommon(interest)} />
                       </li>
                     ))}
                   </ul>

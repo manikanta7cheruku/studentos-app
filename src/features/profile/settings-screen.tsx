@@ -25,6 +25,7 @@ import { api, type BlockedPerson } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { GLOBAL_SLUG, homePath } from "@/lib/home-path";
 import { useCollege } from "@/features/college";
+import { inviteLink, shareInvite } from "@/lib/invite-share";
 import { useSession } from "@/features/session/session-provider";
 import { PushAlertsRow } from "@/features/notifications/push-alerts";
 
@@ -487,10 +488,6 @@ function SpacesSection() {
   );
 }
 
-// What a friend reads when the link is shared in a chat: what it is, that it is free, and how to get it on a phone.
-const INVITE_TEXT =
-  "I am using StudentOS to find plans, join debates and meet people on campus. It is free, and you can add it to your phone in two taps, no app store needed. Join me:";
-
 /** My invite link, to share in a group chat. Shows how many friends joined through it. */
 function InviteSection() {
   const state = useLoad(() => api.invite.get(), []);
@@ -511,22 +508,13 @@ function InviteSection() {
         </div>
       </Group>
     );
-  const link = `${window.location.origin}/?ref=${state.data.code}`;
+  const code = state.data.code;
+  const link = inviteLink(code);
   async function share() {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: "Join me on StudentOS",
-          text: INVITE_TEXT,
-          url: link,
-        });
-        return;
-      }
-      await navigator.clipboard.writeText(`${INVITE_TEXT}\n${link}`);
+    const result = await shareInvite(code);
+    if (result === "copied") {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // The share sheet was closed, or the browser blocked the clipboard. Nothing to tell them.
     }
   }
   return (

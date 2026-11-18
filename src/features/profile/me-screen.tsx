@@ -25,6 +25,7 @@ import { LoadError } from "@/components/app/load-error";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { CampusSection } from "./campus-section";
 import { ProfileView } from "./profile-view";
 
 function ProfileSkeleton() {
@@ -206,6 +207,25 @@ export function MeScreen() {
           <ProfileView
             isSelf
             connectionsHref={`/c/${slug}/me/connections`}
+            campus={
+              state.data.profile.college_name ? (
+                <CampusSection
+                  isSelf
+                  slug={slug}
+                  college={state.data.profile.college_name}
+                  branch={state.data.profile.branch}
+                  year={state.data.profile.grad_year}
+                  place={state.data.profile.place}
+                  excludeIds={[state.data.profile.user_id]}
+                  viewerInterests={[
+                    ...state.data.profile.interests,
+                    ...(state.data.profile.tech_interests ?? []),
+                  ]}
+                  viewerBranch={state.data.profile.branch}
+                  viewerYear={state.data.profile.grad_year}
+                />
+              ) : null
+            }
             person={{
               ...state.data.profile,
               program: state.data.profile.branch,
