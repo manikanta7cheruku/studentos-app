@@ -565,6 +565,7 @@ select option {
   .glass-clear,
   .glass-dock,
   .glass-sheet-clear,
+  .glass-pro,
   .glass-tip,
   .glass-card,
   .glass-sheet,
@@ -584,6 +585,9 @@ select option {
   }
   .glass-sheet {
     background: #1b1a2c;
+  }
+  .glass-pro {
+    background: #1b1b26 !important;
   }
   .sheet-scrim {
     background: rgba(6, 6, 12, 0.7);
@@ -856,5 +860,41 @@ select option {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* The college sheet: neutral frosted glass. No colour cast, a hairline edge lit from the top, and a deep soft shadow. */
+.glass-pro {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04) 40%),
+    rgba(20, 20, 30, 0.58) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 -24px 70px -24px rgba(0, 0, 0, 0.65) !important;
+}
+/* An inset field on glass: slightly darker than the glass, with a thin edge, so it reads as a place to type. */
+.glass-field {
+  background: rgba(8, 8, 16, 0.32);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: box-shadow 180ms ease;
+}
+.glass-field:focus-visible {
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34),
+    0 0 0 3px rgba(150, 140, 255, 0.28);
+}
+
+/* The college sheet in solid form for people who asked for less transparency (it sits after the rule above so it wins). */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-pro {
+    background: #1b1b26 !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
