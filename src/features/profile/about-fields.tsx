@@ -395,8 +395,8 @@ export function PhoneFields({
 }
 
 export const BRANCHES = [
-  "CSBS",
   "CSE",
+  "CSBS",
   "IT",
   "AI & DS",
   "ECE",

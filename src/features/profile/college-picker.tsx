@@ -84,15 +84,35 @@ export function CollegePicker({
   const [similar, setSimilar] = React.useState<{ query: string; names: string[] } | null>(null);
   const viewport = React.useSyncExternalStore(subscribeViewport, viewportSnapshot, () => "0:0:0");
   const [mobile = 0, visible = 0, windowHeight = 0] = viewport.split(":").map(Number);
-  // True while a box in the sheet has the keyboard: the sheet then sits at the top of the screen as a compact card.
-  const [typing, setTyping] = React.useState(false);
-  const typingHeight = Math.max(
-    220,
-    Math.min(Math.round(windowHeight * 0.46), visible ? visible - 24 : windowHeight),
+  // Typing: a box in the sheet was tapped. The sheet then slides up to the top of the screen at once, in step with the keyboard.
+  // It stays there only while the keyboard is really open (or for a moment after the tap, while the keyboard is still rising),
+  // so closing the keyboard by any route (its own button, the back gesture, tapping away) lets the sheet settle back down.
+  const [wantsKeyboard, setWantsKeyboard] = React.useState(false);
+  const [rising, setRising] = React.useState(false);
+  const keyboardOpen = mobile === 1 && windowHeight - visible > 100;
+  const typing = wantsKeyboard && (keyboardOpen || rising);
+  const risingTimer = React.useRef<number | null>(null);
+  const setTyping = React.useCallback((next: boolean) => {
+    setWantsKeyboard(next);
+    if (risingTimer.current !== null) window.clearTimeout(risingTimer.current);
+    if (next) {
+      setRising(true);
+      risingTimer.current = window.setTimeout(() => setRising(false), 800);
+    } else {
+      setRising(false);
+    }
+  }, []);
+  React.useEffect(
+    () => () => {
+      if (risingTimer.current !== null) window.clearTimeout(risingTimer.current);
+    },
+    [],
   );
-  // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the card where it is.
+  // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the sheet where it is. A tap on a box that
+  // already has focus (the keyboard was hidden with the back gesture) counts too.
   const typingProps = {
     onFocus: () => setTyping(true),
+    onPointerDown: () => setTyping(true),
     onBlur: (event: React.FocusEvent) => {
       const next = event.relatedTarget;
       const staysTyping =
@@ -210,18 +230,19 @@ export function CollegePicker({
             // The keyboard opens only when someone taps a box, never by itself the moment the sheet appears.
             onOpenAutoFocus={(event) => event.preventDefault()}
             data-typing={mobile && typing ? "true" : undefined}
-            style={
-              mobile ? ({ "--typing-h": `${typingHeight}px` } as React.CSSProperties) : undefined
-            }
             className="college-sheet glass-pro"
           >
             <div className="flex shrink-0 items-start gap-2">
               {view === "type" ? (
                 <button
                   type="button"
+                  {...keepFocus}
                   onClick={() => {
                     setView("list");
                     setTyping(false);
+                    // The box that had the keyboard is leaving: hand the keyboard back.
+                    if (document.activeElement instanceof HTMLElement)
+                      document.activeElement.blur();
                   }}
                   aria-label="Back to the list"
                   className="-ml-1.5 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/80 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
@@ -267,7 +288,7 @@ export function CollegePicker({
                 <ul
                   role="listbox"
                   aria-label="Colleges"
-                  className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
+                  className="college-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
                 >
                   {rows.map((college) => {
                     const selected = listed?.name === college.name;
@@ -353,7 +374,7 @@ export function CollegePicker({
                 <div
                   role="group"
                   aria-label="Suggestions"
-                  className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
+                  className="college-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
                 >
                   {suggestions.map((name) => (
                     <button
