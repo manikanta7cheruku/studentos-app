@@ -103,24 +103,15 @@ export function CreateSheet({
   ];
 
   // Order: what is coming first (Sell or rent, Lost and found), then what people use every day, and Events as the big tile at
-  // the bottom. Turf belongs to one campus, so Global does not offer it.
+  // the bottom. The same list in Global and in a college.
   const by = (word: string) => choices.find((item) => item.href.includes(word))!;
   const shown: Choice[] = [
     by("/market"),
     by("/lost-found"),
     by("/collaborate"),
     by("/ideas"),
-    ...(slug === "global"
-      ? [
-          {
-            ...by("/debates"),
-            wide: true,
-            detail:
-              "Ask a question with two sides and a timer. People pick a side and make their case.",
-            tags: ["Campus life", "Movies", "Sports", "Tech"],
-          },
-        ]
-      : [by("/debates"), by("/turf")]),
+    by("/debates"),
+    by("/turf"),
     {
       ...by("/events"),
       wide: true,

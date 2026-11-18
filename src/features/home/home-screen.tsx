@@ -159,9 +159,8 @@ export function HomeScreen() {
       items.push({ kind: "plan", at: post.created_at, post, outside: true });
     for (const event of (publicEvents ?? []).slice(0, 8))
       items.push({ kind: "event", at: event.created_at, event, outside: true });
-    // Turf and courts sit with the plans: a place to play, and a way to book it. Only in a college: a ground belongs to one
-    // campus, so Global has none and what is public does not show up here either.
-    if (!isGlobal && venues.status === "ready")
+    // Turf and courts sit with the plans: a place to play, and a way to book it.
+    if (venues.status === "ready")
       for (const venue of venues.data.slice(0, 6))
         items.push({ kind: "venue", at: venue.created_at, venue, outside: false });
   }

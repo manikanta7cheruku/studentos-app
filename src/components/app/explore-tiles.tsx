@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { COMING_SOON } from "@/lib/features";
-import {
-  CalendarDaysIcon,
-  MapPinnedIcon,
-  PackageSearchIcon,
-  StoreIcon,
-  ScaleIcon,
-} from "lucide-react";
+import { CalendarDaysIcon, MapPinnedIcon, PackageSearchIcon, StoreIcon } from "lucide-react";
 
 const soon = (href: string) =>
   (href.endsWith("/market") && COMING_SOON.marketplace) ||
@@ -40,21 +34,8 @@ export function ExploreTiles({ slug }: { slug: string }) {
       icon: <StoreIcon />,
     },
   ];
-  // Turf belongs to one campus, so Global does not list it. Lost and found and the Marketplace are listed everywhere, marked Soon.
-  const shown =
-    slug === "global"
-      ? [
-          tiles[0]!,
-          {
-            href: `/c/${slug}/debates`,
-            title: "Debates",
-            text: "Pick a side",
-            icon: <ScaleIcon />,
-          },
-          tiles[2]!,
-          tiles[3]!,
-        ]
-      : tiles;
+  // The same ways in everywhere. Lost and found and the Marketplace are marked Soon.
+  const shown = tiles;
   return (
     <ul className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 md:mx-0 md:px-0">
       {shown.map((tile) => (

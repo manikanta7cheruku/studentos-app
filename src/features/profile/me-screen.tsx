@@ -130,15 +130,15 @@ function MoreMenu() {
       text: "Pick a side, make your point",
       icon: <ScaleIcon />,
     },
-    // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
+    {
+      href: `/c/${slug}/turf`,
+      label: "Turf and courts",
+      text: "Book a ground, find players",
+      icon: <MapPinnedIcon />,
+    },
+    // Lost and found and the Marketplace belong to one campus, so Global does not have them.
     ...(slug !== "global"
       ? [
-          {
-            href: `/c/${slug}/turf`,
-            label: "Turf and courts",
-            text: "Book a ground, find players",
-            icon: <MapPinnedIcon />,
-          },
           {
             href: `/c/${slug}/lost-found`,
             label: "Lost and found",
