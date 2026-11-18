@@ -8,11 +8,9 @@ import {
   ChevronRightIcon,
   PencilLineIcon,
   SearchIcon,
-  XIcon,
 } from "lucide-react";
-import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "cn";
-import { Dialog, DialogDescription, DialogPortal, DialogTitle } from "@/components/ui/dialog";
+import { GlassSheet } from "@/components/app/glass-sheet";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/endpoints";
 import { collegeNameProblem } from "@/lib/college-name";
@@ -91,7 +89,7 @@ export function CollegePicker({
       const next = event.relatedTarget;
       const staysTyping =
         next instanceof HTMLElement &&
-        next.closest(".college-sheet") !== null &&
+        next.closest(".pro-sheet") !== null &&
         next.matches("input, textarea");
       if (!staysTyping) setTyping(false);
     },
@@ -114,7 +112,7 @@ export function CollegePicker({
       const active = document.activeElement;
       const boxFocused =
         active instanceof HTMLElement &&
-        active.closest(".college-sheet") !== null &&
+        active.closest(".pro-sheet") !== null &&
         active.matches("input, textarea");
       if (keyboardUp && !nowUp) setTyping(false);
       else if (!keyboardUp && nowUp && boxFocused) setTyping(true);
@@ -196,38 +194,6 @@ export function CollegePicker({
     show(false);
   }
 
-  // Pulling the top of the sheet down closes it, the way phone sheets do. Pulling it up only stretches a little and springs back.
-  // The page behind never moves: the top of the sheet takes the touch for itself (touch-action: none).
-  const sheetRef = React.useRef<HTMLDivElement>(null);
-  const drag = React.useRef<{ y: number; t: number; dy: number } | null>(null);
-  function dragStart(event: React.PointerEvent<HTMLDivElement>) {
-    if (window.innerWidth >= 640) return;
-    if ((event.target as HTMLElement).closest("button")) return;
-    drag.current = { y: event.clientY, t: event.timeStamp, dy: 0 };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    sheetRef.current?.setAttribute("data-dragging", "true");
-  }
-  function dragMove(event: React.PointerEvent<HTMLDivElement>) {
-    const current = drag.current;
-    if (!current) return;
-    current.dy = event.clientY - current.y;
-    const shown = current.dy > 0 ? current.dy : Math.max(-18, current.dy * 0.12);
-    sheetRef.current?.style.setProperty("--drag", `${shown}px`);
-  }
-  function dragEnd(event: React.PointerEvent<HTMLDivElement>) {
-    const current = drag.current;
-    drag.current = null;
-    sheetRef.current?.removeAttribute("data-dragging");
-    if (!current) return;
-    const speed = current.dy / Math.max(1, event.timeStamp - current.t);
-    if (current.dy > 110 || (current.dy > 40 && speed > 0.5)) show(false);
-    else sheetRef.current?.style.setProperty("--drag", "0px");
-  }
-
-  // A tap that starts on the dimmed page closes the sheet; a tap that starts inside it never does, even if the sheet moves under
-  // the finger before the finger lifts.
-  const scrimDown = React.useRef(false);
-
   return (
     <>
       <button
@@ -259,201 +225,160 @@ export function CollegePicker({
         <ChevronDownIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
       </button>
 
-      <Dialog open={open} onOpenChange={show}>
-        <DialogPortal>
-          <DialogPrimitive.Overlay
-            className="college-scrim"
-            onPointerDown={() => {
-              scrimDown.current = true;
-            }}
-            onClick={() => {
-              if (scrimDown.current) show(false);
-              scrimDown.current = false;
-            }}
-          />
-          <DialogPrimitive.Content
-            // The keyboard opens only when someone taps a box, never by itself the moment the sheet appears.
-            onOpenAutoFocus={(event) => event.preventDefault()}
-            // Closing by tapping the page is handled by the dimmed layer above, which knows where the tap began.
-            onPointerDownOutside={(event) => event.preventDefault()}
-            onInteractOutside={(event) => event.preventDefault()}
-            ref={sheetRef}
-            data-typing={typing ? "true" : undefined}
-            className="college-sheet glass-pro"
-          >
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-white/25 sm:hidden"
-            />
-            <div
-              className="flex shrink-0 touch-none select-none items-start gap-2 max-sm:-mt-1 max-sm:pt-2"
-              onPointerDown={dragStart}
-              onPointerMove={dragMove}
-              onPointerUp={dragEnd}
-              onPointerCancel={dragEnd}
+      <GlassSheet
+        open={open}
+        onOpenChange={show}
+        typing={typing}
+        title={view === "list" ? "Choose your college" : "Type your college"}
+        description={
+          view === "list"
+            ? "More colleges are coming soon."
+            : "Write its full name, for example Alpha Institute of Technology."
+        }
+        lead={
+          view === "type" ? (
+            <button
+              type="button"
+              {...keepFocus}
+              onClick={() => {
+                setView("list");
+                if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
+                setTypingNow(false);
+                // The box that had the keyboard is leaving: hand the keyboard back.
+                if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+              }}
+              aria-label="Back to the list"
+              className="-ml-1.5 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/80 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {view === "type" ? (
-                <button
-                  type="button"
-                  {...keepFocus}
-                  onClick={() => {
-                    setView("list");
-                    if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
-                    setTypingNow(false);
-                    // The box that had the keyboard is leaving: hand the keyboard back.
-                    if (document.activeElement instanceof HTMLElement)
-                      document.activeElement.blur();
-                  }}
-                  aria-label="Back to the list"
-                  className="-ml-1.5 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/80 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <ChevronLeftIcon aria-hidden="true" className="size-5" />
-                </button>
-              ) : null}
-              <div className="min-w-0 flex-1">
-                <DialogTitle className="text-[17px] font-semibold tracking-tight">
-                  {view === "list" ? "Choose your college" : "Type your college"}
-                </DialogTitle>
-                <DialogDescription className="mt-1 text-[13px] text-ink/65">
-                  {view === "list"
-                    ? "More colleges are coming soon."
-                    : "Write its full name, for example Alpha Institute of Technology."}
-                </DialogDescription>
-              </div>
-              <DialogPrimitive.Close
-                aria-label="Close"
-                className="-mr-1.5 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/80 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <XIcon aria-hidden="true" className="size-[18px]" />
-              </DialogPrimitive.Close>
+              <ChevronLeftIcon aria-hidden="true" className="size-5" />
+            </button>
+          ) : undefined
+        }
+      >
+        {view === "list" ? (
+          <>
+            <div className="relative shrink-0">
+              <SearchIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink/55"
+              />
+              <input
+                type="search"
+                {...typingProps}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search colleges"
+                aria-label="Search colleges"
+                className="glass-field h-11 w-full rounded-[12px] pr-3 pl-10 text-[15px] outline-none placeholder:text-ink/50"
+              />
             </div>
-
-            {view === "list" ? (
-              <>
-                <div className="relative shrink-0">
-                  <SearchIcon
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink/55"
-                  />
-                  <input
-                    type="search"
-                    {...typingProps}
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search colleges"
-                    aria-label="Search colleges"
-                    className="glass-field h-11 w-full rounded-[12px] pr-3 pl-10 text-[15px] outline-none placeholder:text-ink/50"
-                  />
-                </div>
-                <ul
-                  role="listbox"
-                  aria-label="Colleges"
-                  className="college-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
-                >
-                  {rows.map((college) => {
-                    const selected = listed?.name === college.name;
-                    return (
-                      <li key={college.name} role="option" aria-selected={selected}>
-                        <button
-                          type="button"
-                          {...keepFocus}
-                          onClick={() => choose(college.name)}
-                          className={cn(rowClass, selected && "bg-white/[0.09]")}
-                        >
-                          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-semibold tracking-wide text-ink/85 ring-1 ring-white/[0.12]">
-                            {college.short.length > 4 ? college.short.slice(0, 4) : college.short}
-                          </span>
-                          <span className="min-w-0 flex-1 text-[14.5px] leading-snug">
-                            {college.name}
-                          </span>
-                          {selected ? (
-                            <CheckIcon aria-hidden="true" className="size-4 shrink-0 text-ink/80" />
-                          ) : null}
-                        </button>
-                      </li>
-                    );
-                  })}
-                  {rows.length === 0 ? (
-                    <li className="px-2.5 py-4 text-[13.5px] text-ink/65">
-                      No college matches your search.
-                    </li>
-                  ) : null}
-                </ul>
-                <button
-                  type="button"
-                  {...keepFocus}
-                  onClick={() => setView("type")}
-                  className="glass-field flex h-12 w-full shrink-0 items-center gap-3 rounded-[12px] px-3.5 text-left text-[14.5px] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <PencilLineIcon aria-hidden="true" className="size-4 shrink-0 text-ink/70" />
-                  <span className="min-w-0 flex-1 truncate">
-                    Didn&apos;t find your college? Type it here
-                  </span>
-                  <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-ink/60" />
-                </button>
-              </>
-            ) : (
-              <form
-                className="flex min-h-0 flex-1 flex-col gap-3"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  applyTyped();
-                }}
-              >
-                <div className="flex shrink-0 gap-2">
-                  <input
-                    type="text"
-                    value={typedCollege}
-                    onChange={(event) => {
-                      setTypedCollege(event.target.value);
-                      setTypedError(null);
-                    }}
-                    maxLength={120}
-                    autoComplete="organization"
-                    autoFocus
-                    {...typingProps}
-                    placeholder="Didn't find your college? Type it here"
-                    aria-label="Type your college"
-                    aria-invalid={typedError ? true : undefined}
-                    className="glass-field h-11 min-w-0 flex-1 rounded-[12px] px-3.5 text-[15px] outline-none placeholder:text-ink/50"
-                  />
-                  <Button
-                    type="submit"
-                    {...keepFocus}
-                    className="h-11 rounded-[12px] px-4"
-                    disabled={typedClean.length < 3}
-                  >
-                    Use
-                  </Button>
-                </div>
-                {typedError ? (
-                  <p role="alert" className="shrink-0 text-[12.5px] font-medium text-danger">
-                    {typedError}
-                  </p>
-                ) : null}
-                <div
-                  role="group"
-                  aria-label="Suggestions"
-                  className="college-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
-                >
-                  {suggestions.map((name) => (
+            <ul
+              role="listbox"
+              aria-label="Colleges"
+              className="pro-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
+            >
+              {rows.map((college) => {
+                const selected = listed?.name === college.name;
+                return (
+                  <li key={college.name} role="option" aria-selected={selected}>
                     <button
-                      key={name}
                       type="button"
                       {...keepFocus}
-                      onClick={() => choose(name)}
-                      className={rowClass}
+                      onClick={() => choose(college.name)}
+                      className={cn(rowClass, selected && "bg-white/[0.09]")}
                     >
-                      <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-ink/55" />
-                      <span className="min-w-0 flex-1 text-[14.5px] leading-snug">{name}</span>
+                      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-semibold tracking-wide text-ink/85 ring-1 ring-white/[0.12]">
+                        {college.short.length > 4 ? college.short.slice(0, 4) : college.short}
+                      </span>
+                      <span className="min-w-0 flex-1 text-[14.5px] leading-snug">
+                        {college.name}
+                      </span>
+                      {selected ? (
+                        <CheckIcon aria-hidden="true" className="size-4 shrink-0 text-ink/80" />
+                      ) : null}
                     </button>
-                  ))}
-                </div>
-              </form>
-            )}
-          </DialogPrimitive.Content>
-        </DialogPortal>
-      </Dialog>
+                  </li>
+                );
+              })}
+              {rows.length === 0 ? (
+                <li className="px-2.5 py-4 text-[13.5px] text-ink/65">
+                  No college matches your search.
+                </li>
+              ) : null}
+            </ul>
+            <button
+              type="button"
+              {...keepFocus}
+              onClick={() => setView("type")}
+              className="glass-field flex h-12 w-full shrink-0 items-center gap-3 rounded-[12px] px-3.5 text-left text-[14.5px] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <PencilLineIcon aria-hidden="true" className="size-4 shrink-0 text-ink/70" />
+              <span className="min-w-0 flex-1 truncate">
+                Didn&apos;t find your college? Type it here
+              </span>
+              <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-ink/60" />
+            </button>
+          </>
+        ) : (
+          <form
+            className="flex min-h-0 flex-1 flex-col gap-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyTyped();
+            }}
+          >
+            <div className="flex shrink-0 gap-2">
+              <input
+                type="text"
+                value={typedCollege}
+                onChange={(event) => {
+                  setTypedCollege(event.target.value);
+                  setTypedError(null);
+                }}
+                maxLength={120}
+                autoComplete="organization"
+                autoFocus
+                {...typingProps}
+                placeholder="Didn't find your college? Type it here"
+                aria-label="Type your college"
+                aria-invalid={typedError ? true : undefined}
+                className="glass-field h-11 min-w-0 flex-1 rounded-[12px] px-3.5 text-[15px] outline-none placeholder:text-ink/50"
+              />
+              <Button
+                type="submit"
+                {...keepFocus}
+                className="h-11 rounded-[12px] px-4"
+                disabled={typedClean.length < 3}
+              >
+                Use
+              </Button>
+            </div>
+            {typedError ? (
+              <p role="alert" className="shrink-0 text-[12.5px] font-medium text-danger">
+                {typedError}
+              </p>
+            ) : null}
+            <div
+              role="group"
+              aria-label="Suggestions"
+              className="pro-scroll -mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2"
+            >
+              {suggestions.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  {...keepFocus}
+                  onClick={() => choose(name)}
+                  className={rowClass}
+                >
+                  <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-ink/55" />
+                  <span className="min-w-0 flex-1 text-[14.5px] leading-snug">{name}</span>
+                </button>
+              ))}
+            </div>
+          </form>
+        )}
+      </GlassSheet>
     </>
   );
 }

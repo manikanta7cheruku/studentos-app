@@ -11,15 +11,8 @@ import {
   SlidersHorizontalIcon,
 } from "lucide-react";
 import { cn } from "cn";
+import { GlassSheet } from "@/components/app/glass-sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
@@ -116,7 +109,7 @@ function PersonRow({
             {person.headline ?? (person.handle ? `@${person.handle}` : meta || "New on StudentOS")}
           </span>
           {person.headline && meta ? (
-            <span className="block truncate text-[12px] text-ink-muted/80">{meta}</span>
+            <span className="line-clamp-2 break-words text-[12px] text-ink-muted/80">{meta}</span>
           ) : null}
           {shared.length ? (
             <span className="mt-0.5 block truncate text-[12px]">
@@ -167,7 +160,7 @@ function PersonRow({
   );
 }
 
-/** A choice of interests in a sheet, so the page itself stays clean. */
+/** A choice of interests in a glass sheet (the same one the college picker uses), so the page itself stays clean. */
 function InterestFilter({
   selected,
   onChange,
@@ -186,13 +179,7 @@ function InterestFilter({
     setOpen(true);
   }
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (next) setDraft(selected);
-        setOpen(next);
-      }}
-    >
+    <>
       <Button
         type="button"
         variant="outline"
@@ -210,18 +197,16 @@ function InterestFilter({
           </span>
         ) : null}
       </Button>
-      <DialogContent>
-        <span
-          aria-hidden="true"
-          className="mx-auto -mt-2 h-1 w-10 rounded-full bg-white/20 sm:hidden"
-        />
-        <DialogHeader className="gap-1 pr-8">
-          <DialogTitle>Filter by interests</DialogTitle>
-          <DialogDescription className="text-[13.5px]">
-            Show people who share at least one of these.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="-mx-5 max-h-[52vh] overflow-y-auto overscroll-contain px-5 pt-1 pb-8 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-32px),transparent)]">
+      <GlassSheet
+        open={open}
+        onOpenChange={(next) => {
+          if (next) setDraft(selected);
+          setOpen(next);
+        }}
+        title="Filter by interests"
+        description="Show people who share at least one of these."
+      >
+        <div className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-28px),transparent)]">
           <div className="flex flex-col gap-5">
             {(
               [
@@ -246,7 +231,7 @@ function InterestFilter({
                           "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform,padding] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring active:scale-95 motion-reduce:transition-none",
                           on
                             ? "bg-brand border-transparent pl-3 text-white"
-                            : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+                            : "border-white/15 bg-white/[0.06] text-ink/80 hover:border-white/30 hover:text-ink",
                         )}
                       >
                         {on ? <CheckIcon aria-hidden="true" className="size-3.5" /> : null}
@@ -259,7 +244,7 @@ function InterestFilter({
             ))}
           </div>
         </div>
-        <DialogFooter className="-mx-5 -mb-5 flex-row items-center gap-3 border-white/10 bg-transparent px-5 py-3 max-sm:pb-[calc(0.75rem+var(--safe-bottom))] sm:justify-between">
+        <div className="flex shrink-0 items-center gap-3 border-t border-white/[0.1] pt-3">
           <Button
             type="button"
             variant="ghost"
@@ -270,7 +255,7 @@ function InterestFilter({
           </Button>
           <Button
             type="button"
-            className="flex-1 sm:flex-none"
+            className="flex-1"
             onClick={() => {
               onChange(draft);
               setOpen(false);
@@ -278,9 +263,9 @@ function InterestFilter({
           >
             {draft.length ? `Show people (${draft.length})` : "Show everyone"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </GlassSheet>
+    </>
   );
 }
 

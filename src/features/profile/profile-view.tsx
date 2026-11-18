@@ -106,6 +106,19 @@ function StrengthChip({
 }
 
 /** One profile, read only: the same layout for my own profile and for a classmate's. A glass hero, then cards. */
+/**
+ * A username-like name with no spaces ("manikantathadigoppula26") cannot wrap nicely, so it is sized to fit the card on one
+ * line: the width of the screen less the page and card padding, divided by about 0.58 em per letter. Names with spaces wrap
+ * normally and keep the usual size.
+ */
+function longWordSize(name: string): React.CSSProperties | undefined {
+  const word = name.trim();
+  if (/\s/.test(word) || word.length <= 13) return undefined;
+  return {
+    fontSize: `min(1.9rem, max(1.05rem, calc((100vw - 4.5rem) / ${(word.length * 0.58).toFixed(2)})))`,
+  };
+}
+
 export function ProfileView({
   person,
   actions,
@@ -119,11 +132,9 @@ export function ProfileView({
   /** Where the followers and following lists are (my own page only). */
   connectionsHref?: string;
 }) {
-  const education = [
-    person.college_name,
-    person.program,
-    person.grad_year ? `Class of ${person.grad_year}` : null,
-  ].filter(Boolean);
+  const course = [person.program, person.grad_year ? `Class of ${person.grad_year}` : null]
+    .filter(Boolean)
+    .join(" · ");
   const meta = [
     person.gender ? GENDER_LABEL[person.gender] : null,
     person.age ? `${person.age} years` : null,
@@ -142,23 +153,37 @@ export function ProfileView({
           <span className="rounded-full p-1 ring-4 ring-[#0b0b10]/60">
             <Avatar name={person.display_name} src={person.avatar_url} size="xl" />
           </span>
-          <div className="min-w-0">
-            <h1 className="text-balance text-[1.9rem] font-extrabold leading-tight tracking-tight">
+          <div className="w-full min-w-0 max-w-full">
+            {/* A long name or username with no spaces has to break rather than run off the card, and it gets a little smaller on
+                a narrow phone so most names still fit on one line. */}
+            <h1
+              className="text-balance text-[clamp(1.45rem,6.6vw,1.9rem)] font-extrabold leading-tight tracking-tight [overflow-wrap:anywhere]"
+              style={longWordSize(person.display_name)}
+            >
               {person.display_name}
             </h1>
-            {person.handle ? <p className="text-[14px] text-ink-muted">@{person.handle}</p> : null}
+            {person.handle ? (
+              <p className="mt-0.5 text-[14px] text-ink-muted [overflow-wrap:anywhere]">
+                @{person.handle}
+              </p>
+            ) : null}
             {person.headline ? (
-              <p className="mt-2 text-pretty text-[15.5px] leading-snug text-ink">
+              <p className="mt-2 text-pretty text-[15.5px] leading-snug text-ink [overflow-wrap:anywhere]">
                 {person.headline}
               </p>
             ) : null}
-            {education.length ? (
-              <p className="mt-1.5 text-[13.5px] font-medium text-ink/85">
-                {education.join(" · ")}
+            {person.college_name ? (
+              <p className="mt-2 text-balance text-[14px] font-semibold leading-snug text-ink/90 [overflow-wrap:anywhere]">
+                {person.college_name}
               </p>
             ) : null}
+            {course ? (
+              <p className="mt-0.5 text-balance text-[13.5px] font-medium text-ink/75">{course}</p>
+            ) : null}
             {meta.length ? (
-              <p className="mt-0.5 text-[13px] text-ink-muted">{meta.join(" · ")}</p>
+              <p className="mt-0.5 text-balance text-[13px] text-ink-muted [overflow-wrap:anywhere]">
+                {meta.join(" · ")}
+              </p>
             ) : null}
             {person.followers !== undefined && connectionsHref ? (
               <p className="tabular mt-2 text-[13px] text-ink-muted">
@@ -179,7 +204,7 @@ export function ProfileView({
             ) : null}
           </div>
           {actions ? (
-            <div className="mt-2 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:min-w-[7.5rem] [&>*]:flex-1 sm:[&>*]:flex-none">
+            <div className="mt-2 flex w-full flex-wrap justify-center gap-2 sm:justify-start [&>*]:min-w-[6rem] [&>*]:flex-1 sm:[&>*]:flex-none">
               {actions}
             </div>
           ) : null}
