@@ -39,7 +39,17 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await page.getByLabel(/^username/i).fill(`tour_${Date.now().toString(36)}`);
   await page.getByRole("button", { name: /^continue$/i }).click();
   // The college, the branch and the year are a must too
-  await expect(page.getByText(/type the name of your college/i)).toBeVisible();
+  await expect(page.getByText(/choose your college, or pick other/i)).toBeVisible();
+  // The colleges are in a sheet, not on the page: search finds one, and Other lets anyone type theirs.
+  await page.getByRole("button", { name: /choose your college/i }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByRole("searchbox", { name: /search colleges/i }).fill("guru");
+  await expect(
+    sheet.getByRole("option", { name: /guru nanak institute of technology/i }),
+  ).toBeVisible();
+  await expect(sheet.getByRole("option", { name: /cvr college/i })).toHaveCount(0);
+  await sheet.getByRole("button", { name: /^other my college is not listed/i }).click();
+  await expect(page.getByText(/more colleges are coming soon/i)).toBeVisible();
   await page.getByRole("textbox", { name: /^college/i }).fill("Alpha College");
   // The year is a stepper: the first press picks a graduation year two years out.
   await page.getByRole("button", { name: "Later graduation year" }).click();

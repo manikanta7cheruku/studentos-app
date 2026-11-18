@@ -3,6 +3,8 @@
 import * as React from "react";
 import { PlusIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
+import { listedCollege } from "@/lib/launch-colleges";
+import { CollegePicker } from "./college-picker";
 import { ChoiceChips } from "@/components/ui/choice-chips";
 import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@/components/app/toggle-row";
@@ -355,6 +357,7 @@ export function PhoneFields({
 }
 
 export const BRANCHES = [
+  "CSBS",
   "CSE",
   "IT",
   "AI & DS",
@@ -403,11 +406,13 @@ export function StudyFields({
   const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
   const collegeId = React.useId();
   const placeId = React.useId();
+  // A listed college is picked from the sheet; anyone else chooses Other and types the name.
+  const [otherCollege, setOtherCollege] = React.useState(college !== "" && !listedCollege(college));
   // Names that already exist, while typing, so spellings stay the same and nobody has to invent one.
   const [suggested, setSuggested] = React.useState<{ query: string; names: string[] } | null>(null);
   const typed = tidy(college);
   React.useEffect(() => {
-    if (typed.length < 2) return;
+    if (!otherCollege || typed.length < 2) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       api.colleges
@@ -419,9 +424,9 @@ export function StudyFields({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [typed]);
+  }, [typed, otherCollege]);
   const names =
-    suggested && suggested.query === typed
+    otherCollege && suggested && suggested.query === typed
       ? suggested.names.filter((name) => name.toLowerCase() !== typed.toLowerCase())
       : [];
   return (
@@ -430,17 +435,42 @@ export function StudyFields({
         <label htmlFor={collegeId} className="text-[13px] font-semibold text-ink/90">
           College <span className="font-normal text-ink-muted">(required)</span>
         </label>
-        <Input
+        <CollegePicker
           id={collegeId}
           value={college}
-          onChange={(event) => onCollege(event.target.value)}
-          maxLength={120}
-          autoComplete="organization"
-          placeholder="Type your college name"
-          aria-invalid={errors.college ? true : undefined}
+          other={otherCollege}
+          invalid={Boolean(errors.college)}
+          describedBy={`${collegeId}-help`}
+          onPick={(name) => {
+            setOtherCollege(false);
+            onCollege(name);
+          }}
+          onOther={() => {
+            setOtherCollege(true);
+            if (listedCollege(college)) onCollege("");
+          }}
         />
-        <p className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}>
-          {errors.college ?? "Shown on your profile so people know where you are from."}
+        {otherCollege ? (
+          <Input
+            aria-label="College name"
+            value={college}
+            onChange={(event) => onCollege(event.target.value)}
+            maxLength={120}
+            autoComplete="organization"
+            placeholder="Type your college name"
+            aria-invalid={errors.college ? true : undefined}
+            aria-describedby={`${collegeId}-help`}
+            autoFocus
+          />
+        ) : null}
+        <p
+          id={`${collegeId}-help`}
+          className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
+        >
+          {errors.college ??
+            (otherCollege
+              ? "More colleges are coming soon. For now, type yours."
+              : "Shown on your profile so people know where you are from.")}
         </p>
         {names.length ? (
           <div
