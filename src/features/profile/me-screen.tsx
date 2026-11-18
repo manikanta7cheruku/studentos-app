@@ -19,12 +19,12 @@ import {
   UserPlusIcon,
   UsersRoundIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
+import { CampusSection } from "./campus-section";
 import { ProfileView } from "./profile-view";
 
 function ProfileSkeleton() {
@@ -130,15 +130,15 @@ function MoreMenu() {
       text: "Pick a side, make your point",
       icon: <ScaleIcon />,
     },
-    // Turf, Lost and found and the Marketplace belong to one campus, so Global does not have them.
+    {
+      href: `/c/${slug}/turf`,
+      label: "Turf and courts",
+      text: "Book a ground, find players",
+      icon: <MapPinnedIcon />,
+    },
+    // Lost and found and the Marketplace belong to one campus, so Global does not have them.
     ...(slug !== "global"
       ? [
-          {
-            href: `/c/${slug}/turf`,
-            label: "Turf and courts",
-            text: "Book a ground, find players",
-            icon: <MapPinnedIcon />,
-          },
           {
             href: `/c/${slug}/lost-found`,
             label: "Lost and found",
@@ -206,6 +206,25 @@ export function MeScreen() {
           <ProfileView
             isSelf
             connectionsHref={`/c/${slug}/me/connections`}
+            campus={
+              state.data.profile.college_name ? (
+                <CampusSection
+                  isSelf
+                  slug={slug}
+                  college={state.data.profile.college_name}
+                  branch={state.data.profile.branch}
+                  year={state.data.profile.grad_year}
+                  place={state.data.profile.place}
+                  excludeIds={[state.data.profile.user_id]}
+                  viewerInterests={[
+                    ...state.data.profile.interests,
+                    ...(state.data.profile.tech_interests ?? []),
+                  ]}
+                  viewerBranch={state.data.profile.branch}
+                  viewerYear={state.data.profile.grad_year}
+                />
+              ) : null
+            }
             person={{
               ...state.data.profile,
               program: state.data.profile.branch,
@@ -218,15 +237,15 @@ export function MeScreen() {
             }}
             actions={
               <>
-                <Button asChild>
-                  <Link href={`/c/${slug}/me/edit`}>Edit profile</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/strengths`}>Strengths</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link href={`/c/${slug}/me/settings`}>Settings</Link>
-                </Button>
+                <Link href={`/c/${slug}/me/edit`} className="profile-btn profile-btn-primary">
+                  Edit profile
+                </Link>
+                <Link href={`/c/${slug}/me/strengths`} className="profile-btn">
+                  Strengths
+                </Link>
+                <Link href={`/c/${slug}/me/settings`} className="profile-btn">
+                  Settings
+                </Link>
               </>
             }
           />

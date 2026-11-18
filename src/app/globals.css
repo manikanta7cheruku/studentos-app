@@ -565,6 +565,7 @@ select option {
   .glass-clear,
   .glass-dock,
   .glass-sheet-clear,
+  .glass-pro,
   .glass-tip,
   .glass-card,
   .glass-sheet,
@@ -584,6 +585,9 @@ select option {
   }
   .glass-sheet {
     background: #1b1a2c;
+  }
+  .glass-pro {
+    background: #1b1b26 !important;
   }
   .sheet-scrim {
     background: rgba(6, 6, 12, 0.7);
@@ -856,5 +860,262 @@ select option {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* The glass sheets: neutral frosted glass. No colour cast, a hairline edge lit from the top, and a deep soft shadow. */
+.glass-pro {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04) 40%),
+    rgba(20, 20, 30, 0.58) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
+    0 -24px 70px -24px rgba(0, 0, 0, 0.65) !important;
+}
+/* An inset field on glass: slightly darker than the glass, with a thin edge, so it reads as a place to type. */
+.glass-field {
+  background: rgba(8, 8, 16, 0.32);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: box-shadow 180ms ease;
+}
+.glass-field:focus-visible {
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34),
+    0 0 0 3px rgba(150, 140, 255, 0.28);
+}
+
+/* The college sheet in solid form for people who asked for less transparency (it sits after the rule above so it wins). */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-pro {
+    background: #1b1b26 !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* The app's glass sheet and its scrim (GlassSheet). On a phone the sheet rises from the bottom and sinks back the same way; on a larger screen it
+   settles in the middle. Only transform and the scrim's opacity move, so it stays smooth, and nothing fades while the glass is on
+   it (a fade makes the blur flicker). Both directions are animated so the sheet always leaves smoothly. */
+.pro-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.38);
+  touch-action: none;
+}
+.pro-scrim[data-state="open"] {
+  animation: pro-scrim-in 300ms ease-out both;
+}
+.pro-scrim[data-state="closed"] {
+  animation: pro-scrim-out 240ms ease-in both;
+}
+.pro-sheet {
+  --sheet-h: min(36rem, 80dvh);
+  position: fixed;
+  z-index: 50;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: var(--sheet-h);
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  outline: none;
+  will-change: transform;
+  overscroll-behavior: contain;
+  /* Where the sheet rests (--rest-y: lifted while typing) plus how far a finger is pulling it (--drag). */
+  transform: translateY(calc(var(--drag, 0px) + var(--rest-y, 0px)));
+}
+.pro-sheet[data-dragging="true"] {
+  transition: none !important;
+}
+/* Rising: the opening slide plays once and then lets go, so the sheet can move again when someone types. */
+.pro-sheet[data-state="open"] {
+  animation: pro-sheet-up 380ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.pro-sheet[data-state="closed"] {
+  animation: pro-sheet-down 260ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+/* On a phone, typing lifts the whole sheet to the top of the screen with a single transform. Only the transform moves, so the
+   phone does no layout work while it slides and it stays smooth; the sheet keeps its size, and its lower part goes behind the
+   keyboard (the lists end where the keyboard starts, so every row can still be reached). */
+@media (max-width: 639px) {
+  .pro-sheet {
+    transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pro-sheet[data-typing="true"] {
+    --rest-y: calc(-1 * (100dvh - var(--sheet-h) - 12px - env(safe-area-inset-top)));
+  }
+  .pro-sheet[data-typing="true"] .pro-scroll {
+    /* The part of the sheet below the keyboard is out of sight, so the list stops where the keyboard starts: every row can be
+       reached and there is nothing empty to scroll into. */
+    flex: 0 1 auto;
+    max-height: calc(54dvh - 160px - env(safe-area-inset-top));
+  }
+}
+@media (min-width: 640px) {
+  .pro-sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(28rem, calc(100% - 2rem));
+    height: min(34rem, 80dvh);
+    padding-bottom: 1rem;
+    border-radius: 24px;
+    transform: translate(-50%, -50%);
+    --drag: 0px;
+    --rest-y: 0px;
+  }
+  .pro-sheet[data-state="open"] {
+    animation: pro-sheet-pop 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .pro-sheet[data-state="closed"] {
+    animation: pro-sheet-pop-out 200ms cubic-bezier(0.4, 0, 0.6, 1) both;
+  }
+}
+@keyframes pro-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes pro-sheet-down {
+  from {
+    transform: translateY(calc(var(--drag, 0px) + var(--rest-y, 0px)));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes pro-sheet-pop {
+  from {
+    transform: translate(-50%, -46%) scale(0.97);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes pro-sheet-pop-out {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-50%, -46%) scale(0.97);
+  }
+}
+@keyframes pro-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes pro-scrim-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pro-sheet,
+  .pro-scrim {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Buttons on a profile: frosted glass with a lit top edge. One size (38 px), one weight. The main action is the app's violet as
+   tinted glass; the others are neutral glass. They press in a little and have a clear keyboard ring. */
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.375rem;
+  min-width: 0;
+  padding: 0 1.05rem;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink, #f2f2f7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05)),
+    rgba(24, 24, 36, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 20px -12px rgba(0, 0, 0, 0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 140ms ease;
+}
+.profile-btn:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.19), rgba(255, 255, 255, 0.08)),
+    rgba(24, 24, 36, 0.4);
+}
+.profile-btn:active {
+  transform: scale(0.97);
+}
+.profile-btn:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 0 3px rgba(150, 140, 255, 0.4);
+}
+.profile-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.profile-btn-primary {
+  background:
+    linear-gradient(135deg, rgba(116, 106, 226, 0.88), rgba(140, 90, 178, 0.8)),
+    rgba(40, 30, 90, 0.4);
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 5px 10px -7px rgba(0, 0, 0, 0.6);
+}
+.profile-btn-primary:hover {
+  background:
+    linear-gradient(135deg, rgba(140, 128, 250, 0.95), rgba(166, 104, 204, 0.88)),
+    rgba(40, 30, 90, 0.4);
+  border-color: rgba(255, 255, 255, 0.44);
+}
+.profile-btn-icon {
+  min-width: 0;
+  width: 2.375rem;
+  padding: 0;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .profile-btn {
+    background: #23232f;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .profile-btn-primary {
+    background: #5b4fc4;
   }
 }

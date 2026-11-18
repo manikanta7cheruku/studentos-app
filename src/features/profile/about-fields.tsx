@@ -3,10 +3,10 @@
 import * as React from "react";
 import { PlusIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
+import { CollegePicker } from "./college-picker";
 import { ChoiceChips } from "@/components/ui/choice-chips";
 import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@/components/app/toggle-row";
-import { api } from "@/lib/api/endpoints";
 
 // The pieces of "about you" that the tour and the edit screen share: sex, birth year, two kinds of interests, and the mobile
 // number with who may see it.
@@ -74,6 +74,27 @@ export function SexField({
 }
 
 /**
+ * One digit that rolls like an odometer: all ten digits sit in a column behind a window one digit tall, and the column slides to
+ * the one to show. Only a digit that changes moves, so 2006 to 2005 rolls the last digit and leaves the rest still.
+ */
+function RollingDigit({ digit }: { digit: number }) {
+  return (
+    <span className="relative inline-block h-[1.4em] w-[0.64em] overflow-hidden">
+      <span
+        className="absolute inset-x-0 top-0 flex flex-col transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+        style={{ transform: `translateY(${-digit * 1.4}em)` }}
+      >
+        {Array.from({ length: 10 }, (_, d) => (
+          <span key={d} className="block h-[1.4em] text-center leading-[1.4em]">
+            {d}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/**
  * A year on one line: minus, the year, plus. Tap the year to type it. Empty until picked: the first tap on either button
  * starts at `start`. Takes very little room, and never a long list to scroll.
  */
@@ -113,23 +134,42 @@ export function YearStepper({
       >
         &minus;
       </button>
-      <input
-        inputMode="numeric"
-        aria-label={label}
-        value={shown}
-        placeholder="Year"
-        maxLength={4}
-        onChange={(event) => {
-          const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
-          setDraft(digits);
-          if (digits.length === 4) {
-            onChange(clamp(Number(digits)));
-            setDraft(null);
-          }
-        }}
-        onBlur={() => setDraft(null)}
-        className="tabular w-16 bg-transparent text-center text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-ink-muted/60"
-      />
+      <span className="group/year relative flex h-full w-[4.4rem] items-center justify-center">
+        {value === null ? (
+          <span aria-hidden="true" className="pointer-events-none text-[15px] text-ink-muted/60">
+            Year
+          </span>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none flex text-[15px] font-semibold group-focus-within/year:opacity-0"
+          >
+            {String(value)
+              .padStart(4, "0")
+              .split("")
+              .map((digit, index) => (
+                <RollingDigit key={index} digit={Number(digit)} />
+              ))}
+          </span>
+        )}
+        <input
+          inputMode="numeric"
+          aria-label={label}
+          value={shown}
+          maxLength={4}
+          onChange={(event) => {
+            const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
+            setDraft(digits);
+            if (digits.length === 4) {
+              onChange(clamp(Number(digits)));
+              setDraft(null);
+            }
+          }}
+          onFocus={(event) => event.target.select()}
+          onBlur={() => setDraft(null)}
+          className="tabular absolute inset-0 w-full bg-transparent text-center text-[15px] font-semibold text-transparent caret-ink outline-none focus:text-ink"
+        />
+      </span>
       <button
         type="button"
         aria-label={`Later ${label.toLowerCase()}`}
@@ -356,6 +396,7 @@ export function PhoneFields({
 
 export const BRANCHES = [
   "CSE",
+  "CSBS",
   "IT",
   "AI & DS",
   "ECE",
@@ -383,6 +424,7 @@ export function StudyFields({
   onYear,
   place,
   onPlace,
+  afterYear,
   errors = {},
 }: {
   college: string;
@@ -393,6 +435,8 @@ export function StudyFields({
   onYear: (value: number) => void;
   place?: string;
   onPlace?: (value: string) => void;
+  /** Something to show right after the graduation year (the birth year in the welcome steps), before the place. */
+  afterYear?: React.ReactNode;
   errors?: Record<string, string | undefined>;
 }) {
   const known = (BRANCHES as readonly string[]).includes(branch);
@@ -403,63 +447,26 @@ export function StudyFields({
   const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
   const collegeId = React.useId();
   const placeId = React.useId();
-  // Names that already exist, while typing, so spellings stay the same and nobody has to invent one.
-  const [suggested, setSuggested] = React.useState<{ query: string; names: string[] } | null>(null);
-  const typed = tidy(college);
-  React.useEffect(() => {
-    if (typed.length < 2) return;
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      api.colleges
-        .suggest(typed, controller.signal)
-        .then((names) => setSuggested({ query: typed, names }))
-        .catch(() => undefined);
-    }, 250);
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
-  }, [typed]);
-  const names =
-    suggested && suggested.query === typed
-      ? suggested.names.filter((name) => name.toLowerCase() !== typed.toLowerCase())
-      : [];
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={collegeId} className="text-[13px] font-semibold text-ink/90">
+        <span id={`${collegeId}-label`} className="text-[13px] font-semibold text-ink/90">
           College <span className="font-normal text-ink-muted">(required)</span>
-        </label>
-        <Input
+        </span>
+        <CollegePicker
           id={collegeId}
+          labelledBy={`${collegeId}-label`}
           value={college}
-          onChange={(event) => onCollege(event.target.value)}
-          maxLength={120}
-          autoComplete="organization"
-          placeholder="Type your college name"
-          aria-invalid={errors.college ? true : undefined}
+          invalid={Boolean(errors.college)}
+          describedBy={`${collegeId}-help`}
+          onPick={onCollege}
         />
-        <p className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}>
-          {errors.college ?? "Shown on your profile so people know where you are from."}
+        <p
+          id={`${collegeId}-help`}
+          className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
+        >
+          {errors.college || "Shown on your profile so people know where you are from."}
         </p>
-        {names.length ? (
-          <div
-            role="group"
-            aria-label="Colleges already on StudentOS"
-            className="flex flex-wrap gap-2"
-          >
-            {names.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => onCollege(name)}
-                className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-ink-muted outline-none transition-[border-color,color] hover:border-white/25 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        ) : null}
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">
@@ -520,12 +527,13 @@ export function StudyFields({
         <YearStepper
           label="Graduation year"
           value={year}
-          min={new Date().getFullYear() - 1}
-          max={new Date().getFullYear() + 8}
+          min={2000}
+          max={2100}
           start={new Date().getFullYear() + 2}
           onChange={onYear}
         />
       </div>
+      {afterYear}
       {onPlace ? (
         <div className="flex flex-col gap-1.5">
           <label htmlFor={placeId} className="text-[13px] font-semibold text-ink/90">

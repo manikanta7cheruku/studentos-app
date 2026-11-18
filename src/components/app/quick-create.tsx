@@ -166,7 +166,6 @@ export function QuickCreate({
   slug,
   unread,
   messages,
-  isGlobal,
   onTour,
   open,
   onOpenChange,
@@ -174,7 +173,6 @@ export function QuickCreate({
   slug: string;
   unread: number;
   messages: number;
-  isGlobal: boolean;
   onTour: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -194,7 +192,6 @@ export function QuickCreate({
             slug={slug}
             unread={unread}
             messages={messages}
-            isGlobal={isGlobal}
             onTour={() => {
               plusHintDone();
               onOpenChange(false);
@@ -274,14 +271,12 @@ function ShortcutList({
   slug,
   unread,
   messages,
-  isGlobal,
   onTour,
   onGo,
 }: {
   slug: string;
   unread: number;
   messages: number;
-  isGlobal: boolean;
   onTour: () => void;
   onGo: (href: string) => void;
 }) {
@@ -315,15 +310,11 @@ function ShortcutList({
   ];
   const campus: Shortcut[] = [
     { href: `/c/${slug}/events`, title: "Events", icon: <CalendarDaysIcon aria-hidden="true" /> },
-    ...(isGlobal
-      ? []
-      : [
-          {
-            href: `/c/${slug}/turf`,
-            title: "Turf and courts",
-            icon: <MapPinnedIcon aria-hidden="true" />,
-          },
-        ]),
+    {
+      href: `/c/${slug}/turf`,
+      title: "Turf and courts",
+      icon: <MapPinnedIcon aria-hidden="true" />,
+    },
     {
       href: `/c/${slug}/lost-found`,
       title: "Lost and found",

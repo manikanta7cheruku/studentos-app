@@ -250,7 +250,8 @@ function EditForm({ saved }: { saved: Profile }) {
     if (form.handle.trim() && !HANDLE.test(form.handle.trim()))
       problems.handle = "Use 3 to 30 lowercase letters, numbers or underscores.";
     const collegeProblem = collegeNameProblem(form.college_name);
-    if (!tidy(form.college_name)) problems.college = "Type the name of your college.";
+    if (!tidy(form.college_name))
+      problems.college = "Choose your college, or pick Other and type it.";
     else if (collegeProblem) problems.college = collegeProblem;
     if (!form.grad_year) problems.year = "Pick the year you graduate.";
     if (tidy(form.place ?? "") && placeProblem(form.place ?? ""))
@@ -343,7 +344,10 @@ function EditForm({ saved }: { saved: Profile }) {
           college={form.college_name}
           branch={form.branch}
           year={form.grad_year}
-          onCollege={(next) => set("college_name", next)}
+          onCollege={(next) => {
+            set("college_name", next);
+            setFields((current) => ({ ...current, college: "" }));
+          }}
           onBranch={(next) => set("branch", next)}
           onYear={(next) => set("grad_year", next)}
           place={form.place}

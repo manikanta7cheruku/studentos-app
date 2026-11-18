@@ -240,7 +240,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
     if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
     const collegeProblem = collegeNameProblem(college);
-    if (!tidy(college)) problems.college = "Type the name of your college.";
+    if (!tidy(college)) problems.college = "Choose your college, or pick Other and type it.";
     else if (collegeProblem) problems.college = collegeProblem;
     if (!gradYear) problems.year = "Pick the year you graduate.";
     if (tidy(place) && placeProblem(place)) problems.place = placeProblem(place)!;
@@ -312,14 +312,17 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         college={college}
         branch={branch}
         year={gradYear}
-        onCollege={setCollege}
+        onCollege={(next) => {
+          setCollege(next);
+          setFields((current) => ({ ...current, college: "" }));
+        }}
         onBranch={setBranch}
         onYear={setGradYear}
         place={place}
         onPlace={setPlace}
+        afterYear={<BirthYearField value={year} onChange={setYear} />}
         errors={fields}
       />
-      <BirthYearField value={year} onChange={setYear} />
       {error ? (
         <Banner variant="error">
           <p>{error}</p>

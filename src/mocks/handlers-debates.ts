@@ -338,10 +338,12 @@ export const debateHandlers = [
   http.post("*/api/v1/me/referral", () =>
     HttpResponse.json({ data: { applied: false }, meta: META }),
   ),
-  http.get("*/api/v1/colleges/suggest", () =>
-    HttpResponse.json({
-      data: ["Alpha College", "Alpha Institute of Technology"],
+  http.get("*/api/v1/colleges/suggest", ({ request }) => {
+    const typed = (new URL(request.url).searchParams.get("q") ?? "").toLowerCase();
+    const names = ["Alpha College", "Alpha Institute of Technology"];
+    return HttpResponse.json({
+      data: names.filter((name) => name.toLowerCase().includes(typed)),
       meta: META,
-    }),
-  ),
+    });
+  }),
 ];

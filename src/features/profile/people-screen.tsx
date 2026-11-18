@@ -6,20 +6,18 @@ import {
   BanIcon,
   CheckIcon,
   ChevronRightIcon,
+  GraduationCapIcon,
   HourglassIcon,
+  MessageCircleIcon,
   SearchIcon,
   SlidersHorizontalIcon,
+  UserPlusIcon,
+  XIcon,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "cn";
+import { GlassSheet } from "@/components/app/glass-sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
@@ -31,7 +29,9 @@ import { networkProgress } from "@/features/home/network-tiers";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportMenu } from "@/features/admin-console/report-menu";
+import { sameCollege } from "@/lib/campus";
 import { CASUAL_INTERESTS, TECH_INTERESTS } from "./about-fields";
+import { CampusSection } from "./campus-section";
 import { ProfileView } from "./profile-view";
 
 type Person = Awaited<ReturnType<typeof api.people.list>>[number];
@@ -116,7 +116,7 @@ function PersonRow({
             {person.headline ?? (person.handle ? `@${person.handle}` : meta || "New on StudentOS")}
           </span>
           {person.headline && meta ? (
-            <span className="block truncate text-[12px] text-ink-muted/80">{meta}</span>
+            <span className="line-clamp-2 break-words text-[12px] text-ink-muted/80">{meta}</span>
           ) : null}
           {shared.length ? (
             <span className="mt-0.5 block truncate text-[12px]">
@@ -167,7 +167,7 @@ function PersonRow({
   );
 }
 
-/** A choice of interests in a sheet, so the page itself stays clean. */
+/** A choice of interests in a glass sheet (the same one the college picker uses), so the page itself stays clean. */
 function InterestFilter({
   selected,
   onChange,
@@ -186,13 +186,7 @@ function InterestFilter({
     setOpen(true);
   }
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (next) setDraft(selected);
-        setOpen(next);
-      }}
-    >
+    <>
       <Button
         type="button"
         variant="outline"
@@ -210,18 +204,16 @@ function InterestFilter({
           </span>
         ) : null}
       </Button>
-      <DialogContent>
-        <span
-          aria-hidden="true"
-          className="mx-auto -mt-2 h-1 w-10 rounded-full bg-white/20 sm:hidden"
-        />
-        <DialogHeader className="gap-1 pr-8">
-          <DialogTitle>Filter by interests</DialogTitle>
-          <DialogDescription className="text-[13.5px]">
-            Show people who share at least one of these.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="-mx-5 max-h-[52vh] overflow-y-auto overscroll-contain px-5 pt-1 pb-8 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-32px),transparent)]">
+      <GlassSheet
+        open={open}
+        onOpenChange={(next) => {
+          if (next) setDraft(selected);
+          setOpen(next);
+        }}
+        title="Filter by interests"
+        description="Show people who share at least one of these."
+      >
+        <div className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1 pb-6 [mask-image:linear-gradient(to_bottom,transparent,black_8px,black_calc(100%-28px),transparent)]">
           <div className="flex flex-col gap-5">
             {(
               [
@@ -246,7 +238,7 @@ function InterestFilter({
                           "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold outline-none transition-[background-color,border-color,color,transform,padding] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring active:scale-95 motion-reduce:transition-none",
                           on
                             ? "bg-brand border-transparent pl-3 text-white"
-                            : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
+                            : "border-white/15 bg-white/[0.06] text-ink/80 hover:border-white/30 hover:text-ink",
                         )}
                       >
                         {on ? <CheckIcon aria-hidden="true" className="size-3.5" /> : null}
@@ -259,7 +251,7 @@ function InterestFilter({
             ))}
           </div>
         </div>
-        <DialogFooter className="-mx-5 -mb-5 flex-row items-center gap-3 border-white/10 bg-transparent px-5 py-3 max-sm:pb-[calc(0.75rem+var(--safe-bottom))] sm:justify-between">
+        <div className="flex shrink-0 items-center gap-3 border-t border-white/[0.1] pt-3">
           <Button
             type="button"
             variant="ghost"
@@ -270,7 +262,7 @@ function InterestFilter({
           </Button>
           <Button
             type="button"
-            className="flex-1 sm:flex-none"
+            className="flex-1"
             onClick={() => {
               onChange(draft);
               setOpen(false);
@@ -278,9 +270,50 @@ function InterestFilter({
           >
             {draft.length ? `Show people (${draft.length})` : "Show everyone"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </GlassSheet>
+    </>
+  );
+}
+
+/** A single row of choices that scrolls sideways: "All" and one chip for each option. */
+function FilterChips({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  value: string | null;
+  onChange: (next: string | null) => void;
+}) {
+  const chip =
+    "inline-flex h-8 shrink-0 items-center rounded-full border px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring";
+  return (
+    <div role="group" aria-label={label} className="flex items-center gap-2">
+      <span className="w-[4.25rem] shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+        {label}
+      </span>
+      <div className="no-scrollbar -mr-3.5 flex gap-2 overflow-x-auto pr-3.5">
+        {[null, ...options].map((option) => (
+          <button
+            key={option ?? "all"}
+            type="button"
+            aria-pressed={value === option}
+            onClick={() => onChange(option)}
+            className={cn(
+              chip,
+              value === option
+                ? "border-transparent bg-white/[0.16] text-ink"
+                : "border-white/10 bg-white/[0.04] text-ink-muted hover:text-ink",
+            )}
+          >
+            {option ?? "All"}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -296,6 +329,12 @@ export function PeopleScreen() {
   const [term, setTerm] = React.useState("");
   const [tab, setTab] = React.useState<Tab>("all");
   const [interests, setInterests] = React.useState<string[]>([]);
+  // Opened from a profile's Campus card (?college=...): only the students of that college, with Branch and Year to narrow them.
+  const [collegeFilter, setCollegeFilter] = React.useState<string | null>(
+    useSearchParams().get("college"),
+  );
+  const [branchFilter, setBranchFilter] = React.useState<string | null>(null);
+  const [yearFilter, setYearFilter] = React.useState<number | null>(null);
   const [hi, setHi] = React.useState<RowPerson | null>(null);
   const [sentNow, setSentNow] = React.useState<Set<string>>(() => new Set());
 
@@ -360,6 +399,11 @@ export function PeopleScreen() {
       ? fromConnections
       : everyone
           .filter((person) => {
+            if (collegeFilter) {
+              if (!sameCollege(person.college_name, collegeFilter)) return false;
+              if (branchFilter && !sameCollege(person.branch, branchFilter)) return false;
+              if (yearFilter && person.grad_year !== yearFilter) return false;
+            }
             if (picked.length && !allInterests(person).some((i) => picked.includes(lower(i))))
               return false;
             if (tab === "similar") return overlap(person) > 0;
@@ -369,6 +413,15 @@ export function PeopleScreen() {
           })
           .sort((x, y) => (tab === "similar" ? overlap(y) - overlap(x) : 0));
 
+  const ofCollege = collegeFilter
+    ? everyone.filter((person) => sameCollege(person.college_name, collegeFilter))
+    : [];
+  const branches = [
+    ...new Set(ofCollege.map((p) => p.branch).filter((b): b is string => Boolean(b))),
+  ].sort();
+  const years = [
+    ...new Set(ofCollege.map((p) => p.grad_year).filter((y): y is number => Boolean(y))),
+  ].sort();
   const count = stats.status === "ready" ? stats.data.connections : (connected.size ?? 0);
   const progress = networkProgress(count);
   const tabs: [Tab, string][] = [
@@ -466,6 +519,53 @@ export function PeopleScreen() {
         </div>
         <InterestFilter selected={interests} onChange={setInterests} />
       </div>
+
+      {collegeFilter ? (
+        <section
+          aria-label="College filter"
+          className="glass-card flex flex-col gap-3 rounded-[20px] p-3.5"
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-[11px] border border-white/15 bg-white/[0.07]"
+            >
+              <GraduationCapIcon className="size-[18px] text-ink/75" />
+            </span>
+            <p className="min-w-0 flex-1 text-[14px] font-semibold leading-snug [overflow-wrap:anywhere]">
+              Students from {collegeFilter}
+            </p>
+            <button
+              type="button"
+              aria-label="Show everyone again"
+              onClick={() => {
+                setCollegeFilter(null);
+                setBranchFilter(null);
+                setYearFilter(null);
+              }}
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/75 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <XIcon aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+          {branches.length > 1 ? (
+            <FilterChips
+              label="Branch"
+              options={branches}
+              value={branchFilter}
+              onChange={setBranchFilter}
+            />
+          ) : null}
+          {years.length > 1 ? (
+            <FilterChips
+              label="Year"
+              options={years.map(String)}
+              value={yearFilter === null ? null : String(yearFilter)}
+              onChange={(next) => setYearFilter(next === null ? null : Number(next))}
+            />
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="flex flex-col gap-2">
         <div
@@ -642,19 +742,23 @@ function FollowButton({ userId, initial }: { userId: string; initial: boolean })
     }
   }
   return (
-    <Button
-      variant={following ? "outline" : "default"}
+    <button
+      type="button"
       onClick={() => void toggle()}
       aria-pressed={following}
+      className={cn("profile-btn", !following && "profile-btn-primary")}
     >
+      {following ? <CheckIcon aria-hidden="true" /> : <UserPlusIcon aria-hidden="true" />}
       {following ? "Following" : "Follow"}
-    </Button>
+    </button>
   );
 }
 
 export function PersonScreen({ userId }: { userId: string }) {
   const { slug } = useCollege();
   const state = useLoad(() => api.people.one(slug, userId), [slug, userId]);
+  // My own interests, college, branch and year: to light up what we share and to put the most relevant students first.
+  const me = useLoad(() => api.profile.get(), []);
   const [note, setNote] = React.useState("");
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
@@ -689,18 +793,40 @@ export function PersonScreen({ userId }: { userId: string }) {
           ) : null}
           <ProfileView
             person={state.data}
+            commonWith={
+              me.status === "ready"
+                ? [...me.data.interests, ...(me.data.tech_interests ?? [])].map((interest) =>
+                    interest.trim().toLowerCase(),
+                  )
+                : undefined
+            }
+            campus={
+              state.data.college_name && me.status === "ready" ? (
+                <CampusSection
+                  slug={slug}
+                  college={state.data.college_name}
+                  branch={state.data.program}
+                  year={state.data.grad_year}
+                  place={state.data.place}
+                  excludeIds={[state.data.user_id, me.data.user_id]}
+                  viewerInterests={[...me.data.interests, ...(me.data.tech_interests ?? [])]}
+                  viewerBranch={me.data.branch}
+                  viewerYear={me.data.grad_year}
+                />
+              ) : null
+            }
             actions={
               state.data.is_self ? undefined : (
                 <>
                   <FollowButton userId={state.data.user_id} initial={state.data.i_follow} />
-                  <Button asChild variant="outline">
-                    <Link href={`/c/${slug}/messages/${state.data.user_id}`}>Message</Link>
-                  </Button>
+                  <Link href={`/c/${slug}/messages/${state.data.user_id}`} className="profile-btn">
+                    <MessageCircleIcon aria-hidden="true" /> Message
+                  </Link>
                   <ReportMenu
                     targetType="profile"
                     targetId={state.data.user_id}
                     what="profile"
-                    className="size-10 shrink-0 !min-w-0 !flex-none border border-white/10"
+                    className="profile-btn profile-btn-icon !size-[2.375rem] shrink-0 !rounded-[13px]"
                     extra={[
                       {
                         label: "Block " + state.data.display_name,

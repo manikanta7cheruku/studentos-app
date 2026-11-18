@@ -246,46 +246,43 @@ export function DebateNewScreen() {
                 value={space}
                 onChange={(next) => {
                   setSpace(next);
-                  if (next === "global") setPriv(false);
                   setInvited([]);
                 }}
               />
-              {space !== "global" ? (
-                <fieldset className="flex flex-col gap-2.5">
-                  <legend className="mb-1 text-[13px] font-semibold text-ink/90">
-                    Who can join?
-                  </legend>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      aria-pressed={!priv}
-                      onClick={() => setPriv(false)}
-                      className={cn(chip, !priv ? on : off)}
-                    >
-                      Everyone
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={priv}
-                      onClick={() => setPriv(true)}
-                      className={cn(chip, priv ? on : off)}
-                    >
-                      <LockIcon aria-hidden="true" className="mr-1.5 size-3.5" /> Invite only
-                    </button>
-                  </div>
-                  {priv ? (
-                    <>
-                      <p className="text-[12.5px] text-ink-muted">
-                        Only the people you pick can see it or take part. They get a notification.
-                      </p>
-                      <InvitePicker slug={space} picked={invited} onChange={setInvited} />
-                      {fields.invites ? (
-                        <p className="text-[12.5px] font-medium text-danger">{fields.invites}</p>
-                      ) : null}
-                    </>
-                  ) : null}
-                </fieldset>
-              ) : null}
+              <fieldset className="flex flex-col gap-2.5">
+                <legend className="mb-1 text-[13px] font-semibold text-ink/90">
+                  Who can join?
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={!priv}
+                    onClick={() => setPriv(false)}
+                    className={cn(chip, !priv ? on : off)}
+                  >
+                    Everyone
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={priv}
+                    onClick={() => setPriv(true)}
+                    className={cn(chip, priv ? on : off)}
+                  >
+                    <LockIcon aria-hidden="true" className="mr-1.5 size-3.5" /> Invite only
+                  </button>
+                </div>
+                {priv ? (
+                  <>
+                    <p className="text-[12.5px] text-ink-muted">
+                      Only the people you pick can see it or take part. They get a notification.
+                    </p>
+                    <InvitePicker slug={space} picked={invited} onChange={setInvited} />
+                    {fields.invites ? (
+                      <p className="text-[12.5px] font-medium text-danger">{fields.invites}</p>
+                    ) : null}
+                  </>
+                ) : null}
+              </fieldset>
             </div>
           </div>
         </div>
