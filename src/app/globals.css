@@ -898,3 +898,117 @@ select option {
     backdrop-filter: none;
   }
 }
+
+/* The college sheet and its scrim. On a phone the sheet rises from the bottom and sinks back the same way; on a larger screen it
+   settles in the middle. Only transform and the scrim's opacity move, so it stays smooth, and nothing fades while the glass is on
+   it (a fade makes the blur flicker). Both directions are animated so the sheet always leaves smoothly. */
+.college-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.38);
+}
+.college-scrim[data-state="open"] {
+  animation: college-scrim-in 300ms ease-out both;
+}
+.college-scrim[data-state="closed"] {
+  animation: college-scrim-out 240ms ease-in both;
+}
+.college-sheet {
+  position: fixed;
+  z-index: 50;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: min(36rem, 80dvh);
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  outline: none;
+  will-change: transform;
+  transition:
+    bottom 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    max-height 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.college-sheet[data-state="open"] {
+  animation: college-sheet-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.college-sheet[data-state="closed"] {
+  animation: college-sheet-down 260ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+@media (min-width: 640px) {
+  .college-sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(28rem, calc(100% - 2rem));
+    height: min(34rem, 80dvh);
+    padding-bottom: 1rem;
+    border-radius: 24px;
+    transform: translate(-50%, -50%);
+  }
+  .college-sheet[data-state="open"] {
+    animation: college-sheet-pop 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .college-sheet[data-state="closed"] {
+    animation: college-sheet-pop-out 200ms cubic-bezier(0.4, 0, 0.6, 1) both;
+  }
+}
+@keyframes college-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes college-sheet-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes college-sheet-pop {
+  from {
+    transform: translate(-50%, -46%) scale(0.97);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes college-sheet-pop-out {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-50%, -46%) scale(0.97);
+  }
+}
+@keyframes college-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes college-scrim-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .college-sheet,
+  .college-scrim {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

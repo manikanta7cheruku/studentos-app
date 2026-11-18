@@ -48,6 +48,7 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
     sheet.getByRole("option", { name: /guru nanak institute of technology/i }),
   ).toBeVisible();
   await expect(sheet.getByRole("option", { name: /cvr college/i })).toHaveCount(0);
+  await sheet.getByRole("button", { name: /didn.t find your college/i }).click();
   await sheet.getByRole("textbox", { name: /type your college/i }).fill("Alpha College");
   await sheet.getByRole("button", { name: /^use$/i }).click();
   await expect(page.getByRole("button", { name: /alpha college/i })).toBeVisible();
