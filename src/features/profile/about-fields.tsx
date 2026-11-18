@@ -3,12 +3,10 @@
 import * as React from "react";
 import { PlusIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
-import { listedCollege } from "@/lib/launch-colleges";
 import { CollegePicker } from "./college-picker";
 import { ChoiceChips } from "@/components/ui/choice-chips";
 import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@/components/app/toggle-row";
-import { api } from "@/lib/api/endpoints";
 
 // The pieces of "about you" that the tour and the edit screen share: sex, birth year, two kinds of interests, and the mobile
 // number with who may see it.
@@ -406,29 +404,6 @@ export function StudyFields({
   const off = "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink";
   const collegeId = React.useId();
   const placeId = React.useId();
-  // A listed college is picked from the sheet; anyone else chooses Other and types the name.
-  const [otherCollege, setOtherCollege] = React.useState(college !== "" && !listedCollege(college));
-  // Names that already exist, while typing, so spellings stay the same and nobody has to invent one.
-  const [suggested, setSuggested] = React.useState<{ query: string; names: string[] } | null>(null);
-  const typed = tidy(college);
-  React.useEffect(() => {
-    if (!otherCollege || typed.length < 2) return;
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      api.colleges
-        .suggest(typed, controller.signal)
-        .then((names) => setSuggested({ query: typed, names }))
-        .catch(() => undefined);
-    }, 250);
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
-  }, [typed, otherCollege]);
-  const names =
-    otherCollege && suggested && suggested.query === typed
-      ? suggested.names.filter((name) => name.toLowerCase() !== typed.toLowerCase())
-      : [];
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -439,59 +414,16 @@ export function StudyFields({
           id={collegeId}
           labelledBy={`${collegeId}-label`}
           value={college}
-          other={otherCollege}
           invalid={Boolean(errors.college)}
           describedBy={`${collegeId}-help`}
-          onPick={(name) => {
-            setOtherCollege(false);
-            onCollege(name);
-          }}
-          onOther={() => {
-            setOtherCollege(true);
-            // Calling it also clears an old "choose your college" message.
-            onCollege(listedCollege(college) ? "" : college);
-          }}
+          onPick={onCollege}
         />
-        {otherCollege ? (
-          <Input
-            aria-label="College name"
-            value={college}
-            onChange={(event) => onCollege(event.target.value)}
-            maxLength={120}
-            autoComplete="organization"
-            placeholder="Type your college name"
-            aria-invalid={errors.college ? true : undefined}
-            aria-describedby={`${collegeId}-help`}
-            autoFocus
-          />
-        ) : null}
         <p
           id={`${collegeId}-help`}
           className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
         >
-          {errors.college ||
-            (otherCollege
-              ? "More colleges are coming soon. For now, type yours."
-              : "Shown on your profile so people know where you are from.")}
+          {errors.college || "Shown on your profile so people know where you are from."}
         </p>
-        {names.length ? (
-          <div
-            role="group"
-            aria-label="Colleges already on StudentOS"
-            className="flex flex-wrap gap-2"
-          >
-            {names.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => onCollege(name)}
-                className="max-w-full truncate rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-ink-muted outline-none transition-[border-color,color] hover:border-white/25 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        ) : null}
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">
