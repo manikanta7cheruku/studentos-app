@@ -424,6 +424,7 @@ export function StudyFields({
   onYear,
   place,
   onPlace,
+  afterYear,
   errors = {},
 }: {
   college: string;
@@ -434,6 +435,8 @@ export function StudyFields({
   onYear: (value: number) => void;
   place?: string;
   onPlace?: (value: string) => void;
+  /** Something to show right after the graduation year (the birth year in the welcome steps), before the place. */
+  afterYear?: React.ReactNode;
   errors?: Record<string, string | undefined>;
 }) {
   const known = (BRANCHES as readonly string[]).includes(branch);
@@ -530,6 +533,7 @@ export function StudyFields({
           onChange={onYear}
         />
       </div>
+      {afterYear}
       {onPlace ? (
         <div className="flex flex-col gap-1.5">
           <label htmlFor={placeId} className="text-[13px] font-semibold text-ink/90">

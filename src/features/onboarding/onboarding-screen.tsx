@@ -320,9 +320,9 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
         onYear={setGradYear}
         place={place}
         onPlace={setPlace}
+        afterYear={<BirthYearField value={year} onChange={setYear} />}
         errors={fields}
       />
-      <BirthYearField value={year} onChange={setYear} />
       {error ? (
         <Banner variant="error">
           <p>{error}</p>

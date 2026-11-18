@@ -31,16 +31,15 @@ function relevant(name: string, typed: string): boolean {
   return words.every((word) => lower.includes(word));
 }
 
-// While the phone keyboard is open it covers the bottom of the screen. The sheet keeps sitting at the bottom of what is still
-// visible: we lift it by the height of the keyboard and shrink it to fit, and a short transition makes that a glide, not a jump.
-// Both boxes a person types in are at the top of the sheet, so the phone never has to scroll the page to show them.
-// One string ("mobile:keyboard height:visible height") so it compares by value.
+// When a person taps a box to type, the sheet moves up into the top part of the screen at once, in step with the keyboard
+// rising, instead of waiting for the phone to report that the keyboard is open (that report comes late, which looks like a
+// stall). The card is 46% of the screen high, which sits above a normal keyboard; if a keyboard is taller, the real visible
+// height (below) shrinks it to fit. One string ("mobile:visible height:window height") so it compares by value.
 function viewportSnapshot(): string {
   const view = window.visualViewport;
   const mobile = window.innerWidth < 640;
   if (!view || !mobile) return `${mobile ? 1 : 0}:0:0`;
-  const lift = Math.max(0, Math.round(window.innerHeight - view.height - view.offsetTop));
-  return `1:${lift > 80 ? lift : 0}:${Math.round(view.height)}`;
+  return `1:${Math.round(view.height)}:${window.innerHeight}`;
 }
 function subscribeViewport(callback: () => void) {
   const view = window.visualViewport;
@@ -84,7 +83,28 @@ export function CollegePicker({
   const [typedError, setTypedError] = React.useState<string | null>(null);
   const [similar, setSimilar] = React.useState<{ query: string; names: string[] } | null>(null);
   const viewport = React.useSyncExternalStore(subscribeViewport, viewportSnapshot, () => "0:0:0");
-  const [mobile = 0, lift = 0, visible = 0] = viewport.split(":").map(Number);
+  const [mobile = 0, visible = 0, windowHeight = 0] = viewport.split(":").map(Number);
+  // True while a box in the sheet has the keyboard: the sheet then sits at the top of the screen as a compact card.
+  const [typing, setTyping] = React.useState(false);
+  const typingHeight = Math.max(
+    220,
+    Math.min(Math.round(windowHeight * 0.46), visible ? visible - 24 : windowHeight),
+  );
+  // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the card where it is.
+  const typingProps = {
+    onFocus: () => setTyping(true),
+    onBlur: (event: React.FocusEvent) => {
+      const next = event.relatedTarget;
+      const staysTyping =
+        next instanceof HTMLElement &&
+        next.closest(".college-sheet") !== null &&
+        next.matches("input, textarea");
+      if (!staysTyping) setTyping(false);
+    },
+  };
+  // A tap on a row or a button inside the sheet must not take the focus away from the box first: that would close the keyboard
+  // and move the sheet under the finger before the tap lands.
+  const keepFocus = { onMouseDown: (event: React.MouseEvent) => event.preventDefault() };
 
   const listed = listedCollege(value);
   const typed = !listed && tidy(value) !== "" ? tidy(value) : null;
@@ -123,6 +143,7 @@ export function CollegePicker({
 
   function show(next: boolean) {
     setOpen(next);
+    setTyping(false);
     if (next) {
       setView("list");
       setTypedCollege(typed ?? "");
@@ -188,13 +209,9 @@ export function CollegePicker({
           <DialogPrimitive.Content
             // The keyboard opens only when someone taps a box, never by itself the moment the sheet appears.
             onOpenAutoFocus={(event) => event.preventDefault()}
+            data-typing={mobile && typing ? "true" : undefined}
             style={
-              mobile
-                ? {
-                    bottom: lift,
-                    maxHeight: lift ? Math.max(260, visible - 12) : undefined,
-                  }
-                : undefined
+              mobile ? ({ "--typing-h": `${typingHeight}px` } as React.CSSProperties) : undefined
             }
             className="college-sheet glass-pro"
           >
@@ -202,7 +219,10 @@ export function CollegePicker({
               {view === "type" ? (
                 <button
                   type="button"
-                  onClick={() => setView("list")}
+                  onClick={() => {
+                    setView("list");
+                    setTyping(false);
+                  }}
                   aria-label="Back to the list"
                   className="-ml-1.5 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink/80 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
                 >
@@ -236,6 +256,7 @@ export function CollegePicker({
                   />
                   <input
                     type="search"
+                    {...typingProps}
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search colleges"
@@ -254,6 +275,7 @@ export function CollegePicker({
                       <li key={college.name} role="option" aria-selected={selected}>
                         <button
                           type="button"
+                          {...keepFocus}
                           onClick={() => choose(college.name)}
                           className={cn(rowClass, selected && "bg-white/[0.09]")}
                         >
@@ -278,6 +300,7 @@ export function CollegePicker({
                 </ul>
                 <button
                   type="button"
+                  {...keepFocus}
                   onClick={() => setView("type")}
                   className="glass-field flex h-12 w-full shrink-0 items-center gap-3 rounded-[12px] px-3.5 text-left text-[14.5px] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-ring"
                 >
@@ -307,6 +330,7 @@ export function CollegePicker({
                     maxLength={120}
                     autoComplete="organization"
                     autoFocus
+                    {...typingProps}
                     placeholder="Didn't find your college? Type it here"
                     aria-label="Type your college"
                     aria-invalid={typedError ? true : undefined}
@@ -314,6 +338,7 @@ export function CollegePicker({
                   />
                   <Button
                     type="submit"
+                    {...keepFocus}
                     className="h-11 rounded-[12px] px-4"
                     disabled={typedClean.length < 3}
                   >
@@ -334,6 +359,7 @@ export function CollegePicker({
                     <button
                       key={name}
                       type="button"
+                      {...keepFocus}
                       onClick={() => choose(name)}
                       className={rowClass}
                     >

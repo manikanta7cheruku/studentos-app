@@ -929,8 +929,18 @@ select option {
   outline: none;
   will-change: transform;
   transition:
-    bottom 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    max-height 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    bottom 340ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 340ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* While typing on a phone the sheet becomes a compact card at the top of the screen, moving at the same moment the keyboard rises. */
+@media (max-width: 639px) {
+  .college-sheet[data-typing="true"] {
+    bottom: calc(100dvh - var(--typing-h, 46dvh) - 10px - env(safe-area-inset-top));
+    height: var(--typing-h, 46dvh);
+    border-radius: 22px;
+    padding-bottom: 1rem;
+  }
 }
 .college-sheet[data-state="open"] {
   animation: college-sheet-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
