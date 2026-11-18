@@ -907,6 +907,7 @@ select option {
   inset: 0;
   z-index: 50;
   background: rgba(0, 0, 0, 0.38);
+  touch-action: none;
 }
 .college-scrim[data-state="open"] {
   animation: college-scrim-in 300ms ease-out both;
@@ -929,6 +930,12 @@ select option {
   border-radius: 24px 24px 0 0;
   outline: none;
   will-change: transform;
+  overscroll-behavior: contain;
+  /* Where the sheet rests (--rest-y: lifted while typing) plus how far a finger is pulling it (--drag). */
+  transform: translateY(calc(var(--drag, 0px) + var(--rest-y, 0px)));
+}
+.college-sheet[data-dragging="true"] {
+  transition: none !important;
 }
 /* Rising: the opening slide plays once and then lets go, so the sheet can move again when someone types. */
 .college-sheet[data-state="open"] {
@@ -945,7 +952,7 @@ select option {
     transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .college-sheet[data-typing="true"] {
-    transform: translateY(calc(-1 * (100dvh - var(--sheet-h) - 12px - env(safe-area-inset-top))));
+    --rest-y: calc(-1 * (100dvh - var(--sheet-h) - 12px - env(safe-area-inset-top)));
   }
   .college-sheet[data-typing="true"] .college-scroll {
     padding-bottom: 44dvh;
@@ -962,6 +969,8 @@ select option {
     padding-bottom: 1rem;
     border-radius: 24px;
     transform: translate(-50%, -50%);
+    --drag: 0px;
+    --rest-y: 0px;
   }
   .college-sheet[data-state="open"] {
     animation: college-sheet-pop 300ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -980,7 +989,7 @@ select option {
 }
 @keyframes college-sheet-down {
   from {
-    transform: translateY(0);
+    transform: translateY(calc(var(--drag, 0px) + var(--rest-y, 0px)));
   }
   to {
     transform: translateY(100%);

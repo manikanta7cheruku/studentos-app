@@ -86,7 +86,6 @@ export function CollegePicker({
   // Focus handlers for the two boxes. Focus moving to another box in the sheet keeps the sheet where it is.
   const typingProps = {
     onFocus: () => setTyping(true),
-    onPointerDown: () => setTyping(true),
     onBlur: (event: React.FocusEvent) => {
       const next = event.relatedTarget;
       const staysTyping =
@@ -138,8 +137,8 @@ export function CollegePicker({
   function show(next: boolean) {
     setOpen(next);
     if (leaveTimer.current !== null) window.clearTimeout(leaveTimer.current);
-    setTypingNow(false);
     if (next) {
+      setTypingNow(false);
       setView("list");
       setTypedCollege(typed ?? "");
     } else {
@@ -148,7 +147,8 @@ export function CollegePicker({
         setQuery("");
         setTypedError(null);
         setView("list");
-      }, 300);
+        setTypingNow(false);
+      }, 320);
     }
   }
 
@@ -166,6 +166,38 @@ export function CollegePicker({
     onPick(name);
     show(false);
   }
+
+  // Pulling the top of the sheet down closes it, the way phone sheets do. Pulling it up only stretches a little and springs back.
+  // The page behind never moves: the top of the sheet takes the touch for itself (touch-action: none).
+  const sheetRef = React.useRef<HTMLDivElement>(null);
+  const drag = React.useRef<{ y: number; t: number; dy: number } | null>(null);
+  function dragStart(event: React.PointerEvent<HTMLDivElement>) {
+    if (window.innerWidth >= 640) return;
+    if ((event.target as HTMLElement).closest("button")) return;
+    drag.current = { y: event.clientY, t: event.timeStamp, dy: 0 };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    sheetRef.current?.setAttribute("data-dragging", "true");
+  }
+  function dragMove(event: React.PointerEvent<HTMLDivElement>) {
+    const current = drag.current;
+    if (!current) return;
+    current.dy = event.clientY - current.y;
+    const shown = current.dy > 0 ? current.dy : Math.max(-18, current.dy * 0.12);
+    sheetRef.current?.style.setProperty("--drag", `${shown}px`);
+  }
+  function dragEnd(event: React.PointerEvent<HTMLDivElement>) {
+    const current = drag.current;
+    drag.current = null;
+    sheetRef.current?.removeAttribute("data-dragging");
+    if (!current) return;
+    const speed = current.dy / Math.max(1, event.timeStamp - current.t);
+    if (current.dy > 110 || (current.dy > 40 && speed > 0.5)) show(false);
+    else sheetRef.current?.style.setProperty("--drag", "0px");
+  }
+
+  // A tap that starts on the dimmed page closes the sheet; a tap that starts inside it never does, even if the sheet moves under
+  // the finger before the finger lifts.
+  const scrimDown = React.useRef(false);
 
   return (
     <>
@@ -200,14 +232,37 @@ export function CollegePicker({
 
       <Dialog open={open} onOpenChange={show}>
         <DialogPortal>
-          <DialogPrimitive.Overlay className="college-scrim" />
+          <DialogPrimitive.Overlay
+            className="college-scrim"
+            onPointerDown={() => {
+              scrimDown.current = true;
+            }}
+            onClick={() => {
+              if (scrimDown.current) show(false);
+              scrimDown.current = false;
+            }}
+          />
           <DialogPrimitive.Content
             // The keyboard opens only when someone taps a box, never by itself the moment the sheet appears.
             onOpenAutoFocus={(event) => event.preventDefault()}
+            // Closing by tapping the page is handled by the dimmed layer above, which knows where the tap began.
+            onPointerDownOutside={(event) => event.preventDefault()}
+            onInteractOutside={(event) => event.preventDefault()}
+            ref={sheetRef}
             data-typing={typing ? "true" : undefined}
             className="college-sheet glass-pro"
           >
-            <div className="flex shrink-0 items-start gap-2">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-white/25 sm:hidden"
+            />
+            <div
+              className="flex shrink-0 touch-none select-none items-start gap-2 max-sm:-mt-1 max-sm:pt-2"
+              onPointerDown={dragStart}
+              onPointerMove={dragMove}
+              onPointerUp={dragEnd}
+              onPointerCancel={dragEnd}
+            >
               {view === "type" ? (
                 <button
                   type="button"
