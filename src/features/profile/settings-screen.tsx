@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronRightIcon, MessageSquareIcon } from "lucide-react";
+import { ChevronRightIcon, MessageSquareIcon, SparklesIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -632,6 +632,56 @@ function HelpSection() {
   );
 }
 
+/** My strengths live here: a short summary and one tap into the page where they are added, changed and given a level. */
+function StrengthsSection() {
+  const { slug } = useCollege();
+  const state = useLoad(() => api.profile.skills(), []);
+  const skills = state.status === "ready" ? state.data.skills : null;
+  const best = skills ? [...skills].sort((a, b) => b.level - a.level) : [];
+  const summary = !skills
+    ? "\u00a0"
+    : skills.length === 0
+      ? "Skills people can find you for."
+      : best.length > 2
+        ? `${best[0]!.name}, ${best[1]!.name} and ${best.length - 2} more`
+        : best.map((skill) => skill.name).join(" and ");
+  return (
+    <Group
+      id="strengths"
+      title="Strengths"
+      text="What you are good at. They show on your profile and help people find you."
+    >
+      <Link
+        href={`/c/${slug}/me/strengths`}
+        className="flex min-h-[4.25rem] items-center justify-between gap-3 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="flex min-w-0 items-center gap-3.5">
+          <span
+            aria-hidden="true"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+          >
+            <SparklesIcon className="size-5" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[15px] font-medium">
+              {skills === null
+                ? "Your strengths"
+                : skills.length === 0
+                  ? "Add your strengths"
+                  : `${skills.length} ${skills.length === 1 ? "strength" : "strengths"}`}
+            </span>
+            <span className="block truncate text-[13px] text-ink-muted">{summary}</span>
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 text-[13px] font-semibold text-[#cfcaff]">
+          {skills && skills.length > 0 ? "Manage" : "Add"}
+          <ChevronRightIcon aria-hidden="true" className="size-4" />
+        </span>
+      </Link>
+    </Group>
+  );
+}
+
 export function SettingsScreen() {
   const { slug } = useCollege();
   return (
@@ -641,6 +691,7 @@ export function SettingsScreen() {
         description="Who sees you, what we remind you about, and your account."
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
+      <StrengthsSection />
       <InviteSection />
       <PrivacySection />
       <BlockedSection />

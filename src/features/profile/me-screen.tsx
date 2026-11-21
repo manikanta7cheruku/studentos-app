@@ -13,6 +13,8 @@ import {
   InboxIcon,
   MessageCircleIcon,
   MessageSquareHeartIcon,
+  PencilLineIcon,
+  SettingsIcon,
   MapPinnedIcon,
   ShieldCheckIcon,
   ScaleIcon,
@@ -237,14 +239,18 @@ export function MeScreen() {
             }}
             actions={
               <>
-                <Link href={`/c/${slug}/me/edit`} className="profile-btn profile-btn-primary">
-                  Edit profile
+                <Link
+                  href={`/c/${slug}/me/edit`}
+                  className="profile-btn profile-btn-primary flex-1 sm:min-w-44 sm:flex-none"
+                >
+                  <PencilLineIcon aria-hidden="true" /> Edit profile
                 </Link>
-                <Link href={`/c/${slug}/me/strengths`} className="profile-btn">
-                  Strengths
-                </Link>
-                <Link href={`/c/${slug}/me/settings`} className="profile-btn">
-                  Settings
+                <Link
+                  href={`/c/${slug}/me/settings`}
+                  aria-label="Settings"
+                  className="profile-btn profile-btn-icon"
+                >
+                  <SettingsIcon aria-hidden="true" className="!size-[1.15rem]" />
                 </Link>
               </>
             }
