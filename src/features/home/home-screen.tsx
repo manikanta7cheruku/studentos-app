@@ -20,6 +20,7 @@ import { DailyCards } from "./daily-cards";
 import { NetworkStrip, PeopleToMeet } from "./network-card";
 import { HappeningSoon, pickSoonest } from "./happening-soon";
 import { FinishProfile } from "./finish-profile";
+import { AlertsBanner } from "@/features/notifications/push-alerts";
 import { useLoad } from "@/lib/use-load";
 import { useCollege, usePublicLoad } from "@/features/college";
 import { GLOBAL_SLUG } from "@/lib/home-path";
@@ -264,6 +265,8 @@ export function HomeScreen() {
       </div>
 
       <FinishProfile />
+
+      <AlertsBanner />
 
       <ExploreTiles slug={slug} />
 

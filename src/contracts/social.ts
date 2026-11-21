@@ -19,6 +19,8 @@ export const contributions = z.object({
   crowd_debates: z.number().int().min(0).default(0),
   filled_plans: z.number().int().min(0).default(0),
   big_events: z.number().int().min(0).default(0),
+  // People I am connected to (a chat they accepted, or following each other). Counts towards Standing.
+  connections: z.number().int().min(0).default(0),
   member_days: z.number().int().min(0).default(0),
 });
 

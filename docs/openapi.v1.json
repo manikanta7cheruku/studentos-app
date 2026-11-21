@@ -4471,6 +4471,12 @@
                                   "minimum": 0,
                                   "maximum": 9007199254740991
                                 },
+                                "connections": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
                                 "member_days": {
                                   "default": 0,
                                   "type": "integer",
@@ -4489,6 +4495,7 @@
                                 "crowd_debates",
                                 "filled_plans",
                                 "big_events",
+                                "connections",
                                 "member_days"
                               ],
                               "additionalProperties": false
@@ -5108,6 +5115,12 @@
                                   "minimum": 0,
                                   "maximum": 9007199254740991
                                 },
+                                "connections": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
                                 "member_days": {
                                   "default": 0,
                                   "type": "integer",
@@ -5126,6 +5139,7 @@
                                 "crowd_debates",
                                 "filled_plans",
                                 "big_events",
+                                "connections",
                                 "member_days"
                               ],
                               "additionalProperties": false
@@ -6246,6 +6260,12 @@
                                   "minimum": 0,
                                   "maximum": 9007199254740991
                                 },
+                                "connections": {
+                                  "default": 0,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
                                 "member_days": {
                                   "default": 0,
                                   "type": "integer",
@@ -6264,6 +6284,7 @@
                                 "crowd_debates",
                                 "filled_plans",
                                 "big_events",
+                                "connections",
                                 "member_days"
                               ],
                               "additionalProperties": false

@@ -7,29 +7,22 @@ import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
 import { Wordmark } from "@/features/auth/auth-frame";
 import { safeNext } from "@/features/auth/safe-next";
-import { collegeNameProblem, placeProblem } from "@/lib/college-name";
+import { collegeNameProblem } from "@/lib/college-name";
 import { markJustOnboarded } from "@/lib/just-onboarded";
 import { clearReferral, takeReferral } from "@/lib/referral";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { homeFor, useSession } from "@/features/session/session-provider";
+import { CollegePicker } from "@/features/profile/college-picker";
 import {
-  BirthYearField,
   CASUAL_INTERESTS,
   InterestChips,
-  PHONE_OK,
-  PhoneFields,
-  SexField,
-  StudyFields,
   tidy,
   TECH_INTERESTS,
-  normalisePhone,
-  type Sex,
 } from "@/features/profile/about-fields";
 
 const MIN_INTERESTS = 3;
@@ -44,12 +37,12 @@ const suggestHandle = (name: string) =>
     .replace(/^_+|_+$/g, "")
     .slice(0, 24);
 
-const STEPS = ["About you", "Your interests", "A bit more", "Quick tour"] as const;
+const STEPS = ["About you", "Your interests", "Quick tour"] as const;
 
 /**
- * A short tour for a new person: who they are (name, a unique username, sex, birth year), what they are into (casual and
- * technical interests, at least three), what excites them and an optional mobile number, then a quick look at what the app
- * does. Name, username, sex and interests are required; the rest can be skipped. Each step is saved when you go on, so
+ * A short welcome for a new person: who they are (name, a unique username, the college), what they are into (casual and
+ * technical interests, at least three), then a quick look at what the app does. Everything else (gender, branch, year, city,
+ * birth year, a line about yourself) is asked later, from "Finish your profile" on Home. Each step is saved when you go on, so
  * closing the tab after step 2 still leaves a finished profile.
  */
 export function OnboardingScreen({ next }: { next?: string | null }) {
@@ -143,8 +136,6 @@ export function OnboardingScreen({ next }: { next?: string | null }) {
         <AboutYou saved={mine.data} onDone={() => setStep(1)} />
       ) : step === 1 ? (
         <Interests saved={mine.data} onBack={() => setStep(0)} onDone={() => setStep(2)} />
-      ) : step === 2 ? (
-        <MoreAboutYou saved={mine.data} onDone={() => setStep(3)} onSkip={() => setStep(3)} />
       ) : (
         <Tour onDone={finish} busy={finishing} error={finishError} onReview={() => setStep(0)} />
       )}
@@ -220,12 +211,7 @@ function Why({ onStart }: { onStart: () => void }) {
 function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
   const [name, setName] = React.useState(saved.display_name);
   const [handle, setHandle] = React.useState(saved.handle ?? suggestHandle(saved.display_name));
-  const [sex, setSex] = React.useState<Sex | null>(saved.sex);
-  const [year, setYear] = React.useState<number | null>(saved.birth_year);
   const [college, setCollege] = React.useState(saved.college_name ?? "");
-  const [branch, setBranch] = React.useState(saved.branch ?? "");
-  const [gradYear, setGradYear] = React.useState<number | null>(saved.grad_year);
-  const [place, setPlace] = React.useState(saved.place ?? "");
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -238,12 +224,9 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     const clean = handle.trim().toLowerCase();
     if (!HANDLE.test(clean))
       problems.handle = "3 to 30 letters, numbers or underscores, for example riya_sharma.";
-    if (!sex) problems.sex = "Pick one. “Prefer not to say” is fine.";
     const collegeProblem = collegeNameProblem(college);
     if (!tidy(college)) problems.college = "Choose your college, or pick Other and type it.";
     else if (collegeProblem) problems.college = collegeProblem;
-    if (!gradYear) problems.year = "Pick the year you graduate.";
-    if (tidy(place) && placeProblem(place)) problems.place = placeProblem(place)!;
     setFields(problems);
     if (Object.keys(problems).length) return;
     setBusy(true);
@@ -252,12 +235,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
       await api.profile.patch({
         display_name: name.trim(),
         handle: clean,
-        sex: sex!,
-        birth_year: year,
         college_name: tidy(college),
-        branch: tidy(branch) || null,
-        grad_year: gradYear!,
-        place: tidy(place) || null,
       });
       onDone();
     } catch (caught) {
@@ -268,11 +246,12 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
     }
   }
 
+  const collegeId = React.useId();
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
       <StepTitle
         title="Hi, who are you?"
-        text="This takes a minute. Your username is yours alone, nobody else can have it."
+        text="Just three things. You can add the rest to your profile whenever you like."
       />
       <FormField label="Name" error={fields.name} required>
         <Input
@@ -285,7 +264,7 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
       </FormField>
       <FormField
         label="Username"
-        help="Lowercase letters, numbers and underscores."
+        help="Lowercase letters, numbers and underscores. Nobody else can have it."
         error={fields.handle}
         required
       >
@@ -298,31 +277,28 @@ function AboutYou({ saved, onDone }: { saved: Saved; onDone: () => void }) {
           spellCheck={false}
         />
       </FormField>
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] font-semibold text-ink/90">
-          Gender <span className="font-normal text-ink-muted">(required)</span>
-        </p>
-        <SexField value={sex} onChange={setSex} />
-        {fields.sex ? <p className="text-[12.5px] font-medium text-danger">{fields.sex}</p> : null}
-        <p className="text-[12.5px] text-ink-muted">
-          Private unless you choose to show it on your profile. It helps keep women-only plans safe.
+      <div className="flex flex-col gap-1.5">
+        <span id={`${collegeId}-label`} className="text-[13px] font-semibold text-ink/90">
+          College <span className="font-normal text-ink-muted">(required)</span>
+        </span>
+        <CollegePicker
+          id={collegeId}
+          labelledBy={`${collegeId}-label`}
+          value={college}
+          invalid={Boolean(fields.college)}
+          describedBy={`${collegeId}-help`}
+          onPick={(next) => {
+            setCollege(next);
+            setFields((current) => ({ ...current, college: "" }));
+          }}
+        />
+        <p
+          id={`${collegeId}-help`}
+          className={`text-[12.5px] ${fields.college ? "font-medium text-danger" : "text-ink-muted"}`}
+        >
+          {fields.college || "Shown on your profile so people know where you are from."}
         </p>
       </div>
-      <StudyFields
-        college={college}
-        branch={branch}
-        year={gradYear}
-        onCollege={(next) => {
-          setCollege(next);
-          setFields((current) => ({ ...current, college: "" }));
-        }}
-        onBranch={setBranch}
-        onYear={setGradYear}
-        place={place}
-        onPlace={setPlace}
-        afterYear={<BirthYearField value={year} onChange={setYear} />}
-        errors={fields}
-      />
       {error ? (
         <Banner variant="error">
           <p>{error}</p>
@@ -402,90 +378,6 @@ function Interests({
       <div className="flex gap-3">
         <Button type="button" variant="ghost" size="lg" onClick={onBack}>
           Back
-        </Button>
-        <Button type="submit" size="lg" className="flex-1" disabled={busy}>
-          {busy ? <Spinner /> : null} Continue
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-function MoreAboutYou({
-  saved,
-  onDone,
-  onSkip,
-}: {
-  saved: Saved;
-  onDone: () => void;
-  onSkip: () => void;
-}) {
-  const [excited, setExcited] = React.useState(saved.excited_by ?? "");
-  const [phone, setPhone] = React.useState(saved.phone ?? "");
-  const [share, setShare] = React.useState(saved.phone_visibility === "hosts");
-  const [phoneError, setPhoneError] = React.useState<string | undefined>();
-  const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    if (busy) return;
-    const number = phone.trim() ? normalisePhone(phone) : "";
-    if (number && !PHONE_OK.test(number)) {
-      setPhoneError("Use the form +919876543210.");
-      return;
-    }
-    setPhoneError(undefined);
-    const patch: Parameters<typeof api.profile.patch>[0] = {};
-    if (excited.trim() !== (saved.excited_by ?? "")) patch.excited_by = excited.trim() || null;
-    if ((number || null) !== saved.phone) patch.phone = number || null;
-    const visibility = number && share ? "hosts" : "hidden";
-    if (visibility !== saved.phone_visibility) patch.phone_visibility = visibility;
-    if (Object.keys(patch).length === 0) return onDone();
-    setBusy(true);
-    setError(null);
-    try {
-      await api.profile.patch(patch);
-      onDone();
-    } catch (caught) {
-      setError(friendlyMessage(caught, "We could not save that. Please try again."));
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-      <StepTitle
-        title="Anything else?"
-        text="All optional. You can fill this in later from your profile."
-      />
-      <FormField
-        label="What makes you excited?"
-        help="One line classmates will see on your profile."
-      >
-        <Textarea
-          value={excited}
-          onChange={(event) => setExcited(event.target.value)}
-          maxLength={200}
-          rows={3}
-          placeholder="Late night football, building small apps, trying every café nearby"
-        />
-      </FormField>
-      <PhoneFields
-        phone={phone}
-        onPhone={setPhone}
-        share={share}
-        onShare={setShare}
-        error={phoneError}
-      />
-      {error ? (
-        <Banner variant="error">
-          <p>{error}</p>
-        </Banner>
-      ) : null}
-      <div className="flex gap-3">
-        <Button type="button" variant="ghost" size="lg" onClick={onSkip}>
-          Skip
         </Button>
         <Button type="submit" size="lg" className="flex-1" disabled={busy}>
           {busy ? <Spinner /> : null} Continue

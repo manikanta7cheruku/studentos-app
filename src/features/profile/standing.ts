@@ -18,6 +18,8 @@ export type Counts = {
   filled_plans: number;
   /** Events where 8 or more people said they were going. */
   big_events: number;
+  /** People the person is connected to (an accepted chat, or following each other). */
+  connections: number;
   member_days: number;
 };
 
@@ -27,6 +29,9 @@ export const POINTS = {
   filledPlan: 30,
   bigEvent: 40,
   invited: 15,
+  /** One connection is easy, so they stop counting after this many points. */
+  connection: 2,
+  connectionCap: 40,
   reply: 0.25,
   /** Replies are cheap, so they stop counting after this many points. */
   replyCap: 50,
@@ -98,6 +103,12 @@ export function standingOf(counts: Counts): Standing {
       label: "Friends who joined",
       detail: `${plural(counts.invited, "friend")} who finished the tour`,
       points: counts.invited * POINTS.invited,
+    },
+    {
+      key: "connections",
+      label: "Connections",
+      detail: `${plural(counts.connections, "person", "people")} you are connected to, counted up to ${POINTS.connectionCap} points`,
+      points: Math.min(counts.connections * POINTS.connection, POINTS.connectionCap),
     },
     {
       key: "replies",

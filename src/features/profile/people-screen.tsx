@@ -25,8 +25,7 @@ import { Avatar } from "@/components/app/avatar";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { api, type DmThreadItem } from "@/lib/api/endpoints";
-import { Ring, SayHi, PeopleToMeet } from "@/features/home/network-card";
-import { NETWORK_TIERS, networkProgress } from "@/features/home/network-tiers";
+import { SayHi, PeopleToMeet } from "@/features/home/network-card";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportMenu } from "@/features/admin-console/report-menu";
@@ -277,105 +276,6 @@ function InterestFilter({
   );
 }
 
-/** What Network strength means, in a calm glass sheet: how it grows, what counts, and the steps. */
-function StrengthSheet({
-  open,
-  onOpenChange,
-  count,
-  onMeet,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  count: number;
-  onMeet: () => void;
-}) {
-  const progress = networkProgress(count);
-  const shown = NETWORK_TIERS.slice(0, 4);
-  const rest = NETWORK_TIERS.slice(4).map((tier) => tier.name);
-  return (
-    <GlassSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Network strength"
-    >
-      <div className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1 pb-5">
-        <div className="flex items-center gap-4">
-          <Ring fraction={progress.fraction} size={60}>
-            {count}
-          </Ring>
-          <div className="min-w-0">
-            <p className="text-[17px] font-semibold leading-snug">
-              {progress.tier ? progress.tier.name : "Just getting started"}
-            </p>
-            <p className="text-[13.5px] text-ink-muted">
-              {progress.next
-                ? `${progress.left} more ${progress.left === 1 ? "person" : "people"} to reach ${progress.next.name}`
-                : "You have reached the top."}
-            </p>
-          </div>
-        </div>
-        <p className="mt-4 text-[14px] leading-relaxed text-ink/85">
-          StudentOS is a place to meet people and build real friendships and contacts. Network
-          strength simply reflects the connections you have made, and it is only for you.
-        </p>
-        <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4">
-          <p className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted">
-            What counts as a connection
-          </p>
-          {(
-            [
-              [MessageCircleIcon, "Someone accepts your hello"],
-              [UsersIcon, "You and another person follow each other"],
-            ] as const
-          ).map(([Icon, text]) => (
-            <p key={text} className="flex items-center gap-3 text-[14px]">
-              <span
-                aria-hidden="true"
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-[10px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-              >
-                <Icon className="size-4" />
-              </span>
-              {text}
-            </p>
-          ))}
-        </div>
-        <div className="mt-5 flex flex-col gap-2.5 border-t border-white/10 pt-4">
-          <p className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted">
-            Steps
-          </p>
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13.5px]">
-            {shown.map((tier) => {
-              const reached = count >= tier.at;
-              return (
-                <li
-                  key={tier.name}
-                  className={cn(
-                    "flex items-center gap-1.5",
-                    reached ? "text-ink" : "text-ink-muted",
-                  )}
-                >
-                  {reached ? (
-                    <CheckIcon aria-hidden="true" className="size-3.5 text-[#cfcaff]" />
-                  ) : (
-                    <span aria-hidden="true" className="size-3.5" />
-                  )}
-                  {tier.name} <span className="tabular text-ink-muted">· {tier.at}</span>
-                </li>
-              );
-            })}
-          </ul>
-          <p className="text-[13px] text-ink-muted">Then {rest.join(", ")}.</p>
-        </div>
-      </div>
-      <div className="pt-2">
-        <button type="button" onClick={onMeet} className="profile-btn profile-btn-primary w-full">
-          Meet people
-        </button>
-      </div>
-    </GlassSheet>
-  );
-}
-
 /** A single row of choices that scrolls sideways: "All" and one chip for each option. */
 function FilterChips({
   label,
@@ -437,7 +337,6 @@ export function PeopleScreen() {
   const [yearFilter, setYearFilter] = React.useState<number | null>(null);
   const [hi, setHi] = React.useState<RowPerson | null>(null);
   const [sentNow, setSentNow] = React.useState<Set<string>>(() => new Set());
-  const [strengthOpen, setStrengthOpen] = React.useState(false);
 
   React.useEffect(() => {
     const timer = window.setTimeout(() => setTerm(query.trim()), 300);
@@ -524,7 +423,6 @@ export function PeopleScreen() {
     ...new Set(ofCollege.map((p) => p.grad_year).filter((y): y is number => Boolean(y))),
   ].sort();
   const count = stats.status === "ready" ? stats.data.connections : (connected.size ?? 0);
-  const progress = networkProgress(count);
   const tabs: [Tab, string][] = [
     ["all", "Everyone"],
     ["connections", "Connected"],
@@ -572,34 +470,32 @@ export function PeopleScreen() {
 
       {stats.status === "ready" ? (
         <section
-          aria-label="Network strength"
+          aria-label="Your connections"
           className="glass-card flex items-center gap-2 rounded-[20px] pr-4"
         >
-          <button
-            type="button"
-            onClick={() => setStrengthOpen(true)}
-            aria-haspopup="dialog"
-            aria-label="Network strength: how it works"
+          <Link
+            href={`/c/${slug}/me`}
+            aria-label="Your connections count towards your Standing"
             className="flex min-w-0 flex-1 items-center gap-3.5 rounded-[20px] py-3 pl-4 text-left outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring active:bg-white/[0.04]"
           >
-            <Ring fraction={progress.fraction} size={48}>
-              {count}
-            </Ring>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-                Network strength
-              </p>
-              <p className="truncate text-[15px] font-bold leading-snug">
-                {progress.tier ? progress.tier.name : "Just getting started"}
-              </p>
-              <p className="truncate text-[12.5px] text-ink-muted">
-                {progress.next
-                  ? `Meet ${progress.left} more ${progress.left === 1 ? "person" : "people"} to reach ${progress.next.name}`
-                  : "You are at the top. Keep it going."}
-              </p>
-            </div>
+            <span
+              aria-hidden="true"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+            >
+              <UsersIcon className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-bold leading-snug">
+                {count === 0
+                  ? "No connections yet"
+                  : `${count} ${count === 1 ? "connection" : "connections"}`}
+              </span>
+              <span className="block truncate text-[12.5px] text-ink-muted">
+                {count === 0 ? "Say hello to someone below" : "They count towards your Standing"}
+              </span>
+            </span>
             <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
-          </button>
+          </Link>
           {stats.data.requests_received > 0 ? (
             <Link
               href={`/c/${slug}/messages`}
@@ -610,16 +506,6 @@ export function PeopleScreen() {
           ) : null}
         </section>
       ) : null}
-
-      <StrengthSheet
-        open={strengthOpen}
-        onOpenChange={setStrengthOpen}
-        count={count}
-        onMeet={() => {
-          setStrengthOpen(false);
-          setTab("all");
-        }}
-      />
 
       <div className="flex gap-2">
         <div className="relative flex-1">

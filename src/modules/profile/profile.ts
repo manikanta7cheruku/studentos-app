@@ -66,13 +66,11 @@ export async function getMyProfile(supabase: SupabaseClient, userId: string) {
     birth_year: priv.birth_year,
     phone: priv.phone,
     phone_visibility: priv.phone_visibility,
-    // A name, a username, sex (also "prefer not to say") and at least one interest.
+    // A name, a username, a college and at least one interest. The rest is filled in later ("Finish your profile").
     onboarded: Boolean(
       data.display_name?.trim() &&
       data.handle &&
-      priv.sex &&
       data.college_name &&
-      data.grad_year &&
       interests.length + techInterests.length >= 1,
     ),
     created_at: toIso(data.created_at)!,

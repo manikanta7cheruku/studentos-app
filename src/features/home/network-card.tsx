@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { SendIcon } from "lucide-react";
+import { SendIcon, UsersIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,74 +17,37 @@ import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type NetworkSuggestion } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
-import { networkProgress, openers } from "./network-tiers";
+import { openers } from "./network-openers";
 
-export function Ring({
-  fraction,
-  size = 64,
-  children,
-}: {
-  fraction: number;
-  size?: number;
-  children: React.ReactNode;
-}) {
-  const r = 26;
-  const c = 2 * Math.PI * r;
-  return (
-    <span
-      className="relative inline-flex shrink-0 items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <svg viewBox="0 0 64 64" className="absolute inset-0 -rotate-90" aria-hidden="true">
-        <circle cx="32" cy="32" r={r} fill="none" strokeWidth="6" className="stroke-white/10" />
-        <circle
-          cx="32"
-          cy="32"
-          r={r}
-          fill="none"
-          strokeWidth="6"
-          strokeLinecap="round"
-          stroke="#8f86f0"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - Math.min(1, Math.max(0, fraction)))}
-        />
-      </svg>
-      <span
-        className={`tabular relative font-extrabold ${size < 56 ? "text-[14px]" : "text-[17px]"}`}
-      >
-        {children}
-      </span>
-    </span>
-  );
-}
-
-/** Home: how strong my network is, as one card in the highlights row. Hidden on Global. */
+/** Home: how many people I am connected to, as one card in the highlights row. Hidden on Global. */
 export function NetworkStrip() {
   const { slug } = useCollege();
   const mine = useLoad(() => api.network.mine(), []);
   if (slug === "global" || mine.status !== "ready") return null;
   const connections = mine.data.connections;
-  const progress = networkProgress(connections);
   return (
     <Link
       href={`/c/${slug}/people`}
       aria-label="Your network"
       className="lift glass-card group relative flex min-h-[84px] w-[84%] max-w-[340px] shrink-0 items-center gap-3 overflow-hidden rounded-[20px] px-3.5 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Ring fraction={progress.fraction} size={44}>
-        {connections}
-      </Ring>
+      <span
+        aria-hidden="true"
+        className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+      >
+        <UsersIcon className="size-5" />
+      </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-          Network strength
+          Your network
         </span>
         <span className="block truncate text-[14.5px] font-bold">
-          {progress.tier ? progress.tier.name : "Just getting started"}
+          {connections === 0
+            ? "No connections yet"
+            : `${connections} ${connections === 1 ? "connection" : "connections"}`}
         </span>
         <span className="block truncate text-[12.5px] text-ink-muted">
-          {progress.next
-            ? `Meet ${progress.left} more to reach ${progress.next.name}`
-            : "You are at the top"}
+          {connections === 0 ? "Say hello to someone" : "They add to your Standing"}
         </span>
       </span>
     </Link>

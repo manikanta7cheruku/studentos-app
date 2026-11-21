@@ -23,6 +23,7 @@ const sampleContributions = {
   crowd_debates: 1,
   filled_plans: 1,
   big_events: 0,
+  connections: 0,
   member_days: 60,
 };
 let profile = {

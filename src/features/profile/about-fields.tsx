@@ -425,6 +425,7 @@ export function StudyFields({
   place,
   onPlace,
   afterYear,
+  showCollege = true,
   errors = {},
 }: {
   college: string;
@@ -437,6 +438,8 @@ export function StudyFields({
   onPlace?: (value: string) => void;
   /** Something to show right after the graduation year (the birth year in the welcome steps), before the place. */
   afterYear?: React.ReactNode;
+  /** False when the college is already known and only the rest is asked (Finish your profile). */
+  showCollege?: boolean;
   errors?: Record<string, string | undefined>;
 }) {
   const known = (BRANCHES as readonly string[]).includes(branch);
@@ -449,25 +452,27 @@ export function StudyFields({
   const placeId = React.useId();
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <span id={`${collegeId}-label`} className="text-[13px] font-semibold text-ink/90">
-          College <span className="font-normal text-ink-muted">(required)</span>
-        </span>
-        <CollegePicker
-          id={collegeId}
-          labelledBy={`${collegeId}-label`}
-          value={college}
-          invalid={Boolean(errors.college)}
-          describedBy={`${collegeId}-help`}
-          onPick={onCollege}
-        />
-        <p
-          id={`${collegeId}-help`}
-          className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
-        >
-          {errors.college || "Shown on your profile so people know where you are from."}
-        </p>
-      </div>
+      {showCollege ? (
+        <div className="flex flex-col gap-1.5">
+          <span id={`${collegeId}-label`} className="text-[13px] font-semibold text-ink/90">
+            College <span className="font-normal text-ink-muted">(required)</span>
+          </span>
+          <CollegePicker
+            id={collegeId}
+            labelledBy={`${collegeId}-label`}
+            value={college}
+            invalid={Boolean(errors.college)}
+            describedBy={`${collegeId}-help`}
+            onPick={onCollege}
+          />
+          <p
+            id={`${collegeId}-help`}
+            className={cn("text-[12.5px]", errors.college ? "text-danger" : "text-ink-muted")}
+          >
+            {errors.college || "Shown on your profile so people know where you are from."}
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-2">
         <p className="text-[13px] font-semibold text-ink/90">
           Branch <span className="font-normal text-ink-muted">(optional)</span>
@@ -516,7 +521,10 @@ export function StudyFields({
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[13px] font-semibold text-ink/90">
-            Graduating in <span className="font-normal text-ink-muted">(required)</span>
+            Graduating in{" "}
+            <span className="font-normal text-ink-muted">
+              {showCollege ? "(required)" : "(optional)"}
+            </span>
           </p>
           {errors.year ? (
             <p className="text-[12.5px] font-medium text-danger">{errors.year}</p>

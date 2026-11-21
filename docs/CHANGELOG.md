@@ -47,3 +47,4 @@
 | 2026-11-13 | R3 launch scope and the Let's go fix | College locked as Coming soon, Marketplace and Lost and found coming soon pages, safer finish of the welcome tour (D-72). | R3 |
 | 2026-11-13 | R3 chat list, landing page and written pages | Chats stay in the list when their messages disappear (migration 20261140, D-73). Public landing page, Privacy Notice, Terms, Community Guidelines, Safety, Contact set to updating soon, shared header and footer. | R3 |
 | 2026-11-14 | R3 phone alerts | Push alerts per device (PSH-01, PSH-02, SYS-03, migration 20261141, D-74), service worker, Home Screen manifest and icons, Alerts switch in Settings and a card on Updates. | R3 |
+| 2026-11-21 | R3 Standing, welcome and alerts card | Connections count towards Standing (migration 20261142, D-90); the welcome asks for name, username, college and interests, and Finish your profile holds the rest; alerts are a card on Home instead of a pop-up. | R3 |
