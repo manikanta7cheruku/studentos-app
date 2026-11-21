@@ -110,6 +110,11 @@ import { POST as tmfJoin } from "@/app/api/v1/c/[slug]/team-posts/[id]/join/rout
 import { GET as tmfParticipants } from "@/app/api/v1/c/[slug]/team-posts/[id]/participants/route";
 import { GET as adminContent } from "@/app/api/v1/c/[slug]/admin/content/route";
 import { POST as adminContentRemove } from "@/app/api/v1/c/[slug]/admin/content/remove/route";
+import { GET as gamesList, POST as gamesCreate } from "@/app/api/v1/c/[slug]/games/route";
+import { GET as gameOne } from "@/app/api/v1/c/[slug]/games/[id]/route";
+import { DELETE as gameLeave, POST as gameJoin } from "@/app/api/v1/c/[slug]/games/[id]/join/route";
+import { POST as gameDecide } from "@/app/api/v1/c/[slug]/games/[id]/decision/route";
+import { POST as gameCancel } from "@/app/api/v1/c/[slug]/games/[id]/cancel/route";
 import { GET as venuesList, POST as venuesCreate } from "@/app/api/v1/c/[slug]/venues/route";
 import { GET as venueOne, DELETE as venueHide } from "@/app/api/v1/c/[slug]/venues/[id]/route";
 import { GET as venueSlots } from "@/app/api/v1/c/[slug]/venues/[id]/slots/route";
@@ -1313,6 +1318,96 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       return call(bookingCancel, {
         method: "DELETE",
         path: `/api/v1/c/alpha/bookings/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "GAM-01 GET /c/alpha/games (members)",
+    call: (cookie: string | undefined) => {
+      return call(gamesList, {
+        path: `/api/v1/c/alpha/games`,
+        params: { slug: "alpha" },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(200),
+  },
+  {
+    op: "GAM-02 POST /c/alpha/games (an empty body is the probe -> 400 for members)",
+    call: (cookie: string | undefined) => {
+      return call(gamesCreate, {
+        method: "POST",
+        path: `/api/v1/c/alpha/games`,
+        json: {},
+        params: { slug: "alpha" },
+        cookie,
+        headers: idem(),
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(400),
+  },
+  {
+    op: "GAM-03 GET /c/alpha/games/{id} (unknown game -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(gameOne, {
+        path: `/api/v1/c/alpha/games/${id}`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "GAM-04 POST /c/alpha/games/{id}/join (unknown game -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(gameJoin, {
+        method: "POST",
+        path: `/api/v1/c/alpha/games/${id}/join`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "GAM-05 DELETE /c/alpha/games/{id}/join (unknown game -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(gameLeave, {
+        method: "DELETE",
+        path: `/api/v1/c/alpha/games/${id}/join`,
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "GAM-06 POST /c/alpha/games/{id}/decision (unknown game -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(gameDecide, {
+        method: "POST",
+        path: `/api/v1/c/alpha/games/${id}/decision`,
+        json: { user_id: "00000000-0000-4000-8000-000000000001", decision: "declined" },
+        params: { slug: "alpha", id },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "GAM-07 POST /c/alpha/games/{id}/cancel (unknown game -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const id = randomUUID();
+      return call(gameCancel, {
+        method: "POST",
+        path: `/api/v1/c/alpha/games/${id}/cancel`,
         params: { slug: "alpha", id },
         cookie,
       }).then((r) => r.status);

@@ -22,6 +22,7 @@ export type Contributions = {
   crowd_debates: number;
   filled_plans: number;
   big_events: number;
+  connections: number;
   member_days: number;
 };
 export type FollowInfo = { followers: number; following: number; i_follow: boolean };

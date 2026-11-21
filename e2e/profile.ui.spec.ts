@@ -64,7 +64,9 @@ test("edit the profile, add skills, and see them on my page", async ({ page }) =
   await expect(page.getByText("@asha_rao")).toBeVisible();
   await expect(page.getByText("Third year CSE, building sensors")).toBeVisible();
 
-  await page.getByRole("link", { name: /^strengths/i }).click();
+  // Strengths live in Settings now: the gear on the profile opens it.
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
+  await page.getByRole("link", { name: /add your strengths/i }).click();
   await page.getByLabel(/add a strength/i).fill("Pyth");
   await page.getByRole("button", { name: "Python", exact: true }).click();
   await expect(page.getByRole("heading", { name: /your strengths \(1 of 5\)/i })).toBeVisible();

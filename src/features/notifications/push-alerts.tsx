@@ -101,55 +101,62 @@ function readNudge(): NudgeRecord {
   }
   return { n: 0, at: 0 };
 }
+const nudgeListeners = new Set<() => void>();
+function subscribeNudge(listener: () => void) {
+  nudgeListeners.add(listener);
+  return () => nudgeListeners.delete(listener);
+}
 function writeNudge(record: NudgeRecord) {
   try {
     localStorage.setItem(NUDGE_KEY, JSON.stringify(record));
   } catch {
     // The card simply comes back sooner next time.
   }
+  nudgeListeners.forEach((listener) => listener());
 }
 function nudgeDue(): boolean {
   const { n, at } = readNudge();
   return Date.now() - at >= (GAPS[Math.min(n, GAPS.length - 1)] ?? 21 * DAY);
 }
 
-const NUDGE_TEXT: Record<"off" | "blocked" | "install", string> = {
-  off: "Get alerts for messages and plans",
-  blocked: "Alerts are blocked on this device.",
-  install: "Add StudentOS to your Home Screen for alerts.",
+const BANNER_TEXT: Record<"off" | "blocked" | "install", { title: string; text: string }> = {
+  off: {
+    title: "Turn on alerts",
+    text: "Know when someone messages you or answers your plan, even when the app is closed.",
+  },
+  blocked: {
+    title: "Alerts are blocked",
+    text: "You will miss messages and replies. It takes a moment to allow them again.",
+  },
+  install: {
+    title: "Add StudentOS to your Home Screen",
+    text: "On iPhone, alerts work once the app is on your Home Screen.",
+  },
 };
 
 /**
- * A slim bar that asks for alerts once a person is settled in the app, and comes back now and then if they said not now, or if
- * the browser blocked them. `enabled` is false while a tour, a tip or a sheet is on screen, so it never stands on top of them.
+ * A calm card on Home that asks for alerts, in the same place and style as "Finish your profile". It never pops up over the
+ * screen. "Not now" hides it and it comes back after a few days (2, 5, 10, then every 21), and it goes away for good once alerts
+ * are on. The switch for this device is always in Settings.
  */
-export function PushNudge({ enabled }: { enabled: boolean }) {
+export function AlertsBanner() {
   const { state, busy, enable } = usePush();
-  const [shown, setShown] = React.useState(false);
+  // Read on the device only: on the server the card stays hidden, so the server and the first paint agree.
+  const due = React.useSyncExternalStore(subscribeNudge, nudgeDue, () => false);
   const [helpOpen, setHelpOpen] = React.useState(false);
   const wanted = state === "off" || state === "blocked" || state === "install";
 
-  React.useEffect(() => {
-    if (!enabled || !wanted || !nudgeDue()) return;
-    // A moment after the page settles, so it does not fight the other tips.
-    const timer = window.setTimeout(() => setShown(true), 14_000);
-    return () => window.clearTimeout(timer);
-  }, [enabled, wanted]);
-
-  if (!(shown || helpOpen) || !enabled || !wanted) return null;
-  const copy = NUDGE_TEXT[state as "off" | "blocked" | "install"];
+  if (!wanted || !(due || helpOpen)) return null;
+  const copy = BANNER_TEXT[state as "off" | "blocked" | "install"];
 
   function later() {
     const { n } = readNudge();
     writeNudge({ n: n + 1, at: Date.now() });
-    setShown(false);
   }
   async function turnOn() {
     await enable();
     // Whatever the answer, do not ask again straight away. When it worked the card goes away because alerts are on.
-    const { n } = readNudge();
-    writeNudge({ n: n + 1, at: Date.now() });
-    setShown(false);
+    later();
   }
 
   return (
@@ -163,41 +170,37 @@ export function PushNudge({ enabled }: { enabled: boolean }) {
         state={state}
         retry={enable}
       />
-      <div
-        role="dialog"
+      <section
         aria-label="Alerts"
-        className="page-enter glass-card fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-sm items-center gap-2.5 rounded-full py-2 pl-3.5 pr-2 shadow-[0_10px_30px_rgba(0,0,0,0.45)] md:bottom-6 md:left-auto md:right-6 md:mx-0"
+        className="glass-card relative flex items-center gap-3.5 rounded-[22px] py-3.5 pl-4 pr-2.5"
       >
-        <BellRingIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
-        <p className="min-w-0 flex-1 text-[13px] leading-snug">{copy}</p>
-        {state === "off" ? (
-          <Button
-            size="sm"
-            className="h-8 rounded-full px-3.5 text-[12.5px]"
+        <span
+          aria-hidden="true"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+        >
+          <BellRingIcon className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14.5px] font-bold leading-snug">{copy.title}</p>
+          <p className="text-[12.5px] leading-snug text-ink-muted">{copy.text}</p>
+          <button
+            type="button"
             disabled={busy}
-            onClick={() => void turnOn()}
+            onClick={() => (state === "off" ? void turnOn() : setHelpOpen(true))}
+            className="profile-btn profile-btn-primary mt-2.5 !h-8 !px-4 !text-[12.5px]"
           >
-            Turn on
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 rounded-full px-3.5 text-[12.5px]"
-            onClick={() => setHelpOpen(true)}
-          >
-            Show me how
-          </Button>
-        )}
+            {state === "off" ? "Turn on" : "Show me how"}
+          </button>
+        </div>
         <button
           type="button"
-          aria-label={state === "off" ? "Not now" : "Got it"}
+          aria-label="Not now"
           onClick={later}
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/10 hover:text-ink"
+          className="inline-flex size-9 shrink-0 items-center justify-center self-start rounded-full text-ink-muted outline-none transition-colors hover:bg-white/[0.08] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
         >
           <XIcon aria-hidden="true" className="size-4" />
         </button>
-      </div>
+      </section>
     </>
   );
 }

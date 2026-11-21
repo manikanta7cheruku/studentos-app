@@ -36,7 +36,7 @@ beforeAll(async () => {
   await admin
     .from("referrals")
     .delete()
-    .in("referred_id", [friend.userId, other.userId, inviter.userId]);
+    .in("invitee_id", [friend.userId, other.userId, inviter.userId]);
   code = (await call(getInvite, { path: "/api/v1/me/invite", cookie: inviter.cookie })).body.data
     .code;
 }, 120_000);
@@ -45,7 +45,7 @@ afterAll(async () => {
   await admin
     .from("referrals")
     .delete()
-    .in("referred_id", [friend.userId, other.userId, inviter.userId]);
+    .in("invitee_id", [friend.userId, other.userId, inviter.userId]);
 }, 60_000);
 
 describe("invite friends", () => {

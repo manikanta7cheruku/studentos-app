@@ -134,6 +134,7 @@ export const peopleHandlers = [
         crowd_debates: 3,
         filled_plans: 3,
         big_events: 2,
+        connections: 0,
         member_days: 150,
       },
       {
@@ -147,6 +148,7 @@ export const peopleHandlers = [
         crowd_debates: 0,
         filled_plans: 0,
         big_events: 0,
+        connections: 0,
         member_days: 20,
       },
       {
@@ -160,6 +162,7 @@ export const peopleHandlers = [
         crowd_debates: 0,
         filled_plans: 0,
         big_events: 0,
+        connections: 0,
         member_days: 3,
       },
     ][index % 3];

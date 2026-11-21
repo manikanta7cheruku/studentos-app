@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { cleanUp, createInvite, signInOnly, uniqueEmail, uniqueIp } from "./helpers";
 
-// The tour for a new person (R3 Day 17): name, a unique username, sex, interests, an optional note and number, a quick look.
+// The tour for a new person (R3 Day 17): name, a unique username, the college, interests, a quick look. The rest is asked later on Home.
 // Real backend, desktop and phone.
 
 test.describe.configure({ mode: "serial" });
@@ -31,14 +31,14 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await page.getByRole("button", { name: /get started/i }).click();
   await expect(page.getByRole("heading", { name: /who are you/i })).toBeVisible();
 
-  // Step 1: the username is a must, sex too (and "prefer not to say" is an answer)
+  // Step 1: the username and the college are a must; nothing else is asked
+  await expect(page.getByRole("radio")).toHaveCount(0);
   await page.getByLabel(/^username/i).fill("ab");
-  await page.getByRole("radio", { name: /prefer not to say/i }).click();
   await page.getByRole("button", { name: /^continue$/i }).click();
   await expect(page.getByText(/3 to 30 letters/i)).toBeVisible();
   await page.getByLabel(/^username/i).fill(`tour_${Date.now().toString(36)}`);
   await page.getByRole("button", { name: /^continue$/i }).click();
-  // The college, the branch and the year are a must too
+  // The college is a must too
   await expect(page.getByText(/choose your college, or pick other/i)).toBeVisible();
   // The colleges are in a sheet, not on the page: search finds one, and Other lets anyone type theirs.
   await page.getByRole("button", { name: /choose your college/i }).click();
@@ -52,8 +52,6 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await sheet.getByRole("textbox", { name: /type your college/i }).fill("Alpha College");
   await sheet.getByRole("button", { name: /^use$/i }).click();
   await expect(page.getByRole("button", { name: /alpha college/i })).toBeVisible();
-  // The year is a stepper: the first press picks a graduation year two years out.
-  await page.getByRole("button", { name: "Later graduation year" }).click();
   await page.getByRole("button", { name: /^continue$/i }).click();
 
   // Step 2: at least three interests
@@ -65,15 +63,13 @@ test("a new member goes through the tour once and then lands on Home", async ({ 
   await page.getByRole("button", { name: "Web development" }).click();
   await page.getByRole("button", { name: /^continue$/i }).click();
 
-  // Step 3 is optional
-  await expect(page.getByRole("heading", { name: /anything else/i })).toBeVisible();
-  await page.getByRole("button", { name: /^skip$/i }).click();
-
-  // Step 4: the tour, then Home
+  // Step 3: the tour, then Home
   await expect(page.getByRole("heading", { name: /you are in/i })).toBeVisible();
   await page.getByRole("button", { name: /let.s go/i }).click();
   await page.waitForURL(/\/c\/alpha\/home$/);
   await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+  // The rest of the profile is asked here, and can be skipped
+  await expect(page.getByRole("region", { name: /finish your profile/i })).toBeVisible();
 
   // The tour does not come back
   await page.goto("/c/alpha/collaborate");

@@ -12,6 +12,7 @@ const none: Counts = {
   crowd_debates: 0,
   filled_plans: 0,
   big_events: 0,
+  connections: 0,
   member_days: 0,
 };
 
@@ -25,6 +26,11 @@ describe("standing", () => {
 
   it("does not reward posting a lot: a hundred buzz alone count for nothing", () => {
     expect(standingOf({ ...none, buzz: 100, debates: 100 }).score).toBe(0);
+  });
+
+  it("counts connections, up to a cap", () => {
+    expect(standingOf({ ...none, connections: 5 }).score).toBe(10);
+    expect(standingOf({ ...none, connections: 500 }).score).toBe(40);
   });
 
   it("stops counting replies after their cap", () => {

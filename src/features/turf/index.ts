@@ -1,4 +1,3 @@
-export * from "./venues-screen";
-export * from "./venue-new-screen";
-export * from "./venue-detail-screen";
-export * from "./my-bookings-screen";
+export * from "./games-screen";
+export * from "./game-new-screen";
+export * from "./game-detail-screen";

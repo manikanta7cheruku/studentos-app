@@ -10,6 +10,7 @@ import {
   HourglassIcon,
   MessageCircleIcon,
   SearchIcon,
+  UsersIcon,
   SlidersHorizontalIcon,
   UserPlusIcon,
   XIcon,
@@ -24,8 +25,7 @@ import { Avatar } from "@/components/app/avatar";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { api, type DmThreadItem } from "@/lib/api/endpoints";
-import { Ring, SayHi, PeopleToMeet } from "@/features/home/network-card";
-import { networkProgress } from "@/features/home/network-tiers";
+import { SayHi, PeopleToMeet } from "@/features/home/network-card";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportMenu } from "@/features/admin-console/report-menu";
@@ -423,7 +423,6 @@ export function PeopleScreen() {
     ...new Set(ofCollege.map((p) => p.grad_year).filter((y): y is number => Boolean(y))),
   ].sort();
   const count = stats.status === "ready" ? stats.data.connections : (connected.size ?? 0);
-  const progress = networkProgress(count);
   const tabs: [Tab, string][] = [
     ["all", "Everyone"],
     ["connections", "Connected"],
@@ -471,25 +470,32 @@ export function PeopleScreen() {
 
       {stats.status === "ready" ? (
         <section
-          aria-label="Network strength"
-          className="glass-card flex items-center gap-3.5 rounded-[20px] px-4 py-3"
+          aria-label="Your connections"
+          className="glass-card flex items-center gap-2 rounded-[20px] pr-4"
         >
-          <Ring fraction={progress.fraction} size={48}>
-            {count}
-          </Ring>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-muted">
-              Network strength
-            </p>
-            <p className="truncate text-[15px] font-bold leading-snug">
-              {progress.tier ? progress.tier.name : "Just getting started"}
-            </p>
-            <p className="truncate text-[12.5px] text-ink-muted">
-              {progress.next
-                ? `Meet ${progress.left} more ${progress.left === 1 ? "person" : "people"} to reach ${progress.next.name}`
-                : "You are at the top. Keep it going."}
-            </p>
-          </div>
+          <Link
+            href={`/c/${slug}/me`}
+            aria-label="Your connections count towards your Standing"
+            className="flex min-w-0 flex-1 items-center gap-3.5 rounded-[20px] py-3 pl-4 text-left outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring active:bg-white/[0.04]"
+          >
+            <span
+              aria-hidden="true"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+            >
+              <UsersIcon className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-bold leading-snug">
+                {count === 0
+                  ? "No connections yet"
+                  : `${count} ${count === 1 ? "connection" : "connections"}`}
+              </span>
+              <span className="block truncate text-[12.5px] text-ink-muted">
+                {count === 0 ? "Say hello to someone below" : "They count towards your Standing"}
+              </span>
+            </span>
+            <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+          </Link>
           {stats.data.requests_received > 0 ? (
             <Link
               href={`/c/${slug}/messages`}

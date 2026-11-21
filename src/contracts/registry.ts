@@ -17,6 +17,7 @@ import * as social from "./social";
 import * as teamfinder from "./teamfinder";
 import * as tenant from "./tenant";
 import * as venues from "./venues";
+import * as games from "./games";
 import * as messages from "./messages";
 import * as feedback from "./feedback";
 import * as photos from "./photos";
@@ -421,6 +422,46 @@ export const endpoints: Endpoint[] = [
   ),
   e("VEN-10", "DELETE", "/c/{slug}/bookings/{id}", "mem", "Cancel my request", {
     response: venues.bookingResponse,
+  }),
+  e("GAM-01", "GET", "/c/{slug}/games", "mem", "List games at a turf or court", {
+    query: games.gameListQuery,
+    response: games.gameListResponse,
+  }),
+  e("GAM-02", "POST", "/c/{slug}/games", "mem", "Set up a game", {
+    body: games.gameCreateBody,
+    response: games.gameResponse,
+    status: 201,
+    idem: true,
+  }),
+  e("GAM-03", "GET", "/c/{slug}/games/{id}", "mem", "One game with its players", {
+    response: games.gameResponse,
+  }),
+  e(
+    "GAM-04",
+    "POST",
+    "/c/{slug}/games/{id}/join",
+    "mem",
+    "Join, ask to join, or wait for a place",
+    {
+      response: games.gameResponse,
+    },
+  ),
+  e("GAM-05", "DELETE", "/c/{slug}/games/{id}/join", "mem", "Leave, or say I cannot make it", {
+    response: games.gameResponse,
+  }),
+  e(
+    "GAM-06",
+    "POST",
+    "/c/{slug}/games/{id}/decision",
+    "mem",
+    "Accept, decline or remove a player (the host)",
+    {
+      body: games.gameDecisionBody,
+      response: games.gameResponse,
+    },
+  ),
+  e("GAM-07", "POST", "/c/{slug}/games/{id}/cancel", "mem", "Cancel the game (the host)", {
+    response: games.gameResponse,
   }),
   e("BRD-01", "POST", "/c/{slug}/board", "mem", "Post to Lost and found or the Marketplace", {
     body: board.boardCreateBody,

@@ -10,6 +10,7 @@ import * as debates from "@/contracts/debates";
 import * as engagement from "@/contracts/engagement";
 import * as events from "@/contracts/events";
 import * as feedback from "@/contracts/feedback";
+import * as games from "@/contracts/games";
 import * as ideas from "@/contracts/ideas";
 import * as messages from "@/contracts/messages";
 import * as moderation from "@/contracts/moderation";
@@ -40,6 +41,7 @@ const modules = {
   engagement,
   events,
   feedback,
+  games,
   ideas,
   messages,
   moderation,

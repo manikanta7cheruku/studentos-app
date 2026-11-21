@@ -27,6 +27,13 @@ export const notificationType = z.enum([
   "venue.booking_cancelled",
   "dm.received",
   "debate.invited",
+  "game.request_received",
+  "game.player_joined",
+  "game.accepted",
+  "game.declined",
+  "game.spot_opened",
+  "game.player_left",
+  "game.cancelled",
 ]);
 // payload always has a short `title` and `message` (plain text for the bell and the list), plus ids such as
 // announcement_id, report_id or college_slug that the screen can turn into a link.
