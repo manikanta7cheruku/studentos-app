@@ -78,6 +78,10 @@ erDiagram
 
 **venues**: `id` · `college_id` · `created_by` · `name` (3 to 80) · `description` (≤600) · `sports` (1 to 5 words) · `area` · `price_inr_per_hour` (whole rupees, null = ask) · `open_hour` and `close_hour` (24 hour clock, open before close) · `status` (`active`,`hidden`). **venue_bookings**: `id` · `venue_id` · `college_id` · `requester_id` · `play_date` · `start_hour` · `hours` (1 to 4) · `players` · `note` (≤300) · `status` (`pending`,`confirmed`,`declined`,`cancelled`) · `manager_note` · `decided_by` · `decided_at`. Closed to clients, reached through `venue_*` and `booking_*` functions. Two confirmed bookings of one venue never overlap in time.
 
+**games**: `id` · `college_id` · `author_id` · `sport` (2 to 24) · `venue` (3 to 80) · `area` (≤120) · `starts_at` · `hours` (1 to 6) · `capacity` (2 to 40, the host included) · `price_inr` (whole rupees each, shown only, null = free) · `join_mode` (`open` or `approval`) · `note` (≤300) · `status` (`open` or `cancelled`) · `created_at` · `updated_at`. Closed table: only the server reads it, through the `game_*` functions.
+
+**game_players**: `game_id` · `user_id` · `status` (`joined`, `requested`, `waitlist`, `left`, `declined`, `removed`) · `since` (when the person got into this status; the waiting list is in this order). One row per person per game. Closed table.
+
 **profile_private**: `user_id` · `sex` (`woman`,`man`,`non_binary`,`prefer_not_to_say`) · `birth_year` · `phone` (E.164) · `phone_visibility` (`hidden`,`hosts`) · `phone_verified_at`. Closed to clients: `profiles` is readable by classmates through row level security, so nothing sensitive is kept there. Reached through `profile_private_get` and `profile_private_set`. **dm_threads**: `id` · `college_id` · `user_a` · `user_b` (the smaller id is `user_a`, one thread per pair). **dm_messages**: `id` · `thread_id` · `sender_id` · `body` (1 to 500) · `created_at` · `opened_at` · `expires_at`. A message is deleted 1 hour after it is opened, or 3 days after it was sent (`dm_purge` in the hourly job). Closed to clients, reached through the `dm_*` functions. **feedback**: `id` · `user_id` · `college_id` · `kind` (`idea`,`problem`,`other`) · `message` (5 to 1500) · `page` · `status` (`new`,`seen`,`done`). Closed to clients, read by the owner dashboard.
 
 **idea_comment_votes**: PK(`comment_id`,`user_id`) · `value` (-1 or 1). `idea_comments.score` is the sum. Closed to clients, reached through `idea_comment_vote`.
@@ -249,6 +253,7 @@ Applied by `pnpm db:reset` locally and by `supabase db push` on staging and prod
 | `20261120000000_venues_for_everyone.sql` | `venue_create` without the admin check: any member can add a venue |
 | `20261141000000_push_alerts.sql` | `push_subscriptions` (closed table: one row per device that allows alerts), `notifications.pushed_at`, `push_subscribe`, `push_unsubscribe`, `push_claim`, `push_drop` |
 | `20261142000000_connections_in_standing.sql` | `profile_contributions` also returns `connections`; a friend "who finished the tour" no longer needs a graduation year |
+| `20261143000000_games.sql` | `games`, `game_players` (closed tables), `game_create`, `game_list`, `game_get`, `game_join`, `game_leave`, `game_decide`, `game_cancel` and helpers, notification types `game.*` |
 | `20261140000000_chats_stay_in_list.sql` | `dm_threads.last_activity_at` (kept up to date by a trigger), `dm_inbox` keeps an accepted chat in the list when its messages are gone and returns `message_count` |
 | `20261139000000_debate_top_argument.sql` | `debate_json` also returns `top_argument` |
 | `20261138000000_network_connection_list.sql` | `network_connection_list` (my connections in one college) |

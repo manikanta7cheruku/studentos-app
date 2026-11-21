@@ -16,6 +16,10 @@ export function notificationHref(
       return typeof venueId === "string" ? `${base}/turf/${venueId}` : `${base}/turf`;
     return `${base}/turf/bookings`;
   }
+  if (item.type.startsWith("game.")) {
+    const gameId = item.payload.game_id;
+    return typeof gameId === "string" ? `${base}/turf/${gameId}` : `${base}/turf`;
+  }
   if (item.type === "dm.received") {
     const from = item.payload.from;
     return typeof from === "string" ? `${base}/messages/${from}` : `${base}/messages`;

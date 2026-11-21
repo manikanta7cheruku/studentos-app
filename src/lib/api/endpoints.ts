@@ -53,6 +53,7 @@ export type IdeaComment = Data<typeof c.ideaCommentListResponse>[number];
 export type EventItem = Data<typeof c.eventResponse>;
 export type BoardItem = Data<typeof c.boardResponse>;
 export type Venue = Data<typeof c.venueResponse>;
+export type Game = Data<typeof c.gameResponse>;
 export type VenueSlot = Data<typeof c.venueSlotsResponse>[number];
 export type Booking = Data<typeof c.bookingResponse>;
 export type BlockedPerson = Data<typeof c.blocksListResponse>[number];
@@ -413,6 +414,46 @@ export const api = {
         method: "PUT",
         body: { path },
         schema: c.boardPhotoResponse.shape.data,
+      }),
+  },
+  games: {
+    list: (slug: string, options: { sport?: string; mine?: boolean } = {}) => {
+      const query = new URLSearchParams({ limit: "50" });
+      if (options.sport) query.set("sport", options.sport);
+      if (options.mine) query.set("mine", "true");
+      return apiClient(j(`/c/${slug}/games?${query}`), {
+        schema: c.gameListResponse.shape.data,
+      });
+    },
+    one: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/games/${id}`), { schema: c.gameResponse.shape.data }),
+    create: (slug: string, body: z.input<typeof c.gameCreateBody>, key?: string) =>
+      apiClient(j(`/c/${slug}/games`), {
+        method: "POST",
+        body,
+        idempotent: key ?? true,
+        schema: c.gameResponse.shape.data,
+      }),
+    join: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/games/${id}/join`), {
+        method: "POST",
+        schema: c.gameResponse.shape.data,
+      }),
+    leave: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/games/${id}/join`), {
+        method: "DELETE",
+        schema: c.gameResponse.shape.data,
+      }),
+    decide: (slug: string, id: string, body: z.input<typeof c.gameDecisionBody>) =>
+      apiClient(j(`/c/${slug}/games/${id}/decision`), {
+        method: "POST",
+        body,
+        schema: c.gameResponse.shape.data,
+      }),
+    cancel: (slug: string, id: string) =>
+      apiClient(j(`/c/${slug}/games/${id}/cancel`), {
+        method: "POST",
+        schema: c.gameResponse.shape.data,
       }),
   },
   venues: {

@@ -89,6 +89,13 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | VEN-08 | GET | /c/{slug}/me/bookings | mem | read limit, my own requests |
 | VEN-09 | POST | /c/{slug}/bookings/{id}/decision | mem | write limit, the venue's manager only |
 | VEN-10 | DELETE | /c/{slug}/bookings/{id} | mem | write limit, the person who asked only |
+| GAM-01 | GET | /c/{slug}/games | mem | active member |
+| GAM-02 | POST | /c/{slug}/games | mem | write limit, 8 upcoming games per host |
+| GAM-03 | GET | /c/{slug}/games/{id} | mem | not for someone who blocked or was blocked by the host |
+| GAM-04 | POST | /c/{slug}/games/{id}/join | mem | write limit |
+| GAM-05 | DELETE | /c/{slug}/games/{id}/join | mem | write limit, not the host |
+| GAM-06 | POST | /c/{slug}/games/{id}/decision | mem | write limit, the host only |
+| GAM-07 | POST | /c/{slug}/games/{id}/cancel | mem | write limit, the host only |
 | BRD-01 | POST | /c/{slug}/board | mem | write limit, 15 a day |
 | BRD-02 | GET | /c/{slug}/board | mem | read limit |
 | BRD-03 | GET | /c/{slug}/board/{id} | mem | read limit |

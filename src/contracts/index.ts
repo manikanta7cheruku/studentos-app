@@ -15,6 +15,7 @@ export * from "./events";
 export * from "./board";
 export * from "./moderation";
 export * from "./venues";
+export * from "./games";
 export * from "./messages";
 export * from "./feedback";
 export * from "./photos";

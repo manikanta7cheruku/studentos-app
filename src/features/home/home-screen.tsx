@@ -13,7 +13,7 @@ import {
   type EventItem,
   type Idea,
   type TeamPost,
-  type Venue,
+  type Game,
 } from "@/lib/api/endpoints";
 import { CampusNotice } from "./campus-notice";
 import { DailyCards } from "./daily-cards";
@@ -29,14 +29,14 @@ import { IdeaCard } from "@/features/ideas/idea-card";
 import { IdeaListSkeleton } from "@/features/ideas/ideas-screen";
 import { EventCard } from "@/features/events/event-card";
 import { BoardCard } from "@/features/board/board-card";
-import { VenueCard } from "@/features/turf/venue-card";
+import { GameCard } from "@/features/turf/game-card";
 
 type Item =
   | { kind: "plan"; at: string; post: TeamPost; outside: boolean }
   | { kind: "idea"; at: string; idea: Idea; outside: boolean }
   | { kind: "event"; at: string; event: EventItem; outside: boolean }
   | { kind: "board"; at: string; post: BoardItem }
-  | { kind: "venue"; at: string; venue: Venue; outside: boolean };
+  | { kind: "game"; at: string; game: Game; outside: boolean };
 type Tab = "all" | "plans" | "ideas";
 
 const TABS: { value: Tab; label: string }[] = [
@@ -117,7 +117,7 @@ export function HomeScreen() {
   const events = useLoad(() => api.events.list(slug, { when: "upcoming" }), [slug]);
   const market = useLoad(() => api.board.list(slug, { board: "market", limit: 8 }), [slug]);
   const lost = useLoad(() => api.board.list(slug, { board: "lostfound", limit: 6 }), [slug]);
-  const venues = useLoad(() => api.venues.list(slug), [slug]);
+  const games = useLoad(() => api.games.list(slug), [slug]);
   // What was posted for everyone (the public space) is part of every college feed, with a Public tag.
   const publicPlans = usePublicLoad(
     () => api.teamPosts.list(GLOBAL_SLUG, { status: "open", limit: 8 }),
@@ -144,7 +144,7 @@ export function HomeScreen() {
     month: "long",
   });
 
-  const sources = [plans, ideas, events, market, lost, venues];
+  const sources = [plans, ideas, events, market, lost, games];
   const loading = sources.some((source) => source.status === "loading");
   const failed = sources.every((source) => source.status === "error");
 
@@ -160,10 +160,10 @@ export function HomeScreen() {
       items.push({ kind: "plan", at: post.created_at, post, outside: true });
     for (const event of (publicEvents ?? []).slice(0, 8))
       items.push({ kind: "event", at: event.created_at, event, outside: true });
-    // Turf and courts sit with the plans: a place to play, and a way to book it.
-    if (venues.status === "ready")
-      for (const venue of venues.data.slice(0, 6))
-        items.push({ kind: "venue", at: venue.created_at, venue, outside: false });
+    // Games at a turf or court sit with the plans: somewhere to play, with a place to join.
+    if (games.status === "ready")
+      for (const game of games.data.slice(0, 6))
+        items.push({ kind: "game", at: game.created_at, game, outside: false });
   }
   if (tab !== "plans" && ideas.status === "ready") {
     for (const idea of ideas.data.data)
@@ -188,8 +188,8 @@ export function HomeScreen() {
         ? item.idea.id
         : item.kind === "event"
           ? item.event.id
-          : item.kind === "venue"
-            ? item.venue.id
+          : item.kind === "game"
+            ? item.game.id
             : item.post.id;
     const key = `${item.kind}:${id}`;
     if (seen.has(key)) return false;
@@ -220,11 +220,11 @@ export function HomeScreen() {
       );
     if (item.kind === "board")
       return <BoardCard key={`b-${item.post.id}`} post={item.post} slug={slug} />;
-    if (item.kind === "venue")
+    if (item.kind === "game")
       return (
-        <VenueCard
-          key={`v-${item.venue.id}`}
-          venue={item.venue}
+        <GameCard
+          key={`g-${item.game.id}`}
+          game={item.game}
           slug={item.outside ? GLOBAL_SLUG : slug}
           outside={item.outside}
         />
