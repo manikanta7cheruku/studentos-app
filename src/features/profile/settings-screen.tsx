@@ -28,6 +28,9 @@ import { useCollege } from "@/features/college";
 import { inviteLink, shareInvite } from "@/lib/invite-share";
 import { useSession } from "@/features/session/session-provider";
 import { PushAlertsRow } from "@/features/notifications/push-alerts";
+import { GlideTabs } from "@/components/app/glide-tabs";
+import { TIMER_OPTIONS, timerLabel, type TimerMinutes } from "@/features/messages/timer";
+import { toast } from "sonner";
 
 function Group({
   id,
@@ -682,6 +685,58 @@ function StrengthsSection() {
   );
 }
 
+/** What my new conversations start with: how long a message stays after it is opened. Each chat can still be changed on its own. */
+function MessagesSection() {
+  const state = useLoad(() => api.messageSettings.get(), []);
+  const [chosen, setChosen] = React.useState<TimerMinutes | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const saved = state.status === "ready" ? (state.data.default_minutes as TimerMinutes) : null;
+  const value = chosen ?? saved;
+
+  async function pick(next: TimerMinutes) {
+    const before = value;
+    setChosen(next);
+    setError(null);
+    try {
+      await api.messageSettings.set(next);
+      toast.success(`New chats: messages disappear ${timerLabel(next)} after they are seen`);
+    } catch (caught) {
+      setChosen(before);
+      setError(friendlyMessage(caught, "We could not save that. Please try again."));
+    }
+  }
+
+  return (
+    <Group
+      id="messages"
+      title="Messages"
+      text="How long a message stays after it is opened. Each chat can be changed on its own, by either of you."
+    >
+      <div className="flex flex-col gap-3 py-4">
+        {value === null ? (
+          <Skeleton className="h-11 w-full rounded-full" />
+        ) : (
+          <GlideTabs
+            label="Disappearing messages"
+            value={String(value)}
+            onChange={(next) => void pick(Number(next) as TimerMinutes)}
+            tabs={TIMER_OPTIONS.map((option) => ({
+              value: String(option.minutes),
+              label: option.label,
+            }))}
+          />
+        )}
+        <p className="text-[13px] leading-relaxed text-ink-muted">
+          {value === null
+            ? " "
+            : `New chats you start: messages disappear ${timerLabel(value)} after they are seen. A message that is never opened goes after 3 days.`}
+        </p>
+        {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+      </div>
+    </Group>
+  );
+}
+
 export function SettingsScreen() {
   const { slug } = useCollege();
   return (
@@ -692,6 +747,7 @@ export function SettingsScreen() {
         back={{ href: `/c/${slug}/me`, label: "My profile" }}
       />
       <StrengthsSection />
+      <MessagesSection />
       <InviteSection />
       <PrivacySection />
       <BlockedSection />

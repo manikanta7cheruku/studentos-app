@@ -22,7 +22,8 @@ export function DisappearNote({ className }: { className?: string }) {
       className={`flex items-center gap-1.5 px-1 text-[12.5px] leading-snug text-ink-muted ${className ?? ""}`}
     >
       <TimerIcon aria-hidden="true" className="size-3.5 shrink-0" />
-      Messages disappear 1 hour after they are opened, or after 3 days if never opened.
+      Messages disappear after they are opened: 1 hour, or 7 or 24 hours if a chat is set to that. 3
+      days if never opened.
     </p>
   );
 }

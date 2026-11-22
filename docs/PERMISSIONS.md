@@ -127,6 +127,9 @@ Write limit: 60 writes a minute per person (`write_user`). Moderator and admin e
 | MSG-03 | POST | /c/{slug}/messages/{userId} | mem | write limit, 60 an hour, 20 unopened per person, not blocked |
 | MSG-04 | POST | /c/{slug}/messages/{userId}/report | mem | write limit |
 | MSG-05 | POST | /c/{slug}/messages/{userId}/decline | mem | write limit, only the person who received the request |
+| MSG-06 | PUT | /c/{slug}/messages/{userId}/timer | mem | write limit, both people active members and not blocked, only a chat that is going |
+| MSG-07 | GET | /me/message-settings | ses | read limit |
+| MSG-08 | PUT | /me/message-settings | ses | write limit |
 | NET-01 | GET | /c/{slug}/network/suggestions | mem | read limit |
 | NET-02 | GET | /me/network | ses | read limit, my own numbers |
 | NET-03 | GET | /c/{slug}/network/connections | mem | read limit, my own connections |

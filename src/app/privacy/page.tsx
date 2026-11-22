@@ -112,11 +112,12 @@ const sections: LegalSection[] = [
           people safe or because the law requires it.
         </p>
         <p>
-          Messages are designed to disappear. A message is removed about one hour after it has been
-          opened, and three days after it was sent if it was never opened. A person you wrote to can
-          still save, copy or screenshot what you sent before it disappears, and we cannot prevent
-          that. If a message is reported, a copy of the recent messages in that conversation is kept
-          with the report so it can be reviewed.
+          Messages are designed to disappear. A message is removed one hour after it has been opened
+          (or seven hours or twenty-four hours, if the people in the conversation chose a longer
+          timer in the chat), and three days after it was sent if it was never opened. A person you
+          wrote to can still save, copy or screenshot what you sent before it disappears, and we
+          cannot prevent that. If a message is reported, a copy of the recent messages in that
+          conversation is kept with the report so it can be reviewed.
         </p>
         <p>
           The same applies to everything else in StudentOS, including plans, buzz, debates and

@@ -110,6 +110,11 @@ import { POST as tmfJoin } from "@/app/api/v1/c/[slug]/team-posts/[id]/join/rout
 import { GET as tmfParticipants } from "@/app/api/v1/c/[slug]/team-posts/[id]/participants/route";
 import { GET as adminContent } from "@/app/api/v1/c/[slug]/admin/content/route";
 import { POST as adminContentRemove } from "@/app/api/v1/c/[slug]/admin/content/remove/route";
+import { PUT as messageTimer } from "@/app/api/v1/c/[slug]/messages/[userId]/timer/route";
+import {
+  GET as messageSettingsGet,
+  PUT as messageSettingsPut,
+} from "@/app/api/v1/me/message-settings/route";
 import { GET as gamesList, POST as gamesCreate } from "@/app/api/v1/c/[slug]/games/route";
 import { GET as gameOne } from "@/app/api/v1/c/[slug]/games/[id]/route";
 import { DELETE as gameLeave, POST as gameJoin } from "@/app/api/v1/c/[slug]/games/[id]/join/route";
@@ -1413,6 +1418,39 @@ const endpoints: { op: string; call: Call; expect: Record<Principal, Expected> }
       }).then((r) => r.status);
     },
     expect: memberOnly(404),
+  },
+  {
+    op: "MSG-06 PUT /c/alpha/messages/{userId}/timer (unknown person -> 404 for members)",
+    call: (cookie: string | undefined) => {
+      const userId = randomUUID();
+      return call(messageTimer, {
+        method: "PUT",
+        path: `/api/v1/c/alpha/messages/${userId}/timer`,
+        params: { slug: "alpha", userId },
+        json: { minutes: 60 },
+        cookie,
+      }).then((r) => r.status);
+    },
+    expect: memberOnly(404),
+  },
+  {
+    op: "MSG-07 GET /me/message-settings (any signed in person)",
+    call: (cookie: string | undefined) =>
+      call(messageSettingsGet, { path: "/api/v1/me/message-settings", cookie }).then(
+        (r) => r.status,
+      ),
+    expect: signedIn(200),
+  },
+  {
+    op: "MSG-08 PUT /me/message-settings (an empty body is the probe -> 400 when signed in)",
+    call: (cookie: string | undefined) =>
+      call(messageSettingsPut, {
+        method: "PUT",
+        path: "/api/v1/me/message-settings",
+        json: {},
+        cookie,
+      }).then((r) => r.status),
+    expect: signedIn(400),
   },
   {
     op: "MSG-01 GET /c/alpha/messages (members)",

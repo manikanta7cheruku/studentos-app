@@ -30,7 +30,19 @@ export const dmThreadItem = person.extend({
 });
 export const dmThreadListResponse = successEnvelope(z.array(dmThreadItem));
 
-// MSG-02 GET /api/v1/c/{slug}/messages/{userId}: one conversation. Opening it starts the 1 hour clock on their messages.
+// How long a message stays after the other person opens it: 1 hour, 7 hours or 24 hours (in minutes). 1 hour is the default.
+export const disappearMinutes = z.union([z.literal(60), z.literal(420), z.literal(1440)]);
+// The timer of a conversation. Either person can change it (when the chat is going, not while it is a request), and it only
+// affects messages sent from then on.
+export const dmDisappear = z.object({
+  minutes: disappearMinutes,
+  set_by_me: z.boolean(),
+  set_by_name: z.string().nullable(),
+  set_at: isoDateTime.nullable(),
+  can_change: z.boolean(),
+});
+
+// MSG-02 GET /api/v1/c/{slug}/messages/{userId}: one conversation. Opening it starts the clock on their messages.
 export const dmMessage = z.object({
   id: uuid,
   mine: z.boolean(),
@@ -59,6 +71,14 @@ export const dmThreadResponse = successEnvelope(
       })
       .nullable(),
     request: dmRequestState.nullable().default(null),
+    // The timer of this chat (for a chat that does not exist yet: my default).
+    disappear: dmDisappear.default({
+      minutes: 60,
+      set_by_me: false,
+      set_by_name: null,
+      set_at: null,
+      can_change: false,
+    }),
     // false when one of us blocked the other.
     can_message: z.boolean(),
     messages: z.array(dmMessage),
@@ -86,3 +106,12 @@ export const dmReportBody = z.strictObject({
 // MSG-05 POST /api/v1/c/{slug}/messages/{userId}/decline: "not interested" in a request I received. The sender is told, kindly,
 // that I am not available right now. They can ask again after 5 days. 404 when there is no open request from that person.
 export const dmDeclineResponse = successEnvelope(z.object({ status: z.literal("declined") }));
+
+// MSG-06 PUT /api/v1/c/{slug}/messages/{userId}/timer   { "minutes": 60 | 420 | 1440 }: change the timer of a chat I am in.
+export const dmTimerBody = z.strictObject({ minutes: disappearMinutes });
+export const dmTimerResponse = successEnvelope(dmDisappear);
+
+// MSG-07 GET /api/v1/me/message-settings and MSG-08 PUT: what my new conversations start with.
+export const messageSettings = z.object({ default_minutes: disappearMinutes });
+export const messageSettingsResponse = successEnvelope(messageSettings);
+export const messageSettingsBody = z.strictObject({ default_minutes: disappearMinutes });

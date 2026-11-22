@@ -110,9 +110,10 @@ const sections: LegalSection[] = [
     title: "Messages",
     body: (
       <p>
-        Private messages disappear on the schedule in the Privacy Notice, but the person you write
-        to can save or copy them first. Messages are not end-to-end encrypted. Do not send anything
-        you would not be comfortable with others seeing.
+        Private messages disappear on the timer chosen in the conversation (one hour by default, at
+        most twenty-four hours), as the Privacy Notice explains, but the person you write to can
+        save or copy them first. Messages are not end-to-end encrypted. Do not send anything you
+        would not be comfortable with others seeing.
       </p>
     ),
   },

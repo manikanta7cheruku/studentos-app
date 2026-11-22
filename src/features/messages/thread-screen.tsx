@@ -6,6 +6,7 @@ import {
   BanIcon,
   CheckIcon,
   ChevronLeftIcon,
+  ChevronRightIcon,
   HourglassIcon,
   MessageCircleIcon,
   ThumbsDownIcon,
@@ -25,6 +26,8 @@ import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportConversation } from "./report-conversation";
+import { TimerSheet } from "./timer-sheet";
+import { timerLabel } from "./timer";
 
 /** "in 52 min", "in 3 days", "any moment": when a message disappears. */
 function leaves(iso: string, now: number): string {
@@ -74,6 +77,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const [declining, setDeclining] = React.useState(false);
   const [pending, setPending] = React.useState<Pending[]>([]);
   const [chosen, setChosen] = React.useState(false);
+  const [timerOpen, setTimerOpen] = React.useState(false);
 
   const { reload } = state;
   React.useEffect(() => {
@@ -221,6 +225,11 @@ export function ThreadScreen({ userId }: { userId: string }) {
               className="size-10"
               items={[
                 {
+                  label: "Disappearing messages",
+                  icon: <TimerIcon aria-hidden="true" />,
+                  onSelect: () => setTimerOpen(true),
+                },
+                {
                   label: "Report " + other.display_name,
                   icon: <FlagIcon aria-hidden="true" />,
                   danger: true,
@@ -244,6 +253,16 @@ export function ThreadScreen({ userId }: { userId: string }) {
               open={reporting}
               onOpenChange={setReporting}
             />
+            {data ? (
+              <TimerSheet
+                open={timerOpen}
+                onOpenChange={setTimerOpen}
+                userId={userId}
+                name={other.display_name}
+                disappear={data.disappear}
+                onChanged={reload}
+              />
+            ) : null}
           </>
         ) : null}
       </header>
@@ -252,10 +271,28 @@ export function ThreadScreen({ userId }: { userId: string }) {
         className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-1 py-2"
         aria-live="polite"
       >
-        <p className="mx-auto mb-1 flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted">
-          <TimerIcon aria-hidden="true" className="size-3" /> Disappears 1 hour after it is seen ·
-          cannot be unsent
-        </p>
+        {data ? (
+          <div className="mx-auto mb-1 flex flex-col items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setTimerOpen(true)}
+              aria-haspopup="dialog"
+              className="flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted outline-none transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+            >
+              <TimerIcon aria-hidden="true" className="size-3" /> Disappears{" "}
+              {timerLabel(data.disappear.minutes)} after it is seen · cannot be unsent
+              <ChevronRightIcon aria-hidden="true" className="size-3" />
+            </button>
+            {data.disappear.set_by_name &&
+            !data.disappear.set_by_me &&
+            data.disappear.set_at &&
+            now - new Date(data.disappear.set_at).getTime() < 86_400_000 ? (
+              <p className="text-[11.5px] text-ink-muted">
+                {data.disappear.set_by_name} set this to {timerLabel(data.disappear.minutes)}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         {other && incoming ? (
           <section className="glass-card flex flex-col gap-3 rounded-[22px] p-4">
             <p className="text-[15px] font-bold">{other.display_name} wants to chat</p>
@@ -328,7 +365,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
             {incoming || waiting || cooling
               ? ""
               : data.can_message
-                ? "Nothing here. Say hello. What you write disappears after it is read."
+                ? `Nothing here. Say hello. What you write disappears ${timerLabel(data.disappear.minutes)} after it is read.`
                 : "You cannot message this person."}
           </p>
         ) : (
