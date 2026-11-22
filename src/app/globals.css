@@ -1145,3 +1145,11 @@ select option {
     animation: none;
   }
 }
+
+/* While a box on the page opens or folds and the cards under it shift each frame, blurred glass is switched off (see QuickPost). */
+html[data-moving] .glass-card,
+html[data-moving] .glass-bar,
+html[data-moving] .glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
