@@ -57,6 +57,46 @@ function dayLabel(iso: string): string {
   return day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
+/**
+ * Keeps a full screen chat exactly as tall as the part of the page that can be seen. A phone keyboard covers the bottom of the
+ * page without resizing it, and the browser then scrolls the page to show the box, which pushed the name and the messages out
+ * of view. Here the screen follows the visible area (its height and its top), the page itself cannot scroll, and when the
+ * keyboard comes or goes the messages go to the newest one, so what was on screen is still on screen.
+ */
+function useKeyboardFit(root: React.RefObject<HTMLDivElement | null>, onChange: () => void) {
+  const change = React.useRef(onChange);
+  React.useEffect(() => {
+    change.current = onChange;
+  });
+  React.useEffect(() => {
+    const el = root.current;
+    const view = window.visualViewport;
+    if (!el || !view) return;
+    let last = view.height;
+    const apply = () => {
+      el.style.setProperty("--chat-h", `${view.height}px`);
+      el.style.setProperty("--chat-top", `${view.offsetTop}px`);
+      // The browser may have scrolled the page to show the box: put it back.
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (Math.abs(view.height - last) > 60) {
+        last = view.height;
+        window.requestAnimationFrame(() => change.current());
+      }
+    };
+    apply();
+    const html = document.documentElement;
+    const before = html.style.overflow;
+    html.style.overflow = "hidden";
+    view.addEventListener("resize", apply);
+    view.addEventListener("scroll", apply);
+    return () => {
+      view.removeEventListener("resize", apply);
+      view.removeEventListener("scroll", apply);
+      html.style.overflow = before;
+    };
+  }, [root]);
+}
+
 type Pending = { id: string; body: string; at: string; status: "sending" | "sent" | "failed" };
 
 /**
@@ -74,6 +114,8 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const [blocked, setBlocked] = React.useState(false);
   const [reporting, setReporting] = React.useState(false);
   const bottom = React.useRef<HTMLDivElement>(null);
+  const root = React.useRef<HTMLDivElement>(null);
+  useKeyboardFit(root, () => bottom.current?.scrollIntoView({ block: "end" }));
   const [declining, setDeclining] = React.useState(false);
   const [pending, setPending] = React.useState<Pending[]>([]);
   const [chosen, setChosen] = React.useState(false);
@@ -192,7 +234,12 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const canWrite =
     data?.can_message !== false && !blocked && !waiting && !cooling && (!incoming || chosen);
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8">
+    <div
+      ref={root}
+      // On a phone the screen is exactly the part of the page that is visible: when the keyboard opens it shrinks to fit above
+      // it, so the name at the top and the messages stay in view with the box on the keyboard. (See useKeyboardFit.)
+      className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] max-md:fixed max-md:inset-x-0 max-md:top-[var(--chat-top,0px)] max-md:z-30 max-md:h-[var(--chat-h,100dvh)] max-md:bg-background md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8"
+    >
       <header className="glass flex items-center gap-1.5 rounded-[22px] p-2">
         <Link
           href={`/c/${slug}/messages`}
