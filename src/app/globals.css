@@ -278,18 +278,26 @@ input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]):focu
 /* The dock: dark glass. A blur so what scrolls behind it melts into soft colour, and a dark tint so the icons stay readable. */
 .glass-dock {
   isolation: isolate;
-  /* Dark glass, kept minimal: a nearly black pane with the faintest lift at the top and one thin light edge. No bright patch on
-     either side, so it reads as one calm bar over whatever is behind it. */
+  /* Real glass, kept dark: mostly clear, so what is behind it shows through as soft blurred colour, with a deep blur and a
+     little extra colour in it. The light on it is even from side to side (a lit top edge, a faint one below), with no bright patch
+     on either side. */
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.01) 100%),
-    rgba(10, 10, 16, 0.66);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
-  backdrop-filter: blur(24px) saturate(1.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.09) 0%,
+      rgba(255, 255, 255, 0.025) 46%,
+      rgba(255, 255, 255, 0.045) 100%
+    ),
+    rgba(12, 12, 20, 0.4);
+  -webkit-backdrop-filter: blur(34px) saturate(1.9) brightness(0.92);
+  backdrop-filter: blur(34px) saturate(1.9) brightness(0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 18px 36px -16px rgba(0, 0, 0, 0.85),
-    0 2px 8px rgba(0, 0, 0, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 14px rgba(255, 255, 255, 0.025),
+    0 16px 34px -14px rgba(0, 0, 0, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.3);
 }
 /* The brand gradient as a fill, and a soft lavender for emphasised words. */
 @utility bg-brand {
