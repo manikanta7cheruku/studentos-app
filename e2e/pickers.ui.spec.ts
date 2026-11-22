@@ -72,7 +72,6 @@ test("the time wheels change the time", async ({ page }) => {
   await sheet.getByRole("option", { name: "9", exact: true }).first().click();
   await sheet.getByRole("option", { name: "pm", exact: true }).click();
   await sheet.getByRole("option", { name: "30", exact: true }).click();
-  await expect(sheet.getByRole("tab", { name: /9:30/ })).toBeVisible();
   await sheet.getByRole("button", { name: /^done$/i }).click();
   await expect(page.getByRole("button", { name: /when does it start/i })).toContainText(/9:30/);
 });

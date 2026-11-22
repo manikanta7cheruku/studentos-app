@@ -1,10 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon } from "lucide-react";
+import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "cn";
 import { GlassSheet } from "@/components/app/glass-sheet";
-import { GlideTabs } from "@/components/app/glide-tabs";
 import { RollingNumber } from "@/components/app/rolling-number";
 
 // Dates are kept as text, the same way the browser's own date boxes did: "2026-11-20" for a day and "2026-11-20T18:00" for a day
@@ -22,7 +21,7 @@ function parseDay(value: string): { year: number; month: number; day: number } |
   return { year: Number(match[1]), month: Number(match[2]) - 1, day: Number(match[3]) };
 }
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTHS = Array.from({ length: 12 }, (_, month) =>
   new Date(2000, month, 1).toLocaleDateString(undefined, { month: "long" }),
 );
@@ -133,9 +132,9 @@ function Wheel<T extends string | number>({
         role="listbox"
         aria-label={label}
         onScroll={onScroll}
-        className="no-scrollbar h-[220px] snap-y snap-mandatory overflow-y-auto overscroll-contain scroll-smooth [mask-image:linear-gradient(to_bottom,transparent,black_28%,black_72%,transparent)]"
+        className="no-scrollbar h-[176px] snap-y snap-mandatory overflow-y-auto overscroll-contain scroll-smooth [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)]"
       >
-        <div aria-hidden="true" className="h-[88px]" />
+        <div aria-hidden="true" className="h-[66px]" />
         {items.map((item) => (
           <button
             key={String(item.value)}
@@ -151,11 +150,11 @@ function Wheel<T extends string | number>({
             {item.label}
           </button>
         ))}
-        <div aria-hidden="true" className="h-[88px]" />
+        <div aria-hidden="true" className="h-[66px]" />
       </div>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[88px] h-[44px] rounded-[12px] border border-white/[0.14] bg-white/[0.06]"
+        className="pointer-events-none absolute inset-x-1 top-[66px] h-[44px] rounded-[12px] bg-white/[0.08]"
       />
     </div>
   );
@@ -176,7 +175,7 @@ function TimeWheels({ value, onChange }: { value: string; onChange: (value: stri
   const set = (h12: number, m: number, isPm: boolean) =>
     onChange(`${pad((h12 % 12) + (isPm ? 12 : 0))}:${pad(m)}`);
   return (
-    <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 rounded-[18px] border border-white/10 bg-black/[0.12] px-3 py-2">
+    <div className="mx-auto grid w-full max-w-[17rem] grid-cols-3 gap-1">
       <Wheel label="Hour" items={HOURS} value={hour12} onChange={(next) => set(next, minute, pm)} />
       <Wheel
         label="Minute"
@@ -270,19 +269,19 @@ function Calendar({
   const canNext = !maxDay || monthEnd < maxDay;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
         <button
           type="button"
           aria-label="Earlier month"
           onClick={() => shift(-1)}
           disabled={!canPrev}
-          className="inline-flex size-10 items-center justify-center rounded-full text-ink-muted outline-none transition-[background-color,color,transform] hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:opacity-30"
+          className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted outline-none transition-[background-color,color,transform] hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:opacity-25"
         >
           <ChevronLeftIcon aria-hidden="true" className="size-5" />
         </button>
-        <p aria-live="polite" className="flex items-center gap-1.5 text-[15.5px] font-semibold">
-          {MONTHS[view.month]} <RollingNumber value={view.year} className="text-[15.5px]" />
+        <p aria-live="polite" className="flex items-center gap-1.5 text-[15px] font-semibold">
+          {MONTHS[view.month]} <RollingNumber value={view.year} className="text-[15px]" />
           <span className="sr-only">{view.year}</span>
         </p>
         <button
@@ -290,14 +289,14 @@ function Calendar({
           aria-label="Later month"
           onClick={() => shift(1)}
           disabled={!canNext}
-          className="inline-flex size-10 items-center justify-center rounded-full text-ink-muted outline-none transition-[background-color,color,transform] hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:opacity-30"
+          className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted outline-none transition-[background-color,color,transform] hover:bg-white/10 hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:opacity-25"
         >
           <ChevronRightIcon aria-hidden="true" className="size-5" />
         </button>
       </div>
-      <div className="grid grid-cols-7 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-ink-muted">
+      <div className="grid grid-cols-7 text-center text-[12px] font-medium text-ink-muted/70">
         {WEEKDAYS.map((name) => (
-          <span key={name} className="py-1">
+          <span key={name} className="py-0.5">
             {name}
           </span>
         ))}
@@ -309,7 +308,7 @@ function Calendar({
           role="grid"
           aria-label={`${MONTHS[view.month]} ${view.year}`}
         >
-          <div className="grid grid-cols-7 gap-y-1">
+          <div className="grid grid-cols-7">
             {Array.from({ length: lead }, (_, i) => (
               <span key={`blank-${i}`} aria-hidden="true" />
             ))}
@@ -334,17 +333,15 @@ function Calendar({
                   disabled={off}
                   onClick={() => onPick(key)}
                   className={cn(
-                    "tabular relative mx-auto flex size-11 items-center justify-center rounded-full text-[15px] outline-none transition-[background-color,color,transform,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:pointer-events-none disabled:opacity-25",
-                    chosen
-                      ? "border border-white/30 bg-[#7d74e0]/55 font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
-                      : "text-ink hover:bg-white/10",
+                    "tabular relative mx-auto flex size-10 items-center justify-center rounded-full text-[14.5px] outline-none transition-[background-color,color,transform] duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 disabled:pointer-events-none disabled:text-ink-muted/30",
+                    chosen ? "bg-[#7d74e0] font-semibold text-white" : "text-ink hover:bg-white/10",
                   )}
                 >
                   {day}
                   {key === todayKey && !chosen ? (
                     <span
                       aria-hidden="true"
-                      className="absolute bottom-1.5 size-1 rounded-full bg-[#b9b4ee]"
+                      className="absolute bottom-1 size-[3px] rounded-full bg-[#b9b4ee]"
                     />
                   ) : null}
                 </button>
@@ -386,7 +383,14 @@ export function DateTimeField({
   className?: string;
 } & Omit<React.ComponentProps<"button">, "value" | "onChange" | "type">) {
   const [open, setOpen] = React.useState(false);
-  const [tab, setTab] = React.useState<"date" | "time">("date");
+  const [step, setStep] = React.useState<"date" | "time">("date");
+  const advance = React.useRef<number | null>(null);
+  React.useEffect(
+    () => () => {
+      if (advance.current !== null) window.clearTimeout(advance.current);
+    },
+    [],
+  );
   const [day, setDay] = React.useState("");
   const [time, setTime] = React.useState("18:00");
   const [now, setNow] = React.useState(() => new Date());
@@ -395,7 +399,7 @@ export function DateTimeField({
     setNow(new Date());
     setDay(value ? value.slice(0, 10) : "");
     setTime(/T(\d{2}:\d{2})/.exec(value)?.[1] ?? "18:00");
-    setTab("date");
+    setStep("date");
     setOpen(true);
   }
 
@@ -443,25 +447,22 @@ export function DateTimeField({
             : (placeholder ?? (mode === "date" ? "Pick a day" : "Pick a day and time"))}
         </span>
       </button>
-      <GlassSheet open={open} onOpenChange={setOpen} title={label}>
-        <div className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1 pb-3">
-          <div className="flex flex-col gap-4">
-            {mode === "datetime" ? (
-              <GlideTabs
-                label="Day or time"
-                value={tab}
-                onChange={setTab}
-                tabs={[
-                  { value: "date", label: day ? formatPicked(day, "date") : "Day" },
-                  { value: "time", label: formatTime(time) },
-                ]}
-              />
-            ) : null}
-            {tab === "date" || mode === "date" ? (
+      <GlassSheet
+        open={open}
+        onOpenChange={setOpen}
+        title={mode === "date" ? label : step === "date" ? "Pick a day" : "Pick a time"}
+      >
+        <div className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-1 pb-2">
+          <div className="flex flex-col gap-3">
+            {step === "date" ? (
               <>
                 {quick.length ? (
-                  <div role="group" aria-label="Quick choices" className="flex flex-wrap gap-2">
-                    {quick.map((option) => (
+                  <div
+                    role="group"
+                    aria-label="Quick choices"
+                    className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1"
+                  >
+                    {quick.slice(0, 3).map((option) => (
                       <QuickChip
                         key={option.label}
                         pressed={value === option.value}
@@ -478,14 +479,31 @@ export function DateTimeField({
                   max={max}
                   onPick={(picked) => {
                     setDay(picked);
-                    if (mode === "date") commit(picked);
-                    else setTab("time");
+                    // A moment to see the day light up before the sheet moves on.
+                    if (advance.current !== null) window.clearTimeout(advance.current);
+                    advance.current = window.setTimeout(() => {
+                      advance.current = null;
+                      if (mode === "date") commit(picked);
+                      else setStep("time");
+                    }, 170);
                   }}
                 />
               </>
             ) : (
               <>
-                <div role="group" aria-label="Quick times" className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStep("date")}
+                  className="inline-flex h-8 w-fit items-center gap-1 rounded-full pr-3 text-[13.5px] font-semibold text-ink-muted outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <ChevronLeftIcon aria-hidden="true" className="size-4" />
+                  {formatPicked(day, "date")}
+                </button>
+                <div
+                  role="group"
+                  aria-label="Quick times"
+                  className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1"
+                >
                   {TIME_QUICK.map((option) => (
                     <QuickChip
                       key={option.label}
@@ -507,27 +525,23 @@ export function DateTimeField({
           </div>
         </div>
         {mode === "datetime" ? (
-          <div className="flex gap-2.5 pt-2">
-            {clearable && value ? (
+          <div className="flex gap-2.5 pt-1">
+            {clearable && value && step === "date" ? (
               <button type="button" onClick={() => commit("")} className="profile-btn flex-1">
                 Clear
-              </button>
-            ) : tab === "time" ? (
-              <button type="button" onClick={() => setTab("date")} className="profile-btn flex-1">
-                <ClockIcon aria-hidden="true" /> Change day
               </button>
             ) : null}
             <button
               type="button"
               disabled={!day || Boolean(problem)}
-              onClick={() => (tab === "date" ? setTab("time") : commit(candidate))}
+              onClick={() => (step === "date" ? setStep("time") : commit(candidate))}
               className="profile-btn profile-btn-primary flex-1 disabled:opacity-50"
             >
-              {tab === "date" ? "Next: time" : "Done"}
+              {step === "date" ? "Next" : "Done"}
             </button>
           </div>
         ) : clearable && value ? (
-          <div className="flex pt-2">
+          <div className="flex pt-1">
             <button type="button" onClick={() => commit("")} className="profile-btn w-full">
               Clear the date
             </button>
@@ -536,12 +550,4 @@ export function DateTimeField({
       </GlassSheet>
     </>
   );
-}
-
-function formatTime(time: string): string {
-  const [h, m] = time.split(":").map(Number) as [number, number];
-  return new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
 }

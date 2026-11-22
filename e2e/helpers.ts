@@ -279,7 +279,7 @@ export async function pickDate(
   await dayButton.click();
 }
 
-/** Pick a day and then finish with "Next: time" and "Done" (the time stays as the wheels start it, 6 pm). */
+/** Pick a day, which moves the sheet on to the time, and finish with "Done" (the time stays as the wheels start it, 6 pm). */
 export async function pickDateTime(
   page: import("@playwright/test").Page,
   label: RegExp | string,
