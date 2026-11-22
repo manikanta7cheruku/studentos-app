@@ -3,11 +3,12 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { QuickTimes } from "@/components/app/quick-times";
+import { DateTimeField } from "@/components/app/date-time-field";
+import { FormSection } from "@/components/app/glass-parts";
+import { NumberStepper } from "@/components/app/number-stepper";
 import { ToggleRow } from "@/components/app/toggle-row";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -30,7 +31,8 @@ export function EventNewScreen() {
   const [description, setDescription] = React.useState("");
   const [when, setWhen] = React.useState("");
   const [place, setPlace] = React.useState("");
-  const [capacity, setCapacity] = React.useState("");
+  const [limited, setLimited] = React.useState(false);
+  const [capacity, setCapacity] = React.useState(50);
   const [inviteOnly, setInviteOnly] = React.useState(false);
   // Inside a college only its admins and moderators make events (official). In Global anyone can (personal).
   const [space, setSpace] = React.useState(slug);
@@ -45,8 +47,11 @@ export function EventNewScreen() {
   const [fields, setFields] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  // The earliest start the picker allows: this minute (computed once when the page opens).
+  // The earliest and the latest start the picker allows (computed once when the page opens).
   const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
+  const [maxStart] = React.useState(() =>
+    dateTimeInputValue(new Date(Date.now() + 364 * 86_400_000).toISOString()),
+  );
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -58,8 +63,6 @@ export function EventNewScreen() {
     else if (start.getTime() <= Date.now()) problems.starts_at = "It has to start in the future.";
     else if (start.getTime() > Date.now() + 365 * 86_400_000)
       problems.starts_at = "It can start at most a year from now.";
-    if (capacity && !(Number(capacity) >= 1 && Number(capacity) <= 5000))
-      problems.capacity = "Between 1 and 5000, or leave it empty.";
     setFields(problems);
     if (Object.keys(problems).length) return;
 
@@ -73,7 +76,7 @@ export function EventNewScreen() {
           description: description.trim(),
           starts_at: start.toISOString(),
           ...(place.trim() ? { place: place.trim() } : {}),
-          ...(capacity ? { capacity: Number(capacity) } : {}),
+          ...(limited ? { capacity } : {}),
           ...(inviteOnly ? { invite_only: true } : {}),
         },
         attempt.get(),
@@ -90,9 +93,13 @@ export function EventNewScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <PageHeader title="New event" back={{ href: `/c/${slug}/events`, label: "Events" }} />
-      <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-5 pt-4 pb-2 md:px-8 md:py-8">
+      <PageHeader
+        title="New event"
+        description="A talk, a fest, a meetup. People say they are going and you see who is coming."
+        back={{ href: `/c/${slug}/events`, label: "Events" }}
+      />
+      <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         <SpacePicker value={space} onChange={setSpace} label="Where should it appear" />
         {!canHost ? (
           <Banner variant="info" title="Official events are made by your college admins">
@@ -117,27 +124,42 @@ export function EventNewScreen() {
               : "This will show as an Official event of your college."}
           </p>
         )}
-        <FormField label="Title" error={fields.title} required>
-          <Input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={120}
-            placeholder="Open mic night"
-            autoFocus
-          />
-        </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <FormField label="When does it start?" error={fields.starts_at} required>
-              <Input
-                type="datetime-local"
-                value={when}
-                min={minStart}
-                onChange={(event) => setWhen(event.target.value)}
-              />
-            </FormField>
-            <QuickTimes value={when} onPick={setWhen} />
-          </div>
+
+        <FormSection title="The event">
+          <FormField label="Title" error={fields.title} required>
+            <Input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              maxLength={120}
+              placeholder="Open mic night"
+              autoFocus
+            />
+          </FormField>
+          <FormField
+            label="About it"
+            help="Optional. What happens and who it is for."
+            error={fields.description}
+          >
+            <Textarea
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              maxLength={2000}
+              rows={4}
+            />
+          </FormField>
+        </FormSection>
+
+        <FormSection title="When and where">
+          <FormField label="When does it start?" error={fields.starts_at} required>
+            <DateTimeField
+              label="When does it start?"
+              aria-label="When does it start?"
+              value={when}
+              onChange={setWhen}
+              min={minStart}
+              max={maxStart}
+            />
+          </FormField>
           <FormField label="Where?" help="Optional." error={fields.place}>
             <Input
               value={place}
@@ -146,55 +168,61 @@ export function EventNewScreen() {
               placeholder="Main auditorium"
             />
           </FormField>
-        </div>
-        <FormField
-          label="About it"
-          help="Optional. What happens and who it is for."
-          error={fields.description}
-        >
-          <Textarea
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            maxLength={2000}
-            rows={5}
+        </FormSection>
+
+        <FormSection title="Who can come">
+          <ToggleRow
+            checked={limited}
+            onChange={setLimited}
+            title="Limit the places"
+            text="Off means anyone can say they are going."
           />
-        </FormField>
-        <FormField
-          label="How many can come?"
-          help="Optional. Leave empty for no limit."
-          error={fields.capacity}
-        >
-          <Input
-            inputMode="numeric"
-            value={capacity}
-            onChange={(event) => setCapacity(event.target.value.replace(/\D/g, "").slice(0, 4))}
-            className="sm:w-40"
+          {limited ? (
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[13px] font-semibold text-ink/90">How many can come</p>
+                <p className="text-[12.5px] text-ink-muted">
+                  When it is full, nobody else can join.
+                </p>
+              </div>
+              <NumberStepper
+                label="Places"
+                value={capacity}
+                min={1}
+                max={5000}
+                step={capacity >= 100 ? 10 : 1}
+                onChange={setCapacity}
+              />
+            </div>
+          ) : null}
+          <ToggleRow
+            checked={inviteOnly}
+            onChange={setInviteOnly}
+            title="Invite only"
+            text="Kept out of the lists. Only people with your link can open it and say they are going."
           />
-        </FormField>
-        <ToggleRow
-          checked={inviteOnly}
-          onChange={setInviteOnly}
-          title="Invite only"
-          text="Kept out of the lists. Only people with your link can open it and say they are going."
-        />
+        </FormSection>
+
         {error ? (
           <Banner variant="error">
             <p>{error}</p>
           </Banner>
         ) : null}
-        <div className="flex items-center gap-3">
-          <Button type="submit" size="lg" disabled={busy || !canHost}>
-            {busy ? (
-              <>
-                <Spinner /> Saving
-              </>
-            ) : (
-              "Post event"
-            )}
-          </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={() => router.back()}>
+        <div className="flex gap-2.5">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="profile-btn flex-1 sm:min-w-32 sm:flex-none"
+          >
             Cancel
-          </Button>
+          </button>
+          <button
+            type="submit"
+            disabled={busy || !canHost}
+            className="profile-btn profile-btn-primary flex-[2] disabled:opacity-50 sm:min-w-44 sm:flex-none"
+          >
+            {busy ? <Spinner /> : null} Post event
+          </button>
         </div>
       </form>
     </div>

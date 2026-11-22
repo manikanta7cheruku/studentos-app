@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { cleanUp, createOpportunity, memberOfAlpha, uniqueIp } from "./helpers";
+import { cleanUp, createOpportunity, memberOfAlpha, uniqueIp, pickDate } from "./helpers";
 
 // Browser journeys for R3 Day 7 (the application tracker and the opportunities), desktop and phone, against the
 // real backend: add, filter, move along, edit, conflict on two screens, delete, save an opportunity, add it to the
@@ -27,7 +27,7 @@ async function addApplication(page: Page, company: string, role: string, deadlin
   await page.goto("/c/alpha/career/tracker/new");
   await page.getByLabel(/^company or organisation/i).fill(company);
   await page.getByLabel(/^role/i).fill(role);
-  if (deadline) await page.getByLabel(/^deadline/i).fill(deadline);
+  if (deadline) await pickDate(page, /^deadline/i, deadline);
   await page.getByRole("button", { name: /add to my tracker/i }).click();
   await expect(page).toHaveURL(/\/c\/alpha\/career\/tracker\/[0-9a-f-]{36}$/);
 }

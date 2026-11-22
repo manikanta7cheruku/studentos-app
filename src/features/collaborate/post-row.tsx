@@ -1,23 +1,17 @@
 import Link from "next/link";
-import { ClockIcon, MapPinIcon } from "lucide-react";
-import { cn } from "cn";
-import { OutsideBadge } from "@/components/app/outside-badge";
-import { Poster } from "@/components/app/poster";
+import { CalendarClockIcon, MapPinIcon, UsersRoundIcon } from "lucide-react";
 import { Avatar } from "@/components/app/avatar";
+import { GlassPill, GlassTile } from "@/components/app/glass-parts";
+import { OutsideBadge } from "@/components/app/outside-badge";
 import type { TeamPost } from "@/lib/api/endpoints";
 import { KIND_LABEL, formatDeadline, isTimedKind, openSlots, statusLabel } from "./labels";
 
 /** The little label for the state of a post. Words carry the meaning; the colour only helps. */
 export function StatusPill({ status }: { status: TeamPost["status"] }) {
   return (
-    <span
-      className={cn(
-        "inline-flex h-6 items-center rounded-full px-2.5 text-[12px] font-semibold",
-        status === "open" ? "bg-accent-soft text-[#b9b4ee]" : "bg-white/[0.07] text-ink-muted",
-      )}
-    >
+    <GlassPill tone={status === "open" ? "good" : "warn"} className="h-6 px-2.5 text-[11.5px]">
       {statusLabel(status)}
-    </span>
+    </GlassPill>
   );
 }
 
@@ -30,7 +24,7 @@ export function RoleChips({ roles }: { roles: TeamPost["roles"] }) {
         return (
           <li
             key={role.id}
-            className="inline-flex h-8 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 text-[13px] text-ink"
+            className="inline-flex h-8 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[13px] text-ink"
           >
             <span className="font-medium">{role.role_name}</span>
             <span className="tabular text-ink-muted">
@@ -41,18 +35,6 @@ export function RoleChips({ roles }: { roles: TeamPost["roles"] }) {
       })}
     </ul>
   );
-}
-
-/** The big word on a plan's cover: the team size for a sport, a short word for the rest. */
-export function coverWord(post: Pick<TeamPost, "kind" | "roles">): string {
-  const slots = post.roles.reduce((sum, role) => sum + role.slots, 0);
-  if (post.kind === "sport") return slots > 1 ? `${slots}` : "Play";
-  if (post.kind === "event") return "Live";
-  if (post.kind === "hangout") return "Hang";
-  if (post.kind === "hackathon") return "Hack";
-  if (post.kind === "competition") return "Win";
-  if (post.kind === "startup") return "Build";
-  return "Team";
 }
 
 function whenLabel(deadline: string | null): string | null {
@@ -69,8 +51,8 @@ function whenLabel(deadline: string | null): string | null {
 }
 
 /**
- * One plan as a card with a gradient cover. The whole card is the link (the title is the link text, stretched over the
- * card), so a screen reader hears just the title and a finger or mouse can use the whole card.
+ * One plan as a glass card. The whole card is the link (the title is the link text, stretched over the card), so a screen
+ * reader hears just the title and a finger or mouse can use the whole card.
  */
 export function PostRow({
   post,
@@ -86,89 +68,84 @@ export function PostRow({
   const joinedCount = post.roles.reduce((sum, role) => sum + role.filled, 0);
   const when = isTimedKind(post.kind) ? whenLabel(post.deadline) : null;
   return (
-    <li className="group lift glass-card relative overflow-hidden rounded-[18px] focus-within:ring-2 focus-within:ring-ring">
-      <article>
-        <Poster seed={post.id} big={coverWord(post)} className="h-28 p-3">
-          <div className="flex h-full flex-col justify-between">
-            <div className="flex items-center gap-2">
-              <span className="glass inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold">
-                {KIND_LABEL[post.kind]}
-              </span>
-              {outside ? <OutsideBadge className="h-7 px-3 text-[12px]" /> : null}
-              {post.status !== "open" ? <StatusPill status={post.status} /> : null}
-              {post.is_owner ? (
-                <span className="glass inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold">
-                  Yours
-                </span>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap gap-2 text-[12px] font-medium">
-              {when ? (
-                <span className="glass inline-flex h-7 items-center gap-1.5 rounded-full px-3">
-                  <ClockIcon aria-hidden="true" className="size-3.5" />
-                  {when}
-                </span>
-              ) : null}
-              {post.place ? (
-                <span className="glass inline-flex h-7 max-w-full items-center gap-1.5 rounded-full px-3">
-                  <MapPinIcon aria-hidden="true" className="size-3.5 shrink-0" />
-                  <span className="truncate">{post.place}</span>
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </Poster>
-        <div className="flex flex-col gap-2 px-3.5 py-3">
-          <h2 className="text-balance text-[15.5px] font-bold leading-snug">
-            <Link
-              href={`/c/${slug}/collaborate/${post.id}`}
-              className="outline-none after:absolute after:inset-0"
-            >
-              {post.title}
-            </Link>
-          </h2>
-          {post.description ? (
-            <p className="line-clamp-2 text-[13.5px] leading-relaxed text-ink-muted">
-              {post.description}
+    <li className="group lift glass-card relative rounded-[22px] focus-within:ring-2 focus-within:ring-ring">
+      <article className="flex flex-col gap-3 p-4">
+        <div className="flex items-start gap-3">
+          <GlassTile>
+            <UsersRoundIcon />
+          </GlassTile>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-muted">
+              {KIND_LABEL[post.kind]}
             </p>
-          ) : null}
-          {!isTimedKind(post.kind) ? <RoleChips roles={post.roles} /> : null}
-          <footer className="flex items-center justify-between gap-3 pt-1 text-[13px]">
-            <span className="flex min-w-0 items-center gap-2 text-ink-muted">
-              <span className="flex -space-x-1.5">
-                <Avatar
-                  name={post.author.display_name}
-                  size="xs"
-                  className="ring-2 ring-[#15151d]"
-                />
-                {Array.from({ length: Math.min(3, joinedCount) }).map((_, n) => (
-                  <span
-                    key={n}
-                    aria-hidden="true"
-                    className="bg-brand inline-block size-6 rounded-full opacity-80 ring-2 ring-[#15151d]"
-                    style={{ filter: `hue-rotate(${n * 40}deg)` }}
-                  />
-                ))}
-              </span>
-              <span className="truncate">
-                {joinedCount > 0
-                  ? `${post.author.display_name} +${joinedCount} in`
-                  : post.author.display_name}
-              </span>
-            </span>
-            {post.my_requests.length ? (
-              <span className="shrink-0 font-semibold text-[#b9b4ee]">
-                {post.my_requests[0]!.status === "accepted" ? "You are in" : "Requested"}
-              </span>
-            ) : post.status === "open" && free > 0 ? (
-              <span className="tabular shrink-0 font-semibold text-[#b9b4ee]">
-                {free} {free === 1 ? "spot" : "spots"} left
-              </span>
-            ) : (
-              <span className="shrink-0 text-ink-muted">{formatDeadline(post.deadline)}</span>
-            )}
-          </footer>
+            <h2 className="text-balance text-[16px] font-bold leading-snug [overflow-wrap:anywhere]">
+              <Link
+                href={`/c/${slug}/collaborate/${post.id}`}
+                className="outline-none after:absolute after:inset-0 after:rounded-[22px]"
+              >
+                {post.title}
+              </Link>
+            </h2>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-1.5">
+            {post.status !== "open" ? <StatusPill status={post.status} /> : null}
+            {post.is_owner ? (
+              <GlassPill tone="quiet" className="h-6 px-2.5 text-[11.5px]">
+                Yours
+              </GlassPill>
+            ) : null}
+            {outside ? <OutsideBadge className="h-6 px-2.5 text-[11px]" /> : null}
+          </div>
         </div>
+
+        {when || post.place ? (
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] font-medium">
+            {when ? (
+              <span className="flex items-center gap-2">
+                <CalendarClockIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+                {when}
+              </span>
+            ) : null}
+            {post.place ? (
+              <span className="flex min-w-0 items-center gap-2">
+                <MapPinIcon aria-hidden="true" className="size-4 shrink-0 text-ink-muted" />
+                <span className="truncate">{post.place}</span>
+              </span>
+            ) : null}
+          </p>
+        ) : null}
+
+        {post.description ? (
+          <p className="line-clamp-2 text-[13.5px] leading-relaxed text-ink-muted">
+            {post.description}
+          </p>
+        ) : null}
+        {!isTimedKind(post.kind) ? <RoleChips roles={post.roles} /> : null}
+
+        <footer className="flex items-center justify-between gap-3 border-t border-white/[0.07] pt-3 text-[13px]">
+          <span className="flex min-w-0 items-center gap-2 text-ink-muted">
+            <Avatar name={post.author.display_name} size="xs" />
+            <span className="truncate">
+              {joinedCount > 0
+                ? `${post.author.display_name} +${joinedCount} in`
+                : post.author.display_name}
+            </span>
+          </span>
+          {post.my_requests.length ? (
+            <GlassPill
+              tone={post.my_requests[0]!.status === "accepted" ? "good" : "quiet"}
+              className="h-6 px-2.5 text-[11.5px]"
+            >
+              {post.my_requests[0]!.status === "accepted" ? "You are in" : "Requested"}
+            </GlassPill>
+          ) : post.status === "open" && free > 0 ? (
+            <span className="tabular shrink-0 font-semibold text-ink/90">
+              {free} {free === 1 ? "spot" : "spots"} left
+            </span>
+          ) : (
+            <span className="shrink-0 text-ink-muted">{formatDeadline(post.deadline)}</span>
+          )}
+        </footer>
       </article>
     </li>
   );

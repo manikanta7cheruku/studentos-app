@@ -3,15 +3,14 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, Trash2Icon } from "lucide-react";
-import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { ChoiceChips } from "@/components/ui/choice-chips";
 import { Stepper } from "@/components/ui/stepper";
 import { Textarea } from "@/components/ui/textarea";
-import { QuickTimes } from "@/components/app/quick-times";
+import { DateTimeField } from "@/components/app/date-time-field";
+import { FormSection, GlassChip } from "@/components/app/glass-parts";
 import { ToggleRow } from "@/components/app/toggle-row";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
@@ -93,6 +92,9 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   const [openJoin, setOpenJoin] = React.useState(true);
   // The earliest start the picker allows: this minute (computed once when the form opens).
   const [minStart] = React.useState(() => dateTimeInputValue(new Date().toISOString()));
+  const [maxStart] = React.useState(() =>
+    dateTimeInputValue(new Date(Date.now() + 179 * 86_400_000).toISOString()),
+  );
   const [externalLink, setExternalLink] = React.useState(editing?.external_link ?? "");
   const [teamLink, setTeamLink] = React.useState(editing?.team_link ?? "");
   const [roles, setRoles] = React.useState<RoleDraft[]>(() => [newRole()]);
@@ -204,133 +206,136 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-2xl flex-col gap-5" noValidate>
+    <form onSubmit={submit} className="flex max-w-2xl flex-col gap-4" noValidate>
       {!editing ? <SpacePicker value={space} onChange={setSpace} label="Post to" /> : null}
 
-      <div className="flex flex-col gap-2">
-        <p className="text-[13px] font-semibold text-ink/90">What is it?</p>
-        <ChoiceChips
-          label="What kind of plan is it"
-          value={kind}
-          onChange={setKind}
-          options={(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => ({
-            value: k,
-            label: KIND_LABEL[k],
-          }))}
-        />
-      </div>
+      <FormSection title="The plan">
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-ink/90">What is it?</p>
+          <ChoiceChips
+            label="What kind of plan is it"
+            value={kind}
+            onChange={setKind}
+            options={(PLAN_KINDS.includes(kind) ? PLAN_KINDS : [...PLAN_KINDS, kind]).map((k) => ({
+              value: k,
+              label: KIND_LABEL[k],
+            }))}
+          />
+        </div>
 
-      <FormField label="Title" error={fields.title} required>
-        <Input
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          maxLength={120}
-          placeholder="Smart campus bus tracker for the hackathon"
-        />
-      </FormField>
+        <FormField label="Title" error={fields.title} required>
+          <Input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            maxLength={120}
+            placeholder="Smart campus bus tracker for the hackathon"
+          />
+        </FormField>
 
-      <FormField
-        label={timed ? "Anything to add?" : "What are you building?"}
-        help={
-          timed
-            ? "Optional. Level, what to bring, how to find you."
-            : "The idea, what you need help with, how you will work."
-        }
-        error={fields.description}
-      >
-        <Textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          maxLength={3000}
-          rows={timed ? 3 : 5}
-        />
-      </FormField>
+        <FormField
+          label={timed ? "Anything to add?" : "What are you building?"}
+          help={
+            timed
+              ? "Optional. Level, what to bring, how to find you."
+              : "The idea, what you need help with, how you will work."
+          }
+          error={fields.description}
+        >
+          <Textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={3000}
+            rows={timed ? 3 : 5}
+          />
+        </FormField>
+      </FormSection>
 
       {timed ? (
         <>
-          <div className="flex flex-col gap-2">
+          <FormSection title="When and where">
             <FormField label="When does it start?" error={fields.when} required>
-              <Input
-                type="datetime-local"
+              <DateTimeField
+                label="When does it start?"
+                aria-label="When does it start?"
                 value={when}
-                onChange={(event) => setWhen(event.target.value)}
+                onChange={setWhen}
                 min={minStart}
+                max={maxStart}
               />
             </FormField>
-            {!editing ? <QuickTimes value={when} onPick={setWhen} /> : null}
-          </div>
-          <div className="flex flex-col gap-2">
-            <FormField label="Where?" help="Optional. The turf, hall or room." error={fields.place}>
-              <Input
-                value={place}
-                onChange={(event) => setPlace(event.target.value)}
-                maxLength={120}
-                placeholder="Greenfield Turf"
-              />
-            </FormField>
-            {venueNames.length ? (
-              <div role="group" aria-label="Venues" className="flex flex-wrap gap-2">
-                {venueNames.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    aria-pressed={place === name}
-                    onClick={() => setPlace(name)}
-                    className={cn(
-                      "inline-flex h-8 items-center rounded-full border px-3 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
-                      place === name
-                        ? "border-[#7d74e0]/60 bg-[#7d74e0]/20 text-[#e3e0fb]"
-                        : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-                    )}
-                  >
-                    {name}
-                  </button>
-                ))}
+            <div className="flex flex-col gap-2">
+              <FormField
+                label="Where?"
+                help="Optional. The turf, hall or room."
+                error={fields.place}
+              >
+                <Input
+                  value={place}
+                  onChange={(event) => setPlace(event.target.value)}
+                  maxLength={120}
+                  placeholder="Greenfield Turf"
+                />
+              </FormField>
+              {venueNames.length ? (
+                <div role="group" aria-label="Venues" className="flex flex-wrap gap-2">
+                  {venueNames.map((name) => (
+                    <GlassChip key={name} pressed={place === name} onClick={() => setPlace(name)}>
+                      {name}
+                    </GlassChip>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </FormSection>
+          {!editing ? (
+            <FormSection title="Players">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-semibold text-ink/90">
+                    {kind === "sport"
+                      ? "Players needed"
+                      : kind === "hangout"
+                        ? "How many people?"
+                        : "How many can come?"}
+                  </p>
+                  {fields.players ? (
+                    <p className="text-[12.5px] font-medium text-danger">{fields.players}</p>
+                  ) : null}
+                </div>
+                <Stepper label="Players" value={players} onChange={setPlayers} min={1} max={20} />
               </div>
-            ) : null}
-          </div>
-          {!editing ? (
-            <FormField
-              label={
-                kind === "sport"
-                  ? "Players needed"
-                  : kind === "hangout"
-                    ? "How many people?"
-                    : "How many can come?"
-              }
-              error={fields.players}
-              required
-            >
-              <Stepper value={players} onChange={setPlayers} min={1} max={20} />
-            </FormField>
-          ) : null}
-          {!editing ? (
-            <ToggleRow
-              checked={openJoin}
-              onChange={setOpenJoin}
-              title="Anyone can join with one tap"
-              text="No asking and no waiting. You are told who joins, and joiners see who is in."
-            />
+              <ToggleRow
+                checked={openJoin}
+                onChange={setOpenJoin}
+                title="Anyone can join with one tap"
+                text="No asking and no waiting. You are told who joins, and joiners see who is in."
+              />
+            </FormSection>
           ) : null}
         </>
       ) : (
-        <FormField
-          label="Deadline"
-          help="Optional. After this date the post closes by itself. Up to 180 days from today."
-          error={fields.deadline}
-        >
-          <Input
-            type="date"
-            value={deadline}
-            onChange={(event) => setDeadline(event.target.value)}
-            min={dateInputOffset(1)}
-            max={dateInputOffset(180)}
-            className="sm:w-56"
-          />
-        </FormField>
+        <FormSection title="Deadline">
+          <FormField
+            label="Deadline"
+            help="Optional. After this date the post closes by itself. Up to 180 days from today."
+            error={fields.deadline}
+          >
+            <DateTimeField
+              mode="date"
+              clearable
+              label="Deadline"
+              aria-label="Deadline"
+              value={deadline}
+              onChange={setDeadline}
+              min={dateInputOffset(1)}
+              max={dateInputOffset(180)}
+              placeholder="No deadline"
+            />
+          </FormField>
+        </FormSection>
       )}
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 empty:hidden">
         {showLinks || fields.external_link || fields.team_link ? (
           <>
             <FormField
@@ -366,11 +371,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
             </FormField>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={() => setShowLinks(true)}
-            className="inline-flex min-h-9 w-fit items-center gap-1.5 text-[13.5px] font-semibold text-[#b9b4ee] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-          >
+          <button type="button" onClick={() => setShowLinks(true)} className="profile-btn w-fit">
             <PlusIcon aria-hidden="true" className="size-4" /> Add links (optional)
           </button>
         )}
@@ -426,7 +427,7 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                       </button>
                     ) : null}
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-[1fr_8rem]">
+                  <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
                     <FormField label="Role" error={fields[`role-${index}-name`]} required>
                       <Input
                         value={role.name}
@@ -436,14 +437,12 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
                       />
                     </FormField>
                     <FormField label="Places" error={fields[`role-${index}-slots`]} required>
-                      <Input
-                        inputMode="numeric"
+                      <Stepper
+                        label={`Places for role ${index + 1}`}
                         value={role.slots}
-                        onChange={(event) =>
-                          updateRole(role.key, {
-                            slots: event.target.value.replace(/\D/g, "").slice(0, 2),
-                          })
-                        }
+                        onChange={(slots) => updateRole(role.key, { slots })}
+                        min={1}
+                        max={20}
                       />
                     </FormField>
                   </div>
@@ -461,13 +460,13 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
               ))}
               {roles.length < 8 ? (
                 <div>
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
+                    className="profile-btn"
                     onClick={() => setRoles((current) => [...current, newRole()])}
                   >
                     <PlusIcon aria-hidden="true" /> Add another role
-                  </Button>
+                  </button>
                 </div>
               ) : null}
             </>
@@ -481,22 +480,10 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
         </Banner>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" size="lg" disabled={busy}>
-          {busy ? (
-            <>
-              <Spinner /> {editing ? "Saving" : "Posting"}
-            </>
-          ) : editing ? (
-            "Save changes"
-          ) : (
-            "Post plan"
-          )}
-        </Button>
-        <Button
+      <div className="flex gap-2.5">
+        <button
           type="button"
-          variant="ghost"
-          size="lg"
+          className="profile-btn flex-1 sm:min-w-32 sm:flex-none"
           onClick={() =>
             router.push(
               editing
@@ -506,7 +493,22 @@ export function PostForm({ editing }: { editing?: TeamPostDetail }) {
           }
         >
           Cancel
-        </Button>
+        </button>
+        <button
+          type="submit"
+          disabled={busy}
+          className="profile-btn profile-btn-primary flex-[2] disabled:opacity-60 sm:min-w-44 sm:flex-none"
+        >
+          {busy ? (
+            <>
+              <Spinner /> {editing ? "Saving" : "Posting"}
+            </>
+          ) : editing ? (
+            "Save changes"
+          ) : (
+            "Post plan"
+          )}
+        </button>
       </div>
     </form>
   );

@@ -49,3 +49,4 @@
 | 2026-11-14 | R3 phone alerts | Push alerts per device (PSH-01, PSH-02, SYS-03, migration 20261141, D-74), service worker, Home Screen manifest and icons, Alerts switch in Settings and a card on Updates. | R3 |
 | 2026-11-21 | R3 Standing, welcome and alerts card | Connections count towards Standing (migration 20261142, D-90); the welcome asks for name, username, college and interests, and Finish your profile holds the rest; alerts are a card on Home instead of a pop-up. | R3 |
 | 2026-11-21 | R3 Games at a turf or court | Turf and courts rebuilt around games: set up a game with venue, time, players and price for each, join or wait in line, leave, host answers or cancels (GAM-01 to GAM-07, migration 20261143, D-91). | R3 |
+| 2026-11-22 | R3 Glass for Events and Plans, rolling numbers, date picker | Events and Plans in the Turf glass look; one rolling NumberStepper for every count; a glass date and time sheet replaces the browser date boxes (D-92). | R3 |

@@ -4,32 +4,30 @@ import * as React from "react";
 import Link from "next/link";
 import { BadgeCheckIcon, CheckIcon, LockIcon, MapPinIcon, UserIcon, UsersIcon } from "lucide-react";
 import { cn } from "cn";
+import { GlassPill } from "@/components/app/glass-parts";
 import { OutsideBadge } from "@/components/app/outside-badge";
-import { Poster } from "@/components/app/poster";
 import { api, type EventItem } from "@/lib/api/endpoints";
 import { friendlyMessage } from "@/lib/api-client";
 import { formatWhen } from "@/lib/format";
 import { primeLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 
-/** The day as a small tile: the number big, the month small. */
+/** The day as a glass tile: the number big, the month small. */
 export function DateTile({ iso, className }: { iso: string; className?: string }) {
   const date = new Date(iso);
   return (
-    <Poster
-      seed={iso.slice(0, 10)}
+    <span
+      aria-hidden="true"
       className={cn(
-        "flex size-14 shrink-0 flex-col items-center justify-center rounded-2xl",
+        "flex size-14 shrink-0 flex-col items-center justify-center rounded-[16px] border border-white/[0.14] bg-white/[0.07] leading-none text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]",
         className,
       )}
     >
-      <div className="flex h-full flex-col items-center justify-center leading-none text-white">
-        <span className="font-heading text-[1.35rem] font-extrabold">{date.getDate()}</span>
-        <span className="mt-0.5 text-[10.5px] font-bold uppercase tracking-wider text-white/85">
-          {date.toLocaleDateString(undefined, { month: "short" })}
-        </span>
-      </div>
-    </Poster>
+      <span className="tabular font-heading text-[1.35rem] font-extrabold">{date.getDate()}</span>
+      <span className="mt-0.5 text-[10.5px] font-bold uppercase tracking-wider text-ink-muted">
+        {date.toLocaleDateString(undefined, { month: "short" })}
+      </span>
+    </span>
   );
 }
 
@@ -38,25 +36,18 @@ export function EventBadges({ event }: { event: EventItem }) {
   const official = event.kind === "official";
   return (
     <span className="flex flex-wrap items-center gap-1.5">
-      <span
-        className={cn(
-          "inline-flex h-5 items-center gap-1 rounded-full px-2 text-[11px] font-semibold",
-          official
-            ? "bg-[#7d74e0]/20 text-[#cfcbf5]"
-            : "border border-white/10 bg-white/[0.05] text-ink-muted",
-        )}
-      >
+      <GlassPill tone={official ? "good" : "quiet"} className="h-6 gap-1 px-2.5 text-[11.5px]">
         {official ? (
           <BadgeCheckIcon aria-hidden="true" className="size-3.5" />
         ) : (
           <UserIcon aria-hidden="true" className="size-3.5" />
         )}
         {official ? "Official" : "Personal event"}
-      </span>
+      </GlassPill>
       {event.invite_only ? (
-        <span className="inline-flex h-5 items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 text-[11px] font-semibold text-ink-muted">
+        <GlassPill tone="quiet" className="h-6 gap-1 px-2.5 text-[11.5px]">
           <LockIcon aria-hidden="true" className="size-3" /> Invite only
-        </span>
+        </GlassPill>
       ) : null}
     </span>
   );
@@ -103,21 +94,19 @@ export function RsvpButton({
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className={cn("flex flex-col gap-1", size === "lg" ? "w-full" : "items-end")}>
       <button
         type="button"
         onClick={() => void toggle()}
         disabled={busy || full || closed}
         aria-pressed={going}
         className={cn(
-          "inline-flex items-center justify-center gap-1.5 rounded-full font-semibold outline-none transition-[transform,background-color,color,border-color,filter] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-50",
-          size === "lg" ? "h-11 w-full text-[14.5px]" : "h-8 px-3.5 text-[12.5px]",
-          going
-            ? "border border-[#7d74e0]/50 bg-[#7d74e0]/15 text-[#cfcbf5] hover:bg-[#7d74e0]/25"
-            : "bg-brand text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_8px_20px_-10px_rgba(8,6,30,0.55)] hover:brightness-110",
+          "profile-btn disabled:opacity-50",
+          !going && !closed && !full && "profile-btn-primary",
+          size === "lg" ? "w-full !h-11 !text-[15px]" : "!h-8 !px-3.5 !text-[12.5px]",
         )}
       >
-        {going ? <CheckIcon aria-hidden="true" className="size-4" /> : null}
+        {going ? <CheckIcon aria-hidden="true" className="!size-4" /> : null}
         {closed ? "Cancelled" : full ? "Full" : going ? "Going" : "I am going"}
       </button>
       {error ? <p className="text-[12px] text-danger">{error}</p> : null}
@@ -126,10 +115,8 @@ export function RsvpButton({
 }
 
 /**
- * One event in a list. The day on the left, then three rows:
- *   the title (the link, stretched over the card) with the one button on the right,
- *   when, where and how many go,
- *   and the tags (Official, Personal event, Invite only, Public) on a row of their own.
+ * One event in a list, on glass. The day on the left, then the title (the link, stretched over the card) with the one button
+ * on the right, when, where and how many go, and the tags on a row of their own.
  * `space` is set when it came from the public space.
  */
 export function EventCard({
@@ -148,17 +135,17 @@ export function EventCard({
     <li
       onClickCapture={() => primeLoad(`event:${slug}:${event.id}`, event)}
       className={cn(
-        "lift glass-card relative flex items-start gap-3.5 rounded-[20px] px-4 py-3.5 focus-within:ring-2 focus-within:ring-ring",
+        "lift glass-card relative flex items-start gap-3.5 rounded-[22px] p-4 focus-within:ring-2 focus-within:ring-ring",
         (event.status === "cancelled" || event.status === "removed") && "opacity-60",
       )}
     >
       <DateTile iso={event.starts_at} className="size-[3.25rem]" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-3">
-          <h2 className="min-w-0 flex-1 text-balance text-[15.5px] font-semibold leading-snug">
+          <h2 className="min-w-0 flex-1 text-balance text-[15.5px] font-bold leading-snug">
             <Link
               href={`/c/${slug}/events/${event.id}`}
-              className="outline-none after:absolute after:inset-0"
+              className="outline-none after:absolute after:inset-0 after:rounded-[22px]"
             >
               {event.title}
             </Link>
@@ -167,7 +154,7 @@ export function EventCard({
             <RsvpButton event={event} space={slug} onChange={onChange} />
           </div>
         </div>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.5px] text-ink-muted">
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.5px] text-ink-muted">
           <span>{formatWhen(event.starts_at)}</span>
           {event.place ? (
             <span className="flex min-w-0 items-center gap-1">
@@ -181,7 +168,7 @@ export function EventCard({
             {event.capacity ? ` of ${event.capacity}` : ""}
           </span>
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           <EventBadges event={event} />
           {outside ? <OutsideBadge /> : null}
         </div>

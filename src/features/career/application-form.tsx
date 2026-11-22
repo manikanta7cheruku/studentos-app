@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { DateTimeField } from "@/components/app/date-time-field";
 import { useRouter } from "next/navigation";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -145,17 +146,25 @@ export function ApplicationForm({ editing }: { editing?: ApplicationDetail }) {
           help="Optional. A date in the past is fine."
           error={fields.deadline}
         >
-          <Input
-            type="date"
+          <DateTimeField
+            mode="date"
+            clearable
+            label="Deadline"
+            aria-label="Deadline"
             value={deadline}
-            onChange={(event) => setDeadline(event.target.value)}
+            onChange={setDeadline}
+            placeholder="No deadline"
           />
         </FormField>
         <FormField label="Applied on" help="Optional." error={fields.applied_on}>
-          <Input
-            type="date"
+          <DateTimeField
+            mode="date"
+            clearable
+            label="Applied on"
+            aria-label="Applied on"
             value={appliedOn}
-            onChange={(event) => setAppliedOn(event.target.value)}
+            onChange={setAppliedOn}
+            placeholder="Not yet"
           />
         </FormField>
       </div>

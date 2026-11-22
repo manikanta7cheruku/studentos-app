@@ -255,3 +255,52 @@ export async function setAlphaRole(
     .eq("college_id", college!.id);
   if (error) throw error;
 }
+
+/**
+ * Pick a day in a date field (the glass calendar sheet): open the field, move to the month, tap the day. `day` is "2026-11-20".
+ * A field that also asks for a time stays open on the time wheels: use pickDateTime for those.
+ */
+export async function pickDate(
+  page: import("@playwright/test").Page,
+  label: RegExp | string,
+  day: string,
+): Promise<void> {
+  await page.getByRole("button", { name: label }).click();
+  const sheet = page.getByRole("dialog");
+  const [year, month] = day.split("-").map(Number) as [number, number];
+  // The button names are written in the browser's own language, so ask the browser for the same words.
+  const title = await dayName(page, day);
+  const dayButton = sheet.getByRole("button", { name: title, exact: true });
+  const here = new Date();
+  const months = (year - here.getFullYear()) * 12 + (month - 1 - here.getMonth());
+  const direction = months >= 0 ? "Later month" : "Earlier month";
+  for (let step = 0; step < Math.abs(months) && !(await dayButton.count()); step += 1)
+    await sheet.getByRole("button", { name: direction }).click();
+  await dayButton.click();
+}
+
+/** Pick a day and then finish with "Next: time" and "Done" (the time stays as the wheels start it, 6 pm). */
+export async function pickDateTime(
+  page: import("@playwright/test").Page,
+  label: RegExp | string,
+  day: string,
+): Promise<void> {
+  await pickDate(page, label, day);
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /^done$/i })
+    .click();
+}
+
+/** "Tuesday, November 24, 2026", in the browser's own language: the name of a day button in the calendar. */
+export async function dayName(page: import("@playwright/test").Page, day: string): Promise<string> {
+  return page.evaluate((value) => {
+    const [y, m, d] = value.split("-").map(Number) as [number, number, number];
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, day);
+}

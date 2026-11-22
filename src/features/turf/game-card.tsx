@@ -1,30 +1,18 @@
 import Link from "next/link";
 import { CalendarClockIcon, MapPinIcon, TrophyIcon } from "lucide-react";
-import { cn } from "cn";
+import { GlassPill, GlassTile } from "@/components/app/glass-parts";
 import { OutsideBadge } from "@/components/app/outside-badge";
 import type { Game } from "@/lib/api/endpoints";
 import { formatInr } from "@/lib/format";
 import { statusOf, titleCase, whenParts } from "./game-format";
 
-const TONE = {
-  good: "border-[#8f86f0]/40 bg-[#8f86f0]/[0.16] text-[#dcd8ff]",
-  quiet: "border-white/[0.12] bg-white/[0.06] text-ink/80",
-  warn: "border-white/[0.12] bg-white/[0.04] text-ink-muted",
-} as const;
-
 /** The one short label: how many places are left, or where I stand. */
 export function StatusPill({ game, className }: { game: Game; className?: string }) {
   const status = statusOf(game);
   return (
-    <span
-      className={cn(
-        "inline-flex h-7 shrink-0 items-center rounded-full border px-3 text-[12px] font-semibold",
-        TONE[status.tone],
-        className,
-      )}
-    >
+    <GlassPill tone={status.tone} className={className}>
       {status.text}
-    </span>
+    </GlassPill>
   );
 }
 
@@ -60,12 +48,9 @@ export function GameCard({
     <li className="group lift glass-card relative rounded-[22px] focus-within:ring-2 focus-within:ring-ring">
       <article className="flex flex-col gap-3.5 p-4">
         <div className="flex items-start gap-3">
-          <span
-            aria-hidden="true"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-          >
-            <TrophyIcon className="size-5" />
-          </span>
+          <GlassTile>
+            <TrophyIcon />
+          </GlassTile>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-muted">
               {titleCase(game.sport)}
