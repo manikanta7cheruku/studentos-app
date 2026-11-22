@@ -99,17 +99,27 @@ export function QuickPost({ onPosted }: { onPosted: () => void }) {
           maxLength={MAX}
           rows={1}
           placeholder={done ? "Posted. Share another?" : "What is on your mind?"}
+          style={{
+            transitionDuration: open ? "480ms, 320ms, 480ms, 480ms" : "380ms, 260ms, 380ms, 380ms",
+          }}
           className={cn(
-            "flex-1 resize-none overflow-hidden bg-transparent text-[16px] outline-none transition-[height,background-color,padding,border-radius] duration-300 ease-out placeholder:text-ink-muted/70 motion-reduce:transition-none md:text-[14.5px]",
+            // One easing for everything that moves, so the box and the panel under it open and close as one motion. The line
+            // is a fixed 20 px tall, so the words sit in the middle of the pill (a hair high, which reads as centred).
+            "flex-1 resize-none overflow-hidden bg-transparent text-[16px] leading-5 outline-none transition-[height,background-color,padding,border-radius] ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-ink-muted/70 motion-reduce:transition-none md:text-[14.5px]",
             open
               ? "h-24 rounded-xl px-1 pt-1.5"
-              : "h-9 cursor-pointer rounded-full bg-white/[0.06] px-4 pt-[7px] hover:bg-white/10",
+              : "h-9 cursor-pointer rounded-full bg-white/[0.06] px-4 pt-[7px] pb-[9px] hover:bg-white/10",
           )}
         />
       </div>
       <div
+        // Opening: the room appears first and the buttons fade in a beat later. Closing: the buttons fade first, then the room folds.
+        style={{
+          transitionDuration: open ? "480ms, 300ms" : "380ms, 180ms",
+          transitionDelay: open ? "0ms, 110ms" : "0ms, 0ms",
+        }}
         className={cn(
-          "grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none",
+          "grid transition-[grid-template-rows,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
           open ? "grid-rows-[1fr] opacity-100" : "pointer-events-none grid-rows-[0fr] opacity-0",
         )}
         aria-hidden={!open}
