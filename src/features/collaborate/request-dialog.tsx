@@ -2,15 +2,7 @@
 
 import * as React from "react";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { GlassSheet } from "@/components/app/glass-sheet";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/app/spinner";
@@ -80,16 +72,37 @@ export function RequestDialog({
     }
   }
 
+  // A box has the keyboard: the sheet rises with it, and settles back when the focus leaves.
+  const [typing, setTypingNow] = React.useState(false);
+  const leave = React.useRef<number | null>(null);
+  const setTyping = (next: boolean) => {
+    if (leave.current !== null) window.clearTimeout(leave.current);
+    leave.current = null;
+    if (next) setTypingNow(true);
+    else leave.current = window.setTimeout(() => setTypingNow(false), 220);
+  };
+  React.useEffect(
+    () => () => {
+      if (leave.current !== null) window.clearTimeout(leave.current);
+    },
+    [],
+  );
+
   return (
-    <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Ask to join as {role.role_name}</DialogTitle>
-          <DialogDescription>
-            The author of &ldquo;{postTitle}&rdquo; sees your name, headline and skills with your
-            message, and decides.
-          </DialogDescription>
-        </DialogHeader>
+    <GlassSheet
+      open={open}
+      onOpenChange={(next) => !busy && onOpenChange(next)}
+      title={`Ask to join as ${role.role_name}`}
+      description={`The author of “${postTitle}” sees your name, headline and skills with your message, and decides.`}
+      typing={typing}
+    >
+      <div
+        className="pro-scroll -mx-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pt-2 pb-3"
+        onFocusCapture={(event) => {
+          if ((event.target as HTMLElement).matches("input, textarea")) setTyping(true);
+        }}
+        onBlurCapture={() => setTyping(false)}
+      >
         <FormField label="A short message" help="Optional. Say why you fit, and what you can do.">
           <Textarea
             value={message}
@@ -99,19 +112,31 @@ export function RequestDialog({
           />
         </FormField>
         {error ? (
-          <Banner variant="error">
-            <p>{error}</p>
-          </Banner>
+          <div className="pt-3">
+            <Banner variant="error">
+              <p>{error}</p>
+            </Banner>
+          </div>
         ) : null}
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
-            Cancel
-          </Button>
-          <Button onClick={() => void send()} disabled={busy}>
-            {busy ? <Spinner /> : null} Send request
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+      <div className="flex gap-2.5 pt-2">
+        <button
+          type="button"
+          className="profile-btn flex-1"
+          onClick={() => onOpenChange(false)}
+          disabled={busy}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="profile-btn profile-btn-primary flex-1"
+          onClick={() => void send()}
+          disabled={busy}
+        >
+          {busy ? <Spinner /> : null} Send request
+        </button>
+      </div>
+    </GlassSheet>
   );
 }

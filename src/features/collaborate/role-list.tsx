@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/app/spinner";
 import { friendlyMessage } from "@/lib/api-client";
 import { api, type TeamPostDetail } from "@/lib/api/endpoints";
@@ -60,10 +59,7 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
 
   return (
     <section aria-labelledby="roles" className="flex flex-col gap-3">
-      <h2
-        id="roles"
-        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
-      >
+      <h2 id="roles" className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted">
         Roles
       </h2>
       {error ? (
@@ -105,21 +101,33 @@ export function RoleList({ post, onChanged }: { post: TeamPostDetail; onChanged:
                   {free === 0 ? "No places left" : `${free} of ${role.slots} places free`}
                 </p>
                 {canAsk && post.join_mode === "open" ? (
-                  <Button onClick={() => void joinNow(role.id)} disabled={joining !== null}>
+                  <button
+                    type="button"
+                    className="profile-btn profile-btn-primary"
+                    onClick={() => void joinNow(role.id)}
+                    disabled={joining !== null}
+                  >
                     {joining === role.id ? <Spinner /> : null} Join
-                  </Button>
+                  </button>
                 ) : canAsk ? (
-                  <Button onClick={() => setAsking(role)}>Ask to join</Button>
+                  <button
+                    type="button"
+                    className="profile-btn profile-btn-primary"
+                    onClick={() => setAsking(role)}
+                  >
+                    Ask to join
+                  </button>
                 ) : null}
                 {latest && (latest.status === "pending" || latest.status === "accepted") ? (
-                  <Button
-                    variant="outline"
+                  <button
+                    type="button"
+                    className="profile-btn"
                     onClick={() => void withdraw(latest.id)}
                     disabled={withdrawing === latest.id}
                   >
                     {withdrawing === latest.id ? <Spinner /> : null}
                     {latest.status === "accepted" ? "Leave the team" : "Withdraw request"}
-                  </Button>
+                  </button>
                 ) : null}
               </div>
             </li>

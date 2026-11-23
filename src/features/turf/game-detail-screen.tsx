@@ -17,6 +17,7 @@ import { Banner } from "@/components/ui/banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
 import { GlassSheet } from "@/components/app/glass-sheet";
+import { Fact, GlassTile } from "@/components/app/glass-parts";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
@@ -88,31 +89,6 @@ function ConfirmSheet({
         </button>
       </div>
     </GlassSheet>
-  );
-}
-
-function Fact({
-  icon,
-  label,
-  children,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span
-        aria-hidden="true"
-        className="inline-flex size-9 shrink-0 items-center justify-center rounded-[11px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] [&_svg]:size-[1.05rem]"
-      >
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-muted">{label}</p>
-        <div className="text-[14.5px] font-medium leading-snug">{children}</div>
-      </div>
-    </div>
   );
 }
 
@@ -249,12 +225,9 @@ function Body({
     <>
       <section className="glass-card flex flex-col gap-5 rounded-[24px] p-5">
         <div className="flex items-start gap-3.5">
-          <span
-            aria-hidden="true"
-            className="inline-flex size-12 shrink-0 items-center justify-center rounded-[15px] border border-white/[0.14] bg-white/[0.07] text-ink/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-          >
-            <TrophyIcon className="size-6" />
-          </span>
+          <GlassTile size="lg">
+            <TrophyIcon />
+          </GlassTile>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-muted">
               {titleCase(game.sport)}

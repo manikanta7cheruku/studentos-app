@@ -6,6 +6,7 @@ import {
   BanIcon,
   CheckIcon,
   ChevronLeftIcon,
+  ChevronRightIcon,
   HourglassIcon,
   MessageCircleIcon,
   ThumbsDownIcon,
@@ -25,6 +26,8 @@ import { api } from "@/lib/api/endpoints";
 import { useLoad } from "@/lib/use-load";
 import { useCollege } from "@/features/college";
 import { ReportConversation } from "./report-conversation";
+import { TimerSheet } from "./timer-sheet";
+import { timerLabel } from "./timer";
 
 /** "in 52 min", "in 3 days", "any moment": when a message disappears. */
 function leaves(iso: string, now: number): string {
@@ -54,6 +57,46 @@ function dayLabel(iso: string): string {
   return day.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
+/**
+ * Keeps a full screen chat exactly as tall as the part of the page that can be seen. A phone keyboard covers the bottom of the
+ * page without resizing it, and the browser then scrolls the page to show the box, which pushed the name and the messages out
+ * of view. Here the screen follows the visible area (its height and its top), the page itself cannot scroll, and when the
+ * keyboard comes or goes the messages go to the newest one, so what was on screen is still on screen.
+ */
+function useKeyboardFit(root: React.RefObject<HTMLDivElement | null>, onChange: () => void) {
+  const change = React.useRef(onChange);
+  React.useEffect(() => {
+    change.current = onChange;
+  });
+  React.useEffect(() => {
+    const el = root.current;
+    const view = window.visualViewport;
+    if (!el || !view) return;
+    let last = view.height;
+    const apply = () => {
+      el.style.setProperty("--chat-h", `${view.height}px`);
+      el.style.setProperty("--chat-top", `${view.offsetTop}px`);
+      // The browser may have scrolled the page to show the box: put it back.
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (Math.abs(view.height - last) > 60) {
+        last = view.height;
+        window.requestAnimationFrame(() => change.current());
+      }
+    };
+    apply();
+    const html = document.documentElement;
+    const before = html.style.overflow;
+    html.style.overflow = "hidden";
+    view.addEventListener("resize", apply);
+    view.addEventListener("scroll", apply);
+    return () => {
+      view.removeEventListener("resize", apply);
+      view.removeEventListener("scroll", apply);
+      html.style.overflow = before;
+    };
+  }, [root]);
+}
+
 type Pending = { id: string; body: string; at: string; status: "sending" | "sent" | "failed" };
 
 /**
@@ -71,9 +114,12 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const [blocked, setBlocked] = React.useState(false);
   const [reporting, setReporting] = React.useState(false);
   const bottom = React.useRef<HTMLDivElement>(null);
+  const root = React.useRef<HTMLDivElement>(null);
+  useKeyboardFit(root, () => bottom.current?.scrollIntoView({ block: "end" }));
   const [declining, setDeclining] = React.useState(false);
   const [pending, setPending] = React.useState<Pending[]>([]);
   const [chosen, setChosen] = React.useState(false);
+  const [timerOpen, setTimerOpen] = React.useState(false);
 
   const { reload } = state;
   React.useEffect(() => {
@@ -188,7 +234,12 @@ export function ThreadScreen({ userId }: { userId: string }) {
   const canWrite =
     data?.can_message !== false && !blocked && !waiting && !cooling && (!incoming || chosen);
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8">
+    <div
+      ref={root}
+      // On a phone the screen is exactly the part of the page that is visible: when the keyboard opens it shrinks to fit above
+      // it, so the name at the top and the messages stay in view with the box on the keyboard. (See useKeyboardFit.)
+      className="mx-auto flex h-dvh w-full max-w-2xl flex-col px-3 pt-[max(0.75rem,env(safe-area-inset-top))] max-md:fixed max-md:inset-x-0 max-md:top-[var(--chat-top,0px)] max-md:z-30 max-md:h-[var(--chat-h,100dvh)] max-md:bg-background md:h-[calc(100dvh-3rem)] md:px-8 md:pt-8"
+    >
       <header className="glass flex items-center gap-1.5 rounded-[22px] p-2">
         <Link
           href={`/c/${slug}/messages`}
@@ -221,6 +272,11 @@ export function ThreadScreen({ userId }: { userId: string }) {
               className="size-10"
               items={[
                 {
+                  label: "Disappearing messages",
+                  icon: <TimerIcon aria-hidden="true" />,
+                  onSelect: () => setTimerOpen(true),
+                },
+                {
                   label: "Report " + other.display_name,
                   icon: <FlagIcon aria-hidden="true" />,
                   danger: true,
@@ -244,6 +300,16 @@ export function ThreadScreen({ userId }: { userId: string }) {
               open={reporting}
               onOpenChange={setReporting}
             />
+            {data ? (
+              <TimerSheet
+                open={timerOpen}
+                onOpenChange={setTimerOpen}
+                userId={userId}
+                name={other.display_name}
+                disappear={data.disappear}
+                onChanged={reload}
+              />
+            ) : null}
           </>
         ) : null}
       </header>
@@ -252,10 +318,28 @@ export function ThreadScreen({ userId }: { userId: string }) {
         className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-1 py-2"
         aria-live="polite"
       >
-        <p className="mx-auto mb-1 flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted">
-          <TimerIcon aria-hidden="true" className="size-3" /> Disappears 1 hour after it is seen ·
-          cannot be unsent
-        </p>
+        {data ? (
+          <div className="mx-auto mb-1 flex flex-col items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setTimerOpen(true)}
+              aria-haspopup="dialog"
+              className="flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-center text-[11.5px] text-ink-muted outline-none transition-[background-color,color,transform] duration-200 hover:bg-white/[0.09] hover:text-ink focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+            >
+              <TimerIcon aria-hidden="true" className="size-3" /> Disappears{" "}
+              {timerLabel(data.disappear.minutes)} after it is seen · cannot be unsent
+              <ChevronRightIcon aria-hidden="true" className="size-3" />
+            </button>
+            {data.disappear.set_by_name &&
+            !data.disappear.set_by_me &&
+            data.disappear.set_at &&
+            now - new Date(data.disappear.set_at).getTime() < 86_400_000 ? (
+              <p className="text-[11.5px] text-ink-muted">
+                {data.disappear.set_by_name} set this to {timerLabel(data.disappear.minutes)}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         {other && incoming ? (
           <section className="glass-card flex flex-col gap-3 rounded-[22px] p-4">
             <p className="text-[15px] font-bold">{other.display_name} wants to chat</p>
@@ -328,7 +412,7 @@ export function ThreadScreen({ userId }: { userId: string }) {
             {incoming || waiting || cooling
               ? ""
               : data.can_message
-                ? "Nothing here. Say hello. What you write disappears after it is read."
+                ? `Nothing here. Say hello. What you write disappears ${timerLabel(data.disappear.minutes)} after it is read.`
                 : "You cannot message this person."}
           </p>
         ) : (

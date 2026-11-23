@@ -3,11 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { CalendarDaysIcon, PlusIcon } from "lucide-react";
-import { cn } from "cn";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Eyebrow, GlassTile } from "@/components/app/glass-parts";
+import { GlideTabs } from "@/components/app/glide-tabs";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api/endpoints";
 import { dayLabel } from "@/lib/format";
 import { useLoad } from "@/lib/use-load";
@@ -16,24 +16,12 @@ import { GLOBAL_SLUG } from "@/lib/home-path";
 import { EventCard } from "./event-card";
 
 type View = "upcoming" | "going" | "past";
-const VIEWS: { value: View; label: string }[] = [
-  { value: "upcoming", label: "Upcoming" },
-  { value: "going", label: "I am going" },
-  { value: "past", label: "Past" },
-];
 
 function EventSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading events" className="flex flex-col gap-4">
+    <div aria-busy="true" aria-label="Loading events" className="flex flex-col gap-3">
       {[0, 1, 2].map((n) => (
-        <div key={n} className="flex gap-3.5 rounded-[20px] border border-white/[0.06] p-4">
-          <Skeleton className="size-14 rounded-2xl" />
-          <div className="flex-1 space-y-2.5">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-9 w-32 rounded-full" />
-          </div>
-        </div>
+        <Skeleton key={n} className="h-32 w-full rounded-[22px]" />
       ))}
     </div>
   );
@@ -86,6 +74,12 @@ export function EventsScreen() {
     }
   }
 
+  const newEvent = (
+    <Link href={`/c/${slug}/events/new`} className="profile-btn profile-btn-primary">
+      <PlusIcon aria-hidden="true" /> New event
+    </Link>
+  );
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
@@ -93,37 +87,20 @@ export function EventsScreen() {
         eyebrow={slug === "global" ? "Global" : college.name}
         title="Events"
         description="Fests, talks, meetups and matches. Say you are going and see who else is."
-        actions={
-          <Button asChild>
-            <Link href={`/c/${slug}/events/new`}>
-              <PlusIcon aria-hidden="true" /> New event
-            </Link>
-          </Button>
-        }
+        actions={<span className="hidden sm:block">{newEvent}</span>}
       />
-      <div>
-        <div
-          role="tablist"
-          aria-label="Which events"
-          className="grid grid-cols-3 gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-1"
-        >
-          {VIEWS.map((item) => (
-            <button
-              key={item.value}
-              role="tab"
-              type="button"
-              aria-selected={view === item.value}
-              onClick={() => setView(item.value)}
-              className={cn(
-                "h-9 rounded-xl text-[13.5px] font-semibold outline-none transition-[background-color,color] duration-200 focus-visible:ring-2 focus-visible:ring-ring",
-                view === item.value ? "bg-white/[0.14] text-ink" : "text-ink-muted hover:text-ink",
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="sm:hidden [&>a]:w-full">{newEvent}</div>
+
+      <GlideTabs
+        label="Which events"
+        value={view}
+        onChange={setView}
+        tabs={[
+          { value: "upcoming", label: "Upcoming" },
+          { value: "going", label: "I am going" },
+          { value: "past", label: "Past" },
+        ]}
+      />
 
       <div aria-live="polite">
         {state.status === "loading" ? (
@@ -131,10 +108,10 @@ export function EventsScreen() {
         ) : state.status === "error" ? (
           <LoadError error={state.error} onRetry={state.reload} what="the events" />
         ) : groups.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
-            <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
-              <CalendarDaysIcon aria-hidden="true" className="size-6" />
-            </span>
+          <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
+            <GlassTile size="lg">
+              <CalendarDaysIcon />
+            </GlassTile>
             <p className="text-lg font-bold">
               {view === "going"
                 ? "You are not going to anything yet"
@@ -148,18 +125,16 @@ export function EventsScreen() {
                 : "Events you go to will show up here."}
             </p>
             {view === "upcoming" ? (
-              <Button asChild className="mt-1">
-                <Link href={`/c/${slug}/events/new`}>Plan an event</Link>
-              </Button>
+              <Link href={`/c/${slug}/events/new`} className="profile-btn profile-btn-primary mt-1">
+                Plan an event
+              </Link>
             ) : null}
           </div>
         ) : (
           <div className="flex flex-col gap-6">
             {groups.map((group) => (
               <section key={group.label} aria-label={group.label}>
-                <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
-                  {group.label}
-                </h2>
+                <Eyebrow className="mb-2.5">{group.label}</Eyebrow>
                 <ul className="stagger flex flex-col gap-3">
                   {group.items.map((event) => (
                     <EventCard

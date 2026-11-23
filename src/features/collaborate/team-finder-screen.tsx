@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { PlusIcon, SearchIcon } from "lucide-react";
-import { cn } from "cn";
-import { Button } from "@/components/ui/button";
+import { PlusIcon, SearchIcon, UsersRoundIcon } from "lucide-react";
+import { GlassChip, GlassTile } from "@/components/app/glass-parts";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
@@ -26,32 +25,6 @@ type Filters = {
 };
 
 const INITIAL: Filters = { kind: "all", q: "", scope: "all", status: "open" };
-
-function Chip({
-  pressed,
-  onClick,
-  children,
-}: {
-  pressed: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-8 shrink-0 items-center rounded-full border px-3.5 text-[12.5px] font-semibold transition-[background-color,border-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
-        pressed
-          ? "bg-brand border-transparent text-white shadow-[0_6px_16px_-8px_rgba(8,6,30,0.55)]"
-          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 function Results({ filters }: { filters: Filters }) {
   const { slug } = useCollege();
@@ -85,14 +58,9 @@ function Results({ filters }: { filters: Filters }) {
 
   if (first.status === "loading") {
     return (
-      <div aria-busy="true" aria-label="Loading posts" className="flex flex-col gap-6 pt-4">
+      <div aria-busy="true" aria-label="Loading posts" className="flex flex-col gap-3">
         {[0, 1, 2].map((n) => (
-          <div key={n} className="flex flex-col gap-3">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-7 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-8 w-2/3" />
-          </div>
+          <Skeleton key={n} className="h-44 w-full rounded-[22px]" />
         ))}
       </div>
     );
@@ -136,26 +104,27 @@ function Results({ filters }: { filters: Filters }) {
   if (items.length === 0) {
     const filtered = filters.kind !== "all" || filters.q || filters.scope === "mine";
     return (
-      <div className="mt-4 glass-card rounded-[22px] p-8">
-        <p className="text-lg font-semibold">
+      <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
+        <GlassTile size="lg">
+          <UsersRoundIcon />
+        </GlassTile>
+        <p className="text-lg font-bold">
           {filters.scope === "mine"
             ? "You have not posted yet."
             : filtered
               ? "No plans match these filters."
               : "No plans yet."}
         </p>
-        <p className="mt-1 max-w-prose text-ink-muted">
+        <p className="max-w-[34ch] text-[14px] text-ink-muted">
           {filters.scope === "mine"
             ? "Describe what you are building and the roles you need. Classmates with the right skills can ask to join."
             : filtered
               ? "Try another kind or a different word."
               : "Be the first: post a match, an event or a project."}
         </p>
-        <Button asChild className="mt-4">
-          <Link href={`/c/${slug}/collaborate/new`}>
-            <PlusIcon aria-hidden="true" /> New plan
-          </Link>
-        </Button>
+        <Link href={`/c/${slug}/collaborate/new`} className="profile-btn profile-btn-primary mt-1">
+          <PlusIcon aria-hidden="true" /> New plan
+        </Link>
       </div>
     );
   }
@@ -174,14 +143,14 @@ function Results({ filters }: { filters: Filters }) {
       </ul>
       {cursor ? (
         <div className="mt-6 flex flex-col items-start gap-2">
-          <Button
-            variant="outline"
-            size="lg"
+          <button
+            type="button"
+            className="profile-btn disabled:opacity-60"
             onClick={() => void loadMore()}
             disabled={loadingMore}
           >
             {loadingMore ? <Spinner /> : null} Show more
-          </Button>
+          </button>
           {moreError ? <p className="text-[13.5px] text-danger">{moreError}</p> : null}
         </div>
       ) : (
@@ -204,6 +173,11 @@ export function TeamFinderScreen() {
     return () => window.clearTimeout(timer);
   }, [draft]);
 
+  const newPlan = (
+    <Link href={`/c/${slug}/collaborate/new`} className="profile-btn profile-btn-primary">
+      <PlusIcon aria-hidden="true" /> New plan
+    </Link>
+  );
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
       <PageHeader
@@ -212,18 +186,21 @@ export function TeamFinderScreen() {
         title="Plans"
         description="Matches, events, hackathons and projects looking for people. Join one, or start your own."
         actions={
-          <>
-            <Button asChild variant="outline">
-              <Link href={`/c/${slug}/collaborate/requests`}>Team requests</Link>
-            </Button>
-            <Button asChild>
-              <Link href={`/c/${slug}/collaborate/new`}>
-                <PlusIcon aria-hidden="true" /> New plan
-              </Link>
-            </Button>
-          </>
+          <span className="hidden gap-2.5 sm:flex">
+            <Link href={`/c/${slug}/collaborate/requests`} className="profile-btn">
+              Team requests
+            </Link>
+            {newPlan}
+          </span>
         }
       />
+
+      <div className="flex gap-2.5 sm:hidden">
+        <div className="min-w-0 flex-[2] [&>a]:w-full">{newPlan}</div>
+        <Link href={`/c/${slug}/collaborate/requests`} className="profile-btn flex-1">
+          Requests
+        </Link>
+      </div>
 
       <div className="relative">
         <SearchIcon
@@ -236,7 +213,7 @@ export function TeamFinderScreen() {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Search plans"
-          className="h-10 rounded-2xl border-white/10 bg-white/[0.06] pl-10"
+          className="pl-10"
           autoComplete="off"
         />
       </div>
@@ -247,27 +224,27 @@ export function TeamFinderScreen() {
           aria-label="Filter plans"
           className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
         >
-          <Chip
+          <GlassChip
             pressed={filters.scope === "all" && filters.kind === "all"}
             onClick={() => set({ scope: "all", kind: "all" })}
           >
             All
-          </Chip>
+          </GlassChip>
           {PLAN_KINDS.map((kind) => (
-            <Chip
+            <GlassChip
               key={kind}
               pressed={filters.scope === "all" && filters.kind === kind}
               onClick={() => set({ scope: "all", kind })}
             >
               {KIND_LABEL[kind]}
-            </Chip>
+            </GlassChip>
           ))}
-          <Chip
+          <GlassChip
             pressed={filters.scope === "mine"}
             onClick={() => set({ scope: "mine", kind: "all" })}
           >
             Mine
-          </Chip>
+          </GlassChip>
         </div>
       </div>
 

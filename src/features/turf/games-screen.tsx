@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { MapPinnedIcon, PlusIcon } from "lucide-react";
-import { cn } from "cn";
+import { GlassChip } from "@/components/app/glass-parts";
 import { GlideTabs } from "@/components/app/glide-tabs";
 import { LoadError } from "@/components/app/load-error";
 import { PageHeader } from "@/components/app/page-header";
@@ -16,32 +16,6 @@ import { GameCard } from "./game-card";
 import { SPORTS, titleCase } from "./game-format";
 
 type View = "upcoming" | "mine";
-
-function Chip({
-  pressed,
-  onClick,
-  children,
-}: {
-  pressed: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-8 shrink-0 items-center rounded-full border px-3.5 text-[12.5px] font-semibold outline-none transition-[background-color,border-color,color,transform] duration-200 focus-visible:ring-2 focus-visible:ring-ring active:scale-95",
-        pressed
-          ? "border-white/25 bg-white/[0.14] text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
-          : "border-white/10 bg-white/[0.04] text-ink-muted hover:border-white/25 hover:text-ink",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 /** Turf and courts: games people are setting up to play, soonest first, and the ones I am part of. */
 export function GamesScreen() {
@@ -84,13 +58,13 @@ export function GamesScreen() {
         aria-label="Sport"
         className="no-scrollbar -mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-0.5 md:mx-0 md:flex-wrap md:px-0"
       >
-        <Chip pressed={sport === null} onClick={() => setSport(null)}>
+        <GlassChip pressed={sport === null} onClick={() => setSport(null)}>
           All sports
-        </Chip>
+        </GlassChip>
         {SPORTS.map((value) => (
-          <Chip key={value} pressed={sport === value} onClick={() => setSport(value)}>
+          <GlassChip key={value} pressed={sport === value} onClick={() => setSport(value)}>
             {titleCase(value)}
-          </Chip>
+          </GlassChip>
         ))}
       </div>
 

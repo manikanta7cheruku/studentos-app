@@ -56,7 +56,7 @@ const PRIVACY = [
   },
   {
     title: "Messages that disappear",
-    text: "Private messages are removed after they have been read.",
+    text: "Private messages are removed after they have been read. You choose how long they stay, up to a day.",
   },
   {
     title: "Control and reporting",
@@ -93,7 +93,7 @@ const FAQ = [
   },
   {
     q: "Are my messages private?",
-    a: "Messages are only visible to you and the person you write to, and they disappear after being read. They are not end-to-end encrypted, which the Privacy Notice explains in full.",
+    a: "Messages are only visible to you and the person you write to, and they disappear after being read, after one hour, seven hours or a day as you choose. They are not end-to-end encrypted, which the Privacy Notice explains in full.",
   },
   {
     q: "Can I post without my name?",

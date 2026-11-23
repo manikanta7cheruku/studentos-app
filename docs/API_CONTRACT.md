@@ -122,6 +122,9 @@ Legend: Auth = `pub` public · `ses` any signed-in user · `mem(n)` active membe
 | NET-01 | GET `/c/{slug}/network/suggestions` | People to meet | mem(1) | P2 | | TC-NET-01 |
 | NET-02 | GET `/me/network` | How big my network is | ses | P2 | | TC-NET-02 |
 | MSG-05 | POST `/c/{slug}/messages/{userId}/decline` | Not interested in a request | mem(1) | P2 | | TC-MSG-05 |
+| MSG-06 | PUT `/c/{slug}/messages/{userId}/timer` | Change the timer of a chat | mem(1) | P2 | | TC-MSG-06 |
+| MSG-07 | GET `/me/message-settings` | My default timer | ses | P2 | | TC-MSG-07 |
+| MSG-08 | PUT `/me/message-settings` | Change my default timer | ses | P2 | | TC-MSG-08 |
 | FOL-02 | GET `/me/connections` | My followers, or who I follow | ses | P2 | | TC-FOL-02 |
 | NET-03 | GET `/c/{slug}/network/connections` | People I am connected to | mem(1) | P2 | | TC-NET-03 |
 | COL-02 | GET `/colleges/suggest` | College names to pick from | ses | P2 | | TC-COL-02 |
@@ -512,9 +515,14 @@ Turf and courts is about playing. A student sets up a game: the sport, the venue
 | MSG-03 | POST `/api/v1/c/{slug}/messages/{userId}` | IDEM. `{ "body": "1 to 500 characters" }`. Text only. 201. 403 `FORBIDDEN` when blocked, 429 `RATE_LIMITED` at 60 an hour or 20 unopened messages waiting at the same person |
 | MSG-04 | POST `/api/v1/c/{slug}/messages/{userId}/report` | `{ "reason": "harassment", "details": "optional" }`. Reports the person. The recent messages are copied into the report. 409 `CONFLICT` for a second open report |
 | MSG-05 | POST `/api/v1/c/{slug}/messages/{userId}/decline` | "Not interested" in a request I received. The sender is told, kindly, that I am not available right now, and may ask again after 5 days. The request message is deleted. 404 when there is no open request from that person |
+| MSG-06 | PUT `/api/v1/c/{slug}/messages/{userId}/timer` | `{ "minutes": 60 or 420 or 1440 }`. How long a message stays after the other person opens it, for this chat: 1 hour, 7 hours or 24 hours. Either person can change it, and it only affects messages sent from then on (each message keeps the timer it was sent with). 409 `CONFLICT` while the conversation is still a request or does not exist yet, 400 for any other number. Answers with `disappear` (below) |
+| MSG-07 | GET `/api/v1/me/message-settings` | `{ "default_minutes": 60 }`. What a conversation I start begins with (1 hour unless I changed it) |
+| MSG-08 | PUT `/api/v1/me/message-settings` | `{ "default_minutes": 60 or 420 or 1440 }`. Conversations I already have keep their own timer |
 | FDB-01 | POST `/api/v1/me/feedback` | `{ "kind": "idea" \| "problem" \| "other", "message": "5 to 1500", "page": "/c/alpha/turf" }`. Any signed in person. 201. 429 `RATE_LIMITED` at 10 a day |
 | PHO-01 | POST `/api/v1/c/{slug}/photos/upload-url` | `{ "content_type": "image/webp" \| "image/jpeg" \| "image/png", "file_size": 180000 }`. A one time upload link and the `path` (it starts with my own id). 400 above 1 MB |
 | BRD-08 | PUT `/api/v1/c/{slug}/board/{id}/photo` | `{ "path": "<path from PHO-01>" \| null }`. The author attaches or removes the photo of a market or lost and found post. 403 for anyone else, 400 for a path that does not start with the author's id. Board posts now carry `photo_url` |
+
+**Disappearing timer (MSG-02, MSG-06 to MSG-08, decision D-93):** MSG-02 also returns `disappear`: `minutes` (60, 420 or 1440), `set_by_me`, `set_by_name` and `set_at` (who changed it last, null until someone does), and `can_change` (true for a chat that is going). For a chat that does not exist yet `minutes` is my default. A message is removed `minutes` after the other person opens it (the timer it was sent with), and 3 days after it was sent if it is never opened. A new conversation starts with the default of the person who writes first.
 
 **Message requests (MSG-01 to MSG-05):** a first message to someone I have no chat with is a *request*. Two people who follow each other skip it. The receiver sees it under Requests and chooses *Continue chatting* (writing back accepts it) or *Not interested* (MSG-05). A request lasts **3 days**; after that the status is `expired` and a new one may be sent. After *not interested* the sender may ask again after **5 days** (409 `CONFLICT` before that). While a request is waiting the sender cannot send more (409). Daily cap: 10 new requests, 3 for an account under 2 days old (429 `RATE_LIMITED`). `kind` on MSG-01 is `chat`, `request_received`, `request_sent`, `declined` or `expired`; MSG-02 adds `other` details (headline, college, branch, year), `request` and `can_message`; MSG-03 answers `request: true` when it started a request.
 

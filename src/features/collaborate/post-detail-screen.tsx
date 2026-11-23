@@ -3,24 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  CalendarIcon,
+  CalendarClockIcon,
   ExternalLinkIcon,
   MapPinIcon,
   MessageCircleIcon,
   PencilIcon,
+  UsersRoundIcon,
 } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Fact, GlassTile } from "@/components/app/glass-parts";
+import { GlassSheet } from "@/components/app/glass-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadError } from "@/components/app/load-error";
+import { PageHeader } from "@/components/app/page-header";
 import { Spinner } from "@/components/app/spinner";
 import { ApiError, friendlyMessage } from "@/lib/api-client";
 import { api, type TeamPostDetail } from "@/lib/api/endpoints";
@@ -77,30 +72,36 @@ function CloseDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Close this post?</DialogTitle>
-          <DialogDescription>
-            No one can ask to join anymore. Requests that are still waiting are cancelled and those
-            people are told. You cannot open it again.
-          </DialogDescription>
-        </DialogHeader>
-        {error ? (
-          <Banner variant="error">
-            <p>{error}</p>
-          </Banner>
-        ) : null}
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
-            Keep it open
-          </Button>
-          <Button variant="destructive" onClick={() => void close()} disabled={busy}>
-            {busy ? <Spinner /> : null} Close the post
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <GlassSheet
+      open={open}
+      onOpenChange={(next) => !busy && onOpenChange(next)}
+      title="Close this post?"
+      description="No one can ask to join anymore. Requests that are still waiting are cancelled and those people are told. You cannot open it again."
+    >
+      {error ? (
+        <Banner variant="error">
+          <p>{error}</p>
+        </Banner>
+      ) : null}
+      <div className="flex gap-2.5 pt-5">
+        <button
+          type="button"
+          className="profile-btn flex-1"
+          onClick={() => onOpenChange(false)}
+          disabled={busy}
+        >
+          Keep it open
+        </button>
+        <button
+          type="button"
+          className="profile-btn profile-btn-primary flex-1"
+          onClick={() => void close()}
+          disabled={busy}
+        >
+          {busy ? <Spinner /> : null} Close the post
+        </button>
+      </div>
+    </GlassSheet>
   );
 }
 
@@ -111,65 +112,71 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
   const version = post.roles.map((role) => role.filled).join(",") + post.status;
 
   return (
-    <article className="flex flex-col gap-8">
-      <header className="flex flex-col gap-4 border-b border-border pb-6">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px]">
-          <span className="font-semibold uppercase tracking-[0.06em] text-ink">
-            {KIND_LABEL[post.kind]}
-          </span>
+    <article className="flex flex-col gap-4">
+      <header className="glass-card flex flex-col gap-5 rounded-[24px] p-5">
+        <div className="flex items-start gap-3.5">
+          <GlassTile size="lg">
+            <UsersRoundIcon />
+          </GlassTile>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-muted">
+              {KIND_LABEL[post.kind]}
+            </p>
+            <h1 className="text-balance font-heading text-[1.45rem] font-extrabold leading-tight tracking-tight [overflow-wrap:anywhere]">
+              {post.title}
+            </h1>
+            <p className="mt-1 text-[13px] text-ink-muted">
+              by{" "}
+              <Link
+                href={`/c/${slug}/people/${post.author.user_id}`}
+                className="font-medium text-ink underline-offset-4 hover:underline"
+              >
+                {post.author.display_name}
+              </Link>
+            </p>
+          </div>
           <StatusPill status={post.status} />
         </div>
-        {post.join_mode === "open" && post.status === "open" ? (
-          <p className="w-fit rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[12.5px] font-semibold text-ink-muted">
-            Open to everyone: tap Join, no approval needed
-          </p>
-        ) : null}
-        <h1 className="text-balance text-[1.7rem] font-extrabold leading-tight tracking-tight sm:text-[2.1rem]">
-          {post.title}
-        </h1>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-ink-muted">
-          <span>
-            by{" "}
-            <Link
-              href={`/c/${slug}/people/${post.author.user_id}`}
-              className="font-medium text-ink underline-offset-4 hover:underline"
-            >
-              {post.author.display_name}
-            </Link>
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarIcon aria-hidden="true" className="size-4" />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Fact icon={<CalendarClockIcon />} label={isTimedKind(post.kind) ? "When" : "Deadline"}>
             {isTimedKind(post.kind) ? startLabel(post.deadline) : formatDeadline(post.deadline)}
-          </span>
+          </Fact>
           {post.place ? (
-            <span className="inline-flex items-center gap-1.5">
-              <MapPinIcon aria-hidden="true" className="size-4" />
+            <Fact icon={<MapPinIcon />} label="Where">
               {post.place}
-            </span>
+            </Fact>
           ) : null}
-        </p>
-        {!post.is_owner ? (
-          <div>
-            <ReportMenu targetType="team_post" targetId={post.id} what="plan" />
-          </div>
-        ) : null}
-        {isModerator && !post.is_owner ? (
-          <div>
-            <Button variant="outline" onClick={() => setRemoving(true)}>
-              Remove this plan
-            </Button>
-          </div>
-        ) : null}
+          {post.join_mode === "open" && post.status === "open" ? (
+            <Fact icon={<UsersRoundIcon />} label="Joining">
+              Open to everyone
+              <span className="block text-[13px] font-normal text-ink-muted">
+                Tap Join, no approval needed
+              </span>
+            </Fact>
+          ) : null}
+        </div>
+
         {post.is_owner && post.status === "open" ? (
-          <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
-              <Link href={`/c/${slug}/collaborate/${post.id}/edit`}>
-                <PencilIcon aria-hidden="true" /> Edit
-              </Link>
-            </Button>
-            <Button variant="ghost" onClick={() => setClosing(true)}>
+          <div className="flex gap-2.5">
+            <Link href={`/c/${slug}/collaborate/${post.id}/edit`} className="profile-btn flex-1">
+              <PencilIcon aria-hidden="true" /> Edit
+            </Link>
+            <button type="button" className="profile-btn flex-1" onClick={() => setClosing(true)}>
               Close the post
-            </Button>
+            </button>
+          </div>
+        ) : null}
+        {!post.is_owner || (isModerator && !post.is_owner) ? (
+          <div className="flex flex-wrap items-center gap-2.5">
+            {!post.is_owner ? (
+              <ReportMenu targetType="team_post" targetId={post.id} what="plan" />
+            ) : null}
+            {isModerator && !post.is_owner ? (
+              <button type="button" className="profile-btn" onClick={() => setRemoving(true)}>
+                Remove this plan
+              </button>
+            ) : null}
           </div>
         ) : null}
       </header>
@@ -190,22 +197,24 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
       ) : null}
 
       {post.description ? (
-        <section aria-labelledby="about" className="max-w-prose">
+        <section aria-labelledby="about" className="glass-card rounded-[22px] p-4">
           <h2 id="about" className="sr-only">
             About
           </h2>
-          <p className="whitespace-pre-line text-[15px] leading-relaxed">{post.description}</p>
+          <p className="whitespace-pre-line text-[14.5px] leading-relaxed [overflow-wrap:anywhere]">
+            {post.description}
+          </p>
         </section>
       ) : null}
 
       {post.external_link || post.team_link ? (
-        <section aria-label="Links" className="flex flex-col gap-2">
+        <section aria-label="Links" className="flex flex-wrap gap-2.5">
           {post.external_link ? (
             <a
               href={post.external_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 w-fit items-center gap-2 font-medium text-primary underline underline-offset-4"
+              className="profile-btn w-fit"
             >
               <ExternalLinkIcon aria-hidden="true" className="size-4" /> More details
             </a>
@@ -215,7 +224,7 @@ function PostBody({ post, reload }: { post: TeamPostDetail; reload: () => void }
               href={post.team_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 w-fit items-center gap-2 font-medium text-primary underline underline-offset-4"
+              className="profile-btn w-fit"
             >
               <MessageCircleIcon aria-hidden="true" className="size-4" /> Team chat
             </a>
@@ -251,13 +260,8 @@ export function PostDetailScreen({ postId }: { postId: string }) {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-5 pt-4 pb-2 md:px-8 md:py-8">
-      <Link
-        href={`/c/${slug}/collaborate`}
-        className="-ml-1 inline-flex min-h-11 w-fit items-center rounded-input px-1 text-[13.5px] font-medium text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        ← All plans
-      </Link>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-5 pt-4 pb-2 md:px-8 md:py-8">
+      <PageHeader title="Plan" back={{ href: `/c/${slug}/collaborate`, label: "All plans" }} />
       {state.status === "loading" ? (
         <div aria-busy="true" className="flex flex-col gap-4">
           <Skeleton className="h-4 w-32" />
@@ -266,7 +270,7 @@ export function PostDetailScreen({ postId }: { postId: string }) {
         </div>
       ) : state.status === "error" ? (
         state.error instanceof ApiError && state.error.status === 404 ? (
-          <div className="rounded-card border border-border p-8">
+          <div className="glass-card rounded-[24px] p-8">
             <p className="text-lg font-semibold">This post is not available.</p>
             <p className="mt-1 text-ink-muted">
               It may have been removed, or it belongs to another space.

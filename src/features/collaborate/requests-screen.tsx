@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckIcon, InboxIcon, SendIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { GlassTile } from "@/components/app/glass-parts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar } from "@/components/app/avatar";
 import { GlideTabs } from "@/components/app/glide-tabs";
@@ -359,9 +360,9 @@ export function RequestsScreen() {
           <LoadError error={received.error} onRetry={received.reload} what="your posts" />
         ) : incoming.length === 0 ? (
           <div className="glass-card flex flex-col items-center gap-3 rounded-[24px] px-6 py-12 text-center">
-            <span className="bg-brand inline-flex size-12 items-center justify-center rounded-2xl text-white">
-              <InboxIcon aria-hidden="true" className="size-6" />
-            </span>
+            <GlassTile size="lg">
+              <InboxIcon />
+            </GlassTile>
             <p className="text-lg font-bold">Nothing to answer</p>
             <p className="max-w-[34ch] text-[14px] text-ink-muted">
               When someone asks to join one of your open posts, it shows up here and in your

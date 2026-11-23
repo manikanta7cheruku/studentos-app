@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { MinusIcon, PlusIcon } from "lucide-react";
 import { cn } from "cn";
 import { Banner } from "@/components/ui/banner";
+import { DateTimeField } from "@/components/app/date-time-field";
+import { FormSection } from "@/components/app/glass-parts";
+import { NumberStepper } from "@/components/app/number-stepper";
 import { ChoiceChips, ToggleChips } from "@/components/ui/choice-chips";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -19,68 +21,9 @@ import { SpacePicker } from "@/features/college/space-picker";
 import { SPORTS, titleCase } from "./game-format";
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const dayKey = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-
-/** A small glass card that groups a few related fields under one quiet label. */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="glass-card flex flex-col gap-4 rounded-[22px] p-4">
-      <h2 className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-/** A number with a minus and a plus: players, hours. */
-function Counter({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-  suffix,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-  suffix?: string;
-}) {
-  const button =
-    "inline-flex size-10 items-center justify-center rounded-full border border-white/[0.14] bg-white/[0.07] text-ink outline-none transition-[transform,background-color] duration-150 focus-visible:ring-2 focus-visible:ring-ring active:scale-90 enabled:hover:bg-white/[0.12] disabled:opacity-40";
-  return (
-    <div role="group" aria-label={label} className="flex items-center gap-3">
-      <button
-        type="button"
-        aria-label={`Fewer, ${label.toLowerCase()}`}
-        disabled={value <= min}
-        onClick={() => onChange(Math.max(min, value - 1))}
-        className={button}
-      >
-        <MinusIcon aria-hidden="true" className="size-4" />
-      </button>
-      <span className="tabular min-w-14 text-center text-[20px] font-bold" aria-live="polite">
-        {value}
-        {suffix ? (
-          <span className="ml-1 text-[13px] font-medium text-ink-muted">{suffix}</span>
-        ) : null}
-      </span>
-      <button
-        type="button"
-        aria-label={`More, ${label.toLowerCase()}`}
-        disabled={value >= max}
-        onClick={() => onChange(Math.min(max, value + 1))}
-        className={button}
-      >
-        <PlusIcon aria-hidden="true" className="size-4" />
-      </button>
-    </div>
-  );
-}
+/** 2026-11-20T18:00 in the person's own time. */
+const localValue = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 /** Set up a game: the sport, where, when, how many players, what each person pays, and who can join. */
 export function GameNewScreen() {
@@ -93,9 +36,12 @@ export function GameNewScreen() {
   const [other, setOther] = React.useState("");
   const [venue, setVenue] = React.useState("");
   const [area, setArea] = React.useState("");
-  const [today] = React.useState(() => new Date());
-  const [date, setDate] = React.useState(() => dayKey(new Date(Date.now() + 86_400_000)));
-  const [time, setTime] = React.useState("18:00");
+  const [minStart] = React.useState(() => localValue(new Date()));
+  const [maxStart] = React.useState(() => localValue(new Date(Date.now() + 89 * 86_400_000)));
+  const [when, setWhen] = React.useState(() => {
+    const tomorrow = new Date(Date.now() + 86_400_000);
+    return `${localValue(tomorrow).slice(0, 10)}T18:00`;
+  });
   const [hours, setHours] = React.useState(1);
   const [capacity, setCapacity] = React.useState(10);
   const [price, setPrice] = React.useState("");
@@ -113,7 +59,7 @@ export function GameNewScreen() {
     const problems: Record<string, string> = {};
     if (sport.length < 2) problems.sport = "Pick a sport, or name your own.";
     if (venue.trim().length < 3) problems.venue = "Give the turf or court a name.";
-    const start = new Date(`${date}T${time}`);
+    const start = new Date(when);
     if (Number.isNaN(start.getTime()) || start.getTime() < Date.now() + 5 * 60_000)
       problems.when = "Pick a day and time that is still ahead.";
     else if (start.getTime() > Date.now() + 89 * 86_400_000)
@@ -165,7 +111,7 @@ export function GameNewScreen() {
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         <SpacePicker value={space} onChange={setSpace} label="Who can see it" />
 
-        <Section title="The game">
+        <FormSection title="The game">
           <div className="flex flex-col gap-2">
             <p className="text-[13px] font-semibold text-ink/90">Sport</p>
             <ToggleChips
@@ -197,9 +143,9 @@ export function GameNewScreen() {
             ) : null}
             {fields.sport ? <p className="text-[13px] text-danger">{fields.sport}</p> : null}
           </div>
-        </Section>
+        </FormSection>
 
-        <Section title="Where">
+        <FormSection title="Where">
           <FormField label="Turf or court" error={fields.venue} required>
             <Input
               value={venue}
@@ -216,42 +162,45 @@ export function GameNewScreen() {
               placeholder="Near gate 2, Gachibowli"
             />
           </FormField>
-        </Section>
+        </FormSection>
 
-        <Section title="When">
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Day" error={fields.when} required>
-              <Input
-                type="date"
-                value={date}
-                min={dayKey(today)}
-                onChange={(event) => setDate(event.target.value)}
-              />
-            </FormField>
-            <FormField label="Starts at" required>
-              <Input type="time" value={time} onChange={(event) => setTime(event.target.value)} />
-            </FormField>
-          </div>
+        <FormSection title="When">
+          <FormField label="Day and time" error={fields.when} required>
+            <DateTimeField
+              label="Day and time"
+              value={when}
+              onChange={setWhen}
+              min={minStart}
+              max={maxStart}
+              aria-label="Day and time"
+            />
+          </FormField>
           <div className="flex items-center justify-between gap-3">
             <p className="text-[13px] font-semibold text-ink/90">How long</p>
-            <Counter
+            <NumberStepper
               label="Hours"
               value={hours}
               min={1}
               max={6}
               onChange={setHours}
-              suffix={hours === 1 ? "hour" : "hours"}
+              unit={hours === 1 ? "hour" : "hours"}
             />
           </div>
-        </Section>
+        </FormSection>
 
-        <Section title="Players and cost">
+        <FormSection title="Players and cost">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-[13px] font-semibold text-ink/90">Players</p>
               <p className="text-[12.5px] text-ink-muted">Everyone playing, you included.</p>
             </div>
-            <Counter label="Players" value={capacity} min={2} max={40} onChange={setCapacity} />
+            <NumberStepper
+              label="Players"
+              value={capacity}
+              min={2}
+              max={40}
+              onChange={setCapacity}
+            />
           </div>
           <FormField
             label="Each person pays (₹)"
@@ -265,9 +214,9 @@ export function GameNewScreen() {
               placeholder="Free"
             />
           </FormField>
-        </Section>
+        </FormSection>
 
-        <Section title="Who can join">
+        <FormSection title="Who can join">
           <ChoiceChips
             label="Who can join"
             value={mode}
@@ -282,9 +231,9 @@ export function GameNewScreen() {
               ? "People are in as soon as they tap Join. When the game is full they can wait for a place."
               : "People ask to join and you answer each one. When the game is full they wait in line."}
           </p>
-        </Section>
+        </FormSection>
 
-        <Section title="Anything else">
+        <FormSection title="Anything else">
           <FormField
             label="A note"
             help="Optional. Bring your own ball, studs only, level of play."
@@ -296,7 +245,7 @@ export function GameNewScreen() {
               rows={3}
             />
           </FormField>
-        </Section>
+        </FormSection>
 
         {error ? (
           <Banner variant="error">

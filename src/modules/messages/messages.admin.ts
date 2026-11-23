@@ -77,6 +77,13 @@ export async function getThread(actor: string, college: string, other: string) {
       expires_at: string | null;
       can_request_again_at: string | null;
     } | null;
+    disappear: {
+      minutes: number;
+      set_by_me: boolean;
+      set_by_name: string | null;
+      set_at: string | null;
+      can_change: boolean;
+    };
     messages: Json[];
   }>("dm_thread", { p_actor: actor, p_college: college, p_with: other });
   return {
@@ -92,6 +99,7 @@ export async function getThread(actor: string, college: string, other: string) {
         }
       : null,
     can_message: data.can_message,
+    disappear: disappearOf(data.disappear),
     request: data.request
       ? {
           status: data.request.status,
@@ -108,6 +116,42 @@ export async function getThread(actor: string, college: string, other: string) {
       opened_at: m.opened_at ? toIso(m.opened_at as string) : null,
       expires_at: toIso(m.expires_at as string),
     })),
+  };
+}
+
+type Disappear = {
+  minutes: number;
+  set_by_me: boolean;
+  set_by_name: string | null;
+  set_at: string | null;
+  can_change: boolean;
+};
+const disappearOf = (value: Disappear) => ({
+  minutes: value.minutes,
+  set_by_me: Boolean(value.set_by_me),
+  set_by_name: value.set_by_name ?? null,
+  set_at: value.set_at ? toIso(value.set_at) : null,
+  can_change: Boolean(value.can_change),
+});
+
+export async function setTimer(actor: string, college: string, other: string, minutes: number) {
+  return disappearOf(
+    await rpc<Disappear>("dm_set_timer", {
+      p_actor: actor,
+      p_college: college,
+      p_with: other,
+      p_minutes: minutes,
+    }),
+  );
+}
+
+export async function getMessageSettings(user: string) {
+  return { default_minutes: await rpc<number>("dm_settings_get", { p_user: user }) };
+}
+
+export async function setMessageSettings(user: string, minutes: number) {
+  return {
+    default_minutes: await rpc<number>("dm_settings_set", { p_user: user, p_minutes: minutes }),
   };
 }
 

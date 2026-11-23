@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { DateTimeField } from "@/components/app/date-time-field";
 import { PlusIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -196,7 +197,15 @@ function Editor({
           />
         </FormField>
         <FormField label="Deadline" help="Optional.">
-          <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+          <DateTimeField
+            mode="date"
+            clearable
+            label="Deadline"
+            aria-label="Deadline"
+            value={deadline}
+            onChange={setDeadline}
+            placeholder="No deadline"
+          />
         </FormField>
         <FormField label="Link to apply" error={fields.apply_url} required>
           <Input

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { DateTimeField } from "@/components/app/date-time-field";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { Banner } from "@/components/ui/banner";
 import { Button } from "@/components/ui/button";
@@ -119,11 +120,13 @@ function NewInvite({ onCreated }: { onCreated: (code: string | null) => void }) 
           />
         </FormField>
         <FormField label="Valid until" error={fields.expires_at} required>
-          <Input
-            type="date"
+          <DateTimeField
+            mode="date"
+            label="Valid until"
+            aria-label="Valid until"
             value={expires}
             min={dateInputOffset(1)}
-            onChange={(e) => setExpires(e.target.value)}
+            onChange={setExpires}
           />
         </FormField>
       </div>

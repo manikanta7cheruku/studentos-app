@@ -19,7 +19,7 @@ export function ToggleRow({
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3.5 py-3"
+      className="flex cursor-pointer items-center gap-3 rounded-[16px] border border-white/[0.13] bg-white/[0.065] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] transition-colors hover:bg-white/[0.085]"
     >
       <span className="min-w-0 flex-1">
         <span className="block text-[14px] font-semibold">{title}</span>

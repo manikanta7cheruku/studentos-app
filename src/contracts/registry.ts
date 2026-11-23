@@ -650,6 +650,21 @@ export const endpoints: Endpoint[] = [
     "Not interested in a message request",
     { response: messages.dmDeclineResponse },
   ),
+  e(
+    "MSG-06",
+    "PUT",
+    "/c/{slug}/messages/{userId}/timer",
+    "mem",
+    "Change how long messages stay after they are opened (1, 7 or 24 hours)",
+    { body: messages.dmTimerBody, response: messages.dmTimerResponse },
+  ),
+  e("MSG-07", "GET", "/me/message-settings", "ses", "What my new conversations start with", {
+    response: messages.messageSettingsResponse,
+  }),
+  e("MSG-08", "PUT", "/me/message-settings", "ses", "Change what my new conversations start with", {
+    body: messages.messageSettingsBody,
+    response: messages.messageSettingsResponse,
+  }),
   e("FDB-01", "POST", "/me/feedback", "ses", "Send feedback to the team", {
     body: feedback.feedbackCreateBody,
     response: feedback.feedbackCreateResponse,

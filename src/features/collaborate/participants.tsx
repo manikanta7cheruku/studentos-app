@@ -16,19 +16,19 @@ export function Participants({ post, version }: { post: TeamPostDetail; version:
   const state = useLoad(() => api.teamPosts.participants(slug, post.id), [slug, post.id, version]);
   if (state.status !== "ready" || state.data.length === 0) return null;
   return (
-    <section aria-labelledby="who-is-in" className="flex flex-col gap-3">
+    <section
+      aria-labelledby="who-is-in"
+      className="glass-card flex flex-col gap-3 rounded-[22px] p-4"
+    >
       <h2
         id="who-is-in"
-        className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-muted"
+        className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-ink-muted"
       >
         Who is in ({state.data.length})
       </h2>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col divide-y divide-white/[0.07]">
         {state.data.map((person) => (
-          <li
-            key={person.user_id}
-            className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5"
-          >
+          <li key={person.user_id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
             <Avatar name={person.display_name} size="sm" />
             <div className="min-w-0 flex-1">
               <Link

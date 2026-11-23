@@ -390,6 +390,12 @@ export const api = {
         idempotent: key ?? true,
         schema: c.dmSendResponse.shape.data,
       }),
+    setTimer: (slug: string, userId: string, minutes: 60 | 420 | 1440) =>
+      apiClient(j(`/c/${slug}/messages/${userId}/timer`), {
+        method: "PUT",
+        body: { minutes },
+        schema: c.dmTimerResponse.shape.data,
+      }),
     decline: (slug: string, userId: string) =>
       apiClient(j(`/c/${slug}/messages/${userId}/decline`), {
         method: "POST",
@@ -400,6 +406,16 @@ export const api = {
         method: "POST",
         body,
         schema: c.reportCreateResponse.shape.data,
+      }),
+  },
+  messageSettings: {
+    get: () =>
+      apiClient(j("/me/message-settings"), { schema: c.messageSettingsResponse.shape.data }),
+    set: (minutes: 60 | 420 | 1440) =>
+      apiClient(j("/me/message-settings"), {
+        method: "PUT",
+        body: { default_minutes: minutes },
+        schema: c.messageSettingsResponse.shape.data,
       }),
   },
   photos: {

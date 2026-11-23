@@ -25,7 +25,7 @@ One line per area. The full list with who may call each one is `docs/PERMISSIONS
 | Games at a turf or court | GAM-01, GAM-02, GAM-03, GAM-04, GAM-05, GAM-06, GAM-07 | a game with a venue, a time, a number of players and a price for each, joining, a waiting list, leaving, and the host answering or cancelling (decision D-91) |
 | Network | NET-01, NET-02, NET-03 | people to meet and my network size (built Day 19) |
 | Phone alerts | PSH-01, PSH-02, PSH-03 | a device allows alerts and every new notification is also pushed to it (built in R3 Day 80) |
-| Messages, feedback and photos | MSG-01, MSG-02, MSG-03, MSG-04, MSG-05, FDB-01, PHO-01, BRD-08 | disappearing text messages between classmates, a feedback note to the team, and one shrunk photo on a market or lost and found post (built by R3 in Day 17) |
+| Messages, feedback and photos | MSG-01, MSG-02, MSG-03, MSG-04, MSG-05, MSG-06, MSG-07, MSG-08, FDB-01, PHO-01, BRD-08 | disappearing text messages between classmates, a feedback note to the team, and one shrunk photo on a market or lost and found post (built by R3 in Day 17) |
 
 ## 2. Not built
 
